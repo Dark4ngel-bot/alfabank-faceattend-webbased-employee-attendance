@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -320,6 +320,14 @@ function LocationCard({
             </p>
 
             <div className="mt-3 grid gap-2 text-sm font-semibold opacity-90">
+              <p>Latitude: {location.latitude}</p>
+              <p>Longitude: {location.longitude}</p>
+              <p>
+                Akurasi:{" "}
+                {location.accuracy !== null
+                  ? `┬▒${Math.round(location.accuracy)} meter`
+                  : "-"}
+              </p>
               <p>
                 Jarak:{" "}
                 {location.distance !== null
