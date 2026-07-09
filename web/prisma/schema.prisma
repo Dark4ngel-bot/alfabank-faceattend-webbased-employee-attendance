@@ -1,0 +1,411 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                                          String                     @id @default(uuid()) @db.Char(36)
+  name                                        String                     @db.VarChar(100)
+  email                                       String                     @unique @db.VarChar(100)
+  password_hash                               String                     @db.VarChar(255)
+  role                                        String                     @default("employee") @db.VarChar(20)
+  phone                                       String?                    @db.VarChar(20)
+  status                                      String                     @default("active") @db.VarChar(20)
+  created_at                                  DateTime                   @default(now())
+  profile_photo                               String?                    @db.VarChar(255)
+  updated_at                                  DateTime                   @default(now()) @updatedAt
+  department_id                               String?                    @db.Char(36)
+  employee_code                               String?                    @unique @db.VarChar(30)
+  position_id                                 String?                    @db.Char(36)
+  shift_id                                    String?                    @db.Char(36)
+  base_salary                                 Decimal?                   @db.Decimal(15, 2)
+  employee_type                               String                     @default("utama") @db.VarChar(20)
+  npwp_number                                 String?                    @db.VarChar(30)
+  ptkp_status                                 String?                    @db.VarChar(20)
+  registered_office_id                        String?                    @db.Char(36)
+  unit_id                                     String?                    @db.Char(36)
+  announcement                                announcement[]
+  attendance                                  attendance[]
+  attendancemonthlysummary                    attendancemonthlysummary[]
+  employeevisit                               employeevisit[]
+  leaverequest                                leaverequest[]
+  payroll                                     payroll[]
+  department                                  department?                @relation(fields: [department_id], references: [id])
+  position                                    position?                  @relation(fields: [position_id], references: [id])
+  registered_office                           officelocation?            @relation("EmployeeRegisteredOffice", fields: [registered_office_id], references: [id])
+  shift                                       shift?                     @relation(fields: [shift_id], references: [id])
+  unit                                        unit?                      @relation(fields: [unit_id], references: [id])
+  wfhrequest_wfhrequest_approved_by_idTousers wfhrequest[]               @relation("wfhrequest_approved_by_idTousers")
+  wfhrequest_wfhrequest_user_idTousers        wfhrequest[]               @relation("wfhrequest_user_idTousers")
+
+  @@index([role])
+  @@index([employee_type])
+  @@index([department_id], map: "users_department_id_fkey")
+  @@index([position_id], map: "users_position_id_fkey")
+  @@index([registered_office_id], map: "users_registered_office_id_fkey")
+  @@index([shift_id], map: "users_shift_id_fkey")
+  @@index([unit_id], map: "users_unit_id_fkey")
+  @@map("users")
+}
+
+model announcement {
+  id         String   @id @db.Char(36)
+  title      String   @db.VarChar(150)
+  content    String   @db.Text
+  target     String   @default("all") @db.VarChar(20)
+  status     String   @default("published") @db.VarChar(20)
+  author_id  String?  @db.Char(36)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  users      User?    @relation(fields: [author_id], references: [id], map: "Announcement_author_id_fkey")
+
+  @@index([author_id], map: "Announcement_author_id_fkey")
+  @@index([created_at], map: "Announcement_created_at_idx")
+  @@index([status], map: "Announcement_status_idx")
+  @@index([target], map: "Announcement_target_idx")
+}
+
+model attendance {
+  id                                                             String                       @id @db.Char(36)
+  status                                                         attendance_status            @default(PENDING)
+  attendance_date                                                DateTime                     @db.Date
+  check_in_latitude                                              Float?
+  check_in_longitude                                             Float?
+  check_in_photo                                                 Bytes?
+  check_in_photo_mime                                            String?                      @db.VarChar(50)
+  check_in_status                                                attendance_check_in_status?
+  check_in_time                                                  DateTime?
+  check_out_latitude                                             Float?
+  check_out_longitude                                            Float?
+  check_out_photo                                                Bytes?
+  check_out_photo_mime                                           String?                      @db.VarChar(50)
+  check_out_status                                               attendance_check_out_status?
+  check_out_time                                                 DateTime?
+  created_at                                                     DateTime                     @default(now())
+  early_leave_minutes                                            Int                          @default(0)
+  late_minutes                                                   Int                          @default(0)
+  note                                                           String?                      @db.VarChar(255)
+  scheduled_check_in                                             DateTime?
+  scheduled_check_out                                            DateTime?
+  updated_at                                                     DateTime                     @default(now())
+  user_id                                                        String                       @db.Char(36)
+  work_minutes                                                   Int                          @default(0)
+  activity_note                                                  String?                      @db.VarChar(255)
+  check_in_accuracy                                              Float?
+  check_in_distance                                              Float?
+  check_in_office_id                                             String?                      @db.Char(36)
+  check_in_within_radius                                         Boolean                      @default(false)
+  check_out_accuracy                                             Float?
+  check_out_distance                                             Float?
+  check_out_office_id                                            String?                      @db.Char(36)
+  check_out_within_radius                                        Boolean                      @default(false)
+  early_leave_reason                                             String?                      @db.VarChar(255)
+  is_over_tolerance                                              Boolean                      @default(false)
+  is_visit                                                       Boolean                      @default(false)
+  is_wfh                                                         Boolean                      @default(false)
+  late_reason                                                    String?                      @db.VarChar(255)
+  registered_office_id                                           String?                      @db.Char(36)
+  wfh_request_id                                                 String?                      @db.Char(36)
+  work_mode                                                      String                       @default("office") @db.VarChar(20)
+  late_seconds                                                   Int                          @default(0)
+  officelocation_attendance_check_in_office_idToofficelocation   officelocation?              @relation("attendance_check_in_office_idToofficelocation", fields: [check_in_office_id], references: [id], map: "Attendance_check_in_office_id_fkey")
+  officelocation_attendance_check_out_office_idToofficelocation  officelocation?              @relation("attendance_check_out_office_idToofficelocation", fields: [check_out_office_id], references: [id], map: "Attendance_check_out_office_id_fkey")
+  officelocation_attendance_registered_office_idToofficelocation officelocation?              @relation("attendance_registered_office_idToofficelocation", fields: [registered_office_id], references: [id], map: "Attendance_registered_office_id_fkey")
+  users                                                          User                         @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Attendance_user_id_fkey")
+  wfhrequest                                                     wfhrequest?                  @relation(fields: [wfh_request_id], references: [id], map: "Attendance_wfh_request_id_fkey")
+  employeevisit                                                  employeevisit[]
+
+  @@unique([user_id, attendance_date], map: "Attendance_user_id_attendance_date_key")
+  @@index([attendance_date], map: "Attendance_attendance_date_idx")
+  @@index([check_in_office_id], map: "Attendance_check_in_office_id_fkey")
+  @@index([check_in_status], map: "Attendance_check_in_status_idx")
+  @@index([check_out_office_id], map: "Attendance_check_out_office_id_fkey")
+  @@index([check_out_status], map: "Attendance_check_out_status_idx")
+  @@index([is_visit], map: "Attendance_is_visit_idx")
+  @@index([is_wfh], map: "Attendance_is_wfh_idx")
+  @@index([registered_office_id], map: "Attendance_registered_office_id_fkey")
+  @@index([status], map: "Attendance_status_idx")
+  @@index([wfh_request_id], map: "Attendance_wfh_request_id_fkey")
+  @@index([work_mode], map: "Attendance_work_mode_idx")
+}
+
+model attendancemonthlysummary {
+  id                        String   @id @db.Char(36)
+  user_id                   String   @db.Char(36)
+  period_month              Int
+  period_year               Int
+  total_present_days        Int      @default(0)
+  total_late_days           Int      @default(0)
+  total_absent_days         Int      @default(0)
+  total_leave_days          Int      @default(0)
+  total_sick_days           Int      @default(0)
+  total_late_minutes        Int      @default(0)
+  total_early_leave_minutes Int      @default(0)
+  total_work_minutes        Int      @default(0)
+  total_wfh_days            Int      @default(0)
+  total_visit_days          Int      @default(0)
+  created_at                DateTime @default(now())
+  updated_at                DateTime @default(now())
+  users                     User     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "AttendanceMonthlySummary_user_id_fkey")
+
+  @@unique([user_id, period_month, period_year], map: "AttendanceMonthlySummary_user_id_period_month_period_year_key")
+  @@index([period_month, period_year], map: "AttendanceMonthlySummary_period_month_period_year_idx")
+}
+
+model department {
+  id                 String     @id @db.Char(36)
+  name               String     @db.VarChar(100)
+  shift_id           String?    @db.Char(36)
+  salary_calculation String     @default("monthly") @db.VarChar(30)
+  status             String     @default("active") @db.VarChar(20)
+  created_at         DateTime   @default(now())
+  updated_at         DateTime   @default(now())
+  unit_id            String?    @db.Char(36)
+  shift              shift?     @relation(fields: [shift_id], references: [id], map: "Department_shift_id_fkey")
+  unit               unit?      @relation(fields: [unit_id], references: [id], map: "Department_unit_id_fkey")
+  position           position[]
+  users              User[]
+
+  @@unique([unit_id, name], map: "Department_unit_id_name_key")
+  @@index([shift_id], map: "Department_shift_id_fkey")
+}
+
+model employeevisit {
+  id               String      @id @db.Char(36)
+  user_id          String      @db.Char(36)
+  attendance_id    String?     @db.Char(36)
+  visit_date       DateTime    @db.Date
+  title            String      @db.VarChar(150)
+  client_name      String?     @db.VarChar(100)
+  address          String?     @db.VarChar(255)
+  latitude         Float?
+  longitude        Float?
+  accuracy         Float?
+  start_time       DateTime?
+  end_time         DateTime?
+  note             String?     @db.VarChar(255)
+  status           String      @default("planned") @db.VarChar(20)
+  created_at       DateTime    @default(now())
+  updated_at       DateTime    @default(now())
+  visit_photo      Bytes?
+  visit_photo_mime String?     @db.VarChar(50)
+  attendance       attendance? @relation(fields: [attendance_id], references: [id], map: "EmployeeVisit_attendance_id_fkey")
+  users            User        @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "EmployeeVisit_user_id_fkey")
+
+  @@index([attendance_id], map: "EmployeeVisit_attendance_id_fkey")
+  @@index([status], map: "EmployeeVisit_status_idx")
+  @@index([user_id], map: "EmployeeVisit_user_id_fkey")
+  @@index([visit_date], map: "EmployeeVisit_visit_date_idx")
+}
+
+model leaverequest {
+  id                        String   @id @db.Char(36)
+  user_id                   String   @db.Char(36)
+  leave_type                String   @db.VarChar(30)
+  start_date                DateTime @db.Date
+  end_date                  DateTime @db.Date
+  total_days                Int      @default(1)
+  reason                    String   @db.Text
+  status                    String   @default("pending") @db.VarChar(20)
+  admin_note                String?  @db.VarChar(255)
+  created_at                DateTime @default(now())
+  updated_at                DateTime @default(now())
+  location_unlock_approved  Boolean  @default(false)
+  location_unlock_requested Boolean  @default(false)
+  requested_work_mode       String?  @db.VarChar(20)
+  visit_address             String?  @db.VarChar(255)
+  visit_latitude            Float?
+  visit_location_name       String?  @db.VarChar(150)
+  visit_longitude           Float?
+  users                     User     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "LeaveRequest_user_id_fkey")
+
+  @@index([leave_type], map: "LeaveRequest_leave_type_idx")
+  @@index([location_unlock_approved], map: "LeaveRequest_location_unlock_approved_idx")
+  @@index([start_date], map: "LeaveRequest_start_date_idx")
+  @@index([status], map: "LeaveRequest_status_idx")
+  @@index([user_id], map: "LeaveRequest_user_id_fkey")
+}
+
+model officelocation {
+  id                                                         String       @id @db.Char(36)
+  name                                                       String       @unique(map: "OfficeLocation_name_key") @db.VarChar(100)
+  address                                                    String?      @db.VarChar(255)
+  latitude                                                   Float
+  longitude                                                  Float
+  radius_meters                                              Int          @default(100)
+  status                                                     String       @default("active") @db.VarChar(20)
+  created_at                                                 DateTime     @default(now())
+  updated_at                                                 DateTime     @default(now())
+  attendance_attendance_check_in_office_idToofficelocation   attendance[] @relation("attendance_check_in_office_idToofficelocation")
+  attendance_attendance_check_out_office_idToofficelocation  attendance[] @relation("attendance_check_out_office_idToofficelocation")
+  attendance_attendance_registered_office_idToofficelocation attendance[] @relation("attendance_registered_office_idToofficelocation")
+  users                                                      User[]       @relation("EmployeeRegisteredOffice")
+}
+
+model payroll {
+  id                 String        @id @db.Char(36)
+  user_id            String        @db.Char(36)
+  period_month       Int
+  period_year        Int
+  base_salary        Decimal       @default(0.00) @db.Decimal(15, 2)
+  total_bonus        Decimal       @default(0.00) @db.Decimal(15, 2)
+  total_reward       Decimal       @default(0.00) @db.Decimal(15, 2)
+  leave_deduction    Decimal       @default(0.00) @db.Decimal(15, 2)
+  late_deduction     Decimal       @default(0.00) @db.Decimal(15, 2)
+  other_deduction    Decimal       @default(0.00) @db.Decimal(15, 2)
+  gross_salary       Decimal       @default(0.00) @db.Decimal(15, 2)
+  pph_amount         Decimal       @default(0.00) @db.Decimal(15, 2)
+  net_salary         Decimal       @default(0.00) @db.Decimal(15, 2)
+  total_late_minutes Int           @default(0)
+  total_work_minutes Int           @default(0)
+  total_absent_days  Int           @default(0)
+  total_leave_days   Int           @default(0)
+  status             String        @default("draft") @db.VarChar(20)
+  created_at         DateTime      @default(now())
+  updated_at         DateTime      @default(now())
+  users              User          @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Payroll_user_id_fkey")
+  payrollitem        payrollitem[]
+
+  @@unique([user_id, period_month, period_year], map: "Payroll_user_id_period_month_period_year_key")
+  @@index([period_month, period_year], map: "Payroll_period_month_period_year_idx")
+  @@index([status], map: "Payroll_status_idx")
+}
+
+model payrollitem {
+  id         String   @id @db.Char(36)
+  payroll_id String   @db.Char(36)
+  type       String   @db.VarChar(30)
+  name       String   @db.VarChar(100)
+  amount     Decimal  @default(0.00) @db.Decimal(15, 2)
+  note       String?  @db.VarChar(255)
+  created_at DateTime @default(now())
+  payroll    payroll  @relation(fields: [payroll_id], references: [id], onDelete: Cascade, map: "PayrollItem_payroll_id_fkey")
+
+  @@index([payroll_id], map: "PayrollItem_payroll_id_fkey")
+  @@index([type], map: "PayrollItem_type_idx")
+}
+
+model permission {
+  id             String           @id @db.Char(36)
+  name           String           @unique(map: "Permission_name_key") @db.VarChar(100)
+  code           String           @unique(map: "Permission_code_key") @db.VarChar(100)
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @default(now())
+  rolepermission rolepermission[]
+}
+
+model position {
+  id            String      @id @db.Char(36)
+  name          String      @db.VarChar(100)
+  status        String      @default("active") @db.VarChar(20)
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @default(now())
+  department_id String?     @db.Char(36)
+  department    department? @relation(fields: [department_id], references: [id], map: "Position_department_id_fkey")
+  users         User[]
+
+  @@unique([department_id, name], map: "Position_department_id_name_key")
+}
+
+model rolepermission {
+  id            String     @id @db.Char(36)
+  role          String     @db.VarChar(20)
+  permission_id String     @db.Char(36)
+  created_at    DateTime   @default(now())
+  permission    permission @relation(fields: [permission_id], references: [id], onDelete: Cascade, map: "RolePermission_permission_id_fkey")
+
+  @@unique([role, permission_id], map: "RolePermission_role_permission_id_key")
+  @@index([permission_id], map: "RolePermission_permission_id_fkey")
+  @@index([role], map: "RolePermission_role_idx")
+}
+
+model shift {
+  id                String         @id @db.Char(36)
+  name              String         @unique(map: "Shift_name_key") @db.VarChar(100)
+  tolerance_minutes Int            @default(0)
+  status            String         @default("active") @db.VarChar(20)
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @default(now())
+  department        department[]
+  users             User[]
+  workschedule      workschedule[]
+}
+
+model unit {
+  id         String       @id @db.Char(36)
+  name       String       @unique(map: "Unit_name_key") @db.VarChar(100)
+  status     String       @default("active") @db.VarChar(20)
+  created_at DateTime     @default(now())
+  updated_at DateTime     @default(now())
+  department department[]
+  users      User[]
+}
+
+model wfhrequest {
+  id                                     String       @id @db.Char(36)
+  user_id                                String       @db.Char(36)
+  request_date                           DateTime     @db.Date
+  reason                                 String       @db.Text
+  status                                 String       @default("pending") @db.VarChar(20)
+  allowed_radius_meters                  Int?         @default(500)
+  approved_by_id                         String?      @db.Char(36)
+  admin_note                             String?      @db.VarChar(255)
+  created_at                             DateTime     @default(now())
+  updated_at                             DateTime     @default(now())
+  attendance                             attendance[]
+  users_wfhrequest_approved_by_idTousers User?        @relation("wfhrequest_approved_by_idTousers", fields: [approved_by_id], references: [id], map: "WfhRequest_approved_by_id_fkey")
+  users_wfhrequest_user_idTousers        User         @relation("wfhrequest_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade, map: "WfhRequest_user_id_fkey")
+
+  @@index([approved_by_id], map: "WfhRequest_approved_by_id_fkey")
+  @@index([request_date], map: "WfhRequest_request_date_idx")
+  @@index([status], map: "WfhRequest_status_idx")
+  @@index([user_id], map: "WfhRequest_user_id_fkey")
+}
+
+model workschedule {
+  id             String                   @id @db.Char(36)
+  shift_id       String                   @db.Char(36)
+  day_of_week    workschedule_day_of_week
+  is_work_day    Boolean                  @default(true)
+  check_in_time  String?                  @db.VarChar(5)
+  check_out_time String?                  @db.VarChar(5)
+  created_at     DateTime                 @default(now())
+  updated_at     DateTime                 @default(now())
+  shift          shift                    @relation(fields: [shift_id], references: [id], onDelete: Cascade, map: "WorkSchedule_shift_id_fkey")
+
+  @@unique([shift_id, day_of_week], map: "WorkSchedule_shift_id_day_of_week_key")
+}
+
+enum attendance_status {
+  PENDING
+  PRESENT
+  LATE
+  ABSENT
+  PERMISSION
+  SICK
+}
+
+enum workschedule_day_of_week {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum attendance_check_in_status {
+  ON_TIME
+  LATE
+}
+
+enum attendance_check_out_status {
+  NORMAL
+  EARLY
+}
