@@ -182,11 +182,11 @@ function isActivePath(pathname: string, href: string) {
 export default function AppHeader(props: AppHeaderProps) {
   return (
     <Suspense fallback={
-      <header className="sticky top-0 z-30 border-b border-white/60 bg-white/90 px-5 py-4 shadow-sm shadow-slate-200/40 backdrop-blur-2xl">
+      <header className="sticky top-0 z-30 border-b border-[#123c8c]/15 bg-[#FFCC00] px-5 py-4 shadow-sm backdrop-blur-2xl">
         <div className="mx-auto max-w-7xl flex items-center justify-between">
           <div>
             <p className="text-[11px] font-black uppercase tracking-[0.3em] text-[#123c8c]">FaceAttend</p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950">{props.title}</h1>
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-[#123c8c]">{props.title}</h1>
           </div>
         </div>
       </header>
@@ -412,8 +412,8 @@ function AppHeaderContent({
     <>
       <header
         className={`fixed inset-x-0 top-0 z-40 border-b px-5 py-4 backdrop-blur-2xl transition-all duration-300 md:px-10 lg:px-16 ${hasScrolled
-          ? "border-blue-100/80 bg-white/95 shadow-lg shadow-slate-300/30"
-          : "border-white/60 bg-white/90 shadow-sm shadow-slate-200/40"
+          ? "border-[#123c8c]/20 bg-[#FFCC00] shadow-lg shadow-slate-900/30"
+          : "border-[#123c8c]/10 bg-[#FFCC00] shadow-sm shadow-slate-900/10"
           }`}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
@@ -421,23 +421,30 @@ function AppHeaderContent({
             <button
               type="button"
               onClick={() => setIsSidebarOpen(true)}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] shadow-sm transition active:scale-[0.96]"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#123c8c] text-white shadow-sm transition active:scale-[0.96]"
               aria-label="Open menu"
             >
               <Menu size={24} strokeWidth={2.8} />
             </button>
 
             <div className="min-w-0">
-              <p className="text-[11px] font-black uppercase tracking-[0.3em] text-[#123c8c] md:text-[10px]">
-                FaceAttend
-              </p>
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/images/alfabank-logo.webp"
+                  alt="Alfabank Logo"
+                  width={110}
+                  height={32}
+                  className="h-6 w-auto object-contain"
+                  priority
+                />
+              </div>
 
-              <h1 className="mt-1 truncate text-2xl font-black tracking-tight text-slate-950 md:text-2xl lg:text-3xl">
+              <h1 className="mt-1 truncate text-lg font-black tracking-tight text-[#123c8c] md:text-xl lg:text-2xl">
                 {title}
               </h1>
 
               {subtitle ? (
-                <p className="mt-1 line-clamp-1 max-w-xl text-sm font-semibold leading-5 text-slate-500 md:text-sm">
+                <p className="mt-0.5 line-clamp-1 max-w-xl text-xs font-semibold leading-5 text-[#123c8c]/80 md:text-xs">
                   {subtitle}
                 </p>
               ) : null}
@@ -450,7 +457,7 @@ function AppHeaderContent({
                 <button
                   type="button"
                   onClick={() => setIsBellMenuOpen(!isBellMenuOpen)}
-                  className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] transition active:scale-[0.96]"
+                  className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-[#123c8c] text-white transition active:scale-[0.96]"
                   aria-label="Notifications"
                 >
                   <Bell size={20} strokeWidth={2.5} />
@@ -511,16 +518,16 @@ function AppHeaderContent({
       ) : null}
 
       <aside
-        className={`fixed left-0 top-0 z-[60] h-dvh w-[82vw] max-w-80 border-r border-blue-100 bg-white shadow-2xl shadow-slate-950/20 transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed left-0 top-0 z-[60] h-dvh w-[82vw] max-w-80 border-r border-zinc-800 bg-zinc-950 text-white shadow-2xl shadow-slate-950/20 transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between gap-3 border-b border-blue-50 px-5 py-5">
+          <div className="flex items-center justify-between gap-3 border-b border-zinc-900 px-5 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-slate-300/50 ring-1 ring-blue-100">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1 shadow-lg shadow-slate-900/50 ring-1 ring-zinc-800">
                 <Image
-                  src="/images/creativemu-logo/creativemu.png"
-                  alt="Creativemu Logo"
+                  src="/images/alfabank-icon.jpg"
+                  alt="Alfabank Icon"
                   width={48}
                   height={48}
                   className="h-full w-full object-contain"
@@ -529,11 +536,11 @@ function AppHeaderContent({
               </div>
 
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c]">
-                  FaceAttend
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#FFCC00]">
+                  Alfabank
                 </p>
 
-                <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">
+                <h2 className="mt-1 text-lg font-black tracking-tight text-white">
                   {isAdmin ? "Admin Panel" : "Employee Menu"}
                 </h2>
               </div>

@@ -2,12 +2,12 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #f6f8ff;
-  --foreground: #0f172a;
-  --primary: #123c8c;
-  --primary-dark: #0b2358;
-  --accent: #ff8a00;
-  --muted: #64748b;
+  --background: #000000;
+  --foreground: #ffffff;
+  --primary: #FFCC00;
+  --primary-dark: #cca300;
+  --accent: #123c8c;
+  --muted: #94a3b8;
 }
 
 * {
@@ -16,18 +16,7 @@
 
 html {
   min-height: 100%;
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(255, 138, 0, 0.18),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at top right,
-      rgba(18, 60, 140, 0.2),
-      transparent 32%
-    ),
-    linear-gradient(180deg, #f6f8ff 0%, #eef3ff 100%);
+  background: #000000;
   scroll-behavior: smooth;
   overscroll-behavior-y: none;
 }
@@ -35,18 +24,7 @@ html {
 body {
   min-height: 100%;
   min-height: 100vh;
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(255, 138, 0, 0.18),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at top right,
-      rgba(18, 60, 140, 0.2),
-      transparent 32%
-    ),
-    linear-gradient(180deg, #f6f8ff 0%, #eef3ff 100%);
+  background: #000000;
   background-repeat: no-repeat;
   background-attachment: fixed;
   color: var(--foreground);
@@ -132,7 +110,7 @@ input {
   }
 
   50% {
-    border-color: #ff8a00;
+    border-color: #FFCC00;
   }
 }
 
@@ -144,10 +122,10 @@ input {
 .gradient-title {
   background: linear-gradient(
     90deg,
-    #0f172a,
+    #ffffff,
+    #FFCC00,
     #123c8c,
-    #ff8a00,
-    #0f172a
+    #ffffff
   );
   background-size: 300% 300%;
   animation: gradientMove 5s ease infinite;
@@ -162,9 +140,9 @@ input {
   max-width: max-content;
   overflow: hidden;
   white-space: nowrap;
-  border-right: 4px solid #ff8a00;
+  border-right: 4px solid #FFCC00;
 
-  background: linear-gradient(90deg, #0f172a, #123c8c, #ff8a00, #0f172a);
+  background: linear-gradient(90deg, #ffffff, #123c8c, #FFCC00, #ffffff);
   background-size: 300% 300%;
   -webkit-background-clip: text;
   background-clip: text;
