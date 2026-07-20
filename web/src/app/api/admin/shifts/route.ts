@@ -97,7 +97,10 @@ async function ensureDefaultShifts() {
           name: shift.name,
         },
         update: {},
-        create: shift,
+        create: {
+          ...shift,
+          id: crypto.randomUUID(),
+        },
       }),
     ),
   );

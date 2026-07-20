@@ -150,7 +150,10 @@ async function ensureDefaultShifts() {
           name: shift.name,
         },
         update: {},
-        create: shift,
+        create: {
+          ...shift,
+          id: crypto.randomUUID(),
+        },
       }),
     ),
   );
@@ -173,7 +176,7 @@ async function ensureDefaultWorkSchedules() {
       const isWeekend = day === "SATURDAY" || day === "SUNDAY";
 
       operations.push(
-        prisma.workSchedule.upsert({
+        prisma.workschedule.upsert({
           where: {
             shift_id_day_of_week: {
               shift_id: shift.id,
@@ -182,6 +185,7 @@ async function ensureDefaultWorkSchedules() {
           },
           update: {},
           create: {
+            id: crypto.randomUUID(),
             shift_id: shift.id,
             day_of_week: day,
             is_work_day: !isWeekend,
@@ -362,7 +366,7 @@ export async function PATCH(req: NextRequest) {
         }
 
         operations.push(
-          prisma.workSchedule.upsert({
+          prisma.workschedule.upsert({
             where: {
               shift_id_day_of_week: {
                 shift_id: shiftId,
@@ -375,6 +379,7 @@ export async function PATCH(req: NextRequest) {
               check_out_time: checkOutTime,
             },
             create: {
+              id: crypto.randomUUID(),
               shift_id: shiftId,
               day_of_week: day.day_of_week,
               is_work_day: isWorkDay,

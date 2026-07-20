@@ -81,7 +81,7 @@ function findNearestOffice(location: { lat: number; lng: number }, offices: Offi
 }
 
 async function getApprovedLocationUnlock(userId: string, date: Date) {
-  return prisma.leaveRequest.findFirst({
+  return prisma.leaverequest.findFirst({
     where: {
       user_id: userId,
       status: "approved",
@@ -100,7 +100,7 @@ async function getApprovedLocationUnlock(userId: string, date: Date) {
 }
 
 async function hasApprovedOvertime(userId: string, date: Date) {
-  const request = await prisma.leaveRequest.findFirst({
+  const request = await prisma.leaverequest.findFirst({
     where: {
       user_id: userId,
       status: "approved",
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
     const effectiveMode = approvedUnlock?.requested_work_mode || attendance.work_mode || requestedMode;
     const requiresOfficeRadius = effectiveMode === "office" && !approvedUnlock;
 
-    const offices = await prisma.officeLocation.findMany({
+    const offices = await prisma.officelocation.findMany({
       where: { status: "active" },
       select: { id: true, name: true, latitude: true, longitude: true, radius_meters: true },
     });

@@ -430,7 +430,7 @@ function AppHeaderContent({
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <Image
-                  src="/images/alfabank-logo.webp"
+                  src="/images/alfabank-logo.svg"
                   alt="Alfabank Logo"
                   width={110}
                   height={32}
@@ -526,7 +526,7 @@ function AppHeaderContent({
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1 shadow-lg shadow-slate-900/50 ring-1 ring-zinc-800">
                 <Image
-                  src="/images/alfabank-icon.jpg"
+                  src="/images/alfabank-icon.svg"
                   alt="Alfabank Icon"
                   width={48}
                   height={48}

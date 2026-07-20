@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import { getDistanceInMeters } from "@/lib/geo";
-import { AttendanceStatus, CheckInStatus, type DayOfWeek } from "@/generated/prisma/enums";
+import { attendance_status as AttendanceStatus, attendance_check_in_status as CheckInStatus, type workschedule_day_of_week as DayOfWeek } from "@/generated/prisma/enums";
 import { attendanceStore, findDemoUserById } from "@/lib/demoStore";
 
 export const runtime = "nodejs";
@@ -133,7 +133,7 @@ function findNearestOffice(location: { lat: number; lng: number }, offices: Offi
 }
 
 async function getApprovedLocationUnlock(userId: string, date: Date) {
-  return prisma.leaveRequest.findFirst({
+  return prisma.leaverequest.findFirst({
     where: {
       user_id: userId,
       status: "approved",
@@ -262,7 +262,7 @@ export async function POST(req: NextRequest) {
     const effectiveMode = approvedUnlock?.requested_work_mode || requestedMode;
     const requiresOfficeRadius = effectiveMode === "office" && !approvedUnlock;
 
-    const offices = await prisma.officeLocation.findMany({
+    const offices = await prisma.officelocation.findMany({
       where: { status: "active" },
       select: { id: true, name: true, latitude: true, longitude: true, radius_meters: true },
     });
@@ -355,7 +355,7 @@ export async function POST(req: NextRequest) {
     } else {
       attendanceRecord = existingAttendance
         ? await prisma.attendance.update({ where: { id: existingAttendance.id }, data })
-        : await prisma.attendance.create({ data });
+        : await prisma.attendance.create({ data: { ...data, id: crypto.randomUUID() } });
     }
 
     return NextResponse.json({

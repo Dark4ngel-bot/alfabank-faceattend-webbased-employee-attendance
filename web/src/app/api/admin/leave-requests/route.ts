@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const db = prisma as any;
+
 
 async function getUserIdFromRequest(req: NextRequest) {
   const token = req.cookies.get("faceattend_token")?.value;
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
             status,
           };
 
-    const requests = await db.leaveRequest.findMany({
+    const requests = await prisma.leaverequest.findMany({
       where,
       orderBy: {
         created_at: "desc",
@@ -148,21 +148,21 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const total = await db.leaveRequest.count();
+    const total = await prisma.leaverequest.count();
 
-    const pending = await db.leaveRequest.count({
+    const pending = await prisma.leaverequest.count({
       where: {
         status: "pending",
       },
     });
 
-    const approved = await db.leaveRequest.count({
+    const approved = await prisma.leaverequest.count({
       where: {
         status: "approved",
       },
     });
 
-    const rejected = await db.leaveRequest.count({
+    const rejected = await prisma.leaverequest.count({
       where: {
         status: "rejected",
       },
@@ -258,7 +258,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const updatedRequest = await db.leaveRequest.update({
+    const updatedRequest = await prisma.leaverequest.update({
       where: {
         id,
       },

@@ -3,11 +3,9 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const db = prisma as any;
-
 export async function GET() {
   try {
-    const offices = await db.officeLocation.findMany({
+    const offices = await prisma.officelocation.findMany({
       where: {
         status: "active",
       },

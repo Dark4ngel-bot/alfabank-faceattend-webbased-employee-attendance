@@ -113,10 +113,10 @@ model attendance {
   wfh_request_id                                                 String?                      @db.Char(36)
   work_mode                                                      String                       @default("office") @db.VarChar(20)
   late_seconds                                                   Int                          @default(0)
-  officelocation_attendance_check_in_office_idToofficelocation   officelocation?              @relation("attendance_check_in_office_idToofficelocation", fields: [check_in_office_id], references: [id], map: "Attendance_check_in_office_id_fkey")
-  officelocation_attendance_check_out_office_idToofficelocation  officelocation?              @relation("attendance_check_out_office_idToofficelocation", fields: [check_out_office_id], references: [id], map: "Attendance_check_out_office_id_fkey")
-  officelocation_attendance_registered_office_idToofficelocation officelocation?              @relation("attendance_registered_office_idToofficelocation", fields: [registered_office_id], references: [id], map: "Attendance_registered_office_id_fkey")
-  users                                                          User                         @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Attendance_user_id_fkey")
+  check_in_office                                                officelocation?              @relation("attendance_check_in_office_idToofficelocation", fields: [check_in_office_id], references: [id], map: "Attendance_check_in_office_id_fkey")
+  check_out_office                                               officelocation?              @relation("attendance_check_out_office_idToofficelocation", fields: [check_out_office_id], references: [id], map: "Attendance_check_out_office_id_fkey")
+  registered_office                                              officelocation?              @relation("attendance_registered_office_idToofficelocation", fields: [registered_office_id], references: [id], map: "Attendance_registered_office_id_fkey")
+  user                                                           User                         @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Attendance_user_id_fkey")
   wfhrequest                                                     wfhrequest?                  @relation(fields: [wfh_request_id], references: [id], map: "Attendance_wfh_request_id_fkey")
   employeevisit                                                  employeevisit[]
 
@@ -151,7 +151,7 @@ model attendancemonthlysummary {
   total_visit_days          Int      @default(0)
   created_at                DateTime @default(now())
   updated_at                DateTime @default(now())
-  users                     User     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "AttendanceMonthlySummary_user_id_fkey")
+  user                     User     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "AttendanceMonthlySummary_user_id_fkey")
 
   @@unique([user_id, period_month, period_year], map: "AttendanceMonthlySummary_user_id_period_month_period_year_key")
   @@index([period_month, period_year], map: "AttendanceMonthlySummary_period_month_period_year_idx")
@@ -195,7 +195,7 @@ model employeevisit {
   visit_photo      Bytes?
   visit_photo_mime String?     @db.VarChar(50)
   attendance       attendance? @relation(fields: [attendance_id], references: [id], map: "EmployeeVisit_attendance_id_fkey")
-  users            User        @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "EmployeeVisit_user_id_fkey")
+  user            User        @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "EmployeeVisit_user_id_fkey")
 
   @@index([attendance_id], map: "EmployeeVisit_attendance_id_fkey")
   @@index([status], map: "EmployeeVisit_status_idx")
@@ -222,7 +222,7 @@ model leaverequest {
   visit_latitude            Float?
   visit_location_name       String?  @db.VarChar(150)
   visit_longitude           Float?
-  users                     User     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "LeaveRequest_user_id_fkey")
+  user                     User     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "LeaveRequest_user_id_fkey")
 
   @@index([leave_type], map: "LeaveRequest_leave_type_idx")
   @@index([location_unlock_approved], map: "LeaveRequest_location_unlock_approved_idx")
@@ -268,7 +268,7 @@ model payroll {
   status             String        @default("draft") @db.VarChar(20)
   created_at         DateTime      @default(now())
   updated_at         DateTime      @default(now())
-  users              User          @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Payroll_user_id_fkey")
+  user              User          @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Payroll_user_id_fkey")
   payrollitem        payrollitem[]
 
   @@unique([user_id, period_month, period_year], map: "Payroll_user_id_period_month_period_year_key")
@@ -333,7 +333,7 @@ model shift {
   updated_at        DateTime       @default(now())
   department        department[]
   users             User[]
-  workschedule      workschedule[]
+  work_schedules    workschedule[]
 }
 
 model unit {

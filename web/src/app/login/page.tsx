@@ -76,7 +76,7 @@ export default function LoginPage() {
           {/* LEFT CONTENT */}
           <div className="relative flex flex-col px-6 py-7 md:px-12 lg:justify-between lg:px-20 lg:py-14">
             <Image
-              src="/images/alfabank-logo.webp"
+              src="/images/alfabank-logo.svg"
               alt="Alfabank Background Logo"
               width={620}
               height={620}
@@ -85,7 +85,7 @@ export default function LoginPage() {
             />
 
             <Image
-              src="/images/alfabank-logo.webp"
+              src="/images/alfabank-logo.svg"
               alt="Alfabank Background Logo"
               width={300}
               height={300}
@@ -97,7 +97,7 @@ export default function LoginPage() {
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white p-1 shadow-xl shadow-slate-900/60 md:h-14 md:w-14">
                   <Image
-                    src="/images/alfabank-icon.jpg"
+                    src="/images/alfabank-icon.svg"
                     alt="Alfabank Icon"
                     width={56}
                     height={56}

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import { canViewAdminPanel } from "@/lib/adminAccess";
-import { AttendanceStatus, CheckInStatus, type DayOfWeek } from "@/generated/prisma/enums";
+import { attendance_status as AttendanceStatus, attendance_check_in_status as CheckInStatus, type workschedule_day_of_week as DayOfWeek } from "@/generated/prisma/enums";
 
 export const runtime = "nodejs";
 
@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
       where.visit_date = toDateOnly(getJakartaDateKey());
     }
 
-    const visits = await prisma.employeeVisit.findMany({
+    const visits = await prisma.employeevisit.findMany({
       where,
       orderBy: { created_at: "desc" },
       take: 50,
@@ -262,6 +262,7 @@ export async function POST(req: NextRequest) {
 
         attendance = await prisma.attendance.create({
           data: {
+            id: crypto.randomUUID(),
             user_id: payload.id,
             attendance_date: todayDate,
             scheduled_check_in: combineDateAndTime(todayKey, checkInTime),
@@ -290,8 +291,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const visit = await prisma.employeeVisit.create({
+    const visit = await prisma.employeevisit.create({
       data: {
+        id: crypto.randomUUID(),
         user_id: payload.id,
         attendance_id: attendance?.id || null,
         visit_date: todayDate,

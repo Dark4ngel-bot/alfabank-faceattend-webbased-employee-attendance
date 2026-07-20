@@ -14,7 +14,7 @@ export async function GET(
       return new NextResponse("ID tidak valid.", { status: 400 });
     }
 
-    const visit = await prisma.employeeVisit.findUnique({
+    const visit = await prisma.employeevisit.findUnique({
       where: { id },
       select: {
         visit_photo: true,

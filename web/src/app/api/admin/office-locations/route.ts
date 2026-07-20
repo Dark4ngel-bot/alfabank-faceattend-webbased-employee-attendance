@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const offices = await prisma.officeLocation.findMany({
+    const offices = await prisma.officelocation.findMany({
       where: {
         status: "active",
       },

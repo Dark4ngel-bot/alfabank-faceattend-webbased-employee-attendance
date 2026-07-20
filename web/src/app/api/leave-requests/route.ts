@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const db = prisma as any;
+
 
 async function getUserIdFromRequest(req: NextRequest) {
   const token = req.cookies.get("faceattend_token")?.value;
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
   try {
     const userId = await getUserIdFromRequest(req);
 
-    const requests = await db.leaveRequest.findMany({
+    const requests = await prisma.leaverequest.findMany({
       where: {
         user_id: userId,
       },
@@ -263,8 +263,9 @@ export async function POST(req: NextRequest) {
 
     const totalDays = countTotalDays(startDate, endDate);
 
-    const leaveRequest = await db.leaveRequest.create({
+    const leaveRequest = await prisma.leaverequest.create({
       data: {
+        id: crypto.randomUUID(),
         user_id: userId,
         leave_type: leaveType,
         start_date: startDate,

@@ -327,6 +327,7 @@ export async function POST(req: NextRequest) {
 
     const position = await prisma.position.create({
       data: {
+        id: crypto.randomUUID(),
         name,
         department_id: departmentId,
         status,

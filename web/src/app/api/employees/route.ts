@@ -40,7 +40,10 @@ async function ensureDefaultShifts() {
         name: shift.name,
       },
       update: {},
-      create: shift,
+      create: {
+        ...shift,
+        id: crypto.randomUUID(),
+      },
     });
   }
 }
@@ -268,7 +271,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const offices = await prisma.officeLocation.findMany({
+    const offices = await prisma.officelocation.findMany({
       select: {
         id: true,
         name: true,
@@ -496,7 +499,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const office = await prisma.officeLocation.findUnique({
+    const office = await prisma.officelocation.findUnique({
       where: {
         id: registeredOfficeId,
       },
@@ -823,7 +826,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const office = await prisma.officeLocation.findUnique({
+    const office = await prisma.officelocation.findUnique({
       where: {
         id: registeredOfficeId,
       },

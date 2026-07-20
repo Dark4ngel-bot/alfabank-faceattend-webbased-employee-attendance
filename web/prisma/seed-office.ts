@@ -15,7 +15,7 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  await prisma.officeLocation.upsert({
+  await prisma.officelocation.upsert({
     where: {
       name: "Kantor Utama",
     },
@@ -27,6 +27,7 @@ async function main() {
       status: "active",
     },
     create: {
+      id: "8b3b4f62-38e5-4f3b-8c8a-75f828a2a8b1",
       name: "Kantor Utama",
       address: "Alamat kantor utama",
       latitude: -6.917464,
@@ -36,7 +37,7 @@ async function main() {
     },
   });
 
-  await prisma.officeLocation.upsert({
+  await prisma.officelocation.upsert({
   where: {
     name: "Creativemu Academy",
   },
@@ -48,6 +49,7 @@ async function main() {
     status: "active",
   },
   create: {
+    id: "7c4b5f63-39f6-5f4c-9d9b-86f939b3b9c2",
     name: "Creativemu Academy",
     address: "Jogja",
     latitude: -7.812201,

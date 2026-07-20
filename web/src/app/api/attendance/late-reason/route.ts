@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import { canViewAdminPanel } from "@/lib/adminAccess";
-import { AttendanceStatus } from "@/generated/prisma/enums";
+import { attendance_status as AttendanceStatus } from "@/generated/prisma/enums";
 import { attendanceStore, findDemoUserById } from "@/lib/demoStore";
 
 export const dynamic = "force-dynamic";
@@ -403,6 +403,7 @@ export async function POST(req: Request) {
       } else {
         await prisma.attendance.create({
           data: {
+            id: crypto.randomUUID(),
             user_id: payload.id,
             attendance_date: todayDate,
             work_mode: "office",

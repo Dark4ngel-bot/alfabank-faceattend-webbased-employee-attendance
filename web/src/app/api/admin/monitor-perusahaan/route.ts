@@ -201,7 +201,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const approvedLeaveThisMonth = await prisma.leaveRequest.findMany({
+    const approvedLeaveThisMonth = await prisma.leaverequest.findMany({
       where: {
         status: "approved",
         start_date: {
@@ -385,7 +385,7 @@ export async function GET(req: NextRequest) {
         reason: record.late_reason || "Belum ada alasan",
       }));
 
-    const monthVisits = await prisma.employeeVisit.findMany({
+    const monthVisits = await prisma.employeevisit.findMany({
       where: {
         visit_date: {
           gte: monthStart,

@@ -10,9 +10,9 @@ export default function MobileShell({
   variant = "employee",
 }: MobileShellProps) {
   const shellClass = {
-    auth: "min-h-dvh w-full overflow-x-hidden bg-[#f6f8ff] text-slate-950",
-    employee: "min-h-dvh w-full overflow-x-hidden bg-[#f6f8ff] text-slate-950",
-    admin: "min-h-dvh w-full overflow-x-hidden bg-[#f6f8ff] text-slate-950",
+    auth: "min-h-dvh w-full overflow-x-hidden bg-[var(--background)] text-[var(--foreground)]",
+    employee: "min-h-dvh w-full overflow-x-hidden bg-[var(--background)] text-[var(--foreground)]",
+    admin: "min-h-dvh w-full overflow-x-hidden bg-[var(--background)] text-[var(--foreground)]",
   };
 
   const paddingClass =
