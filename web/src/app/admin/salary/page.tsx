@@ -379,9 +379,54 @@ export default function AdminSalaryPage() {
 
       <main className="min-h-screen bg-[#f8fbff] dark:bg-[#0d1117] pb-24 text-slate-900 dark:text-slate-100">
         <div className="mx-auto max-w-7xl px-5 py-6 md:px-10 lg:px-16 space-y-8">
+          {/* ADMIN HERO BANNER GAJI & PAYROLL */}
+          <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-[#0f2b66] via-[#123c8c] to-[#2563eb] p-8 text-white shadow-2xl shadow-blue-900/25 border border-white/10">
+            <div className="absolute right-0 top-0 h-64 w-64 translate-x-12 -translate-y-12 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+            <div className="absolute left-1/3 bottom-0 h-40 w-40 rounded-full bg-emerald-400/20 blur-2xl pointer-events-none" />
 
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-emerald-300 text-[10px] font-black uppercase tracking-widest border border-white/10">
+                    Panel Payroll Admin
+                  </span>
+                </div>
+                <h1 className="mt-3 text-3xl lg:text-4xl font-black tracking-tight text-white">
+                  Kelola Penggajian Karyawan
+                </h1>
+              </div>
 
-          {/* DAFTAR KARYAWAN */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <button
+                  onClick={() => window.print()}
+                  className="rounded-2xl px-6 py-3 text-xs font-black bg-white text-[#123c8c] hover:bg-slate-100 transition-all shadow-lg flex items-center justify-center gap-2 active:scale-95 shrink-0"
+                >
+                  <Printer size={16} className="text-[#123c8c]" />
+                  <span>Cetak Rekap Laporan PDF</span>
+                </button>
+              </div>
+            </div>
+
+            {/* QUICK STATS IN ADMIN HERO */}
+            <div className="mt-8 pt-6 border-t border-white/15 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+              <div>
+                <span className="block text-blue-200/70 text-[10px] font-bold uppercase">Total Karyawan Active</span>
+                <span className="text-xl font-black text-white">{employees.length} Orang</span>
+              </div>
+              <div>
+                <span className="block text-blue-200/70 text-[10px] font-bold uppercase">Patokan Gaji Pokok</span>
+                <span className="text-xl font-black text-emerald-300">Rp 2.000.000</span>
+              </div>
+              <div>
+                <span className="block text-blue-200/70 text-[10px] font-bold uppercase">Formula Dasar</span>
+                <span className="text-base font-black text-white">Prorata Hari Kerja</span>
+              </div>
+              <div>
+                <span className="block text-blue-200/70 text-[10px] font-bold uppercase">Riwayat Slip Diterbitkan</span>
+                <span className="text-xl font-black text-white">{records.length} Slip</span>
+              </div>
+            </div>
+          </div>
           <div className="rounded-[2rem] border border-blue-100 dark:border-slate-800 bg-white dark:bg-[#161b22] p-6 shadow-xl shadow-slate-200/50">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 dark:border-slate-850 pb-5 mb-6">
               <h3 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
@@ -755,89 +800,72 @@ export default function AdminSalaryPage() {
                 </div>
               </form>
 
-              {/* Rincian Kehadiran & Rekomendasi Gaji */}
-              <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#0d1117] p-4 space-y-4">
-                <h4 className="text-sm font-black text-slate-800 dark:text-white flex items-center gap-1.5">
-                  <Info
-                    size={16}
-                    className="text-[#123c8c] dark:text-blue-400"
-                  />
-                  Rincian Kehadiran Periode Ini
-                </h4>
+              {/* Rincian Ringkas Kehadiran & Rekomendasi Gaji */}
+              <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#0d1117] p-5 space-y-4 flex flex-col justify-between">
+                <div>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">
+                    Rekap Kehadiran
+                  </h4>
 
-                {isStatsLoading ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="animate-spin text-[#123c8c] dark:text-blue-400" />
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-3 gap-2 text-xs font-bold text-slate-600 dark:text-slate-400">
-                      <div className="bg-white dark:bg-[#161b22] p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-                        <span className="block text-[10px] text-slate-450">
-                          Hadir + Telat
-                        </span>
-                        <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">
+                  {isStatsLoading ? (
+                    <div className="flex justify-center py-6">
+                      <Loader2 className="animate-spin text-[#123c8c] dark:text-blue-400" />
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="bg-white dark:bg-[#161b22] p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <span className="block text-[10px] text-slate-400 font-semibold">Hadir</span>
+                        <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
                           {attendanceStats.hadir + attendanceStats.telat}
                         </span>
                       </div>
-                      <div className="bg-white dark:bg-[#161b22] p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-                        <span className="block text-[10px] text-slate-455">
-                          Sakit / Izin
-                        </span>
-                        <span className="text-sm font-black text-yellow-600 dark:text-yellow-400">
+                      <div className="bg-white dark:bg-[#161b22] p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <span className="block text-[10px] text-slate-400 font-semibold">Sakit/Izin</span>
+                        <span className="text-base font-black text-amber-600 dark:text-amber-400">
                           {attendanceStats.sakit + attendanceStats.izin}
                         </span>
                       </div>
-                      <div className="bg-white dark:bg-[#161b22] p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-                        <span className="block text-[10px] text-slate-450">
-                          Cuti
-                        </span>
-                        <span className="text-sm font-black text-blue-600 dark:text-blue-400">
+                      <div className="bg-white dark:bg-[#161b22] p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <span className="block text-[10px] text-slate-400 font-semibold">Cuti</span>
+                        <span className="text-base font-black text-blue-600 dark:text-blue-400">
                           {attendanceStats.cuti}
                         </span>
                       </div>
                     </div>
+                  )}
+                </div>
 
-                    <div className="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-2">
-                      <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">
-                        Rincian Formulasi Prorata (Kemnaker)
-                      </p>
-                      
-                      <div className="bg-white dark:bg-[#161b22] p-3 rounded-xl border border-slate-100 dark:border-slate-800 space-y-1.5 text-xs font-semibold">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Gaji Pokok Prorata ({attendanceStats.hadir + attendanceStats.telat + attendanceStats.sakit + attendanceStats.izin + attendanceStats.cuti}/{attendanceStats.totalDays} hari):</span>
-                          <span className="font-bold text-slate-800 dark:text-white">
-                            {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(attendanceStats.recommendedSalary)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Tunjangan Makan & Transport (+):</span>
-                          <span className="font-bold text-emerald-600">
-                            +{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format((attendanceStats.hadir + attendanceStats.telat) * 40000)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Potongan Telat & BPJS (-):</span>
-                          <span className="font-bold text-red-500">
-                            -{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format((attendanceStats.telat * 5000) + 60000)}
-                          </span>
-                        </div>
-                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center font-black">
-                          <span className="text-slate-700 dark:text-slate-300">Estimasi THP Bersih:</span>
-                          <span className="text-sm text-emerald-600 dark:text-emerald-400">
-                            {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(
-                              Math.max(0, attendanceStats.recommendedSalary + ((attendanceStats.hadir + attendanceStats.telat) * 40000) - (attendanceStats.telat * 5000) - 60000)
-                            )}
-                          </span>
-                        </div>
-                      </div>
+                <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
+                  <div className="flex justify-between items-center text-xs font-semibold">
+                    <span className="text-slate-500">Gaji Pokok Prorata</span>
+                    <span className="font-bold text-slate-800 dark:text-white">
+                      {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(attendanceStats.recommendedSalary)}
+                    </span>
+                  </div>
 
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                        Hari berbayar diakui: <b>{attendanceStats.hadir + attendanceStats.telat} Hadir</b> + <b>{attendanceStats.sakit + attendanceStats.izin} Sakit/Izin</b> + <b>{attendanceStats.cuti} Cuti</b> ({attendanceStats.hadir + attendanceStats.telat + attendanceStats.sakit + attendanceStats.izin + attendanceStats.cuti} / {attendanceStats.totalDays} Hari Kerja).
-                      </p>
-                    </div>
-                  </>
-                )}
+                  <div className="flex justify-between items-center text-xs font-semibold">
+                    <span className="text-slate-500">Tunjangan Makan & Transport</span>
+                    <span className="font-bold text-emerald-600">
+                      +{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format((attendanceStats.hadir + attendanceStats.telat) * 40000)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs font-semibold">
+                    <span className="text-slate-500">Potongan (BPJS / Telat)</span>
+                    <span className="font-bold text-rose-500">
+                      -{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format((attendanceStats.telat * 5000) + 60000)}
+                    </span>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase">Rekomendasi THP</span>
+                    <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
+                      {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(
+                        Math.max(0, attendanceStats.recommendedSalary + ((attendanceStats.hadir + attendanceStats.telat) * 40000) - (attendanceStats.telat * 5000) - 60000)
+                      )}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -850,9 +878,8 @@ export default function AdminSalaryPage() {
       <div id="print-area-salary" className="hidden print:block bg-white p-8 text-slate-900 font-sans">
         <style jsx global>{`
           @media print {
-            body {
+            body * {
               visibility: hidden !important;
-              background: #ffffff !important;
             }
             #print-area-salary,
             #print-area-salary * {
@@ -860,60 +887,57 @@ export default function AdminSalaryPage() {
             }
             #print-area-salary {
               display: block !important;
-              position: fixed !important;
+              position: absolute !important;
               left: 0 !important;
               top: 0 !important;
               width: 100% !important;
-              height: 100% !important;
-              z-index: 999999 !important;
               background: #ffffff !important;
+              color: #0f172a !important;
               margin: 0 !important;
-              padding: 20px !important;
+              padding: 24px !important;
             }
             @page {
               size: A4 portrait;
-              margin: 10mm;
+              margin: 8mm;
             }
           }
         `}</style>
 
         {/* KOP SURAT PERUSAHAAN */}
-        <div className="border-b-4 border-[#123c8c] pb-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-[#123c8c] text-white flex items-center justify-center font-black text-2xl tracking-tighter">
-                FA
-              </div>
-              <div>
-                <h1 className="text-xl font-black text-[#123c8c] uppercase tracking-wide">
-                  PT CREATIVEMU INDONESIA
-                </h1>
-                <p className="text-xs font-semibold text-slate-600">
-                  Sistem Informasi SDM & Presensi Digital FaceAttend
-                </p>
-                <p className="text-[10px] text-slate-500">
-                  Jl. Raya Utama No. 88, Jakarta | Email: hr@creativemu.co.id | Telp: (021) 555-0199
-                </p>
-              </div>
+        <div className="border-b-4 border-[#123c8c] pb-4 mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="h-14 w-14 rounded-2xl bg-[#123c8c] text-white flex items-center justify-center font-black text-2xl tracking-tighter">
+              FA
             </div>
-            <div className="text-right border-l-2 border-slate-200 pl-4">
-              <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-[10px] font-black rounded-full uppercase tracking-wider mb-1">
-                Lunas / Terbayar
-              </span>
-              <p className="text-[11px] font-bold text-slate-500">
-                Dokumen Resmi Payroll
+            <div>
+              <h1 className="text-xl font-black text-[#123c8c] uppercase tracking-wide">
+                PT CREATIVEMU INDONESIA
+              </h1>
+              <p className="text-xs font-bold text-slate-700">
+                Sistem Informasi SDM & Presensi Digital FaceAttend
+              </p>
+              <p className="text-[10px] font-semibold text-slate-600">
+                Jl. Raya Utama No. 88, Jakarta | Email: hr@creativemu.co.id | Telp: (021) 555-0199
               </p>
             </div>
+          </div>
+          <div className="text-right border-l-2 border-slate-300 pl-4">
+            <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-900 text-[11px] font-black rounded-full uppercase tracking-wider mb-1">
+              DOKUMEN RESMI
+            </span>
+            <p className="text-[10px] font-bold text-slate-700">
+              Arsip Penggajian Admin
+            </p>
           </div>
         </div>
 
         {/* TITLE */}
         <div className="text-center mb-6">
           <h2 className="text-lg font-black uppercase tracking-wider text-slate-900">
-            SLIP GAJI KARYAWAN
+            LAPORAN REKAP SLIP GAJI KARYAWAN
           </h2>
-          <p className="text-xs font-bold text-slate-500 mt-0.5">
-            Bukti Pembayaran Gaji Bulanan Digital
+          <p className="text-xs font-bold text-slate-600 mt-0.5">
+            Bukti Penerbitan dan Riwayat Transfer Gaji Bulanan
           </p>
         </div>
 
@@ -925,19 +949,19 @@ export default function AdminSalaryPage() {
             </p>
           ) : (
             records.map((rec, idx) => (
-              <div key={rec.id || idx} className="border border-slate-300 rounded-xl p-5 mb-6 page-break-inside-avoid">
-                <div className="flex justify-between border-b border-slate-200 pb-3 mb-3">
+              <div key={rec.id || idx} className="border-2 border-slate-300 rounded-xl p-5 mb-6 page-break-inside-avoid bg-slate-50/50">
+                <div className="flex justify-between border-b-2 border-slate-300 pb-3 mb-3">
                   <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase block">Nama Karyawan</span>
-                    <strong className="text-sm font-black text-slate-800">{rec.employeeName}</strong>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Nama Karyawan</span>
+                    <strong className="text-base font-black text-slate-900">{rec.employeeName}</strong>
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase block">Periode Gaji</span>
-                    <strong className="text-sm font-black text-[#123c8c]">{rec.month}</strong>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Periode Gaji</span>
+                    <strong className="text-base font-black text-[#123c8c]">{rec.month}</strong>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase block">Tanggal Transfer</span>
-                    <strong className="text-xs font-bold text-slate-700">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Tanggal Transfer</span>
+                    <strong className="text-xs font-bold text-slate-800">
                       {new Date(rec.createdAt).toLocaleDateString("id-ID", {
                         day: "numeric",
                         month: "long",
@@ -947,14 +971,14 @@ export default function AdminSalaryPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 my-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div className="grid grid-cols-2 gap-4 my-4 bg-white p-4 rounded-xl border border-slate-300">
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 block">Keterangan / Catatan Slip:</span>
-                    <p className="text-xs font-semibold text-slate-700 mt-0.5">{rec.note || "Gaji Bulanan Reguler"}</p>
+                    <p className="text-xs font-bold text-slate-800 mt-0.5">{rec.note || "Gaji Bulanan Reguler"}</p>
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] font-bold text-slate-500 block">Total Nominal Diterima (Nett):</span>
-                    <p className="text-lg font-black text-emerald-700">
+                    <p className="text-xl font-black text-emerald-700">
                       {new Intl.NumberFormat("id-ID", {
                         style: "currency",
                         currency: "IDR",
@@ -965,18 +989,18 @@ export default function AdminSalaryPage() {
                 </div>
 
                 {/* TANDA TANGAN */}
-                <div className="grid grid-cols-2 gap-8 pt-4 mt-4 border-t border-slate-200 text-center">
+                <div className="grid grid-cols-2 gap-8 pt-4 mt-4 border-t border-slate-300 text-center">
                   <div>
-                    <p className="text-[10px] font-bold text-slate-500">Penerima Gaji,</p>
-                    <div className="h-12" />
-                    <p className="text-xs font-black text-slate-800 border-b border-slate-400 inline-block px-4">
+                    <p className="text-xs font-bold text-slate-700">Penerima Gaji,</p>
+                    <div className="h-14" />
+                    <p className="text-xs font-black text-slate-900 border-b border-slate-500 inline-block px-4">
                       {rec.employeeName}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-500">Finance & Payroll Admin,</p>
-                    <div className="h-12" />
-                    <p className="text-xs font-black text-slate-800 border-b border-slate-400 inline-block px-4">
+                    <p className="text-xs font-bold text-slate-700">Finance & Payroll Admin,</p>
+                    <div className="h-14" />
+                    <p className="text-xs font-black text-slate-900 border-b border-slate-500 inline-block px-4">
                       PT CREATIVEMU INDONESIA
                     </p>
                   </div>
