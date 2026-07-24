@@ -1,0 +1,849 @@
+<!DOCTYPE html><html lang="id" translate="no" class="geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__variable notranslate h-full antialiased"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="preload" href="/_next/static/media/797e433ab948586e-s.p.0r6juujl39pe6.woff2" as="font" crossorigin="" type="font/woff2"/><link rel="preload" href="/_next/static/media/caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2" as="font" crossorigin="" type="font/woff2"/><link rel="preload" as="image" imageSrcSet="/_next/image?url=%2Fimages%2Fcreativemu-logo%2Fcreativemu.png&amp;w=48&amp;q=75 1x, /_next/image?url=%2Fimages%2Fcreativemu-logo%2Fcreativemu.png&amp;w=96&amp;q=75 2x"/><link rel="stylesheet" href="/_next/static/chunks/3dhxqda91_x4x.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/chunks/3mnyqbrmlg7kv.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/2l0vuudvt9oda.js"/><script src="/_next/static/chunks/0wkebkkgwdapj.js" async=""></script><script src="/_next/static/chunks/1_zmgipypuk59.js" async=""></script><script src="/_next/static/chunks/2c161zt23vmbf.js" async=""></script><script src="/_next/static/chunks/turbopack-0i_qllferc_d0.js" async=""></script><script src="/_next/static/chunks/24m7dg4px_qbw.js" async=""></script><script src="/_next/static/chunks/14mrh2-p_w84d.js" async=""></script><script src="/_next/static/chunks/13v92gwr8988s.js" async=""></script><script src="/_next/static/chunks/303a3i9e-q6mw.js" async=""></script><script src="/_next/static/chunks/01zdhwmc3qzun.js" async=""></script><meta name="next-size-adjust" content=""/><title>FaceAttend</title><meta name="description" content="Sistem Presensi Karyawan Creativemu"/><meta name="google" content="notranslate"/><link rel="icon" href="/favicon.ico?favicon.2vob68tjqpejf.ico" sizes="256x256" type="image/x-icon"/><script src="/_next/static/chunks/0cz1d0mv5g_q7.js" noModule=""></script></head><body class="notranslate min-h-full flex flex-col"><div hidden=""><!--$--><!--/$--></div><div class="relative min-h-dvh overflow-hidden bg-gradient-to-br from-white via-[#f8fbff] to-[#eef4ff]  "><div aria-hidden="true" class="pointer-events-none fixed inset-0 z-0 overflow-hidden"><div class="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 bg-contain bg-center bg-no-repeat opacity-[0.075] blur-[2px] md:h-[760px] md:w-[760px] lg:h-[860px] lg:w-[860px]" style="background-image:url(&#x27;/images/creativemu-logo/creativemu.png&#x27;)"></div><div class="absolute left-1/2 top-1/2 h-[620px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-100/20 blur-3xl md:h-[820px] md:w-[820px]"></div></div><div class="relative z-10 min-h-dvh"><style>
+      @keyframes attendanceEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes attendanceCardEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(14px) scale(0.985);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes attendanceCameraEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(12px) scale(0.985);
+          filter: blur(4px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+          filter: blur(0);
+        }
+      }
+
+      @keyframes attendanceRowEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes attendanceIconPop {
+        0% {
+          opacity: 0;
+          transform: translateY(8px) scale(0.92);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes attendancePulseScan {
+        0%, 100% {
+          opacity: 0.5;
+          transform: translateY(-35%);
+        }
+
+        50% {
+          opacity: 0.95;
+          transform: translateY(35%);
+        }
+      }
+
+      @keyframes attendanceFloatGlow {
+        0%, 100% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+
+        50% {
+          transform: translate3d(12px, -10px, 0) scale(1.04);
+        }
+      }
+
+      .attendance-enter {
+        animation: attendanceEnter 330ms ease-out both;
+      }
+
+      .attendance-card-enter {
+        opacity: 0;
+        animation: attendanceCardEnter 350ms ease-out both;
+      }
+
+      .attendance-camera-enter {
+        animation: attendanceCameraEnter 420ms ease-out both;
+      }
+
+      .attendance-row-enter {
+        opacity: 0;
+        animation: attendanceRowEnter 310ms ease-out both;
+      }
+
+      .attendance-icon-pop {
+        animation: attendanceIconPop 280ms ease-out both;
+      }
+
+      .attendance-scan-line {
+        animation: attendancePulseScan 2.4s ease-in-out infinite;
+      }
+
+      .attendance-float-glow {
+        animation: attendanceFloatGlow 6s ease-in-out infinite;
+      }
+
+      .attendance-field {
+        transition:
+          border-color 180ms ease,
+          background-color 180ms ease,
+          box-shadow 180ms ease,
+          transform 180ms ease;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .attendance-enter,
+        .attendance-card-enter,
+        .attendance-camera-enter,
+        .attendance-row-enter,
+        .attendance-icon-pop,
+        .attendance-scan-line,
+        .attendance-float-glow {
+          animation: none !important;
+          opacity: 1 !important;
+          transform: none !important;
+          filter: none !important;
+        }
+      }
+    </style><div class="hidden md:block"><header class="fixed inset-x-0 top-0 z-40 overflow-hidden border-b px-5 py-4 backdrop-blur-2xl transition-all duration-300 md:px-10 lg:px-16 border-white/60 bg-white/90 shadow-sm shadow-slate-200/40"><div aria-hidden="true" class="pointer-events-none absolute right-16 top-1/2 hidden h-64 w-64 -translate-y-1/2 bg-contain bg-center bg-no-repeat opacity-[0.11] blur-[0.5px] md:block" style="background-image:url(&#x27;/images/creativemu-logo/creativemu.png&#x27;)"></div><div class="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-4"><div class="flex min-w-0 items-center gap-4"><button type="button" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] shadow-lg shadow-slate-200/70 ring-1 ring-blue-100 transition hover:bg-blue-50 active:scale-[0.96]" aria-label="Buka menu"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg></button><div class="min-w-0"><h1 class="mt-1 truncate text-2xl font-black tracking-tight text-slate-950 md:text-2xl lg:text-3xl">Presensi Wajah</h1></div></div><div class="flex shrink-0 items-center justify-end gap-3"><a href="https://wa.me/6282123459565" target="_blank" rel="noopener noreferrer" aria-label="Hubungi via WhatsApp" class="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ecfff5] text-[#00a884] shadow-sm ring-1 ring-[#baf7dc] transition hover:bg-[#dcfce7] active:scale-[0.96]"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone-call h-5 w-5" aria-hidden="true"><path d="M13 2a9 9 0 0 1 9 9"></path><path d="M13 6a5 5 0 0 1 5 5"></path><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg></a><a class="relative hidden h-12 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-black shadow-sm ring-1 transition active:scale-[0.96] sm:inline-flex bg-white text-[#123c8c] ring-blue-100 hover:bg-[#eaf1ff]" href="/notifikasi"><span class="relative"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg></span></a><a aria-label="Buka notifikasi" class="relative flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm ring-1 transition active:scale-[0.96] sm:hidden bg-white text-[#123c8c] ring-blue-100 hover:bg-[#eaf1ff]" href="/notifikasi"><svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg></a></div></div></header><div class="h-[88px]"></div><aside class="fixed left-0 top-0 z-[60] h-dvh w-[82vw] max-w-80 border-r border-blue-100 bg-white shadow-2xl shadow-slate-950/20 transition-transform duration-300 -translate-x-full"><div class="flex h-full flex-col"><div class="flex items-center justify-between gap-3 border-b border-blue-50 px-5 py-5"><div class="flex items-center gap-3"><div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-slate-300/50 ring-1 ring-blue-100"><img alt="Creativemu Logo" width="48" height="48" decoding="async" data-nimg="1" class="h-full w-full object-contain" style="color:transparent" srcSet="/_next/image?url=%2Fimages%2Fcreativemu-logo%2Fcreativemu.png&amp;w=48&amp;q=75 1x, /_next/image?url=%2Fimages%2Fcreativemu-logo%2Fcreativemu.png&amp;w=96&amp;q=75 2x" src="/_next/image?url=%2Fimages%2Fcreativemu-logo%2Fcreativemu.png&amp;w=96&amp;q=75"/></div><div><p class="text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c]">Creativemu</p><h2 class="mt-1 text-xl font-black tracking-tight text-slate-950">Menu Karyawan</h2></div></div><button type="button" class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition active:scale-[0.96]" aria-label="Tutup menu"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div><div class="flex-1 overflow-y-auto px-4 py-5"><p class="px-3 text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">Menu Karyawan</p><nav class="mt-3 space-y-2"><button type="button" class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition text-slate-600 hover:bg-[#eaf1ff] hover:text-[#123c8c]"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Beranda</button><button type="button" class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-check" aria-hidden="true"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="m9 16 2 2 4-4"></path></svg>Presensi</button><button type="button" class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition text-slate-600 hover:bg-[#eaf1ff] hover:text-[#123c8c]"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-megaphone" aria-hidden="true"><path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"></path><path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14"></path><path d="M8 6v8"></path></svg>Pengumuman</button><button type="button" class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition text-slate-600 hover:bg-[#eaf1ff] hover:text-[#123c8c]"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>Riwayat</button><button type="button" class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition text-slate-600 hover:bg-[#eaf1ff] hover:text-[#123c8c]"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-days" aria-hidden="true"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>Cuti</button><button type="button" class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition text-slate-600 hover:bg-[#eaf1ff] hover:text-[#123c8c]"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>Profil</button></nav></div></div></aside></div><main class="relative min-h-dvh overflow-x-hidden bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff] pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))] text-slate-950 md:min-h-dvh md:pb-28"><div class="attendance-float-glow pointer-events-none fixed -left-32 top-20 hidden h-72 w-72 rounded-full bg-orange-200/20 blur-3xl md:block"></div><div class="attendance-float-glow pointer-events-none fixed -right-32 bottom-24 hidden h-72 w-72 rounded-full bg-blue-300/20 blur-3xl md:block"></div><section class="attendance-enter mx-auto w-full max-w-7xl px-5 pt-4 md:hidden"><div class="flex items-center justify-between gap-4"><div><p class="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">FaceAttend</p><h1 class="mt-1 text-2xl font-black tracking-tight text-[#073456]">Presensi Wajah</h1><p class="mt-1 text-xs font-bold text-slate-500">Mode: <!-- -->Kantor</p></div><div class="attendance-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-lg shadow-blue-100/50 ring-1 bg-white text-slate-400 ring-blue-100"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scan-face" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><path d="M9 9h.01"></path><path d="M15 9h.01"></path></svg></div></div></section><section class="relative z-10 mx-auto grid w-full max-w-7xl gap-3 px-5 pt-3 md:px-10 md:py-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-16"><div class="rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-200/60 p-5 attendance-card-enter flex flex-col rounded-[2rem] border-white/80 bg-white/95 p-3 shadow-2xl shadow-slate-300/30 backdrop-blur-xl md:p-6"><div class="attendance-row-enter mb-4 hidden items-start justify-between gap-4 md:flex"><div><p class="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">Camera</p><h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950">Ambil Presensi</h2><p class="mt-1 text-sm font-medium text-slate-500">Foto, GPS, dan mode presensi akan disimpan sebagai bukti.</p></div><span class="attendance-row-enter rounded-full px-4 py-2 text-xs font-black bg-slate-100 text-slate-500">Kamera Mati</span></div><div class="attendance-row-enter grid grid-cols-[1fr_auto] items-end gap-2 rounded-[1.6rem] border border-blue-100 bg-[#f8fbff] p-3"><label class="block"><span class="text-sm font-black text-slate-700">Mode Presensi</span><select class="mt-2 min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"><option value="office" selected="">Kantor</option><option value="wfh">WFH</option><option value="visit">Kunjungan</option></select></label><p class="col-span-2 text-xs font-semibold leading-5 text-slate-500">Wajib berada dalam radius kantor.</p></div><div class="attendance-camera-enter mt-3 rounded-[1.9rem] bg-white p-2 shadow-[0_22px_55px_rgba(15,23,42,0.20)] ring-1 ring-slate-200/80"><div class="relative overflow-hidden rounded-[1.45rem] border border-slate-200 bg-slate-950 shadow-inner"><div class="relative h-[56dvh] min-h-[360px] max-h-[620px] md:h-auto md:aspect-[16/10] md:min-h-0 md:max-h-none lg:aspect-[16/10]"><video autoPlay="" playsInline="" muted="" class="h-full w-full object-cover transition opacity-0"></video><div class="pointer-events-none absolute inset-0 z-20"><div class="absolute inset-0 rounded-[1.35rem] border border-white/45 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.28)]"></div><div class="absolute inset-[0.55rem] rounded-[1.05rem] border border-white/25"></div><div class="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/18 via-white/5 to-transparent"></div><div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/20 via-slate-950/5 to-transparent"></div><div class="absolute left-4 top-4 h-10 w-10 rounded-tl-[1.1rem] border-l-[3px] border-t-[3px] border-white/70"></div><div class="absolute right-4 top-4 h-10 w-10 rounded-tr-[1.1rem] border-r-[3px] border-t-[3px] border-white/70"></div><div class="absolute bottom-4 left-4 h-10 w-10 rounded-bl-[1.1rem] border-b-[3px] border-l-[3px] border-white/70"></div><div class="absolute bottom-4 right-4 h-10 w-10 rounded-br-[1.1rem] border-b-[3px] border-r-[3px] border-white/70"></div></div><div class="attendance-row-enter absolute left-4 top-4 z-30 rounded-full bg-slate-950/55 px-3 py-1.5 text-[11px] font-black text-white backdrop-blur-md md:left-5 md:top-5 md:text-xs">Kamera Mati</div><div class="attendance-row-enter absolute bottom-4 left-4 z-30 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-black text-[#123c8c] backdrop-blur-md">Kantor</div><div class="attendance-row-enter absolute inset-0 flex items-center justify-center px-6 text-center text-white"><div><div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-white/10 backdrop-blur-xl md:h-24 md:w-24"><svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera" aria-hidden="true"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"></path><circle cx="12" cy="13" r="3"></circle></svg></div><p class="mt-4 text-sm font-black text-white">Pratinjau Kamera</p><p class="mt-1 text-xs font-semibold leading-5 text-slate-400">Kamera sedang mati. Klik Aktifkan Kamera di bawah layar kamera.</p></div></div></div></div></div><div class="attendance-row-enter mt-3 grid grid-cols-2 gap-2"><style>
+      @keyframes appSoftPress {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(0.985);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes appSoftIconPress {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(0.94);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes appSoftShine {
+        0% {
+          transform: translateX(-120%);
+          opacity: 0;
+        }
+
+        45% {
+          opacity: 0.9;
+        }
+
+        100% {
+          transform: translateX(120%);
+          opacity: 0;
+        }
+      }
+
+      @keyframes appPageEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes appSkeletonEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes appModalBackdropEnter {
+        0% {
+          opacity: 0;
+        }
+
+        100% {
+          opacity: 1;
+        }
+      }
+
+      @keyframes appModalPanelEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(16px) scale(0.985);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes appFormRevealEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .app-button-press-active {
+        animation: appSoftPress 260ms ease-out;
+      }
+
+      .app-icon-press-active {
+        animation: appSoftIconPress 260ms ease-out;
+      }
+
+      .app-button-shine-active {
+        animation: appSoftShine 360ms ease-out;
+      }
+
+      .app-page-enter {
+        animation: appPageEnter 320ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-page-fade {
+        animation: appPageEnter 260ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-skeleton-enter {
+        animation: appSkeletonEnter 260ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-modal-backdrop-enter {
+        animation: appModalBackdropEnter 180ms ease-out both;
+      }
+
+      .app-modal-panel-enter {
+        animation: appModalPanelEnter 260ms ease-out both;
+        transform-origin: center bottom;
+      }
+
+      .app-form-reveal-enter {
+        animation: appFormRevealEnter 240ms ease-out both;
+      }
+
+      .app-field-smooth {
+        transition:
+          border-color 180ms ease,
+          background-color 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .app-button-press-active,
+        .app-icon-press-active,
+        .app-button-shine-active,
+        .app-page-enter,
+        .app-page-fade,
+        .app-skeleton-enter,
+        .app-modal-backdrop-enter,
+        .app-modal-panel-enter,
+        .app-form-reveal-enter {
+          animation: none !important;
+        }
+      }
+    </style><button class="relative inline-flex items-center justify-center gap-2 overflow-hidden font-black transition duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100 hover:bg-blue-100 min-h-12 rounded-2xl px-5 py-3 text-sm w-full min-h-11 rounded-2xl px-3 text-xs shadow-lg backdrop-blur-md transition hover:-translate-y-0.5 active:scale-[0.98] md:min-h-12 md:text-sm bg-white text-[#123c8c]" type="button"><span class="relative z-10"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-power" aria-hidden="true"><path d="M12 2v10"></path><path d="M18.4 6.6a9 9 0 1 1-12.77.04"></path></svg>Aktifkan</span></button><style>
+      @keyframes appSoftPress {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(0.985);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes appSoftIconPress {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(0.94);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes appSoftShine {
+        0% {
+          transform: translateX(-120%);
+          opacity: 0;
+        }
+
+        45% {
+          opacity: 0.9;
+        }
+
+        100% {
+          transform: translateX(120%);
+          opacity: 0;
+        }
+      }
+
+      @keyframes appPageEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes appSkeletonEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes appModalBackdropEnter {
+        0% {
+          opacity: 0;
+        }
+
+        100% {
+          opacity: 1;
+        }
+      }
+
+      @keyframes appModalPanelEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(16px) scale(0.985);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes appFormRevealEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .app-button-press-active {
+        animation: appSoftPress 260ms ease-out;
+      }
+
+      .app-icon-press-active {
+        animation: appSoftIconPress 260ms ease-out;
+      }
+
+      .app-button-shine-active {
+        animation: appSoftShine 360ms ease-out;
+      }
+
+      .app-page-enter {
+        animation: appPageEnter 320ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-page-fade {
+        animation: appPageEnter 260ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-skeleton-enter {
+        animation: appSkeletonEnter 260ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-modal-backdrop-enter {
+        animation: appModalBackdropEnter 180ms ease-out both;
+      }
+
+      .app-modal-panel-enter {
+        animation: appModalPanelEnter 260ms ease-out both;
+        transform-origin: center bottom;
+      }
+
+      .app-form-reveal-enter {
+        animation: appFormRevealEnter 240ms ease-out both;
+      }
+
+      .app-field-smooth {
+        transition:
+          border-color 180ms ease,
+          background-color 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .app-button-press-active,
+        .app-icon-press-active,
+        .app-button-shine-active,
+        .app-page-enter,
+        .app-page-fade,
+        .app-skeleton-enter,
+        .app-modal-backdrop-enter,
+        .app-modal-panel-enter,
+        .app-form-reveal-enter {
+          animation: none !important;
+        }
+      }
+    </style><button class="relative inline-flex items-center justify-center gap-2 overflow-hidden font-black transition duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100 hover:bg-blue-100 min-h-12 rounded-2xl px-5 py-3 text-sm w-full min-h-11 rounded-2xl px-3 text-xs shadow-lg backdrop-blur-md transition hover:-translate-y-0.5 active:scale-[0.98] md:min-h-12 md:text-sm bg-white text-[#123c8c]" type="button"><span class="relative z-10"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>Restart</span></button></div><canvas class="hidden"></canvas><div class="attendance-row-enter mt-3 grid grid-cols-2 gap-3"><style>
+      @keyframes appSoftPress {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(0.985);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes appSoftIconPress {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(0.94);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes appSoftShine {
+        0% {
+          transform: translateX(-120%);
+          opacity: 0;
+        }
+
+        45% {
+          opacity: 0.9;
+        }
+
+        100% {
+          transform: translateX(120%);
+          opacity: 0;
+        }
+      }
+
+      @keyframes appPageEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes appSkeletonEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes appModalBackdropEnter {
+        0% {
+          opacity: 0;
+        }
+
+        100% {
+          opacity: 1;
+        }
+      }
+
+      @keyframes appModalPanelEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(16px) scale(0.985);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes appFormRevealEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .app-button-press-active {
+        animation: appSoftPress 260ms ease-out;
+      }
+
+      .app-icon-press-active {
+        animation: appSoftIconPress 260ms ease-out;
+      }
+
+      .app-button-shine-active {
+        animation: appSoftShine 360ms ease-out;
+      }
+
+      .app-page-enter {
+        animation: appPageEnter 320ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-page-fade {
+        animation: appPageEnter 260ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-skeleton-enter {
+        animation: appSkeletonEnter 260ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-modal-backdrop-enter {
+        animation: appModalBackdropEnter 180ms ease-out both;
+      }
+
+      .app-modal-panel-enter {
+        animation: appModalPanelEnter 260ms ease-out both;
+        transform-origin: center bottom;
+      }
+
+      .app-form-reveal-enter {
+        animation: appFormRevealEnter 240ms ease-out both;
+      }
+
+      .app-field-smooth {
+        transition:
+          border-color 180ms ease,
+          background-color 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .app-button-press-active,
+        .app-icon-press-active,
+        .app-button-shine-active,
+        .app-page-enter,
+        .app-page-fade,
+        .app-skeleton-enter,
+        .app-modal-backdrop-enter,
+        .app-modal-panel-enter,
+        .app-form-reveal-enter {
+          animation: none !important;
+        }
+      }
+    </style><button class="relative inline-flex items-center justify-center gap-2 overflow-hidden font-black transition duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 hover:bg-[#0f347a] min-h-12 rounded-2xl px-5 py-3 text-sm w-full min-h-[4.5rem] rounded-[1.45rem] px-3 shadow-xl transition hover:-translate-y-0.5 active:scale-[0.98] md:min-h-[70px] md:rounded-2xl md:px-5 bg-[#123c8c] text-white shadow-blue-900/25" type="button"><span class="relative z-10"><span class="flex w-full items-center justify-center gap-2 md:gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/15"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-in" aria-hidden="true"><path d="m10 17 5-5-5-5"></path><path d="M15 12H3"></path><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path></svg></span><span class="text-left"><span class="block text-[9px] font-black uppercase tracking-[0.18em] md:text-[11px] md:tracking-[0.22em] text-blue-100">Masuk</span><span class="block text-base font-black md:text-lg">Check-in</span></span></span></span></button><style>
+      @keyframes appSoftPress {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(0.985);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes appSoftIconPress {
+        0% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(0.94);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes appSoftShine {
+        0% {
+          transform: translateX(-120%);
+          opacity: 0;
+        }
+
+        45% {
+          opacity: 0.9;
+        }
+
+        100% {
+          transform: translateX(120%);
+          opacity: 0;
+        }
+      }
+
+      @keyframes appPageEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes appSkeletonEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes appModalBackdropEnter {
+        0% {
+          opacity: 0;
+        }
+
+        100% {
+          opacity: 1;
+        }
+      }
+
+      @keyframes appModalPanelEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(16px) scale(0.985);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes appFormRevealEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .app-button-press-active {
+        animation: appSoftPress 260ms ease-out;
+      }
+
+      .app-icon-press-active {
+        animation: appSoftIconPress 260ms ease-out;
+      }
+
+      .app-button-shine-active {
+        animation: appSoftShine 360ms ease-out;
+      }
+
+      .app-page-enter {
+        animation: appPageEnter 320ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-page-fade {
+        animation: appPageEnter 260ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-skeleton-enter {
+        animation: appSkeletonEnter 260ms ease-out both;
+        transform-origin: top center;
+      }
+
+      .app-modal-backdrop-enter {
+        animation: appModalBackdropEnter 180ms ease-out both;
+      }
+
+      .app-modal-panel-enter {
+        animation: appModalPanelEnter 260ms ease-out both;
+        transform-origin: center bottom;
+      }
+
+      .app-form-reveal-enter {
+        animation: appFormRevealEnter 240ms ease-out both;
+      }
+
+      .app-field-smooth {
+        transition:
+          border-color 180ms ease,
+          background-color 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .app-button-press-active,
+        .app-icon-press-active,
+        .app-button-shine-active,
+        .app-page-enter,
+        .app-page-fade,
+        .app-skeleton-enter,
+        .app-modal-backdrop-enter,
+        .app-modal-panel-enter,
+        .app-form-reveal-enter {
+          animation: none !important;
+        }
+      }
+    </style><button class="relative inline-flex items-center justify-center gap-2 overflow-hidden font-black transition duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 border border-blue-100 bg-white text-[#123c8c] shadow-sm hover:bg-blue-50 min-h-12 rounded-2xl px-5 py-3 text-sm w-full min-h-[4.5rem] rounded-[1.45rem] px-3 shadow-xl transition hover:-translate-y-0.5 active:scale-[0.98] md:min-h-[70px] md:rounded-2xl md:px-5 border border-blue-200 bg-white text-[#123c8c] shadow-slate-200/70 md:bg-[#f8fbff]" type="button"><span class="relative z-10"><span class="flex w-full items-center justify-center gap-2 md:gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out" aria-hidden="true"><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path></svg></span><span class="text-left"><span class="block text-[9px] font-black uppercase tracking-[0.18em] md:text-[11px] md:tracking-[0.22em] text-slate-400">Keluar</span><span class="block text-base font-black md:text-lg">Check-out</span></span></span></span></button></div></div><div class="hidden space-y-5 md:block"><div class="attendance-card-enter overflow-hidden rounded-[2rem] bg-[#123c8c] text-white shadow-2xl shadow-blue-900/20"><div class="relative p-6 md:p-8"><div class="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-white/10"></div><div class="absolute -bottom-20 right-10 h-40 w-40 rounded-full bg-blue-300/10"></div><div class="relative flex items-center gap-4"><div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15"><svg xmlns="http://www.w3.org/2000/svg" width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg></div><div><p class="text-xs font-black uppercase tracking-[0.24em] text-blue-100">Bukti Presensi</p><h2 class="mt-1 text-2xl font-black tracking-tight md:text-3xl">Camera Standby</h2><p class="mt-2 text-sm font-bold text-blue-100">Mode: <!-- -->Kantor</p></div></div></div></div><div class="rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-200/60 p-5 attendance-card-enter rounded-[2rem] border-white/80 bg-white/95 p-5 shadow-2xl shadow-slate-300/30 backdrop-blur-xl md:p-6"><p class="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">Status Verifikasi</p><div class="attendance-row-enter mt-4 flex items-start gap-4 rounded-3xl border border-blue-100 bg-[#f6f8ff] p-5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#123c8c]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><div><h3 class="font-black text-slate-950">Waiting for Camera</h3><p class="mt-1 text-sm leading-6 text-slate-500">Pilih mode presensi, aktifkan kamera, lalu izinkan lokasi GPS sebelum melakukan presensi.</p></div></div><div class="mt-4 grid gap-3 sm:grid-cols-2"><div class="attendance-row-enter rounded-3xl border border-blue-100 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock3 lucide-clock-3 text-[#123c8c]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6h4"></path></svg><p class="mt-3 text-sm font-black text-slate-950">Jam Kerja</p><div class="mt-1 text-sm text-slate-500"><div class="space-y-1"><p>08:00<!-- --> - <!-- -->17:00</p><p class="font-semibold text-slate-400">Toleransi: <!-- -->0<!-- --> menit</p><p class="font-semibold text-slate-400">Batas telat: <!-- -->08:00</p></div></div></div><div class="attendance-row-enter rounded-3xl border border-blue-100 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin text-[#123c8c]" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg><p class="mt-3 text-sm font-black text-slate-950">Lokasi GPS</p><div class="mt-1 text-sm text-slate-500"><p>Diminta saat absen</p></div></div></div></div></div></section><style>
+      @keyframes bottomNavShellIn {
+        0% {
+          opacity: 0;
+          transform: translateY(18px) scale(0.98);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes bottomNavActiveBar {
+        0% {
+          transform: scaleX(0.45);
+        }
+
+        100% {
+          transform: scaleX(1);
+        }
+      }
+
+      @keyframes bottomNavIconPop {
+        0% {
+          transform: scale(0.94);
+        }
+
+        60% {
+          transform: scale(1.08);
+        }
+
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .bottom-nav-shell-in {
+        animation: bottomNavShellIn 300ms ease-out both;
+      }
+
+      .bottom-nav-active-bar {
+        transform-origin: center;
+        animation: bottomNavActiveBar 220ms ease-out both;
+      }
+
+      .bottom-nav-icon-pop {
+        animation: bottomNavIconPop 240ms ease-out both;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .bottom-nav-shell-in,
+        .bottom-nav-active-bar,
+        .bottom-nav-icon-pop {
+          animation: none !important;
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      }
+    </style><div aria-hidden="true" class="h-[calc(5.8rem+env(safe-area-inset-bottom))] shrink-0 md:hidden"></div><nav class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-1/2 z-50 w-[calc(100%-2rem)] max-w-[35rem] -translate-x-1/2 md:hidden"><div class="bottom-nav-shell-in overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 px-2.5 py-2.5 shadow-2xl shadow-slate-400/25 backdrop-blur-2xl"><div class="grid w-full grid-cols-4 gap-1.5"><a class="relative flex h-[4.05rem] w-full min-w-0 flex-col items-center justify-center gap-1 rounded-[1.25rem] text-[11px] font-black transition-all duration-300 active:scale-[0.96] text-slate-400 hover:bg-[#f6f8ff] hover:text-[#123c8c]" href="/beranda"><div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition duration-300 bg-transparent"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house block shrink-0 transition duration-300 text-slate-400" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></div><span class="block max-w-full truncate leading-none">Beranda</span></a><a aria-current="page" class="relative flex h-[4.05rem] w-full min-w-0 flex-col items-center justify-center gap-1 rounded-[1.25rem] text-[11px] font-black transition-all duration-300 active:scale-[0.96] bg-[#123c8c] text-white shadow-xl shadow-blue-900/25" href="/presensi"><span class="bottom-nav-active-bar absolute -top-1.5 h-1.5 w-11 rounded-full bg-blue-300"></span><div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition duration-300 bottom-nav-icon-pop bg-white/15"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-check block shrink-0 transition duration-300 text-white" aria-hidden="true"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="m9 16 2 2 4-4"></path></svg></div><span class="block max-w-full truncate leading-none">Presensi</span></a><a class="relative flex h-[4.05rem] w-full min-w-0 flex-col items-center justify-center gap-1 rounded-[1.25rem] text-[11px] font-black transition-all duration-300 active:scale-[0.96] text-slate-400 hover:bg-[#f6f8ff] hover:text-[#123c8c]" href="/history"><div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition duration-300 bg-transparent"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history block shrink-0 transition duration-300 text-slate-400" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg></div><span class="block max-w-full truncate leading-none">Riwayat</span></a><a class="relative flex h-[4.05rem] w-full min-w-0 flex-col items-center justify-center gap-1 rounded-[1.25rem] text-[11px] font-black transition-all duration-300 active:scale-[0.96] text-slate-400 hover:bg-[#f6f8ff] hover:text-[#123c8c]" href="/profil"><div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition duration-300 bg-transparent"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round block shrink-0 transition duration-300 text-slate-400" aria-hidden="true"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg></div><span class="block max-w-full truncate leading-none">Profil</span></a></div></div></nav></main></div></div><!--$--><!--/$--><script src="/_next/static/chunks/2l0vuudvt9oda.js" id="_R_" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,"1:\"$Sreact.fragment\"\n2:I[9876,[\"/_next/static/chunks/24m7dg4px_qbw.js\",\"/_next/static/chunks/14mrh2-p_w84d.js\"],\"ThemeProvider\"]\n3:I[39756,[\"/_next/static/chunks/24m7dg4px_qbw.js\",\"/_next/static/chunks/14mrh2-p_w84d.js\"],\"default\"]\n4:I[37457,[\"/_next/static/chunks/24m7dg4px_qbw.js\",\"/_next/static/chunks/14mrh2-p_w84d.js\"],\"default\"]\n5:I[47257,[\"/_next/static/chunks/24m7dg4px_qbw.js\",\"/_next/static/chunks/14mrh2-p_w84d.js\"],\"ClientPageRoot\"]\n6:I[43914,[\"/_next/static/chunks/24m7dg4px_qbw.js\",\"/_next/static/chunks/14mrh2-p_w84d.js\",\"/_next/static/chunks/13v92gwr8988s.js\",\"/_next/static/chunks/303a3i9e-q6mw.js\",\"/_next/static/chunks/01zdhwmc3qzun.js\"],\"default\"]\n9:I[97367,[\"/_next/static/chunks/24m7dg4px_qbw.js\",\"/_next/static/chunks/14mrh2-p_w84d.js\"],\"OutletBoundary\"]\na:\"$Sreact.suspense\"\nd:I[97367,[\"/_next/static/chunks/24m7dg4px_qbw.js\",\"/_next/static/chunks/14mrh2-p_w84d.js\"],\"ViewportBoundary\"]\nf:I[97367,[\"/_next/static/chunks/24m7dg4px_qbw.js\",\"/_next/static/chunks/14mrh2-p_w84d.js\"],\"MetadataBoundary\"]\n11:I[68027,[\"/_next/static/chunks/24m7dg4px_qbw.js\",\"/_next/static/chunks/14mrh2-p_w84d.js\"],\"default\",1]\n:HL[\"/_next/static/chunks/3dhxqda91_x4x.css\",\"style\"]\n:HL[\"/_next/static/chunks/3mnyqbrmlg7kv.css\",\"style\"]\n:HL[\"/_next/static/media/797e433ab948586e-s.p.0r6juujl39pe6.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/_next/static/media/caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n"])</script><script>self.__next_f.push([1,"0:{\"P\":null,\"c\":[\"\",\"presensi\"],\"q\":\"\",\"i\":false,\"f\":[[[\"\",{\"children\":[\"presensi\",{\"children\":[\"__PAGE__\",{}]}]},\"$undefined\",\"$undefined\",16],[[\"$\",\"$1\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/3dhxqda91_x4x.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}],[\"$\",\"link\",\"1\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/3mnyqbrmlg7kv.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/24m7dg4px_qbw.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-1\",{\"src\":\"/_next/static/chunks/14mrh2-p_w84d.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"html\",null,{\"lang\":\"id\",\"translate\":\"no\",\"suppressHydrationWarning\":true,\"className\":\"geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__variable notranslate h-full antialiased\",\"children\":[\"$\",\"body\",null,{\"suppressHydrationWarning\":true,\"className\":\"notranslate min-h-full flex flex-col\",\"children\":[\"$\",\"$L2\",null,{\"children\":[\"$\",\"$L3\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L4\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[[\"$\",\"title\",null,{\"children\":\"404: This page could not be found.\"}],[\"$\",\"div\",null,{\"style\":{\"fontFamily\":\"system-ui,\\\"Segoe UI\\\",Roboto,Helvetica,Arial,sans-serif,\\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\"\",\"height\":\"100vh\",\"textAlign\":\"center\",\"display\":\"flex\",\"flexDirection\":\"column\",\"alignItems\":\"center\",\"justifyContent\":\"center\"},\"children\":[\"$\",\"div\",null,{\"children\":[[\"$\",\"style\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\"}}],[\"$\",\"h1\",null,{\"className\":\"next-error-h1\",\"style\":{\"display\":\"inline-block\",\"margin\":\"0 20px 0 0\",\"padding\":\"0 23px 0 0\",\"fontSize\":24,\"fontWeight\":500,\"verticalAlign\":\"top\",\"lineHeight\":\"49px\"},\"children\":404}],[\"$\",\"div\",null,{\"style\":{\"display\":\"inline-block\"},\"children\":[\"$\",\"h2\",null,{\"style\":{\"fontSize\":14,\"fontWeight\":400,\"lineHeight\":\"49px\",\"margin\":0},\"children\":\"This page could not be found.\"}]}]]}]}]],[]],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]}]}]}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[null,[\"$\",\"$L3\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L4\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[[\"$\",\"$L5\",null,{\"Component\":\"$6\",\"serverProvidedParams\":{\"searchParams\":{},\"params\":{},\"promises\":[\"$@7\",\"$@8\"]}}],[[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/13v92gwr8988s.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-1\",{\"src\":\"/_next/static/chunks/303a3i9e-q6mw.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-2\",{\"src\":\"/_next/static/chunks/01zdhwmc3qzun.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"$L9\",null,{\"children\":[\"$\",\"$a\",null,{\"name\":\"Next.MetadataOutlet\",\"children\":\"$@b\"}]}]]}],{},null,false,null]},null,false,\"$@c\"]},null,false,null],[\"$\",\"$1\",\"h\",{\"children\":[null,[\"$\",\"$Ld\",null,{\"children\":\"$Le\"}],[\"$\",\"div\",null,{\"hidden\":true,\"children\":[\"$\",\"$Lf\",null,{\"children\":[\"$\",\"$a\",null,{\"name\":\"Next.Metadata\",\"children\":\"$L10\"}]}]}],[\"$\",\"meta\",null,{\"name\":\"next-size-adjust\",\"content\":\"\"}]]}],false]],\"m\":\"$undefined\",\"G\":[\"$11\",[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/3dhxqda91_x4x.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}],[\"$\",\"link\",\"1\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/3mnyqbrmlg7kv.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}]]],\"S\":true,\"h\":null,\"s\":\"$undefined\",\"l\":\"$undefined\",\"p\":\"$undefined\",\"d\":\"$undefined\",\"b\":\"3CZwCBwMsk4q3g3JjxFt0\"}\n"])</script><script>self.__next_f.push([1,"12:[]\nc:\"$W12\"\n7:{}\n8:\"$0:f:0:1:1:children:1:children:0:props:children:0:props:serverProvidedParams:params\"\n"])</script><script>self.__next_f.push([1,"e:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}]]\n"])</script><script>self.__next_f.push([1,"13:I[27201,[\"/_next/static/chunks/24m7dg4px_qbw.js\",\"/_next/static/chunks/14mrh2-p_w84d.js\"],\"IconMark\"]\nb:null\n10:[[\"$\",\"title\",\"0\",{\"children\":\"FaceAttend\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"Sistem Presensi Karyawan Creativemu\"}],[\"$\",\"meta\",\"2\",{\"name\":\"google\",\"content\":\"notranslate\"}],[\"$\",\"link\",\"3\",{\"rel\":\"icon\",\"href\":\"/favicon.ico?favicon.2vob68tjqpejf.ico\",\"sizes\":\"256x256\",\"type\":\"image/x-icon\"}],[\"$\",\"$L13\",\"4\",{}]]\n"])</script></body></html>
