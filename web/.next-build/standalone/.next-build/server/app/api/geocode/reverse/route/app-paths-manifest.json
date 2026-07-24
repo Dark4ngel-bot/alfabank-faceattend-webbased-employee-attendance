@@ -1,0 +1,3 @@
+{
+  "/api/geocode/reverse/route": "app/api/geocode/reverse/route.js"
+}
