@@ -6,10 +6,18 @@ import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 
 export const runtime = "nodejs";
 
-type AllowedRole = "owner";
+type AllowedRole = "owner" | "admin";
 
-const VIEW_ROLES: AllowedRole[] = ["owner"];
-const MANAGE_ROLES: AllowedRole[] = ["owner"];
+const VIEW_ROLES: AllowedRole[] = ["owner", "admin"];
+const MANAGE_ROLES: AllowedRole[] = ["owner", "admin"];
+
+const DEFAULT_EMPLOYMENT_STATUSES = [
+  { name: "Tetap", code: "tetap", status: "active" },
+  { name: "Magang", code: "magang", status: "active" },
+  { name: "Kontrak", code: "kontrak", status: "active" },
+  { name: "Freelance", code: "freelance", status: "active" },
+  { name: "Utama", code: "utama", status: "active" },
+];
 
 const officeSelect = {
   id: true,
@@ -24,36 +32,26 @@ const officeSelect = {
 const departmentSelect = {
   id: true,
   name: true,
-  office_id: true,
   status: true,
-  office: {
-    select: {
-      id: true,
-      name: true,
-      address: true,
-      status: true,
-    },
-  },
 } as const;
 
 const unitSelect = {
   id: true,
   name: true,
-  department_id: true,
   status: true,
-  department: {
-    select: departmentSelect,
-  },
 } as const;
 
 const positionSelect = {
   id: true,
   name: true,
-  unit_id: true,
   status: true,
-  unit: {
-    select: unitSelect,
-  },
+} as const;
+
+const employmentStatusSelect = {
+  id: true,
+  name: true,
+  code: true,
+  status: true,
 } as const;
 
 const employeeSelect = {
@@ -62,6 +60,7 @@ const employeeSelect = {
   email: true,
   role: true,
   employee_type: true,
+  employment_status_id: true,
   phone: true,
   status: true,
   profile_photo: true,
@@ -94,6 +93,9 @@ const employeeSelect = {
   },
   registered_office: {
     select: officeSelect,
+  },
+  employment_status: {
+    select: employmentStatusSelect,
   },
 } as const;
 
@@ -200,7 +202,14 @@ async function ensureDefaultShifts() {
   });
 }
 
-async function validateEmployeeHierarchy(params: {
+async function ensureDefaultEmploymentStatuses() {
+  await prisma.employmentStatus.createMany({
+    data: DEFAULT_EMPLOYMENT_STATUSES,
+    skipDuplicates: true,
+  });
+}
+
+async function validateEmployeeLabels(params: {
   registeredOfficeId: string;
   departmentId: string;
   unitId: string;
@@ -230,7 +239,6 @@ async function validateEmployeeHierarchy(params: {
     },
     select: {
       id: true,
-      office_id: true,
       status: true,
     },
   });
@@ -239,17 +247,12 @@ async function validateEmployeeHierarchy(params: {
     throw new Error("Divisi tidak ditemukan atau tidak aktif.");
   }
 
-  if (department.office_id !== registeredOfficeId) {
-    throw new Error("Divisi tidak sesuai dengan kantor yang dipilih.");
-  }
-
   const unit = await prisma.unit.findUnique({
     where: {
       id: unitId,
     },
     select: {
       id: true,
-      department_id: true,
       status: true,
     },
   });
@@ -258,27 +261,18 @@ async function validateEmployeeHierarchy(params: {
     throw new Error("Unit tidak ditemukan atau tidak aktif.");
   }
 
-  if (unit.department_id !== departmentId) {
-    throw new Error("Unit tidak sesuai dengan divisi yang dipilih.");
-  }
-
   const position = await prisma.position.findUnique({
     where: {
       id: positionId,
     },
     select: {
       id: true,
-      unit_id: true,
       status: true,
     },
   });
 
   if (!position || position.status !== "active") {
     throw new Error("Jabatan tidak ditemukan atau tidak aktif.");
-  }
-
-  if (position.unit_id !== unitId) {
-    throw new Error("Jabatan tidak sesuai dengan unit yang dipilih.");
   }
 
   const shift = await prisma.shift.findUnique({
@@ -296,6 +290,25 @@ async function validateEmployeeHierarchy(params: {
   }
 }
 
+async function validateEmploymentStatus(employeeType: string) {
+  const employmentStatus = await prisma.employmentStatus.findUnique({
+    where: {
+      code: employeeType,
+    },
+    select: {
+      id: true,
+      code: true,
+      status: true,
+    },
+  });
+
+  if (!employmentStatus || employmentStatus.status !== "active") {
+    throw new Error("Status kepegawaian tidak ditemukan atau tidak aktif.");
+  }
+
+  return employmentStatus;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const currentUser = await getCurrentUser(req);
@@ -308,6 +321,7 @@ export async function GET(req: NextRequest) {
     }
 
     await ensureDefaultShifts();
+    await ensureDefaultEmploymentStatuses();
 
     const employees = await prisma.user.findMany({
       where: {
@@ -359,6 +373,16 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    const employmentStatuses = await prisma.employmentStatus.findMany({
+      where: {
+        status: "active",
+      },
+      select: employmentStatusSelect,
+      orderBy: {
+        name: "asc",
+      },
+    });
+
     return NextResponse.json({
       success: true,
       employees,
@@ -368,6 +392,7 @@ export async function GET(req: NextRequest) {
       units,
       positions,
       shifts,
+      employmentStatuses,
     });
   } catch (error) {
     console.error("GET /api/employees error:", error);
@@ -391,7 +416,7 @@ export async function POST(req: NextRequest) {
       !canAccess(currentUser.role, MANAGE_ROLES)
     ) {
       return jsonError(
-        "Akses ditolak. Hanya owner yang dapat menambah karyawan.",
+        "Akses ditolak. Hanya admin yang dapat menambah karyawan.",
         403
       );
     }
@@ -445,15 +470,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!["utama", "magang"].includes(employeeType)) {
-      return jsonError("Tipe karyawan tidak valid.");
-    }
-
     if (!["active", "inactive"].includes(status)) {
       return jsonError("Status karyawan tidak valid.");
     }
 
-    await validateEmployeeHierarchy({
+    await ensureDefaultEmploymentStatuses();
+    const employmentStatus = await validateEmploymentStatus(employeeType);
+
+    await validateEmployeeLabels({
       registeredOfficeId,
       departmentId,
       unitId,
@@ -482,7 +506,8 @@ export async function POST(req: NextRequest) {
         email,
         password_hash: passwordHash,
         role: "employee",
-        employee_type: employeeType,
+        employee_type: employmentStatus.code,
+        employment_status_id: employmentStatus.id,
         phone: phone || null,
         status,
         registered_office_id: registeredOfficeId,
@@ -528,7 +553,7 @@ export async function PATCH(req: NextRequest) {
       !canAccess(currentUser.role, MANAGE_ROLES)
     ) {
       return jsonError(
-        "Akses ditolak. Hanya owner yang dapat mengubah karyawan.",
+        "Akses ditolak. Hanya admin yang dapat mengubah karyawan.",
         403
       );
     }
@@ -583,13 +608,12 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    if (!["utama", "magang"].includes(employeeType)) {
-      return jsonError("Tipe karyawan tidak valid.");
-    }
-
     if (!["active", "inactive"].includes(status)) {
       return jsonError("Status karyawan tidak valid.");
     }
+
+    await ensureDefaultEmploymentStatuses();
+    const employmentStatus = await validateEmploymentStatus(employeeType);
 
     const existingEmployee = await prisma.user.findUnique({
       where: {
@@ -605,7 +629,7 @@ export async function PATCH(req: NextRequest) {
       return jsonError("Karyawan tidak ditemukan.", 404);
     }
 
-    await validateEmployeeHierarchy({
+    await validateEmployeeLabels({
       registeredOfficeId,
       departmentId,
       unitId,
@@ -634,6 +658,7 @@ export async function PATCH(req: NextRequest) {
       email: string;
       phone: string | null;
       employee_type: string;
+      employment_status_id: string;
       status: string;
       registered_office_id: string;
       department_id: string;
@@ -648,7 +673,8 @@ export async function PATCH(req: NextRequest) {
       name,
       email,
       phone: phone || null,
-      employee_type: employeeType,
+      employee_type: employmentStatus.code,
+      employment_status_id: employmentStatus.id,
       status,
       registered_office_id: registeredOfficeId,
       department_id: departmentId,
@@ -703,7 +729,7 @@ export async function DELETE(req: NextRequest) {
       !canAccess(currentUser.role, MANAGE_ROLES)
     ) {
       return jsonError(
-        "Akses ditolak. Hanya owner yang dapat menghapus karyawan.",
+        "Akses ditolak. Hanya admin yang dapat menghapus karyawan.",
         403
       );
     }

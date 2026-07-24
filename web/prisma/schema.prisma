@@ -18,8 +18,11 @@ model User {
   // owner, employee
   role String @default("employee") @db.VarChar(20)
 
-  // utama, magang
+  // Kode lama untuk kompatibilitas laporan/API lama.
   employee_type String @default("utama") @db.VarChar(20)
+
+  employment_status_id String?           @db.Char(36)
+  employment_status    EmploymentStatus? @relation(fields: [employment_status_id], references: [id], onDelete: SetNull)
 
   phone  String? @db.VarChar(20)
   status String  @default("active") @db.VarChar(20)
@@ -64,6 +67,7 @@ model User {
 
   @@index([role])
   @@index([employee_type])
+  @@index([employment_status_id])
   @@map("users")
 }
 
@@ -77,13 +81,48 @@ model LoginRateLimit {
   @@map("login_rate_limits")
 }
 
+model EmploymentStatus {
+  id String @id @default(uuid()) @db.Char(36)
+
+  name String @unique @db.VarChar(100)
+  code String @unique @db.VarChar(50)
+
+  // active, inactive
+  status String @default("active") @db.VarChar(20)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  users User[]
+
+  @@index([status])
+  @@map("employment_statuses")
+}
+
+model AdminContact {
+  id String @id @default(uuid()) @db.Char(36)
+
+  name       String  @db.VarChar(100)
+  role_title String? @db.VarChar(100)
+  phone      String  @db.VarChar(30)
+  whatsapp   String? @db.VarChar(30)
+  email      String? @db.VarChar(100)
+  note       String? @db.VarChar(255)
+
+  // active, inactive
+  status String @default("active") @db.VarChar(20)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@index([name])
+  @@index([status])
+  @@map("admin_contacts")
+}
+
 model Department {
   id   String @id @default(uuid()) @db.Char(36)
   name String @db.VarChar(100)
-
-  // Kantor pemilik divisi
-  office_id String?         @db.Char(36)
-  office    OfficeLocation? @relation(fields: [office_id], references: [id], onDelete: SetNull)
 
   shift_id String? @db.Char(36)
   shift    Shift?  @relation(fields: [shift_id], references: [id], onDelete: SetNull)
@@ -95,45 +134,15 @@ model Department {
   status String @default("active") @db.VarChar(20)
 
   users User[]
-  units Unit[]
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
-
-  @@unique([office_id, name])
-  @@index([office_id])
 }
 
 model Unit {
   id String @id @default(uuid()) @db.Char(36)
 
   name String @db.VarChar(100)
-
-  // Divisi pemilik unit
-  department_id String?     @db.Char(36)
-  department    Department? @relation(fields: [department_id], references: [id], onDelete: SetNull)
-
-  // active, inactive
-  status String @default("active") @db.VarChar(20)
-
-  users     User[]
-  positions Position[]
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
-
-  @@unique([department_id, name])
-  @@index([department_id])
-}
-
-model Position {
-  id String @id @default(uuid()) @db.Char(36)
-
-  name String @db.VarChar(100)
-
-  // Unit pemilik jabatan
-  unit_id String? @db.Char(36)
-  unit    Unit?   @relation(fields: [unit_id], references: [id], onDelete: SetNull)
 
   // active, inactive
   status String @default("active") @db.VarChar(20)
@@ -142,9 +151,20 @@ model Position {
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
+}
 
-  @@unique([unit_id, name])
-  @@index([unit_id])
+model Position {
+  id String @id @default(uuid()) @db.Char(36)
+
+  name String @db.VarChar(100)
+
+  // active, inactive
+  status String @default("active") @db.VarChar(20)
+
+  users User[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
 }
 
 model Shift {
@@ -198,9 +218,6 @@ model OfficeLocation {
   status String @default("active") @db.VarChar(20)
 
   users User[] @relation("EmployeeRegisteredOffice")
-
-  // Divisi yang berada di kantor ini
-  departments Department[]
 
   registered_attendances Attendance[] @relation("RegisteredOfficeAttendance")
   check_in_attendances   Attendance[] @relation("CheckInOfficeAttendance")

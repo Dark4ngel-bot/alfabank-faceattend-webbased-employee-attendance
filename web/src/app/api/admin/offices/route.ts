@@ -33,14 +33,14 @@ async function getAdminFromRequest(req: NextRequest) {
     (payload.userId as string | undefined) ||
     (payload.sub as string | undefined);
 
-  const role = String(payload.role || "");
+  const role = String(payload.role || "").toLowerCase();
 
   if (!userId) {
     throw new Error("User ID tidak ditemukan di token.");
   }
 
-  if (role !== "owner") {
-    throw new Error("Akses hanya untuk owner.");
+  if (!["owner", "admin"].includes(role)) {
+    throw new Error("Akses hanya untuk admin.");
   }
 
   return userId;

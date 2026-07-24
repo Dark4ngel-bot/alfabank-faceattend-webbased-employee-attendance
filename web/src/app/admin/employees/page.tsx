@@ -162,6 +162,13 @@ type Employee = {
   name: string;
   email: string;
   role: string;
+  employee_type: string;
+  employment_status_id: string | null;
+  employment_status: EmploymentStatusRelation;
+  unit_id: string | null;
+  department_id: string | null;
+  position_id: string | null;
+  registered_office_id: string | null;
   unit: UnitRelation;
   department: DepartmentRelation;
   position: PositionRelation;
@@ -180,6 +187,7 @@ type Employee = {
 type EmployeeForm = {
   name: string;
   email: string;
+  employee_type: string;
   department_id: string;
   unit_id: string;
   position_id: string;
@@ -196,9 +204,19 @@ type EmployeeAlert = {
   message: string;
 } | null;
 
+type EmploymentStatusOption = {
+  id: string;
+  name: string;
+  code: string;
+  status: string;
+};
+
+type EmploymentStatusRelation = EmploymentStatusOption | null;
+
 const initialForm: EmployeeForm = {
   name: "",
   email: "",
+  employee_type: "utama",
   department_id: "",
   unit_id: "",
   position_id: "",
@@ -225,6 +243,16 @@ function getShortEmployeeId(id: string) {
 
 function formatStatus(status: "active" | "inactive") {
   return status === "active" ? "Active" : "Inactive";
+}
+
+function formatEmploymentStatus(status: string | null) {
+  if (!status) return "Utama";
+
+  return status
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 function isValidEmail(email: string) {
@@ -468,6 +496,9 @@ export default function AdminEmployeesPage() {
   const [positions, setPositions] = useState<PositionOption[]>([]);
   const [shifts, setShifts] = useState<ShiftOption[]>([]);
   const [offices, setOffices] = useState<OfficeOption[]>([]);
+  const [employmentStatuses, setEmploymentStatuses] = useState<
+    EmploymentStatusOption[]
+  >([]);
 
   const [keyword, setKeyword] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -540,6 +571,7 @@ export default function AdminEmployeesPage() {
       setPositions(result.positions || []);
       setShifts(result.shifts || []);
       setOffices(result.offices || result.officeLocations || []);
+      setEmploymentStatuses(result.employmentStatuses || []);
     } catch (error) {
       console.error("LOAD_EMPLOYEES_ERROR:", error);
 
@@ -554,7 +586,11 @@ export default function AdminEmployeesPage() {
   }, [showEmployeeAlert]);
 
   useEffect(() => {
-    void loadEmployees();
+    const timeoutId = window.setTimeout(() => {
+      void loadEmployees();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [loadEmployees]);
 
   useEffect(() => {
@@ -570,42 +606,51 @@ export default function AdminEmployeesPage() {
   }, [offices]);
 
   const filteredDepartments = useMemo(() => {
-    if (!form.registered_office_id) return [];
-
-    return departments.filter((department) => {
-      const officeId = getDepartmentOfficeId(department);
-
-      return (
-        department.status === "active" && officeId === form.registered_office_id
-      );
-    });
-  }, [departments, form.registered_office_id]);
+    return departments.filter((department) => department.status === "active");
+  }, [departments]);
 
   const filteredUnits = useMemo(() => {
-    if (!form.department_id) return [];
-
-    return units.filter((unit) => {
-      return (
-        unit.status === "active" &&
-        getUnitDepartmentId(unit) === form.department_id
-      );
-    });
-  }, [units, form.department_id]);
+    return units.filter((unit) => unit.status === "active");
+  }, [units]);
 
   const filteredPositions = useMemo(() => {
-    if (!form.unit_id) return [];
-
-    return positions.filter((position) => {
-      return (
-        position.status === "active" &&
-        getPositionUnitId(position) === form.unit_id
-      );
-    });
-  }, [positions, form.unit_id]);
+    return positions.filter((position) => position.status === "active");
+  }, [positions]);
 
   const activeShifts = useMemo(() => {
     return shifts.filter((shift) => shift.status === "active");
   }, [shifts]);
+
+  const activeEmploymentStatuses = useMemo(() => {
+    return employmentStatuses.filter((item) => item.status === "active");
+  }, [employmentStatuses]);
+
+  const defaultEmploymentStatusCode =
+    activeEmploymentStatuses[0]?.code || "utama";
+
+  const getEmployeeEmploymentStatus = useCallback(
+    (employee: Employee) => {
+      if (employee.employment_status) return employee.employment_status;
+
+      return (
+        employmentStatuses.find(
+          (item) => item.id === employee.employment_status_id,
+        ) ||
+        employmentStatuses.find((item) => item.code === employee.employee_type) ||
+        null
+      );
+    },
+    [employmentStatuses],
+  );
+
+  const getEmployeeEmploymentStatusName = useCallback(
+    (employee: Employee) => {
+      const status = getEmployeeEmploymentStatus(employee);
+
+      return status?.name || formatEmploymentStatus(employee.employee_type);
+    },
+    [getEmployeeEmploymentStatus],
+  );
 
   const filteredEmployees = useMemo(() => {
     return employees.filter((employee) => {
@@ -613,6 +658,7 @@ export default function AdminEmployeesPage() {
         ${employee.id || ""}
         ${employee.name}
         ${employee.email}
+        ${getEmployeeEmploymentStatusName(employee)}
         ${employee.registered_office?.name || ""}
         ${employee.registered_office?.address || ""}
         ${employee.department?.name || ""}
@@ -624,7 +670,7 @@ export default function AdminEmployeesPage() {
 
       return text.includes(keyword.toLowerCase());
     });
-  }, [employees, keyword]);
+  }, [employees, getEmployeeEmploymentStatusName, keyword]);
 
   const activeEmployees = employees.filter(
     (employee) => employee.status === "active",
@@ -636,12 +682,16 @@ export default function AdminEmployeesPage() {
 
   function openRegisterModal() {
     setEditingEmployee(null);
-    setForm(initialForm);
+    setForm({
+      ...initialForm,
+      employee_type: defaultEmploymentStatusCode,
+    });
     setIsModalOpen(true);
   }
 
   function openEditModal(employee: Employee) {
     const officeId =
+      employee.registered_office_id ||
       employee.registered_office?.id ||
       employee.department?.office_id ||
       employee.department?.office?.id ||
@@ -650,6 +700,7 @@ export default function AdminEmployeesPage() {
       "";
 
     const departmentId =
+      employee.department_id ||
       employee.department?.id ||
       employee.unit?.department_id ||
       employee.unit?.department?.id ||
@@ -657,17 +708,22 @@ export default function AdminEmployeesPage() {
       "";
 
     const unitId =
+      employee.unit_id ||
       employee.unit?.id ||
       employee.position?.unit_id ||
       employee.position?.unit?.id ||
       "";
 
-    const positionId = employee.position?.id || "";
+    const positionId = employee.position_id || employee.position?.id || "";
 
     setEditingEmployee(employee);
     setForm({
       name: employee.name,
       email: employee.email,
+      employee_type:
+        getEmployeeEmploymentStatus(employee)?.code ||
+        employee.employee_type ||
+        defaultEmploymentStatusCode,
       registered_office_id: officeId,
       department_id: departmentId,
       unit_id: unitId,
@@ -697,6 +753,7 @@ export default function AdminEmployeesPage() {
     if (
       !form.name.trim() ||
       !email ||
+      !form.employee_type ||
       !form.registered_office_id ||
       !form.department_id ||
       !form.unit_id ||
@@ -705,7 +762,7 @@ export default function AdminEmployeesPage() {
     ) {
       showEmployeeAlert(
         "Data belum lengkap",
-        "Nama, email, kantor, divisi, unit, jabatan, dan shift wajib diisi.",
+        "Nama, email, status kepegawaian, kantor, divisi, unit, jabatan, dan shift wajib diisi.",
         "warning",
       );
       return;
@@ -768,6 +825,7 @@ export default function AdminEmployeesPage() {
           id: editingEmployee?.id,
           name: form.name.trim(),
           email,
+          employee_type: form.employee_type,
           temporaryPassword: isEditing
             ? form.temporaryPassword
             : temporaryPassword,
@@ -1000,7 +1058,7 @@ export default function AdminEmployeesPage() {
 
           <div className="mt-5 overflow-x-auto rounded-3xl border border-blue-100 bg-white">
             <div className="md:min-w-[1180px]">
-              <div className="hidden grid-cols-[1.15fr_minmax(180px,1fr)_0.9fr_0.75fr_0.8fr_0.95fr_0.7fr_0.65fr_0.85fr] items-center bg-[#f6f8ff] px-5 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
+              <div className="hidden grid-cols-[1.1fr_minmax(170px,1fr)_0.85fr_0.7fr_0.75fr_0.9fr_0.65fr_0.75fr_0.6fr_0.8fr] items-center bg-[#f6f8ff] px-5 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
                 <p>Employee</p>
                 <p>Email</p>
                 <p>Kantor</p>
@@ -1008,6 +1066,7 @@ export default function AdminEmployeesPage() {
                 <p>Unit</p>
                 <p>Jabatan</p>
                 <p>Shift</p>
+                <p>Kepegawaian</p>
                 <p>Status</p>
                 <p className="text-center">Aksi</p>
               </div>
@@ -1036,7 +1095,7 @@ export default function AdminEmployeesPage() {
                           router.push(`/admin/employees/${employee.id}`);
                         }
                       }}
-                      className="employee-row-enter grid cursor-pointer gap-4 px-5 py-4 transition duration-200 hover:bg-[#f8fbff] active:bg-[#eef4ff] md:min-h-[86px] md:grid-cols-[1.15fr_minmax(180px,1fr)_0.9fr_0.75fr_0.8fr_0.95fr_0.7fr_0.65fr_0.85fr] md:items-center md:gap-3"
+                      className="employee-row-enter grid cursor-pointer gap-4 px-5 py-4 transition duration-200 hover:bg-[#f8fbff] active:bg-[#eef4ff] md:min-h-[86px] md:grid-cols-[1.1fr_minmax(170px,1fr)_0.85fr_0.7fr_0.75fr_0.9fr_0.65fr_0.75fr_0.6fr_0.8fr] md:items-center md:gap-3"
                       style={{
                         animationDelay: `${index * 45}ms`,
                       }}
@@ -1082,6 +1141,12 @@ export default function AdminEmployeesPage() {
                       <p className="min-w-0 truncate text-sm font-semibold text-slate-600">
                         {getRelationName(employee.shift)}
                       </p>
+
+                      <div className="flex md:justify-start">
+                        <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-[#123c8c]">
+                          {getEmployeeEmploymentStatusName(employee)}
+                        </span>
+                      </div>
 
                       <div className="flex md:justify-start">
                         <span
@@ -1246,9 +1311,6 @@ export default function AdminEmployeesPage() {
                         setForm((prev) => ({
                           ...prev,
                           registered_office_id: event.target.value,
-                          department_id: "",
-                          unit_id: "",
-                          position_id: "",
                         }))
                       }
                       className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
@@ -1278,18 +1340,11 @@ export default function AdminEmployeesPage() {
                         setForm((prev) => ({
                           ...prev,
                           department_id: event.target.value,
-                          unit_id: "",
-                          position_id: "",
                         }))
                       }
-                      disabled={!form.registered_office_id}
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     >
-                      <option value="">
-                        {form.registered_office_id
-                          ? "Pilih Divisi"
-                          : "Pilih Kantor dulu"}
-                      </option>
+                      <option value="">Pilih Divisi</option>
                       {filteredDepartments.map((department) => (
                         <option key={department.id} value={department.id}>
                           {department.name}
@@ -1314,17 +1369,11 @@ export default function AdminEmployeesPage() {
                         setForm((prev) => ({
                           ...prev,
                           unit_id: event.target.value,
-                          position_id: "",
                         }))
                       }
-                      disabled={!form.department_id}
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     >
-                      <option value="">
-                        {form.department_id
-                          ? "Pilih Unit"
-                          : "Pilih Divisi dulu"}
-                      </option>
+                      <option value="">Pilih Unit</option>
                       {filteredUnits.map((unit) => (
                         <option key={unit.id} value={unit.id}>
                           {unit.name}
@@ -1351,12 +1400,9 @@ export default function AdminEmployeesPage() {
                           position_id: event.target.value,
                         }))
                       }
-                      disabled={!form.unit_id}
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     >
-                      <option value="">
-                        {form.unit_id ? "Pilih Jabatan" : "Pilih Unit dulu"}
-                      </option>
+                      <option value="">Pilih Jabatan</option>
                       {filteredPositions.map((position) => (
                         <option key={position.id} value={position.id}>
                           {position.name}
@@ -1397,47 +1443,77 @@ export default function AdminEmployeesPage() {
                 </div>
               </AppFormReveal>
 
-              {form.registered_office_id && filteredDepartments.length === 0 ? (
+              {filteredDepartments.length === 0 ? (
                 <AppFormReveal delay={80}>
                   <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
                     <p className="text-sm font-black text-amber-700">
-                      Divisi belum tersedia untuk kantor ini
+                      Divisi aktif belum tersedia
                     </p>
                     <p className="mt-1 text-sm leading-6 text-amber-700/80">
-                      Tambahkan Divisi terlebih dahulu dan hubungkan ke kantor
-                      yang dipilih.
+                      Tambahkan Divisi terlebih dahulu di halaman master
+                      Divisi.
                     </p>
                   </div>
                 </AppFormReveal>
               ) : null}
 
-              {form.department_id && filteredUnits.length === 0 ? (
+              {filteredUnits.length === 0 ? (
                 <AppFormReveal delay={80}>
                   <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
                     <p className="text-sm font-black text-amber-700">
-                      Unit belum tersedia untuk divisi ini
+                      Unit aktif belum tersedia
                     </p>
                     <p className="mt-1 text-sm leading-6 text-amber-700/80">
-                      Tambahkan Unit terlebih dahulu pada divisi yang dipilih.
+                      Tambahkan Unit terlebih dahulu di halaman master Unit.
                     </p>
                   </div>
                 </AppFormReveal>
               ) : null}
 
-              {form.unit_id && filteredPositions.length === 0 ? (
+              {filteredPositions.length === 0 ? (
                 <AppFormReveal delay={80}>
                   <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
                     <p className="text-sm font-black text-amber-700">
-                      Jabatan belum tersedia untuk unit ini
+                      Jabatan aktif belum tersedia
                     </p>
                     <p className="mt-1 text-sm leading-6 text-amber-700/80">
-                      Tambahkan Jabatan terlebih dahulu pada unit yang dipilih.
+                      Tambahkan Jabatan terlebih dahulu di halaman master
+                      Jabatan.
                     </p>
                   </div>
                 </AppFormReveal>
               ) : null}
 
               <AppFormReveal delay={100} className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm font-black text-slate-700">
+                    Status Kepegawaian
+                  </label>
+                  <div className="app-field-smooth rounded-2xl">
+                    <select
+                      value={form.employee_type}
+                      disabled={activeEmploymentStatuses.length === 0}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          employee_type: event.target.value,
+                        }))
+                      }
+                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    >
+                      {activeEmploymentStatuses.length === 0 ? (
+                        <option value="">Belum ada status aktif</option>
+                      ) : (
+                        activeEmploymentStatuses.map((status) => (
+                          <option key={status.id} value={status.code}>
+                            {status.name}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                </div>
+
                 {!editingEmployee ? (
                   <div>
                     <label className="mb-2 block text-sm font-black text-slate-700">

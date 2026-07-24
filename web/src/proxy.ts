@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
-const ADMIN_ROLES = new Set(["owner"]);
+const ADMIN_ROLES = new Set(["owner", "admin"]);
 const EMPLOYEE_ROLES = new Set(["employee"]);
 const EMPLOYEE_PATHS = [
   "/home",

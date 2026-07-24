@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export type AppRole = "owner" | "employee";
+export type AppRole = "owner" | "admin" | "employee";
 
 export type AuthUser = {
   id: string;
@@ -53,7 +53,7 @@ export async function requireRole(req: NextRequest, roles: AppRole[]) {
 }
 
 export function requireOwner(req: NextRequest) {
-  return requireRole(req, ["owner"]);
+  return requireRole(req, ["owner", "admin"]);
 }
 
 export function requireEmployee(req: NextRequest) {
@@ -94,7 +94,7 @@ export async function requireDbUser(req: NextRequest, roles?: AppRole[]) {
 }
 
 export function requireOwnerUser(req: NextRequest) {
-  return requireDbUser(req, ["owner"]);
+  return requireDbUser(req, ["owner", "admin"]);
 }
 
 export function requireEmployeeUser(req: NextRequest) {

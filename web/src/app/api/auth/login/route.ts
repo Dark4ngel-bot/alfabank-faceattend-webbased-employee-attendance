@@ -4,6 +4,7 @@ import { createToken, verifyPassword } from "@/lib/auth";
 
 const LOGIN_RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 5;
+const ADMIN_ROLES = new Set(["owner", "admin"]);
 
 type LoginAttempt = {
   attempt_count: number | bigint;
@@ -194,7 +195,9 @@ export async function POST(req: Request) {
       role: user.role,
     });
 
-    const redirectTo = user.role === "owner" ? "/admin/dashboard" : "/home";
+    const redirectTo = ADMIN_ROLES.has(String(user.role).toLowerCase())
+      ? "/admin/dashboard"
+      : "/home";
 
     const response = NextResponse.json({
       success: true,

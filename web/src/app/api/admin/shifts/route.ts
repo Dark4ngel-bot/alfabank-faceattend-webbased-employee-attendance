@@ -4,10 +4,10 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-type AllowedRole = "owner";
+type AllowedRole = "owner" | "admin";
 
-const VIEW_ROLES: AllowedRole[] = ["owner"];
-const MANAGE_ROLES: AllowedRole[] = ["owner"];
+const VIEW_ROLES: AllowedRole[] = ["owner", "admin"];
+const MANAGE_ROLES: AllowedRole[] = ["owner", "admin"];
 
 const defaultShifts = [
   {
@@ -161,7 +161,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json(
         {
           message:
-            "Akses ditolak. Hanya owner yang dapat mengubah shift.",
+            "Akses ditolak. Hanya admin yang dapat mengubah shift.",
         },
         { status: 403 },
       );

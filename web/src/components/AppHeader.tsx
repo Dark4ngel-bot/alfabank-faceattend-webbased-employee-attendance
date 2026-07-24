@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3,
+  BadgeCheck,
   Bell,
   Building2,
   CalendarClock,
@@ -51,6 +52,14 @@ type NotificationResponse = {
   success?: boolean;
   stats?: NotificationStats;
   message?: string;
+};
+
+type AdminContactResponse = {
+  success?: boolean;
+  adminContact?: {
+    phone?: string | null;
+    whatsapp?: string | null;
+  } | null;
 };
 
 const employeeNav = [
@@ -111,6 +120,16 @@ const masterDataMenus = [
     label: "Jabatan",
     icon: UserRoundCog,
   },
+  {
+    href: "/admin/employment-statuses",
+    label: "Status Kepegawaian",
+    icon: BadgeCheck,
+  },
+  {
+    href: "/admin/admin-contacts",
+    label: "Kontak Admin",
+    icon: PhoneCall,
+  },
 ];
 
 const operationalMenus = [
@@ -131,7 +150,7 @@ const operationalMenus = [
   },
 ];
 
-const WHATSAPP_LINK = "https://wa.me/6282123459565";
+const DEFAULT_WHATSAPP_LINK = "https://wa.me/6282123459565";
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/history") {
@@ -173,6 +192,15 @@ function formatNotificationCount(count: number) {
   return String(count);
 }
 
+function getWhatsappLink(phone?: string | null) {
+  const normalized = String(phone || "")
+    .trim()
+    .replace(/[^\d+]/g, "")
+    .replace(/^\+/, "");
+
+  return normalized ? `https://wa.me/${normalized}` : DEFAULT_WHATSAPP_LINK;
+}
+
 export default function AppHeader({
   title,
   subtitle,
@@ -185,6 +213,8 @@ export default function AppHeader({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [adminContactLink, setAdminContactLink] =
+    useState(DEFAULT_WHATSAPP_LINK);
 
   const resolvedVariant = useMemo(() => {
     if (pathname === "/admin" || pathname.startsWith("/admin/")) {
@@ -200,7 +230,11 @@ export default function AppHeader({
   const hasNewNotification = notificationCount > 0;
 
   useEffect(() => {
-    setIsSidebarOpen(false);
+    const timeoutId = window.setTimeout(() => {
+      setIsSidebarOpen(false);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [pathname]);
 
   useEffect(() => {
@@ -266,6 +300,39 @@ export default function AppHeader({
     };
   }, [isAdmin, pathname]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadAdminContactLink() {
+      try {
+        const response = await fetch("/api/admin/admin-contacts?primary=1", {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        if (!response.ok) return;
+
+        const data = (await readJsonResponse(response)) as AdminContactResponse;
+        const contact = data.adminContact;
+        const link = getWhatsappLink(contact?.whatsapp || contact?.phone);
+
+        if (isMounted) {
+          setAdminContactLink(link);
+        }
+      } catch {
+        if (isMounted) {
+          setAdminContactLink(DEFAULT_WHATSAPP_LINK);
+        }
+      }
+    }
+
+    void loadAdminContactLink();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname]);
+
   function handleNavigate(href: string) {
     setIsSidebarOpen(false);
     router.push(href);
@@ -330,7 +397,7 @@ export default function AppHeader({
 
           <div className="flex shrink-0 items-center justify-end gap-3">
             <a
-              href={WHATSAPP_LINK}
+              href={adminContactLink}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Hubungi via WhatsApp"
