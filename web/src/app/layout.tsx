@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import ScrollReloadGuard from "@/components/ScrollReloadGuard";
 import LateGuard from "@/components/LateGuard";
 import GlobalAlert from "@/components/GlobalAlert";
+import ToastContainer from "@/components/ToastContainer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,6 +86,7 @@ export default function RootLayout({
             <ScrollReloadGuard />
             <LateGuard />
             <GlobalAlert />
+            <ToastContainer />
             {children}
           </AppDataProvider>
         </ThemeProvider>

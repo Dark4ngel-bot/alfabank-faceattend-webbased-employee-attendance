@@ -129,6 +129,11 @@ const masterDataMenus = [
     label: "Posisi",
     icon: Building2,
   },
+  {
+    href: "/admin/master-data?tab=status-kepegawaian",
+    label: "Status Kepegawaian",
+    icon: UserCheck,
+  },
 ];
 
 const operationalMenus = [

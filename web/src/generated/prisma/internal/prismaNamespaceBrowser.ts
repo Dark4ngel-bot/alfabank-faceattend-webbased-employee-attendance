@@ -27,6 +27,7 @@ export const ModelName = {
   Shift: 'Shift',
   WorkSchedule: 'WorkSchedule',
   OfficeLocation: 'OfficeLocation',
+  EmploymentStatus: 'EmploymentStatus',
   Attendance: 'Attendance',
   AttendanceMonthlySummary: 'AttendanceMonthlySummary',
   EmployeeVisit: 'EmployeeVisit',
@@ -180,6 +181,18 @@ export const OfficeLocationScalarFieldEnum = {
 } as const
 
 export type OfficeLocationScalarFieldEnum = (typeof OfficeLocationScalarFieldEnum)[keyof typeof OfficeLocationScalarFieldEnum]
+
+
+export const EmploymentStatusScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  code: 'code',
+  active: 'active',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type EmploymentStatusScalarFieldEnum = (typeof EmploymentStatusScalarFieldEnum)[keyof typeof EmploymentStatusScalarFieldEnum]
 
 
 export const AttendanceScalarFieldEnum = {
@@ -522,6 +535,15 @@ export const OfficeLocationOrderByRelevanceFieldEnum = {
 } as const
 
 export type OfficeLocationOrderByRelevanceFieldEnum = (typeof OfficeLocationOrderByRelevanceFieldEnum)[keyof typeof OfficeLocationOrderByRelevanceFieldEnum]
+
+
+export const EmploymentStatusOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  code: 'code'
+} as const
+
+export type EmploymentStatusOrderByRelevanceFieldEnum = (typeof EmploymentStatusOrderByRelevanceFieldEnum)[keyof typeof EmploymentStatusOrderByRelevanceFieldEnum]
 
 
 export const AttendanceOrderByRelevanceFieldEnum = {

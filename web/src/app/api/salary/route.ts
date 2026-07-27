@@ -59,20 +59,62 @@ export async function GET() {
 
   const records = listSalaryRecords();
 
-  if (authPayload.role === "admin" || authPayload.role === "owner") {
+  // Enhance records with real-time attendance deductions from MySQL Prisma
+  const enhancedRecords = await Promise.all(
+    records.map(async (record) => {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: record.employeeId },
+          select: { base_salary: true, ptkp_status: true },
+        }).catch(() => null);
+
+        const attendances = await prisma.attendance.findMany({
+          where: { user_id: record.employeeId },
+          select: { attendance_date: true, check_in_time: true, scheduled_check_in: true, work_mode: true },
+        }).catch(() => []);
+
+        let lateMinutesCount = 0;
+
+        attendances.forEach((att) => {
+          if (att.check_in_time && att.scheduled_check_in) {
+            const checkIn = new Date(att.check_in_time).getTime();
+            const sched = new Date(att.scheduled_check_in).getTime();
+            if (checkIn > sched) {
+              lateMinutesCount += Math.floor((checkIn - sched) / 60000);
+            }
+          }
+        });
+
+        const lateDeduction = lateMinutesCount * 1000; // Rp 1.000 / minute late
+        const baseSalary = user?.base_salary ? Number(user.base_salary) : record.amount;
+        const netSalary = Math.max(0, baseSalary - lateDeduction);
+
+        return {
+          ...record,
+          baseSalary,
+          lateMinutesCount,
+          lateDeduction,
+          ptkpStatus: user?.ptkp_status || "TK0",
+          calculatedNetSalary: netSalary,
+        };
+      } catch {
+        return record;
+      }
+    }),
+  );
+
+  if (authPayload.role === "employee") {
     return NextResponse.json({
       success: true,
-      records,
+      records: enhancedRecords.filter(
+        (record) => record.employeeId === authPayload.id,
+      ),
     });
   }
 
-  const ownRecords = records.filter(
-    (record) => record.employeeId === authPayload.id,
-  );
-
   return NextResponse.json({
     success: true,
-    records: ownRecords,
+    records: enhancedRecords,
   });
 }
 

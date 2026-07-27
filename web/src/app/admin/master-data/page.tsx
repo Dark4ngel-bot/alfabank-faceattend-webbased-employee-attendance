@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Pencil, Save, Trash2, X } from "lucide-react";
+import { Edit, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
@@ -12,6 +12,7 @@ type MasterTab =
   | "jam-kerja"
   | "divisi"
   | "jabatan"
+  | "status-kepegawaian"
   | "lokasi-kunjungan"
   | "lokasi-presensi"
   | "istilah";
@@ -73,6 +74,13 @@ type PositionItem = {
   active: boolean;
 };
 
+type EmploymentStatusItem = {
+  id: string;
+  name: string;
+  code: string;
+  active: boolean;
+};
+
 type VisitLocationItem = {
   id: string;
   name: string;
@@ -102,6 +110,7 @@ const masterTabs: Array<[MasterTab, string]> = [
   ["jam-kerja", "Jam Kerja"],
   ["divisi", "Divisi"],
   ["jabatan", "Jabatan"],
+  ["status-kepegawaian", "Status Kepegawaian"],
   ["lokasi-kunjungan", "Lokasi Kunjungan"],
   ["lokasi-presensi", "Lokasi Presensi"],
   ["istilah", "Daftar Istilah"],
@@ -246,6 +255,13 @@ const initialPositions: PositionItem[] = [
   { id: "pos-4", name: "Web Developer", active: true },
 ];
 
+const initialEmploymentStatuses: EmploymentStatusItem[] = [
+  { id: "emp-status-1", name: "Karyawan Tetap", code: "kartap", active: true },
+  { id: "emp-status-2", name: "Karyawan Kontrak", code: "kontrak", active: true },
+  { id: "emp-status-3", name: "Magang", code: "magang", active: true },
+  { id: "emp-status-4", name: "PKL", code: "pkl", active: true },
+];
+
 const initialVisitLocations: VisitLocationItem[] = [
   {
     id: "visit-1",
@@ -321,7 +337,7 @@ export default function AdminMasterDataPage() {
 
 function AdminMasterDataPageContent() {
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<MasterTab>("shift");
+  const [tab, setTab] = useState<MasterTab>("status-kepegawaian");
 
   const [shiftList, setShiftList] = useState<ShiftItem[]>(initialShifts);
   const [divisionList, setDivisionList] =
@@ -372,6 +388,19 @@ function AdminMasterDataPageContent() {
   );
   const [editingPositionName, setEditingPositionName] = useState("");
 
+  const [employmentStatusList, setEmploymentStatusList] = useState<
+    EmploymentStatusItem[]
+  >(initialEmploymentStatuses);
+  const [newEmploymentStatusName, setNewEmploymentStatusName] = useState("");
+  const [newEmploymentStatusCode, setNewEmploymentStatusCode] = useState("");
+  const [editingEmploymentStatusId, setEditingEmploymentStatusId] = useState<
+    string | null
+  >(null);
+  const [editingEmploymentStatusName, setEditingEmploymentStatusName] =
+    useState("");
+  const [editingEmploymentStatusCode, setEditingEmploymentStatusCode] =
+    useState("");
+
   const [selectedShiftId, setSelectedShiftId] = useState(initialShifts[0].id);
 
   const selectedShift = useMemo(
@@ -384,6 +413,7 @@ function AdminMasterDataPageContent() {
     if (tab === "jam-kerja") return "Master Jam Kerja";
     if (tab === "divisi") return "Master Divisi";
     if (tab === "jabatan") return "Master Jabatan";
+    if (tab === "status-kepegawaian") return "Master Status Kepegawaian";
     if (tab === "lokasi-kunjungan") return "Master Lokasi Kunjungan";
     if (tab === "lokasi-presensi") return "Master Lokasi Presensi";
     return "Daftar Istilah Operasional";
@@ -852,6 +882,132 @@ function AdminMasterDataPageContent() {
     setPositionList((prev) => prev.filter((item) => item.id !== id));
   }
 
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [editingStatusItem, setEditingStatusItem] = useState<EmploymentStatusItem | null>(null);
+  const [statusFormName, setStatusFormName] = useState("");
+  const [statusFormCode, setStatusFormCode] = useState("");
+
+  function openCreateStatusModal() {
+    setEditingStatusItem(null);
+    setStatusFormName("");
+    setStatusFormCode("");
+    setIsStatusModalOpen(true);
+  }
+
+  function openEditStatusModal(item: EmploymentStatusItem) {
+    setEditingStatusItem(item);
+    setStatusFormName(item.name);
+    setStatusFormCode(item.code || "");
+    setIsStatusModalOpen(true);
+  }
+
+  function closeStatusModal() {
+    setIsStatusModalOpen(false);
+    setEditingStatusItem(null);
+    setStatusFormName("");
+    setStatusFormCode("");
+  }
+
+  useEffect(() => {
+    fetch("/api/admin/employment-statuses")
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && Array.isArray(res.data)) {
+          setEmploymentStatusList(res.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  async function handleSaveStatusForm(e: React.FormEvent) {
+    e.preventDefault();
+    const name = statusFormName.trim();
+    const code = statusFormCode.trim().toLowerCase() || name.toLowerCase().replace(/\s+/g, "_");
+
+    if (!name) {
+      alert("Nama status kepegawaian wajib diisi.");
+      return;
+    }
+
+    if (editingStatusItem) {
+      try {
+        const res = await fetch("/api/admin/employment-statuses", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingStatusItem.id, name, code }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+
+        setEmploymentStatusList((prev) =>
+          prev.map((i) =>
+            i.id === editingStatusItem.id ? { ...i, name, code } : i,
+          ),
+        );
+        alert("Status kepegawaian berhasil diperbarui.");
+      } catch (err: any) {
+        alert(err.message || "Gagal memperbarui status kepegawaian.");
+      }
+    } else {
+      try {
+        const res = await fetch("/api/admin/employment-statuses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, code }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+
+        const newItem = data.data || { id: `emp-status-${Date.now()}`, name, code, active: true };
+        setEmploymentStatusList((prev) => [...prev, newItem]);
+        alert("Status kepegawaian berhasil ditambahkan.");
+      } catch (err: any) {
+        alert(err.message || "Gagal menambahkan status kepegawaian.");
+      }
+    }
+
+    closeStatusModal();
+  }
+
+  function toggleEmploymentStatusActive(id: string) {
+    setEmploymentStatusList((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          const nextActive = !item.active;
+          fetch("/api/admin/employment-statuses", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: item.id, name: item.name, code: item.code, active: nextActive }),
+          }).catch(() => {});
+          return { ...item, active: nextActive };
+        }
+        return item;
+      }),
+    );
+  }
+
+  async function removeEmploymentStatus(item: EmploymentStatusItem) {
+    const confirmDelete = (window as any).customConfirm
+      ? await (window as any).customConfirm(
+          `Apakah Anda yakin ingin menghapus status kepegawaian "${item.name}"? Data yang dihapus tidak dapat dikembalikan.`,
+        )
+      : window.confirm(
+          `Apakah Anda yakin ingin menghapus status kepegawaian "${item.name}"? Data yang dihapus tidak dapat dikembalikan.`,
+        );
+
+    if (!confirmDelete) return;
+
+    try {
+      await fetch(`/api/admin/employment-statuses?id=${item.id}`, {
+        method: "DELETE",
+      });
+      setEmploymentStatusList((prev) => prev.filter((i) => i.id !== item.id));
+      alert("Status kepegawaian berhasil dihapus.");
+    } catch (err) {
+      alert("Gagal menghapus status kepegawaian.");
+    }
+  }
+
   function handleAddVisitLocation() {
     const name = newVisitLocationName.trim();
     const city = newVisitLocationCity.trim();
@@ -988,44 +1144,38 @@ function AdminMasterDataPageContent() {
   return (
     <MobileShell variant="admin">
       <AppHeader
-        title="Master Data"
-        subtitle="Kelola Shift, Divisi, dan Jabatan"
+        title="Status Kepegawaian"
+        subtitle="Kelola Status Kepegawaian Karyawan"
         variant="admin"
       />
 
-      <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
-        <div className="rounded-3xl border border-blue-100 bg-white p-6 shadow-xl shadow-slate-300/30">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
-            Admin Master
-          </p>
-          <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950 md:text-3xl">
-            Kelola Shift, Divisi, dan Jabatan
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-slate-500">
-            Divisi dan jabatan mendukung CRUD penuh. Shift juga mendukung CRUD,
-            plus pengaturan jam kerja mingguan untuk Magang dan Karyawan Tetap.
-          </p>
-        </div>
+      <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
+        <div className="overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-xl shadow-slate-300/30">
+          <div className="bg-[#123c8c] p-6 text-white md:p-8">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-200">
+                  Master Data Admin
+                </p>
+                <h1 className="mt-1 text-2xl font-black tracking-tight md:text-3xl">
+                  Status Kepegawaian
+                </h1>
+              </div>
 
-        <div className="flex flex-wrap gap-3">
-          {masterTabs.map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setTab(value)}
-              className={`rounded-2xl px-4 py-2 text-sm font-black transition ${
-                tab === value
-                  ? "bg-[#123c8c] text-white"
-                  : "border border-blue-100 bg-white text-slate-600"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+              {tab === "status-kepegawaian" && (
+                <button
+                  type="button"
+                  onClick={openCreateStatusModal}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white dark:bg-[#21262d] px-5 text-sm font-black text-[#123c8c] dark:text-[#58a6ff] shadow-lg shadow-blue-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-50 dark:hover:bg-[#30363d] active:scale-[0.98]"
+                >
+                  <Plus size={18} />
+                  Tambah Status
+                </button>
+              )}
+            </div>
+          </div>
 
-        <div className="rounded-3xl border border-white/70 bg-white/90 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl">
-          <h3 className="text-xl font-black text-slate-950">{tabTitle}</h3>
+          <div className="p-5 md:p-8 space-y-6">
 
           {tab === "shift" && (
             <div className="mt-4 space-y-5">
@@ -1696,6 +1846,65 @@ function AdminMasterDataPageContent() {
             </div>
           )}
 
+          {tab === "status-kepegawaian" && (
+            <div className="space-y-6">
+              <div className="overflow-hidden rounded-2xl border border-blue-100 shadow-sm">
+                <div className="grid grid-cols-[1.2fr_0.8fr_0.6fr_0.9fr] bg-[#eaf1ff] px-5 py-3.5 text-xs font-black uppercase tracking-wider text-[#123c8c]">
+                  <p>Nama Status</p>
+                  <p>Kode System</p>
+                  <p>Status</p>
+                  <p className="text-center">Aksi</p>
+                </div>
+
+                <div className="divide-y divide-blue-100 bg-white">
+                  {employmentStatusList.map((item) => (
+                    <div
+                      key={item.id}
+                      className="grid grid-cols-[1.2fr_0.8fr_0.6fr_0.9fr] items-center px-5 py-4 text-sm transition hover:bg-blue-50/30"
+                    >
+                      <p className="font-black text-slate-900">{item.name}</p>
+
+                      <span className="w-fit rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-xs font-bold text-slate-600">
+                        {item.code}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleEmploymentStatusActive(item.id)}
+                        className={`w-fit rounded-full px-3.5 py-1 text-xs font-black transition ${
+                          item.active
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                            : "bg-slate-100 text-slate-500 border border-slate-200/60"
+                        }`}
+                      >
+                        {item.active ? "Aktif" : "Nonaktif"}
+                      </button>
+
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEditStatusModal(item)}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-1.5 text-xs font-black text-[#123c8c] transition hover:bg-blue-100 active:scale-95"
+                        >
+                          <Edit size={14} />
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeEmploymentStatus(item)}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-black text-red-600 transition hover:bg-red-100 active:scale-95"
+                        >
+                          <Trash2 size={14} />
+                          Hapus
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {tab === "lokasi-kunjungan" && (
             <div className="mt-4 space-y-4">
               <div className="grid gap-3 rounded-2xl border border-blue-100 bg-[#f6f8ff] p-3 md:grid-cols-[1fr_0.8fr_0.8fr_auto]">
@@ -1939,7 +2148,81 @@ function AdminMasterDataPageContent() {
             </div>
           )}
         </div>
+        </div>
       </section>
+
+      {isStatusModalOpen && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 px-4 pb-4 backdrop-blur-sm md:items-center md:pb-0">
+          <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                  {editingStatusItem ? "Edit Status" : "Tambah Status"}
+                </p>
+                <h2 className="mt-2 text-2xl font-black text-slate-950">
+                  {editingStatusItem ? "Update Status Kepegawaian" : "Status Kepegawaian Baru"}
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeStatusModal}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 active:scale-[0.96]"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveStatusForm} className="mt-6 space-y-4">
+              <div className="space-y-4 rounded-[1.6rem] border border-blue-100 bg-[#f8fbff] p-5">
+                <div>
+                  <label className="block text-xs font-black uppercase text-slate-500 mb-1.5">
+                    Nama Status Kepegawaian
+                  </label>
+                  <input
+                    value={statusFormName}
+                    onChange={(e) => setStatusFormName(e.target.value)}
+                    placeholder="Contoh: Karyawan Tetap, Kontrak, Magang"
+                    className="w-full rounded-2xl border border-blue-100 bg-white p-3.5 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase text-slate-500 mb-1.5">
+                    Kode Sistem
+                  </label>
+                  <input
+                    value={statusFormCode}
+                    onChange={(e) => setStatusFormCode(e.target.value)}
+                    placeholder="Contoh: kartap, kontrak, magang"
+                    className="w-full rounded-2xl border border-blue-100 bg-white p-3.5 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                  />
+                  <p className="mt-1.5 text-xs text-slate-400">
+                    *Kode unik yang digunakan oleh sistem untuk pengelompokan data.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={closeStatusModal}
+                  className="rounded-2xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-200 active:scale-95"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-[#123c8c] px-6 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-95"
+                >
+                  <Save size={16} />
+                  {editingStatusItem ? "Simpan Perubahan" : "Tambah Status"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <BottomNav variant="admin" />
     </MobileShell>

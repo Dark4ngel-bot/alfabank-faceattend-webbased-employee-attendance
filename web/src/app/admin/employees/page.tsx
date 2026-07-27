@@ -21,6 +21,8 @@ import {
   ChevronDown,
   Clock3,
   Edit,
+  Eye,
+  FileText,
   Info,
   KeyRound,
   Mail,
@@ -898,10 +900,10 @@ export default function AdminEmployeesPage() {
       return;
     }
 
-    if (form.bank_account_number && (!/^\d+$/.test(form.bank_account_number) || form.bank_account_number.length < 11 || form.bank_account_number.length > 13)) {
+    if (form.bank_account_number && form.bank_account_number.trim() !== "" && (!/^\d+$/.test(form.bank_account_number) || form.bank_account_number.length < 10 || form.bank_account_number.length > 16)) {
       showEmployeeAlert(
         "Nomor Rekening tidak valid",
-        "Nomor rekening harus berupa angka dengan panjang antara 11 sampai 13 digit.",
+        "Nomor rekening harus berupa angka dengan panjang antara 10 sampai 16 digit.",
         "warning"
       );
       return;
@@ -1315,6 +1317,44 @@ export default function AdminEmployeesPage() {
                       </div>
 
                       <div className="grid gap-2 whitespace-nowrap md:flex md:items-center md:justify-center md:gap-2">
+                        {employee.uploaded_document_url && (
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              try {
+                                const url = employee.uploaded_document_url;
+                                if (!url) return;
+
+                                if (url.startsWith("data:")) {
+                                  const parts = url.split(";base64,");
+                                  const contentType = parts[0].replace("data:", "");
+                                  const raw = window.atob(parts[1]);
+                                  const rawLength = raw.length;
+                                  const uInt8Array = new Uint8Array(rawLength);
+
+                                  for (let i = 0; i < rawLength; ++i) {
+                                    uInt8Array[i] = raw.charCodeAt(i);
+                                  }
+
+                                  const blob = new Blob([uInt8Array], { type: contentType });
+                                  const blobUrl = URL.createObjectURL(blob);
+                                  window.open(blobUrl, "_blank");
+                                } else {
+                                  window.open(url, "_blank");
+                                }
+                              } catch (err) {
+                                alert("Gagal membuka berkas dokumen.");
+                              }
+                            }}
+                            className="inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 text-xs font-black text-emerald-700 transition hover:bg-emerald-100 active:scale-[0.97] md:h-10 md:rounded-xl md:px-2.5 md:py-0"
+                            title="Lihat Berkas Karyawan"
+                          >
+                            <FileText size={14} />
+                            Berkas
+                          </button>
+                        )}
+
                         <button
                           type="button"
                           onClick={(event) => {
@@ -1390,6 +1430,24 @@ export default function AdminEmployeesPage() {
               noValidate
               className="mt-6 grid gap-4"
             >
+              {editingEmployee && (
+                <AppFormReveal delay={15}>
+                  <div>
+                    <label className="mb-2 block text-sm font-black text-slate-700">
+                      ID Karyawan
+                    </label>
+                    <div className="app-field-smooth relative rounded-2xl">
+                      <input
+                        type="text"
+                        readOnly
+                        value={editingEmployee.id}
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-100 py-3 px-4 text-sm font-bold text-slate-500 outline-none cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+                </AppFormReveal>
+              )}
+
               <AppFormReveal delay={20}>
                 <div>
                   <label className="mb-2 block text-sm font-black text-slate-700">

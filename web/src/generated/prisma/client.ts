@@ -84,6 +84,11 @@ export type WorkSchedule = Prisma.WorkScheduleModel
  */
 export type OfficeLocation = Prisma.OfficeLocationModel
 /**
+ * Model EmploymentStatus
+ * 
+ */
+export type EmploymentStatus = Prisma.EmploymentStatusModel
+/**
  * Model Attendance
  * 
  */

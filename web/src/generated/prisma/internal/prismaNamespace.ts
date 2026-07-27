@@ -397,6 +397,7 @@ export const ModelName = {
   Shift: 'Shift',
   WorkSchedule: 'WorkSchedule',
   OfficeLocation: 'OfficeLocation',
+  EmploymentStatus: 'EmploymentStatus',
   Attendance: 'Attendance',
   AttendanceMonthlySummary: 'AttendanceMonthlySummary',
   EmployeeVisit: 'EmployeeVisit',
@@ -423,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "loginRateLimit" | "department" | "unit" | "position" | "shift" | "workSchedule" | "officeLocation" | "attendance" | "attendanceMonthlySummary" | "employeeVisit" | "wfhRequest" | "leaveRequest" | "announcement" | "adminNotification" | "payroll" | "payrollItem" | "permission" | "rolePermission"
+    modelProps: "user" | "loginRateLimit" | "department" | "unit" | "position" | "shift" | "workSchedule" | "officeLocation" | "employmentStatus" | "attendance" | "attendanceMonthlySummary" | "employeeVisit" | "wfhRequest" | "leaveRequest" | "announcement" | "adminNotification" | "payroll" | "payrollItem" | "permission" | "rolePermission"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -952,6 +953,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.OfficeLocationCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.OfficeLocationCountAggregateOutputType> | number
+        }
+      }
+    }
+    EmploymentStatus: {
+      payload: Prisma.$EmploymentStatusPayload<ExtArgs>
+      fields: Prisma.EmploymentStatusFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EmploymentStatusFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmploymentStatusPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EmploymentStatusFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmploymentStatusPayload>
+        }
+        findFirst: {
+          args: Prisma.EmploymentStatusFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmploymentStatusPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EmploymentStatusFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmploymentStatusPayload>
+        }
+        findMany: {
+          args: Prisma.EmploymentStatusFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmploymentStatusPayload>[]
+        }
+        create: {
+          args: Prisma.EmploymentStatusCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmploymentStatusPayload>
+        }
+        createMany: {
+          args: Prisma.EmploymentStatusCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.EmploymentStatusDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmploymentStatusPayload>
+        }
+        update: {
+          args: Prisma.EmploymentStatusUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmploymentStatusPayload>
+        }
+        deleteMany: {
+          args: Prisma.EmploymentStatusDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EmploymentStatusUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.EmploymentStatusUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmploymentStatusPayload>
+        }
+        aggregate: {
+          args: Prisma.EmploymentStatusAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEmploymentStatus>
+        }
+        groupBy: {
+          args: Prisma.EmploymentStatusGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EmploymentStatusGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EmploymentStatusCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EmploymentStatusCountAggregateOutputType> | number
         }
       }
     }
@@ -1847,6 +1914,18 @@ export const OfficeLocationScalarFieldEnum = {
 export type OfficeLocationScalarFieldEnum = (typeof OfficeLocationScalarFieldEnum)[keyof typeof OfficeLocationScalarFieldEnum]
 
 
+export const EmploymentStatusScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  code: 'code',
+  active: 'active',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type EmploymentStatusScalarFieldEnum = (typeof EmploymentStatusScalarFieldEnum)[keyof typeof EmploymentStatusScalarFieldEnum]
+
+
 export const AttendanceScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
@@ -2189,6 +2268,15 @@ export const OfficeLocationOrderByRelevanceFieldEnum = {
 export type OfficeLocationOrderByRelevanceFieldEnum = (typeof OfficeLocationOrderByRelevanceFieldEnum)[keyof typeof OfficeLocationOrderByRelevanceFieldEnum]
 
 
+export const EmploymentStatusOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  code: 'code'
+} as const
+
+export type EmploymentStatusOrderByRelevanceFieldEnum = (typeof EmploymentStatusOrderByRelevanceFieldEnum)[keyof typeof EmploymentStatusOrderByRelevanceFieldEnum]
+
+
 export const AttendanceOrderByRelevanceFieldEnum = {
   id: 'id',
   user_id: 'user_id',
@@ -2499,6 +2587,7 @@ export type GlobalOmitConfig = {
   shift?: Prisma.ShiftOmit
   workSchedule?: Prisma.WorkScheduleOmit
   officeLocation?: Prisma.OfficeLocationOmit
+  employmentStatus?: Prisma.EmploymentStatusOmit
   attendance?: Prisma.AttendanceOmit
   attendanceMonthlySummary?: Prisma.AttendanceMonthlySummaryOmit
   employeeVisit?: Prisma.EmployeeVisitOmit

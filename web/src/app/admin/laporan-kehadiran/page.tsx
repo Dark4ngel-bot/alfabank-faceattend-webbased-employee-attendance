@@ -548,6 +548,35 @@ export default function AdminAttendanceReportPage() {
     );
   }
 
+  function handleExportExcel() {
+    if (!reports.length || isLoading) {
+      alert("Tidak ada data presensi yang tersedia untuk diekspor.");
+      return;
+    }
+
+    const headers = ["No", "Nama Karyawan", "Kode Karyawan", "Tanggal", "Jam Masuk", "Jam Keluar", "Durasi", "Mode Kerja", "Status"];
+    const rows = reports.map((r, idx) => [
+      idx + 1,
+      `"${r.employeeName}"`,
+      `"${r.employeeCode || "-"}"`,
+      `"${r.dateLabel || r.date}"`,
+      `"${r.checkIn}"`,
+      `"${r.checkOut}"`,
+      `"${r.duration}"`,
+      `"${r.workModeLabel}"`,
+      `"${r.statusLabel}"`,
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Rekap_Kehadiran_${month}_${year}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   useEffect(() => {
     void getAttendanceReports();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -681,6 +710,25 @@ export default function AdminAttendanceReportPage() {
                 <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
                   Cari Rekap Kehadiran
                 </h2>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleExportExcel}
+                  className="inline-flex h-11 items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 text-xs font-black text-emerald-700 transition hover:bg-emerald-100 active:scale-95"
+                >
+                  <Download size={16} />
+                  Export Excel (.csv)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportPdf}
+                  className="inline-flex h-11 items-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-4 text-xs font-black text-[#123c8c] transition hover:bg-blue-100 active:scale-95"
+                >
+                  <Printer size={16} />
+                  Cetak PDF
+                </button>
               </div>
             </div>
 
