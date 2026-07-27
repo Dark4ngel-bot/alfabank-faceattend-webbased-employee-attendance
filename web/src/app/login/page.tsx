@@ -7,6 +7,13 @@ import { AlertCircle, Loader2, LogIn, X } from "lucide-react";
 import MobileShell from "@/components/MobileShell";
 import { AppButton, AppCard, AppInput } from "@/components/ui/AppUI";
 
+const CREATIVEMU_LOGO_SRC = "/images/creativemu-logo/creativemu.png";
+const CREATIVEMU_INTRO_LOGO_SRC =
+  "/images/creativemu-logo/creativemu-solo.png";
+const CREATIVEMU_BACKGROUND_LOGO_SRC = "/images/creativemu-logo/creativemu.png";
+const CREATIVEMU_MOBILE_BACKGROUND_LOGO_SRC =
+  "/images/creativemu-logo/creativemu-solo.png";
+
 type LoginResponse = {
   success?: boolean;
   message?: string;
@@ -384,10 +391,7 @@ export default function LoginPage() {
 
     if (reason === "expired") {
       setShowIntro(false);
-      showAlert(
-        "Sesi berakhir",
-        "Silakan login kembali untuk melanjutkan.",
-      );
+      showAlert("Sesi berakhir", "Silakan login kembali untuk melanjutkan.");
     }
   }, []);
 
@@ -598,10 +602,10 @@ export default function LoginPage() {
 
             <div className="relative z-10 flex h-32 w-32 items-center justify-center overflow-hidden rounded-[2rem] border border-white/80 bg-white p-5 shadow-[0_24px_58px_rgba(18,60,140,0.14)] md:h-40 md:w-40 md:p-7">
               <Image
-                src="/images/creativemu-logo/creativemu.png"
+                src={CREATIVEMU_INTRO_LOGO_SRC}
                 alt="Creativemu Logo"
-                width={140}
-                height={140}
+                width={421}
+                height={390}
                 className="intro-logo-pulse h-full w-full object-contain"
                 priority
               />
@@ -636,40 +640,34 @@ export default function LoginPage() {
         <div className="relative z-10 grid min-h-dvh w-full grid-cols-1 lg:grid-cols-2">
           <div className="login-enter relative flex flex-col px-6 py-7 md:px-12 lg:justify-between lg:px-20 lg:py-14">
             <Image
-              src="/images/creativemu-logo/creativemu.png"
+              src={CREATIVEMU_BACKGROUND_LOGO_SRC}
               alt="Logo Latar Creativemu"
-              width={620}
-              height={620}
-              className="pointer-events-none absolute -left-20 top-1/2 hidden -translate-y-1/2 opacity-[0.045] lg:block"
+              width={1452}
+              height={390}
+              className="pointer-events-none absolute left-[80%] top-1/2 hidden w-[34rem] -translate-x-1/2 -translate-y-1/2 opacity-[0.045] mix-blend-multiply lg:block"
               priority
             />
 
             <Image
-              src="/images/creativemu-logo/creativemu.png"
+              src={CREATIVEMU_MOBILE_BACKGROUND_LOGO_SRC}
               alt="Logo Latar Creativemu"
-              width={300}
-              height={300}
-              className="pointer-events-none absolute -right-20 top-24 opacity-[0.04] lg:hidden"
+              width={421}
+              height={390}
+              className="pointer-events-none absolute left-[78%] top-24 w-[18rem] -translate-x-1/2 opacity-[0.04] mix-blend-multiply lg:hidden"
               priority
             />
 
             <div className="relative z-10">
               <div className="login-logo-pop flex items-center gap-4">
-                <div className="flex h-12 min-h-12 w-12 min-w-12 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-xl shadow-slate-300/60 md:h-14 md:w-14">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-xl shadow-slate-300/60 md:h-[4.5rem] md:w-[4.5rem] md:p-2">
                   <Image
-                    src="/images/creativemu-logo/creativemu.png"
+                    src={CREATIVEMU_LOGO_SRC}
                     alt="Creativemu Logo"
-                    width={56}
-                    height={56}
+                    width={72}
+                    height={19}
                     className="h-full w-full object-contain"
                     priority
                   />
-                </div>
-
-                <div>
-                  <h1 className="text-xl font-black tracking-tight text-slate-950 md:text-2xl">
-                    Creativemu
-                  </h1>
                 </div>
               </div>
 
@@ -684,7 +682,7 @@ export default function LoginPage() {
                 </p>
 
                 <h2
-                  className="login-text-reveal mt-4 text-4xl font-black leading-[1.05] tracking-tight text-slate-950 md:mt-5 md:text-6xl"
+                  className="login-text-reveal mt-4 text-[2rem] font-black leading-[1.05] tracking-tight text-slate-950 sm:text-4xl md:mt-5 md:text-6xl"
                   style={{
                     animationDelay: "180ms",
                   }}
@@ -715,7 +713,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="flex items-start justify-center px-6 pb-8 pt-2 md:px-12 md:pb-12 lg:items-center lg:bg-white/35 lg:px-20 lg:py-14 lg:backdrop-blur-xl">
+          <div className="flex items-start justify-center px-6 pb-8 pt-2 md:px-12 md:pb-12 lg:items-center lg:px-20 lg:py-14">
             <AppCard
               padding="lg"
               className="login-card-enter w-full max-w-md border-white/70 bg-white/90 shadow-2xl shadow-slate-300/60 backdrop-blur-2xl"

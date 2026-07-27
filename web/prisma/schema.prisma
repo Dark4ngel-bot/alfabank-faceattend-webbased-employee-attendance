@@ -503,6 +503,20 @@ model AdminNotification {
   @@index([created_at])
 }
 
+model AdminContactNumber {
+  id String @id @default(uuid()) @db.Char(36)
+
+  label        String  @db.VarChar(100)
+  phone_number String  @unique @db.VarChar(25)
+  is_active    Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@index([is_active])
+  @@map("admin_contact_numbers")
+}
+
 model Payroll {
   id String @id @default(uuid()) @db.Char(36)
 

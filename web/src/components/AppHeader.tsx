@@ -30,6 +30,12 @@ import {
   X,
 } from "lucide-react";
 
+const CREATIVEMU_LOGO_SRC = "/images/creativemu-logo/creativemu-solo.png";
+const CREATIVEMU_BACKGROUND_LOGO_SRC =
+  "/images/creativemu-logo/creativemu-solo.png";
+const CREATIVEMU_SOLO_LOGO_SRC =
+  "/images/creativemu-logo/creativemu-solo.png";
+
 type AppHeaderProps = {
   title: string;
   subtitle?: string;
@@ -41,6 +47,7 @@ type NotificationStats = {
   total?: number;
   unread?: number;
   pending?: number;
+  actionable?: number;
   sick?: number;
   leave?: number;
   permission?: number;
@@ -51,6 +58,14 @@ type NotificationStats = {
 type NotificationResponse = {
   success?: boolean;
   stats?: NotificationStats;
+  message?: string;
+};
+
+type AdminContactNumberResponse = {
+  success?: boolean;
+  number?: {
+    phone_number?: string | null;
+  } | null;
   message?: string;
 };
 
@@ -65,12 +80,12 @@ const employeeNav = [
 
 const adminMenus = [
   {
-    href: "/admin/dashboard",
+    href: "/admin/dasbor",
     label: "Dasbor",
     icon: LayoutDashboard,
   },
   {
-    href: "/admin/monitor_perusahaan",
+    href: "/admin/monitor-perusahaan",
     label: "Monitor Perusahaan",
     icon: BarChart3,
   },
@@ -83,12 +98,12 @@ const adminMenus = [
 
 const masterDataMenus = [
   {
-    href: "/admin/shifts",
+    href: "/admin/shift",
     label: "Shift",
     icon: Clock3,
   },
   {
-    href: "/admin/work-schedules",
+    href: "/admin/jam-kerja",
     label: "Jam Kerja",
     icon: CalendarClock,
   },
@@ -103,17 +118,17 @@ const masterDataMenus = [
     icon: Network,
   },
   {
-    href: "/admin/jabatans",
+    href: "/admin/jabatan",
     label: "Jabatan",
     icon: Building2,
   },
   {
-    href: "/admin/positions",
+    href: "/admin/posisi",
     label: "Posisi",
     icon: UserRoundCog,
   },
   {
-    href: "/admin/employment-status",
+    href: "/admin/status-kepegawaian",
     label: "Status Kepegawaian",
     icon: UserRound,
   },
@@ -121,7 +136,7 @@ const masterDataMenus = [
 
 const operationalMenus = [
   {
-    href: "/admin/employees",
+    href: "/admin/daftar-karyawan",
     label: "Daftar Karyawan",
     icon: UserPlus,
   },
@@ -131,7 +146,7 @@ const operationalMenus = [
     icon: FileImage,
   },
   {
-    href: "/admin/cuti",
+    href: "/admin/laporan-cuti",
     label: "Laporan Cuti",
     icon: CalendarDays,
   },
@@ -144,6 +159,11 @@ const operationalMenus = [
     href: "/admin/rank-kehadiran-karyawan",
     label: "Rank Kehadiran Karyawan",
     icon: Trophy,
+  },
+  {
+    href: "/admin/nomor-admin",
+    label: "Nomor Admin",
+    icon: PhoneCall,
   },
 ];
 
@@ -170,10 +190,13 @@ async function readJsonResponse(response: Response) {
 function getAdminNotificationCount(stats?: NotificationStats) {
   if (!stats) return 0;
 
-  const unread = Number(stats.unread || 0);
-  const pending = Number(stats.pending || 0);
+  const actionable = Number(stats.actionable);
 
-  return unread + pending;
+  if (Number.isFinite(actionable)) {
+    return Math.max(0, actionable);
+  }
+
+  return Math.max(0, Number(stats.unread || 0) + Number(stats.pending || 0));
 }
 
 function getEmployeeNotificationCount(stats?: NotificationStats) {
@@ -189,6 +212,14 @@ function formatNotificationCount(count: number) {
   return String(count);
 }
 
+function getWhatsappLink(phoneNumber?: string | null) {
+  const digits = String(phoneNumber || "").replace(/\D/g, "");
+
+  if (!digits) return WHATSAPP_LINK;
+
+  return `https://wa.me/${digits}`;
+}
+
 export default function AppHeader({
   title,
   subtitle,
@@ -201,6 +232,7 @@ export default function AppHeader({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [whatsappLink, setWhatsappLink] = useState(WHATSAPP_LINK);
 
   const resolvedVariant = useMemo(() => {
     if (pathname === "/admin" || pathname.startsWith("/admin/")) {
@@ -211,6 +243,10 @@ export default function AppHeader({
   }, [pathname, variant]);
 
   const isAdmin = resolvedVariant === "admin";
+  const headerLogoSrc = isAdmin ? CREATIVEMU_SOLO_LOGO_SRC : CREATIVEMU_LOGO_SRC;
+  const headerBackgroundLogoSrc = isAdmin
+    ? CREATIVEMU_SOLO_LOGO_SRC
+    : CREATIVEMU_BACKGROUND_LOGO_SRC;
   const notificationHref = isAdmin ? "/admin/notifikasi" : "/notifikasi";
   const isNotificationPage = isActivePath(pathname, notificationHref);
   const hasNewNotification = notificationCount > 0;
@@ -282,6 +318,52 @@ export default function AppHeader({
     };
   }, [isAdmin, pathname]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadAdminContactNumber() {
+      try {
+        const response = await fetch("/api/admin-contact-number", {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          if (isMounted) setWhatsappLink(WHATSAPP_LINK);
+          return;
+        }
+
+        const data =
+          (await readJsonResponse(response)) as AdminContactNumberResponse;
+
+        if (isMounted) {
+          setWhatsappLink(getWhatsappLink(data.number?.phone_number));
+        }
+      } catch {
+        if (isMounted) setWhatsappLink(WHATSAPP_LINK);
+      }
+    }
+
+    void loadAdminContactNumber();
+
+    function handleAdminContactNumberChange() {
+      void loadAdminContactNumber();
+    }
+
+    window.addEventListener(
+      "admin-contact-number-changed",
+      handleAdminContactNumberChange,
+    );
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener(
+        "admin-contact-number-changed",
+        handleAdminContactNumberChange,
+      );
+    };
+  }, [pathname]);
+
   function handleNavigate(href: string) {
     setIsSidebarOpen(false);
     router.push(href);
@@ -316,7 +398,7 @@ export default function AppHeader({
           aria-hidden="true"
           className="pointer-events-none absolute right-16 top-1/2 hidden h-64 w-64 -translate-y-1/2 bg-contain bg-center bg-no-repeat opacity-[0.11] blur-[0.5px] md:block"
           style={{
-            backgroundImage: "url('/images/creativemu-logo/creativemu.png')",
+            backgroundImage: `url('${headerBackgroundLogoSrc}')`,
           }}
         />
 
@@ -346,7 +428,7 @@ export default function AppHeader({
 
           <div className="flex shrink-0 items-center justify-end gap-3">
             <a
-              href={WHATSAPP_LINK}
+              href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Hubungi via WhatsApp"
@@ -420,12 +502,12 @@ export default function AppHeader({
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between gap-3 border-b border-blue-50 px-5 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-slate-300/50 ring-1 ring-blue-100">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-slate-300/50 ring-1 ring-blue-100">
                 <Image
-                  src="/images/creativemu-logo/creativemu.png"
+                  src={headerLogoSrc}
                   alt="Creativemu Logo"
-                  width={48}
-                  height={48}
+                  width={64}
+                  height={59}
                   className="h-full w-full object-contain"
                   priority
                 />

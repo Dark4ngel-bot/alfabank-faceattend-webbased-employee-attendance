@@ -8,7 +8,7 @@ const EMPLOYEE_PATHS = [
   "/presensi",
   "/history",
   "/profil",
-  "/face-card",
+  "/kartu-identitas",
   "/cuti",
   "/notifikasi",
   "/pengumuman",
@@ -52,7 +52,7 @@ function redirectToHome(req: NextRequest) {
 
 function redirectToAdmin(req: NextRequest) {
   const adminUrl = req.nextUrl.clone();
-  adminUrl.pathname = "/admin/dashboard";
+  adminUrl.pathname = "/admin/dasbor";
   adminUrl.search = "";
 
   return NextResponse.redirect(adminUrl);
@@ -120,7 +120,7 @@ export const config = {
     "/presensi/:path*",
     "/history/:path*",
     "/profil/:path*",
-    "/face-card/:path*",
+    "/kartu-identitas/:path*",
     "/cuti/:path*",
     "/notifikasi/:path*",
     "/pengumuman/:path*",

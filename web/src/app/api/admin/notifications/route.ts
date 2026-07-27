@@ -133,7 +133,7 @@ function getAdminNotificationStatus(status: string, isRead: boolean) {
 
 function getNotificationHref(type: NotificationType, attendanceId?: string | null) {
   if (type === "sick" || type === "leave" || type === "permission") {
-    return "/admin/cuti";
+    return "/admin/laporan-cuti";
   }
 
   if (attendanceId) {
@@ -156,12 +156,21 @@ function getStats(
   notifications: Array<{
     type: NotificationType;
     status: string;
+    source: "LeaveRequest" | "AdminNotification";
   }>
 ) {
+  const actionable = notifications.filter((item) => {
+    if (item.source === "LeaveRequest") return item.status === "pending";
+    if (item.source === "AdminNotification") return item.status === "unread";
+
+    return false;
+  });
+
   return {
     total: notifications.length,
     unread: notifications.filter((item) => item.status === "unread").length,
     pending: notifications.filter((item) => item.status === "pending").length,
+    actionable: actionable.length,
     sick: notifications.filter((item) => item.type === "sick").length,
     leave: notifications.filter((item) => item.type === "leave").length,
     permission: notifications.filter((item) => item.type === "permission").length,
@@ -238,7 +247,7 @@ export async function GET(req: NextRequest) {
       return {
         id: `leave-${item.id}`,
         rawId: item.id,
-        source: "LeaveRequest",
+        source: "LeaveRequest" as const,
         type,
         title: getLeaveTitle(type),
         message: getLeaveMessage({
@@ -273,7 +282,7 @@ export async function GET(req: NextRequest) {
         return {
           id: `admin-${item.id}`,
           rawId: item.id,
-          source: "AdminNotification",
+          source: "AdminNotification" as const,
           type,
           title:
             item.title ||
@@ -312,10 +321,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Gagal mengambil notifikasi admin.",
+        message: "Gagal mengambil notifikasi admin.",
       },
       { status: 500 }
     );
@@ -363,10 +369,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Gagal memperbarui notifikasi.",
+        message: "Gagal memperbarui notifikasi.",
       },
       { status: 500 }
     );

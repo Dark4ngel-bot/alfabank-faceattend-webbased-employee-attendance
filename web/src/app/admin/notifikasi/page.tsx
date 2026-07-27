@@ -49,6 +49,7 @@ type NotificationStats = {
   total: number;
   unread: number;
   pending: number;
+  actionable: number;
   sick: number;
   leave: number;
   permission: number;
@@ -67,6 +68,7 @@ const emptyStats: NotificationStats = {
   total: 0,
   unread: 0,
   pending: 0,
+  actionable: 0,
   sick: 0,
   leave: 0,
   permission: 0,

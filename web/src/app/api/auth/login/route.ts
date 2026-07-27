@@ -230,7 +230,7 @@ export async function POST(req: Request) {
 
     const role = String(user.role || "").toLowerCase();
     const redirectTo =
-      role === "admin" || role === "owner" ? "/admin/dashboard" : "/beranda";
+      role === "admin" || role === "owner" ? "/admin/dasbor" : "/beranda";
 
     const response = NextResponse.json({
       success: true,
