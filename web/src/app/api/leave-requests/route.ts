@@ -10,18 +10,13 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const db = prisma as any;
-
-type LeaveType = "annual" | "permission" | "sick" | "overtime" | "visit" | "wfh" | "other";
+type LeaveType = "annual" | "permission" | "sick" | "other";
 type LeaveStatus = "pending" | "approved" | "rejected";
 
 const allowedLeaveTypes: LeaveType[] = [
   "annual",
   "permission",
   "sick",
-  "overtime",
-  "visit",
-  "wfh",
   "other",
 ];
 
@@ -102,37 +97,20 @@ function formatDateDisplay(value: Date | string | null | undefined) {
   });
 }
 
-function formatLeaveType(type: string) {
+function getLeaveTypeLabel(type: string) {
   if (type === "annual") return "Cuti Tahunan";
   if (type === "permission") return "Izin";
   if (type === "sick") return "Sakit";
-  if (type === "overtime") return "Lembur";
-  if (type === "visit") return "Kunjungan";
-  if (type === "wfh") return "WFH";
-  if (type === "other") return "Lainnya";
 
-  return type;
+  return "Lainnya";
 }
 
-function formatStatus(status: string) {
-  if (status === "pending") return "Menunggu";
+function getStatusLabel(status: string) {
+  if (status === "pending") return "Pending";
   if (status === "approved") return "Disetujui";
   if (status === "rejected") return "Ditolak";
 
-  return status;
-}
-
-function getRequestedWorkMode(type: string, rawMode: string) {
-  if (["office", "wfh", "visit", "flexible"].includes(rawMode)) return rawMode;
-  if (type === "wfh") return "wfh";
-  if (type === "visit") return "visit";
-  if (type === "overtime") return "office";
-  return null;
-}
-
-function shouldRequestLocationUnlock(type: string, explicitValue: unknown) {
-  if (typeof explicitValue === "boolean") return explicitValue;
-  return ["wfh", "visit", "overtime"].includes(type);
+  return status || "-";
 }
 
 function mapLeaveRequest(item: {
@@ -143,39 +121,48 @@ function mapLeaveRequest(item: {
   end_date: Date;
   total_days: number;
   reason: string;
-  requested_work_mode: string | null;
-  location_unlock_requested: boolean;
-  location_unlock_approved: boolean;
-  visit_location_name: string | null;
-  visit_address: string | null;
-  visit_latitude: number | null;
-  visit_longitude: number | null;
   status: string;
   admin_note: string | null;
   created_at: Date;
   updated_at: Date;
+  user?: {
+    name: string;
+    email: string;
+    position: {
+      name: string;
+    } | null;
+    department: {
+      name: string;
+    } | null;
+  } | null;
 }) {
   return {
     id: item.id,
     userId: item.user_id,
+
+    employeeName: item.user?.name || "-",
+    employeeEmail: item.user?.email || "-",
+    employeePosition: item.user?.position?.name || "-",
+    employeeDepartment: item.user?.department?.name || "-",
+
     leaveType: item.leave_type,
-    leaveTypeLabel: formatLeaveType(item.leave_type),
+    leaveTypeLabel: getLeaveTypeLabel(item.leave_type),
+
     startDate: formatDateDisplay(item.start_date),
     endDate: formatDateDisplay(item.end_date),
+
     startDateRaw: toIsoDate(item.start_date),
     endDateRaw: toIsoDate(item.end_date),
-    totalDays: Number(item.total_days || 0),
+    startDateIso: toIsoDate(item.start_date),
+    endDateIso: toIsoDate(item.end_date),
+
+    totalDays: item.total_days,
     reason: item.reason,
-    requestedWorkMode: item.requested_work_mode,
-    locationUnlockRequested: item.location_unlock_requested,
-    locationUnlockApproved: item.location_unlock_approved,
-    visitLocationName: item.visit_location_name,
-    visitAddress: item.visit_address,
-    visitLatitude: item.visit_latitude,
-    visitLongitude: item.visit_longitude,
+
     status: item.status,
-    statusLabel: formatStatus(item.status),
-    adminNote: item.admin_note || null,
+    statusLabel: getStatusLabel(item.status),
+
+    adminNote: item.admin_note,
     createdAt: toIsoDate(item.created_at),
     updatedAt: toIsoDate(item.updated_at),
   };
@@ -184,26 +171,25 @@ function mapLeaveRequest(item: {
 async function createAdminNotification(params: {
   userId: string;
   userName: string;
-  leaveType: string;
+  leaveType: LeaveType;
   totalDays: number;
   reason: string;
 }) {
   try {
-    const leaveLabel = formatLeaveType(params.leaveType);
-    const message = `${params.userName} mengajukan ${leaveLabel.toLowerCase()} selama ${params.totalDays} hari dengan alasan: ${params.reason}.`;
+    const label = getLeaveTypeLabel(params.leaveType);
 
     await prisma.adminNotification.create({
       data: {
         user_id: params.userId,
-        type: "leave-request",
-        title: "Pengajuan Cuti Baru",
-        message,
+        type: params.leaveType,
+        title: `Pengajuan ${label}`,
+        message: `${params.userName} mengajukan ${label.toLowerCase()} selama ${params.totalDays} hari. Alasan: ${params.reason}`,
         status: "unread",
         is_read: false,
       },
     });
   } catch (error) {
-    console.error("CREATE_ADMIN_NOTIFICATION_ERROR:", error);
+    console.error("CREATE_LEAVE_NOTIFICATION_ERROR:", error);
   }
 }
 
@@ -211,10 +197,18 @@ export async function GET(req: NextRequest) {
   try {
     const currentUser = await getCurrentUser(req);
 
+    if (currentUser.status !== "active") {
+      return jsonError("Akun tidak aktif.", 403);
+    }
+
+    const isAdmin = canManageLeave(currentUser.role);
+
     const leaveRequests = await prisma.leaveRequest.findMany({
-      where: {
-        user_id: currentUser.id,
-      },
+      where: isAdmin
+        ? {}
+        : {
+            user_id: currentUser.id,
+          },
       select: {
         id: true,
         user_id: true,
@@ -223,39 +217,54 @@ export async function GET(req: NextRequest) {
         end_date: true,
         total_days: true,
         reason: true,
-        requested_work_mode: true,
-        location_unlock_requested: true,
-        location_unlock_approved: true,
-        visit_location_name: true,
-        visit_address: true,
-        visit_latitude: true,
-        visit_longitude: true,
         status: true,
         admin_note: true,
         created_at: true,
         updated_at: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+            position: {
+              select: {
+                name: true,
+              },
+            },
+            department: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         created_at: "desc",
       },
     });
 
-    const mappedRequests = leaveRequests.map(mapLeaveRequest as any) as any[];
+    const mappedRequests = leaveRequests.map(mapLeaveRequest);
 
     const stats = {
       total: mappedRequests.length,
-      pending: mappedRequests.filter((item) => item.status === "pending").length,
-      approved: mappedRequests.filter((item) => item.status === "approved").length,
-      rejected: mappedRequests.filter((item) => item.status === "rejected").length,
+      pending: mappedRequests.filter((item) => item.status === "pending")
+        .length,
+      approved: mappedRequests.filter((item) => item.status === "approved")
+        .length,
+      rejected: mappedRequests.filter((item) => item.status === "rejected")
+        .length,
     };
 
     return NextResponse.json({
       success: true,
+      message: "Riwayat pengajuan berhasil diambil.",
       stats,
       requests: mappedRequests,
       leaveRequests: mappedRequests,
     });
   } catch (error) {
+    console.error("GET /api/leave-requests error:", error);
+
     return jsonError(
       getApiErrorMessage(error, "Gagal mengambil data pengajuan cuti."),
       getApiErrorStatus(error)
@@ -267,117 +276,71 @@ export async function POST(req: NextRequest) {
   try {
     const currentUser = await getCurrentUser(req);
 
-    const body = await req.json();
+    if (currentUser.status !== "active") {
+      return jsonError("Akun tidak aktif.", 403);
+    }
 
-    const leaveType = String(body.leaveType || "").trim();
-    const startDateRaw = String(body.startDate || "").trim();
-    const endDateRaw = String(body.endDate || "").trim();
+    let body: {
+      leaveType?: string;
+      leave_type?: string;
+      startDate?: string;
+      start_date?: string;
+      endDate?: string;
+      end_date?: string;
+      reason?: string;
+    };
+
+    try {
+      body = await req.json();
+    } catch {
+      return jsonError("Body request tidak valid.");
+    }
+
+    const leaveType = String(
+      body.leaveType || body.leave_type || ""
+    ).trim() as LeaveType;
+
+    const startDateText = String(
+      body.startDate || body.start_date || ""
+    ).trim();
+
+    const endDateText = String(body.endDate || body.end_date || "").trim();
+
     const reason = String(body.reason || "").trim();
 
-    const requestedWorkMode = getRequestedWorkMode(
-      leaveType,
-      String(body.requestedWorkMode || "").trim()
-    );
-    const locationUnlockRequested = shouldRequestLocationUnlock(
-      leaveType,
-      body.locationUnlockRequested
-    );
-    const visitLocationName = String(body.visitLocationName || "").trim();
-    const visitAddress = String(body.visitAddress || "").trim();
-    const visitLatitude =
-      body.visitLatitude === null || body.visitLatitude === undefined || body.visitLatitude === ""
-        ? null
-        : Number(body.visitLatitude);
-    const visitLongitude =
-      body.visitLongitude === null || body.visitLongitude === undefined || body.visitLongitude === ""
-        ? null
-        : Number(body.visitLongitude);
-
-    if (!leaveType || !startDateRaw || !endDateRaw || !reason) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Jenis cuti, tanggal mulai, tanggal selesai, dan alasan wajib diisi.",
-        },
-        { status: 400 }
-      );
+    if (!leaveType || !allowedLeaveTypes.includes(leaveType)) {
+      return jsonError("Jenis pengajuan tidak valid.");
     }
 
-    if (!allowedLeaveTypes.includes(leaveType as any)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Jenis pengajuan tidak valid.",
-        },
-        { status: 400 }
-      );
+    if (!startDateText) {
+      return jsonError("Tanggal mulai wajib diisi.");
     }
 
-    const startDate = normalizeDateOnly(startDateRaw);
-    const endDate = normalizeDateOnly(endDateRaw);
+    if (!endDateText) {
+      return jsonError("Tanggal selesai wajib diisi.");
+    }
+
+    if (!reason) {
+      return jsonError("Alasan pengajuan wajib diisi.");
+    }
+
+    const startDate = normalizeDateOnly(startDateText);
+    const endDate = normalizeDateOnly(endDateText);
 
     if (!startDate || !endDate) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Format tanggal tidak valid.",
-        },
-        { status: 400 }
-      );
+      return jsonError("Format tanggal tidak valid.");
     }
 
-    if (endDate < startDate) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Tanggal selesai tidak boleh lebih awal dari tanggal mulai.",
-        },
-        { status: 400 }
-      );
-    }
-
-    if (
-      (visitLatitude !== null && !Number.isFinite(visitLatitude)) ||
-      (visitLongitude !== null && !Number.isFinite(visitLongitude))
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Koordinat lokasi kunjungan tidak valid.",
-        },
-        { status: 400 }
+    if (endDate.getTime() < startDate.getTime()) {
+      return jsonError(
+        "Tanggal selesai tidak boleh lebih awal dari tanggal mulai."
       );
     }
 
     const totalDays = calculateTotalDays(startDate, endDate);
 
-    let finalReason = reason;
-    if (reason.includes(" | Attachment: ")) {
-      const [textReason, base64Part] = reason.split(" | Attachment: ");
-      if (base64Part && base64Part.includes(";base64,")) {
-        try {
-          const [mimePart, rawBase64] = base64Part.split(";base64,");
-          const mime = mimePart.split(":")[1];
-          let ext = "bin";
-          if (mime.includes("png")) ext = "png";
-          else if (mime.includes("jpeg") || mime.includes("jpg")) ext = "jpg";
-          else if (mime.includes("pdf")) ext = "pdf";
-          else if (mime.includes("gif")) ext = "gif";
-
-          const buffer = Buffer.from(rawBase64, "base64");
-          const filename = `leave-${currentUser.id}-${Date.now()}.${ext}`;
-          const uploadDir = path.join(process.cwd(), "public", "uploads", "leaves");
-          
-          if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-          }
-          
-          fs.writeFileSync(path.join(uploadDir, filename), buffer);
-          finalReason = `${textReason} | Attachment: /uploads/leaves/${filename}`;
-        } catch (err) {
-          console.error("Gagal menyimpan file lampiran cuti:", err);
-        }
-      }
+    if (totalDays <= 0) {
+      return jsonError("Total hari pengajuan tidak valid.");
     }
 
     const attendanceConflict = await findAttendanceInDateRange({
@@ -401,14 +364,7 @@ export async function POST(req: NextRequest) {
         start_date: startDate,
         end_date: endDate,
         total_days: totalDays,
-        reason: finalReason,
-        requested_work_mode: requestedWorkMode,
-        location_unlock_requested: locationUnlockRequested,
-        location_unlock_approved: false,
-        visit_location_name: visitLocationName || null,
-        visit_address: visitAddress || null,
-        visit_latitude: visitLatitude,
-        visit_longitude: visitLongitude,
+        reason,
         status: "pending",
       },
       select: {
@@ -419,17 +375,26 @@ export async function POST(req: NextRequest) {
         end_date: true,
         total_days: true,
         reason: true,
-        requested_work_mode: true,
-        location_unlock_requested: true,
-        location_unlock_approved: true,
-        visit_location_name: true,
-        visit_address: true,
-        visit_latitude: true,
-        visit_longitude: true,
         status: true,
         admin_note: true,
         created_at: true,
         updated_at: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+            position: {
+              select: {
+                name: true,
+              },
+            },
+            department: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -441,15 +406,17 @@ export async function POST(req: NextRequest) {
       reason,
     });
 
-    const mappedRequest = mapLeaveRequest(leaveRequest as any);
+    const mappedRequest = mapLeaveRequest(leaveRequest);
 
     return NextResponse.json({
       success: true,
-      message: "Pengajuan berhasil dikirim.",
+      message: "Pengajuan berhasil dikirim dan menunggu persetujuan admin.",
       request: mappedRequest,
       leaveRequest: mappedRequest,
     });
   } catch (error) {
+    console.error("POST /api/leave-requests error:", error);
+
     return jsonError(
       getApiErrorMessage(error, "Gagal mengirim pengajuan cuti."),
       getApiErrorStatus(error)
@@ -532,21 +499,30 @@ export async function PATCH(req: NextRequest) {
         end_date: true,
         total_days: true,
         reason: true,
-        requested_work_mode: true,
-        location_unlock_requested: true,
-        location_unlock_approved: true,
-        visit_location_name: true,
-        visit_address: true,
-        visit_latitude: true,
-        visit_longitude: true,
         status: true,
         admin_note: true,
         created_at: true,
         updated_at: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+            position: {
+              select: {
+                name: true,
+              },
+            },
+            department: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
-    const mappedRequest = mapLeaveRequest(leaveRequest as any);
+    const mappedRequest = mapLeaveRequest(leaveRequest);
 
     return NextResponse.json({
       success: true,
@@ -555,6 +531,8 @@ export async function PATCH(req: NextRequest) {
       leaveRequest: mappedRequest,
     });
   } catch (error) {
+    console.error("PATCH /api/leave-requests error:", error);
+
     return jsonError(
       getApiErrorMessage(error, "Gagal memperbarui pengajuan cuti."),
       getApiErrorStatus(error)

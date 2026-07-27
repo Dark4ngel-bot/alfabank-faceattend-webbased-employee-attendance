@@ -2,13 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
-import { verifyToken } from "@/lib/auth";
-import {
-  findDemoUserById,
-  isDatabaseUnavailable,
-  updateDemoUserProfile,
-} from "@/lib/demoStore";
-
 
 function serializeOffice(
   office:
@@ -73,12 +66,14 @@ export async function GET(req: NextRequest) {
             name: true,
           },
         },
+
         position: {
           select: {
             id: true,
             name: true,
           },
         },
+
         shift: {
           select: {
             id: true,
@@ -94,6 +89,7 @@ export async function GET(req: NextRequest) {
             },
           },
         },
+
         registered_office: {
           select: {
             id: true,
@@ -118,26 +114,6 @@ export async function GET(req: NextRequest) {
           status: 404,
         }
       );
-    }
-
-    let profile_photo_url = user.profile_photo;
-
-    try {
-      const profileRows = await prisma.$queryRaw<
-        Array<{ profile_photo_url: string | null }>
-      >`
-        SELECT profile_photo_url
-        FROM users
-        WHERE id = ${authUser.id}
-        LIMIT 1
-      `;
-
-      profile_photo_url =
-        profileRows[0]?.profile_photo_url ?? user.profile_photo;
-    } catch (error) {
-      if (!isSchemaMigrationMissing(error)) {
-        throw error;
-      }
     }
 
     return NextResponse.json({

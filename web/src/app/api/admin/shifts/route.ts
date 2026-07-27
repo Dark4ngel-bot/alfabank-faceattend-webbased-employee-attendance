@@ -55,15 +55,17 @@ function sortShifts<T extends { name: string }>(shifts: T[]) {
 }
 
 async function ensureDefaultShifts() {
-  for (const shift of defaultShifts) {
-    await prisma.shift.upsert({
-      where: {
-        name: shift.name,
-      },
-      update: {},
-      create: shift,
-    });
-  }
+  await Promise.all(
+    defaultShifts.map((shift) =>
+      prisma.shift.upsert({
+        where: {
+          name: shift.name,
+        },
+        update: {},
+        create: shift,
+      }),
+    ),
+  );
 }
 
 export async function GET(req: NextRequest) {
@@ -198,13 +200,6 @@ export async function PATCH(req: NextRequest) {
         updated_at: true,
       },
     });
-
-    await addAuditLog(
-      currentUser.email,
-      currentUser.name || "Admin",
-      "UPDATE_SHIFT",
-      `Berhasil memperbarui shift ${shift.name}: toleransi ${toleranceMinutes} menit, status ${status}`
-    );
 
     return NextResponse.json({
       message: "Shift berhasil diperbarui.",

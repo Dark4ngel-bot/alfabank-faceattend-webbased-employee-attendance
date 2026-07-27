@@ -10,11 +10,8 @@ import {
   CalendarDays,
   ChevronRight,
   Clock3,
-  CreditCard,
   Eye,
   EyeOff,
-  Gift,
-  IdCard,
   Image as ImageIcon,
   Loader2,
   LockKeyhole,
@@ -27,7 +24,6 @@ import {
   Save,
   ShieldCheck,
   Upload,
-  UserCheck,
   UserRound,
   X,
   AlertTriangle,
@@ -185,40 +181,6 @@ function normalizePhoneInput(value: string) {
   return normalizeDigits(value, IDENTITY_VALIDATION.phone.max);
 }
 
-function formatDate(value?: string | null) {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("id-ID", {
-    timeZone: "Asia/Jakarta",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(date);
-}
-
-function formatTTL(birthPlace?: string | null, birthDate?: string | null) {
-  const place = birthPlace?.trim() || "";
-  const dateFormatted = formatDate(birthDate);
-
-  if (place && dateFormatted !== "-") {
-    return `${place}, ${dateFormatted}`;
-  }
-  if (place) return place;
-  if (dateFormatted !== "-") return dateFormatted;
-  return "-";
-}
-
-function formatEmploymentStatus(status?: string | null) {
-  if (!status) return "-";
-  const s = status.toLowerCase();
-  if (s === "kartap") return "Karyawan Tetap";
-  if (s === "kontrak") return "Karyawan Kontrak";
-  if (s === "magang") return "Intern / Magang";
-  if (s === "pkl") return "Siswa PKL";
-  return status;
-}
-
 function getProfileAlertTheme(type: NonNullable<ProfileAlert>["type"]) {
   if (type === "success") {
     return {
@@ -287,8 +249,9 @@ function getActiveScheduleText(schedules?: ShiftWorkSchedule[]) {
 
   const firstSchedule = activeSchedules[0];
 
-  return `${formatDay(firstSchedule.day_of_week)} • ${firstSchedule.check_in_time
-    } - ${firstSchedule.check_out_time}`;
+  return `${formatDay(firstSchedule.day_of_week)} • ${
+    firstSchedule.check_in_time
+  } - ${firstSchedule.check_out_time}`;
 }
 
 async function readJsonResponse(response: Response) {
@@ -596,50 +559,6 @@ function PasswordInput({
   );
 }
 
-function getAlertTheme(type: NonNullable<ProfileAlert>["type"]) {
-  if (type === "success") {
-    return {
-      shell: "from-emerald-50 via-white to-blue-50 dark:from-[#0f291e] dark:via-[#161b22] dark:to-[#0d141e] dark:border-[#21262d]",
-      iconWrap: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
-      badge: "text-emerald-600 bg-white/70 dark:bg-[#30363d] dark:text-emerald-400",
-      button: "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20 dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-[#0d1117]",
-      icon: CheckCircle2,
-      label: "BERHASIL",
-    };
-  }
-
-  if (type === "error") {
-    return {
-      shell: "from-red-50 via-white to-blue-50 dark:from-[#2d1918] dark:via-[#161b22] dark:to-[#0f141c] dark:border-[#21262d]",
-      iconWrap: "bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400",
-      badge: "text-red-600 bg-white/70 dark:bg-[#30363d] dark:text-red-400",
-      button: "bg-red-600 hover:bg-red-700 shadow-red-900/20 dark:bg-red-500 dark:hover:bg-red-600 dark:text-[#0d1117]",
-      icon: AlertTriangle,
-      label: "GAGAL",
-    };
-  }
-
-  if (type === "info") {
-    return {
-      shell: "from-blue-50 via-white to-blue-50 dark:from-[#0d1f3d] dark:via-[#161b22] dark:to-[#0d1f3d] dark:border-[#21262d]",
-      iconWrap: "bg-blue-100 text-[#123c8c] dark:bg-blue-950/40 dark:text-[#58a6ff]",
-      badge: "text-[#123c8c] bg-white/70 dark:bg-[#30363d] dark:text-[#58a6ff]",
-      button: "bg-[#123c8c] hover:bg-[#0f3274] shadow-blue-900/20 dark:bg-[#1f6feb] dark:hover:bg-[#388bfd]",
-      icon: Info,
-      label: "INFO",
-    };
-  }
-
-  return {
-    shell: "from-orange-50 via-white to-blue-50 dark:from-[#2e1d0f] dark:via-[#161b22] dark:to-[#121d2f] dark:border-[#21262d]",
-    iconWrap: "bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400",
-    badge: "text-orange-600 bg-white/70 dark:bg-[#30363d] dark:text-orange-400",
-    button: "bg-[#526fae] hover:bg-[#46629d] shadow-blue-900/20 dark:bg-[#1f6feb] dark:hover:bg-[#388bfd]",
-    icon: AlertTriangle,
-    label: "PERHATIAN",
-  };
-}
-
 export default function ProfilePage() {
   const router = useRouter();
 
@@ -850,24 +769,6 @@ export default function ProfilePage() {
         "Nomor Rekening tidak valid",
         "Nomor rekening harus berupa angka dengan panjang antara 10 sampai 16 digit.",
         "warning",
-      );
-      return;
-    }
-
-    if (nik && (!/^\d+$/.test(nik) || nik.length !== 12)) {
-      showProfileAlert(
-        "NIK tidak valid",
-        "NIK harus berupa angka dan berjumlah tepat 12 digit.",
-        "warning"
-      );
-      return;
-    }
-
-    if (bank_account_number && (!/^\d+$/.test(bank_account_number) || bank_account_number.length < 11 || bank_account_number.length > 13)) {
-      showProfileAlert(
-        "Nomor Rekening tidak valid",
-        "Nomor rekening harus berupa angka dengan panjang antara 11 sampai 13 digit.",
-        "warning"
       );
       return;
     }
@@ -1173,7 +1074,7 @@ export default function ProfilePage() {
         icon: ShieldCheck,
       },
       {
-        label: "Posisi",
+        label: "Unit Kerja",
         value: user.unit?.name || "-",
         icon: Building2,
       },
@@ -1186,26 +1087,6 @@ export default function ProfilePage() {
         label: "Jabatan",
         value: user.position?.name || "-",
         icon: BriefcaseBusiness,
-      },
-      {
-        label: "NIK (No. Induk Kependudukan)",
-        value: (user as any).nik || "-",
-        icon: IdCard,
-      },
-      {
-        label: "Tempat, Tanggal Lahir (TTL)",
-        value: formatTTL((user as any).birth_place, (user as any).birth_date),
-        icon: Gift,
-      },
-      {
-        label: "No. Rekening Bank",
-        value: (user as any).bank_account_number || "-",
-        icon: CreditCard,
-      },
-      {
-        label: "Status Kepegawaian",
-        value: formatEmploymentStatus((user as any).employment_status),
-        icon: UserCheck,
       },
       {
         label: "Shift",
@@ -1815,19 +1696,12 @@ export default function ProfilePage() {
           </div>
         ) : null}
 
-      {profileAlert && profileAlertTheme ? (
-        <div
-          className={`profile-toast-enter fixed right-4 top-4 z-[140] w-[calc(100vw-2rem)] max-w-md transition-all duration-300 ease-out md:right-7 md:top-7 ${
-            isProfileAlertClosing
-              ? "translate-x-8 scale-95 opacity-0"
-              : "translate-x-0 scale-100 opacity-100"
-          }`}
-        >
+        {profileAlert && profileAlertTheme ? (
           <div
-            className={`overflow-hidden rounded-[2rem] border border-white/70 dark:border-[#21262d] bg-gradient-to-br ${profileAlertTheme.shell} shadow-2xl shadow-slate-900/20 backdrop-blur-xl transition-all duration-300 ease-out ${
+            className={`profile-toast-enter fixed right-4 top-4 z-[140] w-[calc(100vw-2rem)] max-w-md transition-all duration-300 ease-out md:right-7 md:top-7 ${
               isProfileAlertClosing
-                ? "translate-y-2 opacity-0"
-                : "translate-y-0 opacity-100"
+                ? "translate-x-8 scale-95 opacity-0"
+                : "translate-x-0 scale-100 opacity-100"
             }`}
           >
             <div
@@ -1872,30 +1746,20 @@ export default function ProfilePage() {
                     <X size={22} strokeWidth={2.8} />
                   </button>
                 </div>
+              </div>
 
               <div className="border-t border-white/60 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/90 p-4">
                 <button
                   type="button"
                   onClick={closeProfileAlert}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-slate-500 shadow-sm transition hover:bg-white hover:text-slate-800 dark:bg-slate-800/70 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200 active:scale-[0.96]"
+                  className={`w-full rounded-2xl px-6 py-3.5 text-sm font-black text-white shadow-lg transition active:scale-[0.98] ${profileAlertTheme.button}`}
                 >
-                  <X size={22} strokeWidth={2.8} />
+                  Mengerti
                 </button>
               </div>
             </div>
-
-            <div className="border-t border-white/60 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/90 p-4">
-              <button
-                type="button"
-                onClick={closeProfileAlert}
-                className={`w-full rounded-2xl px-6 py-3.5 text-sm font-black text-white shadow-lg transition active:scale-[0.98] ${profileAlertTheme.button}`}
-              >
-                Mengerti
-              </button>
-            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
 
         <BottomNav />
       </main>

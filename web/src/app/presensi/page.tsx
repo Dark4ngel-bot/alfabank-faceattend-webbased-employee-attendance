@@ -19,11 +19,6 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
-import dynamic from "next/dynamic";
-
-const AttendanceMap = dynamic(() => import("@/components/AttendanceMap"), {
-  ssr: false,
-});
 import {
   AppButton,
   AppCard,
@@ -73,14 +68,6 @@ type CurrentUser = {
     name?: string | null;
     tolerance_minutes?: number | null;
     toleranceMinutes?: number | null;
-  } | null;
-  registered_office?: {
-    id?: string;
-    name?: string | null;
-    address?: string | null;
-    latitude: number;
-    longitude: number;
-    radius_meters?: number | null;
   } | null;
 };
 
@@ -1092,7 +1079,7 @@ function CustomAttendanceAlert({
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-2xl bg-transparent text-red-500 transition hover:text-red-700 dark:hover:text-red-400 active:scale-90"
+            className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/60 text-slate-500 shadow-sm ring-1 ring-white/70 transition hover:bg-white hover:text-slate-700 active:scale-95"
             aria-label="Tutup alert"
           >
             <X size={19} strokeWidth={2.7} />
@@ -1620,20 +1607,6 @@ export default function AttendancePage() {
 
     void loadCurrentUser();
     void loadTodayAttendance();
-
-    async function initLocation() {
-      try {
-        if (!navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition((pos) => {
-          if (mountedRef.current) {
-            setLastLatitude(pos.coords.latitude);
-            setLastLongitude(pos.coords.longitude);
-            setLastAccuracy(pos.coords.accuracy);
-          }
-        }, null, { enableHighAccuracy: true });
-      } catch (err) {}
-    }
-    void initLocation();
 
     if (blocked) {
       safeSetStatus(
@@ -2727,7 +2700,7 @@ export default function AttendancePage() {
                       }
                     }}
                     className={cn(
-                      "h-full w-full object-contain -scale-x-100 transition",
+                      "h-full w-full object-cover transition",
                       cameraReady ? "opacity-100" : "opacity-0",
                     )}
                   />

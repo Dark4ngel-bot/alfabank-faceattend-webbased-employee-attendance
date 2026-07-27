@@ -12,8 +12,6 @@ import {
   Loader2,
   Search,
   UserRound,
-  Download,
-  Printer,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MobileShell from "@/components/MobileShell";
@@ -59,23 +57,16 @@ const statusOptions: { value: StatusFilter; label: string }[] = [
 function getStatusStyle(status: string) {
   const normalized = String(status || "").toLowerCase();
 
-  if (
-    normalized === "present" ||
-    normalized === "hadir" ||
-    normalized.includes("masuk kerja")
-  ) {
+  if (normalized === "present" || normalized === "hadir") {
     return "bg-emerald-50 text-emerald-700 ring-emerald-100";
   }
 
-  if (
-    normalized === "late" ||
-    normalized === "terlambat" ||
-    normalized.includes("cuti") ||
-    normalized.includes("sakit") ||
-    normalized.includes("izin") ||
-    normalized.includes("tidak")
-  ) {
-    return "bg-red-50 text-red-700 ring-red-100";
+  if (normalized === "late" || normalized === "terlambat") {
+    return "bg-amber-50 text-amber-700 ring-amber-100";
+  }
+
+  if (normalized === "cuti") {
+    return "bg-blue-50 text-[#123c8c] ring-blue-100";
   }
 
   return "bg-slate-100 text-slate-600 ring-slate-200";
@@ -507,25 +498,6 @@ export default function AdminAttendanceReportPage() {
                   Cari Rekap Kehadiran
                 </h2>
               </div>
-
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={handleExportExcel}
-                  className="inline-flex h-11 items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 text-xs font-black text-emerald-700 transition hover:bg-emerald-100 active:scale-95"
-                >
-                  <Download size={16} />
-                  Export Excel (.csv)
-                </button>
-                <button
-                  type="button"
-                  onClick={handleExportPdf}
-                  className="inline-flex h-11 items-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-4 text-xs font-black text-[#123c8c] transition hover:bg-blue-100 active:scale-95"
-                >
-                  <Printer size={16} />
-                  Cetak PDF
-                </button>
-              </div>
             </div>
 
             <form
@@ -588,7 +560,6 @@ export default function AdminAttendanceReportPage() {
           ) : null}
 
           <div
-            id="print-area-container"
             className="attendance-report-enter rounded-[2rem] border border-white/70 bg-white/95 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl md:p-6"
             style={{ animationDelay: "150ms" }}
           >
@@ -653,17 +624,17 @@ export default function AdminAttendanceReportPage() {
                             <CalendarDays size={22} strokeWidth={2.6} />
                           </div>
 
-                            <div>
-                              <h3 className="text-xl font-black text-slate-950">
-                                {group.dateLabel}
-                              </h3>
+                          <div>
+                            <h3 className="text-xl font-black text-slate-950">
+                              {group.dateLabel}
+                            </h3>
 
-                              <p className="text-sm font-semibold text-slate-500">
-                                {group.items.length} karyawan memiliki rekap
-                              </p>
-                            </div>
+                            <p className="text-sm font-semibold text-slate-500">
+                              {group.items.length} karyawan memiliki rekap
+                            </p>
                           </div>
                         </div>
+                      </div>
 
                       <div className="mt-4 space-y-2.5">
                         {group.items.map((item, index) => (
@@ -728,12 +699,6 @@ export default function AdminAttendanceReportPage() {
                                   </p>
                                 </div>
                               </div>
-                            </Link>
-                          ))}
-                        </div>
-                      </section>
-                    ))}
-                  </div>
 
                               <div className="flex shrink-0 flex-col items-end gap-1.5 md:flex-1 md:flex-row md:flex-wrap md:items-center md:gap-2">
                                 <span
@@ -774,10 +739,10 @@ export default function AdminAttendanceReportPage() {
                             </div>
                           </Link>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
+                      </div>
+                    </section>
+                  ))}
+                </div>
               )}
             </div>
           </div>

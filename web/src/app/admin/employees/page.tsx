@@ -11,15 +11,11 @@ import {
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
   BadgeCheck,
   BriefcaseBusiness,
   Building2,
   CalendarDays,
   CheckCircle2,
-  ChevronDown,
   Clock3,
   CreditCard,
   Edit,
@@ -52,15 +48,6 @@ import {
   normalizeDigits,
 } from "@/lib/identity-validation";
 
-function getShortEmployeeId(id: string) {
-  if (!id) return "";
-  return id.substring(0, 8).toUpperCase();
-}
-
-type RelationItem = {
-  id: string;
-  name: string;
-} | null;
 type OfficeMiniRelation = {
   id: string;
   name: string;
@@ -208,15 +195,6 @@ type Employee = {
   profile_photo_url?: string | null;
   photo_url?: string | null;
   avatar_url?: string | null;
-  birth_place?: string | null;
-  birth_date?: string | null;
-  bank_account_number?: string | null;
-  nik?: string | null;
-  employment_status?: "kartap" | "kontrak" | "magang" | "pkl" | null;
-  contract_start_date?: string | null;
-  contract_end_date?: string | null;
-  uploaded_document_url?: string | null;
-  base_salary?: number | string | null;
 };
 
 type EmployeeForm = {
@@ -253,7 +231,7 @@ const initialForm: EmployeeForm = {
   department_id: "",
   jabatan_id: "",
   position_id: "",
-  shift_id: "shift-1",
+  shift_id: "",
   registered_office_id: "",
   temporaryPassword: "",
   confirmTemporaryPassword: "",
@@ -413,10 +391,10 @@ function getPositionOfficeId(position?: PositionOption | PositionRelation) {
 function getAlertTheme(type: NonNullable<EmployeeAlert>["type"]) {
   if (type === "success") {
     return {
-      shell: "from-emerald-50 via-white to-blue-50 dark:from-[#0f291e] dark:via-[#161b22] dark:to-[#0d141e] dark:border-[#21262d]",
-      iconWrap: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
-      badge: "text-emerald-600 bg-white/70 dark:bg-[#30363d] dark:text-emerald-400",
-      button: "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20 dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-[#0d1117]",
+      shell: "from-emerald-50 via-white to-blue-50",
+      iconWrap: "bg-emerald-100 text-emerald-600",
+      badge: "text-emerald-600 bg-white/70",
+      button: "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20",
       icon: CheckCircle2,
       label: "BERHASIL",
     };
@@ -424,10 +402,10 @@ function getAlertTheme(type: NonNullable<EmployeeAlert>["type"]) {
 
   if (type === "error") {
     return {
-      shell: "from-red-50 via-white to-blue-50 dark:from-[#2d1918] dark:via-[#161b22] dark:to-[#0f141c] dark:border-[#21262d]",
-      iconWrap: "bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400",
-      badge: "text-red-600 bg-white/70 dark:bg-[#30363d] dark:text-red-400",
-      button: "bg-red-600 hover:bg-red-700 shadow-red-900/20 dark:bg-red-500 dark:hover:bg-red-600 dark:text-[#0d1117]",
+      shell: "from-red-50 via-white to-blue-50",
+      iconWrap: "bg-red-100 text-red-600",
+      badge: "text-red-600 bg-white/70",
+      button: "bg-red-600 hover:bg-red-700 shadow-red-900/20",
       icon: AlertTriangle,
       label: "GAGAL",
     };
@@ -435,20 +413,20 @@ function getAlertTheme(type: NonNullable<EmployeeAlert>["type"]) {
 
   if (type === "info") {
     return {
-      shell: "from-blue-50 via-white to-blue-50 dark:from-[#0d1f3d] dark:via-[#161b22] dark:to-[#0d1f3d] dark:border-[#21262d]",
-      iconWrap: "bg-blue-100 text-[#123c8c] dark:bg-blue-950/40 dark:text-[#58a6ff]",
-      badge: "text-[#123c8c] bg-white/70 dark:bg-[#30363d] dark:text-[#58a6ff]",
-      button: "bg-[#123c8c] hover:bg-[#0f3274] shadow-blue-900/20 dark:bg-[#1f6feb] dark:hover:bg-[#388bfd]",
+      shell: "from-blue-50 via-white to-blue-50",
+      iconWrap: "bg-blue-100 text-[#123c8c]",
+      badge: "text-[#123c8c] bg-white/70",
+      button: "bg-[#123c8c] hover:bg-[#0f3274] shadow-blue-900/20",
       icon: Info,
       label: "INFO",
     };
   }
 
   return {
-    shell: "from-orange-50 via-white to-blue-50 dark:from-[#2e1d0f] dark:via-[#161b22] dark:to-[#121d2f] dark:border-[#21262d]",
-    iconWrap: "bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400",
-    badge: "text-orange-600 bg-white/70 dark:bg-[#30363d] dark:text-orange-400",
-    button: "bg-[#526fae] hover:bg-[#46629d] shadow-blue-900/20 dark:bg-[#1f6feb] dark:hover:bg-[#388bfd]",
+    shell: "from-orange-50 via-white to-blue-50",
+    iconWrap: "bg-orange-100 text-orange-600",
+    badge: "text-orange-600 bg-white/70",
+    button: "bg-[#526fae] hover:bg-[#46629d] shadow-blue-900/20",
     icon: AlertTriangle,
     label: "PERHATIAN",
   };
@@ -555,28 +533,6 @@ export default function AdminEmployeesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState("");
   const [form, setForm] = useState<EmployeeForm>(initialForm);
-
-  type EmployeeSortKey =
-    | "name"
-    | "email"
-    | "office"
-    | "department"
-    | "unit"
-    | "position"
-    | "shift"
-    | "status";
-
-  const [sortColumn, setSortColumn] = useState<EmployeeSortKey>("name");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-
-  const handleSort = (key: EmployeeSortKey) => {
-    if (sortColumn === key) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortColumn(key);
-      setSortDirection("asc");
-    }
-  };
 
   const [employeeAlert, setEmployeeAlert] = useState<EmployeeAlert>(null);
   const [isAlertClosing, setIsAlertClosing] = useState(false);
@@ -859,31 +815,11 @@ export default function AdminEmployeesPage() {
 
     const isEditing = Boolean(editingEmployee);
     const email = form.email.trim().toLowerCase();
-    const nameTrimmed = form.name.trim();
-
-    if (/\d/.test(nameTrimmed)) {
-      showEmployeeAlert(
-        "Nama tidak valid",
-        "Nama lengkap tidak boleh mengandung angka.",
-        "warning"
-      );
-      return;
-    }
-
-    if (nameTrimmed.split(/\s+/).filter(Boolean).length < 2) {
-      showEmployeeAlert(
-        "Nama tidak lengkap",
-        "Nama lengkap harus terdiri dari minimal 2 kata.",
-        "warning"
-      );
-      return;
-    }
-
     const temporaryPassword = form.temporaryPassword.trim();
     const confirmTemporaryPassword = form.confirmTemporaryPassword.trim();
 
     if (
-      !nameTrimmed ||
+      !form.name.trim() ||
       !email ||
       !form.registered_office_id ||
       !form.department_id ||
@@ -902,7 +838,7 @@ export default function AdminEmployeesPage() {
     if (!isValidEmail(email)) {
       showEmployeeAlert(
         "Format email tidak valid",
-        "Masukkan email yang benar, contohnya employee@creativemu.co.id.",
+        "Masukkan email yang benar, contohnya employee@creativemu.com.",
         "warning",
       );
       return;
@@ -1105,12 +1041,12 @@ export default function AdminEmployeesPage() {
         <section className="employee-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-6 text-white shadow-2xl shadow-blue-900/25 md:p-8">
           <div className="relative z-10 flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-blue-100">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-blue-100">
                 <ShieldCheck size={15} />
                 Manajemen Karyawan
               </div>
 
-              <h2 className="mt-2 text-2xl font-black tracking-tight md:text-3xl">
+              <h2 className="mt-5 text-3xl font-black tracking-tight md:text-4xl">
                 Data Karyawan
               </h2>
             </div>
@@ -1201,28 +1137,6 @@ export default function AdminEmployeesPage() {
             </div>
 
             <div className="flex flex-col gap-3 md:flex-row">
-              {/* Mobile quick sort selector */}
-              <div className="flex items-center gap-2 md:hidden">
-                <span className="text-xs font-black text-slate-500 whitespace-nowrap">Urutkan:</span>
-                <select
-                  value={`${sortColumn}-${sortDirection}`}
-                  onChange={(e) => {
-                    const [col, dir] = e.target.value.split("-") as [EmployeeSortKey, "asc" | "desc"];
-                    setSortColumn(col);
-                    setSortDirection(dir);
-                  }}
-                  className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 px-4 text-xs font-bold text-slate-700 outline-none"
-                >
-                  <option value="name-asc">Abjad Karyawan (A - Z)</option>
-                  <option value="name-desc">Abjad Karyawan (Z - A)</option>
-                  <option value="office-asc">Kantor (A - Z)</option>
-                  <option value="department-asc">Divisi (A - Z)</option>
-                  <option value="unit-asc">Posisi (A - Z)</option>
-                  <option value="position-asc">Jabatan (A - Z)</option>
-                  <option value="status-asc">Status (A - Z)</option>
-                </select>
-              </div>
-
               <div className="relative w-full md:w-[330px]">
                 <Search
                   size={18}
@@ -1497,24 +1411,6 @@ export default function AdminEmployeesPage() {
               noValidate
               className="mt-6 grid gap-4"
             >
-              {editingEmployee && (
-                <AppFormReveal delay={15}>
-                  <div>
-                    <label className="mb-2 block text-sm font-black text-slate-700">
-                      ID Karyawan
-                    </label>
-                    <div className="app-field-smooth relative rounded-2xl">
-                      <input
-                        type="text"
-                        readOnly
-                        value={editingEmployee.id}
-                        className="w-full rounded-2xl border border-slate-200 bg-slate-100 py-3 px-4 text-sm font-bold text-slate-500 outline-none cursor-not-allowed"
-                      />
-                    </div>
-                  </div>
-                </AppFormReveal>
-              )}
-
               <AppFormReveal delay={20}>
                 <div>
                   <label className="mb-2 block text-sm font-black text-slate-700">
@@ -1561,7 +1457,7 @@ export default function AdminEmployeesPage() {
                           email: event.target.value,
                         }))
                       }
-                      placeholder="employee@creativemu.co.id"
+                      placeholder="employee@creativemu.com"
                       className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     />
                   </div>
@@ -1735,7 +1631,7 @@ export default function AdminEmployeesPage() {
                           position_id: "",
                         }))
                       }
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-10 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     >
                       <option value="">Pilih Kantor</option>
                       {activeOffices.map((office) => (
@@ -1744,10 +1640,6 @@ export default function AdminEmployeesPage() {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown
-                      size={18}
-                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
                   </div>
                 </div>
 
@@ -1771,7 +1663,7 @@ export default function AdminEmployeesPage() {
                         }))
                       }
                       disabled={!form.registered_office_id}
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-10 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
                     >
                       <option value="">
                         {form.registered_office_id
@@ -1794,7 +1686,7 @@ export default function AdminEmployeesPage() {
                   <div className="app-field-smooth relative rounded-2xl">
                     <Building2
                       size={18}
-                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                     />
                     <select
                       value={form.jabatan_id}
@@ -1833,9 +1725,7 @@ export default function AdminEmployeesPage() {
                     />
                     <select
                       value={form.position_id}
-                      onChange={(event) => {
-                        const val = event.target.value;
-                        const posObj = positions.find((p) => p.id === val);
+                      onChange={(event) =>
                         setForm((prev) => ({
                           ...prev,
                           position_id: event.target.value,
@@ -1853,76 +1743,36 @@ export default function AdminEmployeesPage() {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown
-                      size={18}
-                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
                   </div>
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm font-black text-slate-700">
-                    Posisi
+                    Shift
                   </label>
                   <div className="app-field-smooth relative rounded-2xl">
-                    <Building2
+                    <Clock3
                       size={18}
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                     />
                     <select
-                      value={form.unit_id}
+                      value={form.shift_id}
                       onChange={(event) =>
                         setForm((prev) => ({
                           ...prev,
-                          unit_id: event.target.value,
+                          shift_id: event.target.value,
                         }))
                       }
-                      disabled={!form.department_id}
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-10 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     >
-                      <option value="">
-                        {form.department_id
-                          ? "Pilih Posisi"
-                          : "Pilih Divisi dulu"}
-                      </option>
-                      {filteredUnits.map((unit) => (
-                        <option key={unit.id} value={unit.id}>
-                          {unit.name}
+                      <option value="">Pilih Shift</option>
+                      {activeShifts.map((shift) => (
+                        <option key={shift.id} value={shift.id}>
+                          {shift.name} - Toleransi {shift.tolerance_minutes}{" "}
+                          menit
                         </option>
                       ))}
                     </select>
-                    <ChevronDown
-                      size={18}
-                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Shift Posisi
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <select
-                      value={form.employment_status}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          employment_status: event.target.value as any,
-                        }))
-                      }
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-4 pr-10 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    >
-                      <option value="">Pilih Shift Posisi</option>
-                      <option value="kartap">Karyawan Tetap (Kartap)</option>
-                      <option value="kontrak">Kontrak</option>
-                      <option value="magang">Magang</option>
-                      <option value="pkl">PKL</option>
-                    </select>
-                    <ChevronDown
-                      size={18}
-                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
                   </div>
                 </div>
               </AppFormReveal>
@@ -2024,7 +1874,7 @@ export default function AdminEmployeesPage() {
                   <label className="mb-2 block text-sm font-black text-slate-700">
                     Status
                   </label>
-                  <div className="app-field-smooth relative rounded-2xl">
+                  <div className="app-field-smooth rounded-2xl">
                     <select
                       value={form.status}
                       onChange={(event) =>
@@ -2033,15 +1883,11 @@ export default function AdminEmployeesPage() {
                           status: event.target.value as "active" | "inactive",
                         }))
                       }
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-4 pr-10 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     >
                       <option value="active">Aktif</option>
                       <option value="inactive">Nonaktif</option>
                     </select>
-                    <ChevronDown
-                      size={18}
-                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
                   </div>
                 </div>
 
@@ -2153,14 +1999,14 @@ export default function AdminEmployeesPage() {
 
       {employeeAlert && alertTheme ? (
         <div
-          className={`employee-alert-enter fixed right-4 top-4 z-[9999] w-[calc(100vw-2rem)] max-w-md transition-all duration-300 ease-out md:right-7 md:top-7 ${
+          className={`employee-alert-enter fixed right-4 top-4 z-[140] w-[calc(100vw-2rem)] max-w-md transition-all duration-300 ease-out md:right-7 md:top-7 ${
             isAlertClosing
               ? "translate-x-8 scale-95 opacity-0"
               : "translate-x-0 scale-100 opacity-100"
           }`}
         >
           <div
-            className={`overflow-hidden rounded-[2rem] border border-white/70 dark:border-[#21262d] bg-gradient-to-br ${alertTheme.shell} shadow-2xl shadow-slate-900/20 backdrop-blur-xl transition-all duration-300 ease-out ${
+            className={`overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br ${alertTheme.shell} shadow-2xl shadow-slate-900/20 backdrop-blur-xl transition-all duration-300 ease-out ${
               isAlertClosing
                 ? "translate-y-2 opacity-0"
                 : "translate-y-0 opacity-100"
@@ -2181,11 +2027,11 @@ export default function AdminEmployeesPage() {
                     {alertTheme.label}
                   </div>
 
-                  <h3 className="mt-3 text-2xl font-black leading-tight text-slate-950 dark:text-white">
+                  <h3 className="mt-3 text-2xl font-black leading-tight text-slate-950">
                     {employeeAlert.title}
                   </h3>
 
-                  <p className="mt-2 text-sm font-bold leading-6 text-slate-600 dark:text-slate-400">
+                  <p className="mt-2 text-sm font-bold leading-6 text-slate-600">
                     {employeeAlert.message}
                   </p>
                 </div>
@@ -2193,14 +2039,14 @@ export default function AdminEmployeesPage() {
                 <button
                   type="button"
                   onClick={closeEmployeeAlert}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-slate-500 shadow-sm transition hover:bg-white hover:text-slate-800 dark:bg-slate-800/70 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200 active:scale-[0.96]"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-slate-500 shadow-sm transition hover:bg-white hover:text-slate-800 active:scale-[0.96]"
                 >
                   <X size={22} strokeWidth={2.8} />
                 </button>
               </div>
             </div>
 
-            <div className="border-t border-white/60 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/90 p-4">
+            <div className="border-t border-white/60 bg-white/70 p-4">
               <button
                 type="button"
                 onClick={closeEmployeeAlert}

@@ -10,8 +10,6 @@ import {
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MobileShell from "@/components/MobileShell";
-import { useAppData } from "@/context/AppDataContext";
-import { useTheme } from "@/context/ThemeContext";
 
 const histogramSegments = [
   { key: "present", label: "Hadir", color: "#1d9bf0" },
@@ -93,18 +91,6 @@ type LateReasonItem = {
   reason?: string;
 };
 
-type VisitItem = {
-  id: string;
-  date: string;
-  employeeName: string;
-  title: string;
-  clientName: string | null;
-  address: string | null;
-  startTime: string;
-  note: string | null;
-  hasPhoto: boolean;
-};
-
 type MonitorResponse = {
   month: number;
   year: number;
@@ -114,7 +100,6 @@ type MonitorResponse = {
   dailyChart: DailyChartPoint[];
   alerts: AlertItem[];
   lateReasons: LateReasonItem[];
-  visits: VisitItem[];
 };
 
 const monthOptions = [
@@ -292,18 +277,6 @@ function AnimatedHistogram({
     histogramSegments.find((segment) => segment.key === selectedSegment) ||
     histogramSegments[0];
   const chartWidth = Math.max(points.length * 44 + 84, 640);
-
-  // Mobile: filter to only non-zero points unless "show all" is toggled
-  const nonZeroPoints = points.filter((p) => p.value > 0);
-  const mobilePoints = mobileShowAll
-    ? points
-    : nonZeroPoints.length > 0
-      ? nonZeroPoints
-      : points;
-  const hasHiddenZeros =
-    !mobileShowAll &&
-    nonZeroPoints.length > 0 &&
-    nonZeroPoints.length < points.length;
 
   return (
     <>
@@ -838,33 +811,24 @@ export default function AdminCompanyMonitorPage() {
       <AppHeader title="Monitor Perusahaan" variant="admin" />
 
       <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff]">
-        <section className="mx-auto max-w-7xl space-y-4 px-3 py-4 sm:space-y-5 sm:px-4 sm:py-5 md:space-y-6 md:px-10 md:py-6 lg:px-16">
-          <div className="monitor-enter overflow-hidden rounded-[1.25rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30 sm:rounded-[1.5rem] md:rounded-[2rem]">
+        <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
+          <div className="monitor-enter overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 xl:grid-cols-[0.95fr_1.05fr]">
-              <div className="bg-[#123c8c] p-4 text-white sm:p-6 md:p-8">
-                <div className="flex items-center gap-2.5 sm:gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 sm:h-12 sm:w-12 sm:rounded-2xl">
-                    <BarChart3
-                      size={22}
-                      strokeWidth={2.6}
-                      className="sm:hidden"
-                    />
-                    <BarChart3
-                      size={25}
-                      strokeWidth={2.6}
-                      className="hidden sm:block"
-                    />
+              <div className="bg-[#123c8c] p-6 text-white md:p-8">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+                    <BarChart3 size={25} strokeWidth={2.6} />
                   </div>
 
                   <div>
-                    <h2 className="text-xl font-black tracking-tight sm:mt-1 sm:text-3xl md:text-4xl">
+                    <h2 className="mt-1 text-3xl font-black tracking-tight md:text-4xl">
                       Snapshot Perusahaan
                     </h2>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4 p-3 sm:space-y-5 sm:p-5 md:p-6">
+              <div className="space-y-5 p-5 md:p-6">
                 <div
                   className="monitor-row-enter"
                   style={{ animationDelay: "60ms" }}
@@ -896,7 +860,7 @@ export default function AdminCompanyMonitorPage() {
                 </div>
 
                 <div
-                  className="monitor-row-enter grid gap-2 sm:gap-3 md:grid-cols-2"
+                  className="monitor-row-enter grid gap-3 md:grid-cols-2"
                   style={{ animationDelay: "100ms" }}
                 >
                   <div>
@@ -907,7 +871,7 @@ export default function AdminCompanyMonitorPage() {
                     <select
                       value={month}
                       onChange={(event) => setMonth(Number(event.target.value))}
-                      className="monitor-field mt-1.5 h-10 w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 text-xs font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 sm:mt-2 sm:h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
+                      className="monitor-field mt-2 h-12 w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                     >
                       {monthOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -926,13 +890,13 @@ export default function AdminCompanyMonitorPage() {
                       type="number"
                       value={year}
                       onChange={(event) => setYear(Number(event.target.value))}
-                      className="monitor-field mt-1.5 h-10 w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 text-xs font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 sm:mt-2 sm:h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
+                      className="monitor-field mt-2 h-12 w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                     />
                   </div>
                 </div>
 
                 <div
-                  className="monitor-row-enter rounded-xl border border-blue-100 bg-[#f8fbff] p-3 sm:rounded-2xl sm:p-4"
+                  className="monitor-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4"
                   style={{ animationDelay: "140ms" }}
                 >
                   <p className="text-xs font-black uppercase tracking-[0.16em] text-[#123c8c]">
@@ -948,7 +912,7 @@ export default function AdminCompanyMonitorPage() {
           </div>
 
           {isLoading ? (
-            <div className="monitor-enter flex min-h-[240px] items-center justify-center rounded-2xl border border-blue-100 bg-white sm:min-h-[320px] sm:rounded-3xl">
+            <div className="monitor-enter flex min-h-[320px] items-center justify-center rounded-3xl border border-blue-100 bg-white">
               <div className="text-center">
                 <Loader2 className="mx-auto animate-spin text-[#123c8c]" />
                 <p className="mt-3 text-sm font-black text-slate-600">
@@ -957,7 +921,7 @@ export default function AdminCompanyMonitorPage() {
               </div>
             </div>
           ) : errorMessage ? (
-            <div className="monitor-enter rounded-2xl border border-red-100 bg-red-50 p-3 text-xs font-bold text-red-700 sm:rounded-3xl sm:p-5 sm:text-sm">
+            <div className="monitor-enter rounded-3xl border border-red-100 bg-red-50 p-5 text-sm font-bold text-red-700">
               {errorMessage}
             </div>
           ) : data ? (
@@ -1034,7 +998,7 @@ export default function AdminCompanyMonitorPage() {
                 <div className="flex items-center gap-2 text-amber-700">
                   <Clock3 size={18} />
 
-                  <h3 className="text-base font-black text-slate-950 sm:text-lg">
+                  <h3 className="text-lg font-black text-slate-950">
                     Rekap Karyawan Terlambat
                   </h3>
                 </div>
@@ -1044,8 +1008,8 @@ export default function AdminCompanyMonitorPage() {
                     Belum ada karyawan terlambat hari ini.
                   </p>
                 ) : (
-                  <div className="-mx-1 mt-3 overflow-x-auto px-1 sm:mt-4">
-                    <table className="w-full min-w-[480px] text-left text-xs sm:min-w-[620px] sm:text-sm">
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="w-full min-w-[620px] text-left text-sm">
                       <thead>
                         <tr className="border-b border-slate-100 text-xs uppercase tracking-[0.14em] text-slate-500">
                           <th className="py-3 pr-4">Tanggal</th>
@@ -1078,81 +1042,6 @@ export default function AdminCompanyMonitorPage() {
 
                             <td className="py-3 pr-4 font-black text-amber-700">
                               {formatMinutes(item.lateMinutes)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-
-              <div className="rounded-2xl border border-white/70 bg-white/90 p-3 shadow-xl shadow-slate-300/30 sm:rounded-3xl sm:p-5">
-                <div className="flex items-center gap-2 text-[#123c8c]">
-                  <ClipboardList size={18} />
-                  <h3 className="text-base font-black text-slate-950 sm:text-lg">
-                    Bukti Kunjungan Kerja Lapangan
-                  </h3>
-                </div>
-
-                {!data.visits || data.visits.length === 0 ? (
-                  <p className="mt-4 text-sm font-semibold text-slate-500">
-                    Belum ada data bukti kunjungan pada periode ini.
-                  </p>
-                ) : (
-                  <div className="-mx-1 mt-3 overflow-x-auto px-1 sm:mt-4">
-                    <table className="min-w-[580px] w-full text-left text-xs sm:min-w-[760px] sm:text-sm">
-                      <thead>
-                        <tr className="border-b border-slate-100 text-xs uppercase tracking-[0.14em] text-slate-500">
-                          <th className="py-3 pr-4">Tanggal</th>
-                          <th className="py-3 pr-4">Karyawan</th>
-                          <th className="py-3 pr-4">Nama/Kunjungan</th>
-                          <th className="py-3 pr-4">Client / Alamat</th>
-                          <th className="py-3 pr-4">Waktu</th>
-                          <th className="py-3 pr-4">Catatan</th>
-                          <th className="py-3 pr-4">Bukti Foto</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.visits.map((item: any) => (
-                          <tr
-                            key={item.id}
-                            className="border-b border-slate-100 last:border-0"
-                          >
-                            <td className="py-3 pr-4 font-bold text-slate-700">
-                              {item.date}
-                            </td>
-                            <td className="py-3 pr-4 font-black text-slate-900">
-                              {item.employeeName}
-                            </td>
-                            <td className="py-3 pr-4 font-semibold text-slate-800">
-                              {item.title}
-                            </td>
-                            <td className="py-3 pr-4 text-slate-600">
-                              {item.clientName ? `${item.clientName} - ` : ""}
-                              {item.address || "-"}
-                            </td>
-                            <td className="py-3 pr-4 text-slate-600">
-                              {item.startTime}
-                            </td>
-                            <td className="py-3 pr-4 text-slate-600 text-xs">
-                              {item.note || "-"}
-                            </td>
-                            <td className="py-3 pr-4">
-                              {item.hasPhoto ? (
-                                <a
-                                  href={`/api/visits/${item.id}/photo`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-black text-[#123c8c] hover:bg-blue-100 transition active:scale-[0.97]"
-                                >
-                                  Lihat Foto
-                                </a>
-                              ) : (
-                                <span className="text-xs text-slate-400">
-                                  Tidak ada
-                                </span>
-                              )}
                             </td>
                           </tr>
                         ))}

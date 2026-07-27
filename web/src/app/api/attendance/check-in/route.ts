@@ -266,9 +266,9 @@ async function parseAttendanceBody(
 
     const workMode = normalizeWorkMode(
       formData.get("workMode") ||
-      formData.get("work_mode") ||
-      formData.get("attendanceMode") ||
-      formData.get("attendance_mode"),
+        formData.get("work_mode") ||
+        formData.get("attendanceMode") ||
+        formData.get("attendance_mode"),
     );
 
     const activityNote = getFormText(formData, [
@@ -363,20 +363,20 @@ async function parseAttendanceBody(
 
   const latitude = toNumber(
     body.latitude ??
-    body.checkInLatitude ??
-    (body.location as { latitude?: unknown } | undefined)?.latitude,
+      body.checkInLatitude ??
+      (body.location as { latitude?: unknown } | undefined)?.latitude,
   );
 
   const longitude = toNumber(
     body.longitude ??
-    body.checkInLongitude ??
-    (body.location as { longitude?: unknown } | undefined)?.longitude,
+      body.checkInLongitude ??
+      (body.location as { longitude?: unknown } | undefined)?.longitude,
   );
 
   const accuracy = toNumber(
     body.accuracy ??
-    body.checkInAccuracy ??
-    (body.location as { accuracy?: unknown } | undefined)?.accuracy,
+      body.checkInAccuracy ??
+      (body.location as { accuracy?: unknown } | undefined)?.accuracy,
   );
 
   const lateReason = getBodyText(body, [
@@ -389,9 +389,9 @@ async function parseAttendanceBody(
 
   const workMode = normalizeWorkMode(
     body.workMode ??
-    body.work_mode ??
-    body.attendanceMode ??
-    body.attendance_mode,
+      body.work_mode ??
+      body.attendanceMode ??
+      body.attendance_mode,
   );
 
   const activityNote = getBodyText(body, [
@@ -474,16 +474,6 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = await getUserIdFromRequest(req);
-
-    if (!isMobileAttendanceRequest(req)) {
-      return NextResponse.json(
-        {
-          error:
-            "Absensi hanya dapat dilakukan melalui browser HP. Laptop atau desktop tidak diizinkan.",
-        },
-        { status: 403 },
-      );
-    }
 
     const {
       photoBuffer,
@@ -837,8 +827,8 @@ export async function POST(req: NextRequest) {
       registered_office_id: user.registered_office_id,
       check_in_office_id: matchedOffice?.office.id ?? null,
 
-      status: attendanceStatus as any,
-      check_in_status: isLate ? "LATE" : "ON_TIME",
+      status: attendanceStatus,
+      check_in_status: isLate ? ("LATE" as const) : ("ON_TIME" as const),
       late_minutes: lateMinutes,
       is_over_tolerance: isLate,
       late_reason: isLate ? lateReason : null,
@@ -852,22 +842,22 @@ export async function POST(req: NextRequest) {
       attendance = await prisma.$transaction(async (tx) => {
         const savedAttendance = existingAttendance
         ? await tx.attendance.update({
-          where: {
-            id: existingAttendance.id,
-          },
-          data: {
-            ...checkInData,
-            work_minutes: existingAttendance.work_minutes ?? 0,
-          },
-        })
+            where: {
+              id: existingAttendance.id,
+            },
+            data: {
+              ...checkInData,
+              work_minutes: existingAttendance.work_minutes ?? 0,
+            },
+          })
         : await tx.attendance.create({
-          data: {
-            user_id: userId,
-            attendance_date: today,
-            ...checkInData,
-            work_minutes: 0,
-          },
-        });
+            data: {
+              user_id: userId,
+              attendance_date: today,
+              ...checkInData,
+              work_minutes: 0,
+            },
+          });
 
       if (isVisitMode) {
         await tx.employeeVisit.create({
@@ -946,31 +936,31 @@ export async function POST(req: NextRequest) {
       isLateValidationSkipped: isVisitMode,
       schedule: shouldValidateLate
         ? {
-          shift: user.shift?.name || "Tanpa Shift",
-          startTime,
-          toleranceMinutes,
-        }
+            shift: user.shift?.name || "Tanpa Shift",
+            startTime,
+            toleranceMinutes,
+          }
         : {
-          shift: user.shift?.name || "Tanpa Shift",
-          startTime: null,
-          toleranceMinutes: 0,
-          note: "Mode kunjungan tidak terikat jadwal shift dan toleransi keterlambatan.",
-        },
+            shift: user.shift?.name || "Tanpa Shift",
+            startTime: null,
+            toleranceMinutes: 0,
+            note: "Mode kunjungan tidak terikat jadwal shift dan toleransi keterlambatan.",
+          },
       office: matchedOffice
         ? {
-          id: matchedOffice.office.id,
-          name: matchedOffice.office.name,
-          distance: Math.round(matchedOffice.distance),
-          radius: matchedOffice.office.radius_meters,
-        }
+            id: matchedOffice.office.id,
+            name: matchedOffice.office.name,
+            distance: Math.round(matchedOffice.distance),
+            radius: matchedOffice.office.radius_meters,
+          }
         : null,
       visit: isVisitMode
         ? {
-          title: visitTitle,
-          clientName: visitClientName || null,
-          address: visitAddress,
-          note: visitNote,
-        }
+            title: visitTitle,
+            clientName: visitClientName || null,
+            address: visitAddress,
+            note: visitNote,
+          }
         : null,
       gps: {
         latitude,

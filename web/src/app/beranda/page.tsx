@@ -11,13 +11,10 @@ import {
   Megaphone,
   ScanFace,
   UserRound,
-  Award,
-  Coins,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
-import { useCompanyLogo } from "@/hooks/useCompanyLogo";
 import { AppCard } from "@/components/ui/AppUI";
 
 type AttendanceToday = {
@@ -103,12 +100,6 @@ const quickMenus = [
     label: "Izin/Cuti",
     description: "Ajukan izin",
     icon: FileText,
-  },
-  {
-    href: "/salary",
-    label: "Gaji & Slip\nPayroll",
-    description: "Slip gaji bulanan dan rincian gaji Anda.",
-    icon: Coins,
   },
 ];
 
@@ -285,10 +276,11 @@ function ProfileAvatar({
 
   return (
     <div
-      className={`home-icon-pop ${sizeClass} flex shrink-0 items-center justify-center rounded-full font-black ${variant === "blue"
-        ? "bg-white/15 text-white ring-4 ring-white/20"
-        : "bg-[#eaf1ff] text-[#123c8c] ring-4 ring-white"
-        }`}
+      className={`home-icon-pop ${sizeClass} flex shrink-0 items-center justify-center rounded-full font-black ${
+        variant === "blue"
+          ? "bg-white/15 text-white ring-4 ring-white/20"
+          : "bg-[#eaf1ff] text-[#123c8c] ring-4 ring-white"
+      }`}
     >
       {user.name ? getInitialName(user.name) : ""}
     </div>
@@ -310,15 +302,17 @@ function AnnouncementButton({
     <Link
       href={href}
       onClick={onClick}
-      className={`home-icon-pop relative flex shrink-0 items-center justify-center rounded-2xl ring-1 transition hover:-translate-y-0.5 active:scale-[0.96] ${desktop ? "h-16 w-16" : "h-12 w-12"
-        } ${unread
+      className={`home-icon-pop relative flex shrink-0 items-center justify-center rounded-2xl ring-1 transition hover:-translate-y-0.5 active:scale-[0.96] ${
+        desktop ? "h-16 w-16" : "h-12 w-12"
+      } ${
+        unread
           ? desktop
             ? "bg-white text-[#123c8c] ring-white"
             : "bg-[#123c8c] text-white ring-[#123c8c]"
           : desktop
             ? "bg-white/10 text-white/70 ring-white/20"
             : "bg-white text-slate-400 ring-blue-100"
-        }`}
+      }`}
       aria-label="Pengumuman"
     >
       <Bell
@@ -329,8 +323,9 @@ function AnnouncementButton({
 
       {unread ? (
         <span
-          className={`home-pulse-dot absolute rounded-full bg-red-500 ring-2 ring-white ${desktop ? "right-3 top-3 h-4 w-4" : "right-2 top-2 h-3 w-3"
-            }`}
+          className={`home-pulse-dot absolute rounded-full bg-red-500 ring-2 ring-white ${
+            desktop ? "right-3 top-3 h-4 w-4" : "right-2 top-2 h-3 w-3"
+          }`}
         />
       ) : null}
     </Link>
@@ -370,60 +365,32 @@ function RoleBadges({ items }: { items: Array<string | undefined | null> }) {
 }
 
 function QuickMenuGrid() {
-  const [menuOrder, setMenuOrder] = useState<number[]>([0, 1, 2, 3, 4]);
-  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
-
-  const handleDragStart = (index: number) => {
-    setDraggedIdx(index);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (targetIndex: number) => {
-    if (draggedIdx === null) return;
-    const newOrder = [...menuOrder];
-    const draggedPos = newOrder.indexOf(draggedIdx);
-    const targetPos = newOrder.indexOf(targetIndex);
-    newOrder[draggedPos] = targetIndex;
-    newOrder[targetPos] = draggedIdx;
-    setMenuOrder(newOrder);
-    setDraggedIdx(null);
-  };
-
   return (
-    <div className="grid grid-cols-3 gap-x-2 gap-y-3 md:grid-cols-5 md:gap-5">
-      {menuOrder.map((menuIdx, index) => {
-        const item = quickMenus[menuIdx];
-        if (!item) return null;
-        const { href, label, description, icon: Icon } = item;
-
-        return (
-          <Link
-            key={href}
-            href={href}
-            draggable
-            onDragStart={() => handleDragStart(menuIdx)}
-            onDragOver={handleDragOver}
-            onDrop={() => handleDrop(menuIdx)}
-            className={`home-card-enter cursor-grab active:cursor-grabbing group flex flex-col items-center rounded-3xl text-center transition hover:-translate-y-0.5 active:scale-[0.98] md:hover:-translate-y-1 md:hover:bg-white md:hover:shadow-xl md:hover:shadow-slate-200/60 md:border md:border-blue-100 md:bg-[#f8fbff] md:p-6`}
-            style={{
-              animationDelay: `${index * 70}ms`,
-            }}
-          >
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#eaf1ff] transition group-hover:scale-105 md:h-20 md:w-20">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-2xl text-white shadow-lg transition bg-[#123c8c] shadow-blue-900/20 group-hover:rotate-[-2deg] md:h-14 md:w-14`}>
-                <Icon size={22} strokeWidth={2.6} />
-              </div>
+    <div className="grid grid-cols-4 gap-x-2 gap-y-3 md:grid-cols-4 md:gap-5">
+      {quickMenus.map(({ href, label, description, icon: Icon }, index) => (
+        <Link
+          key={href}
+          href={href}
+          className="home-card-enter group flex flex-col items-center rounded-3xl text-center transition hover:-translate-y-0.5 active:scale-[0.98] md:border md:border-blue-100 md:bg-[#f8fbff] md:p-6 md:hover:-translate-y-1 md:hover:bg-white md:hover:shadow-xl md:hover:shadow-slate-200/60"
+          style={{
+            animationDelay: `${index * 70}ms`,
+          }}
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#eaf1ff] transition group-hover:scale-105 md:h-20 md:w-20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 transition group-hover:rotate-[-2deg] md:h-14 md:w-14">
+              <Icon size={22} strokeWidth={2.6} />
             </div>
+          </div>
 
-            <p className="mt-2 whitespace-pre-line text-[12px] font-bold leading-tight text-slate-600 md:mt-3 md:text-base">
-              {label}
-            </p>
-          </Link>
-        );
-      })}
+          <p className="mt-2 whitespace-pre-line text-[12px] font-bold leading-tight text-slate-600 md:mt-3 md:text-base">
+            {label}
+          </p>
+
+          <p className="mt-2 hidden text-sm leading-6 text-slate-400 md:block">
+            {description}
+          </p>
+        </Link>
+      ))}
     </div>
   );
 }
@@ -445,12 +412,13 @@ function AttendanceButton({
       onClick={(event) => {
         if (disabled) event.preventDefault();
       }}
-      className={`flex h-14 items-center justify-center rounded-2xl text-sm font-black transition md:h-20 md:text-lg ${disabled
-        ? "cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300 dark:border-[#30363d] dark:bg-[#161b22]/40 dark:text-[#30363d]"
-        : variant === "primary"
-          ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98] dark:bg-[#1f6feb] dark:hover:bg-[#388bfd] dark:shadow-none"
-          : "border border-blue-100 bg-white text-[#123c8c] hover:-translate-y-0.5 hover:bg-[#eaf1ff] active:scale-[0.98] dark:border-[#30363d] dark:bg-[#21262d] dark:text-[#c9d1d9] dark:hover:bg-[#30363d]"
-        }`}
+      className={`flex h-14 items-center justify-center rounded-2xl text-sm font-black transition md:h-20 md:text-lg ${
+        disabled
+          ? "cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300"
+          : variant === "primary"
+            ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
+            : "border border-blue-100 bg-white text-[#123c8c] hover:-translate-y-0.5 hover:bg-[#eaf1ff] active:scale-[0.98]"
+      }`}
     >
       {label}
     </Link>
@@ -514,7 +482,6 @@ function AnnouncementList({
 }
 
 export default function HomePage() {
-  const companyLogo = useCompanyLogo();
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [user, setUser] = useState<CurrentUser>(defaultUser);
@@ -524,41 +491,6 @@ export default function HomePage() {
   const [readAnnouncementId, setReadAnnouncementId] = useState<string | null>(
     null,
   );
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!("Notification" in window) || Notification.permission !== "granted") return;
-
-    const checkReminders = () => {
-      const now = new Date();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-
-      if (hours === 8 && minutes === 0 && attendanceToday.checkIn === "--:--") {
-        new Notification("Peringatan Presensi Masuk (FaceAttend)", {
-          body: "Sudah pukul 08:00 WIB! Jangan lupa lakukan check-in presensi masuk Anda hari ini.",
-          icon: companyLogo,
-        });
-      }
-
-      if (hours === 17 && minutes === 0 && attendanceToday.checkIn !== "--:--" && attendanceToday.checkOut === "--:--") {
-        new Notification("Peringatan Presensi Pulang (FaceAttend)", {
-          body: "Sudah pukul 17:00 WIB! Jangan lupa lakukan check-out presensi pulang Anda hari ini.",
-          icon: companyLogo,
-        });
-      }
-    };
-
-    const timer = setInterval(checkReminders, 60000);
-    return () => clearInterval(timer);
-  }, [attendanceToday]);
 
   useEffect(() => {
     function updateTime() {
@@ -597,13 +529,6 @@ export default function HomePage() {
     }
   }, []);
 
-  const [recapStats, setRecapStats] = useState({
-    hadir: 0,
-    telat: 0,
-    cuti: 0,
-    izinSakit: 0,
-  });
-
   useEffect(() => {
     async function loadData() {
       const [profileData, todayData, announcementData] = await Promise.all([
@@ -640,37 +565,6 @@ export default function HomePage() {
       });
 
       setAnnouncements(Array.isArray(list) ? list : []);
-
-      // Fetch attendance history to calculate recap stats for current month
-      try {
-        const todayDate = new Date();
-        const monthNum = todayDate.getMonth() + 1;
-        const yearNum = todayDate.getFullYear();
-        const response = await fetch(`/api/attendance/history?month=${monthNum}&year=${yearNum}`, { method: "GET", cache: "no-store" });
-        if (response.ok) {
-          const histData = await response.json();
-          const listRecords = histData.records || [];
-          const hadir = listRecords.filter((a: any) => {
-            const s = String(a.status || "").toLowerCase();
-            return s.includes("hadir") || s.includes("present") || s.includes("on_time") || s === "on_time";
-          }).length;
-          const telat = listRecords.filter((a: any) => {
-            const s = String(a.status || "").toLowerCase();
-            return s.includes("lambat") || s.includes("late");
-          }).length;
-          const cuti = listRecords.filter((a: any) => {
-            const s = String(a.status || "").toLowerCase();
-            return s.includes("cuti");
-          }).length;
-          const izinSakit = listRecords.filter((a: any) => {
-            const s = String(a.status || "").toLowerCase();
-            return s.includes("sakit") || s.includes("izin") || s.includes("permission");
-          }).length;
-          setRecapStats({ hadir, telat, cuti, izinSakit });
-        }
-      } catch (e) {
-        console.error(e);
-      }
     }
 
     void loadData();
@@ -711,27 +605,15 @@ export default function HomePage() {
     if (!latestAnnouncementId || typeof window === "undefined") return;
     window.localStorage.setItem(READ_ANNOUNCEMENT_KEY, latestAnnouncementId);
     setReadAnnouncementId(latestAnnouncementId);
-
-    // Call read receipt API
-    void fetch("/api/announcements/read", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ announcementId: latestAnnouncementId }),
-    });
   }
 
   return (
     <MobileShell
       variant="employee"
       withBottomPadding={false}
+      className="bg-white md:bg-[#f6f8ff]"
     >
       <HomeMotionStyles />
-      <AppHeader
-        title="Beranda"
-        subtitle="Dashboard Absensi"
-        rightLabel={mainRoleLabel || undefined}
-        variant="employee"
-      />
 
       <div className="min-h-dvh bg-white">
         <div className="hidden md:block">
@@ -763,33 +645,37 @@ export default function HomePage() {
                     />
                   </div>
 
-              <h2
-                className="home-text-reveal mt-3 text-4xl font-black tracking-tight text-[#073456]"
-                style={{
-                  animationDelay: "170ms",
-                }}
-              >
-                {firstName ? `Halo, ${firstName}` : "Memuat profil..."}
-              </h2>
+                  <ProfileAvatar user={user} />
 
                   <div className="min-w-0">
                     <p className="home-text-reveal text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c]">
                       Presensi
                     </p>
 
-        <section className="mx-auto hidden max-w-7xl px-10 pt-8 md:block lg:px-16">
-          <div className="home-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-8 text-white shadow-2xl shadow-blue-900/25">
-            <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10" />
-            <div className="absolute bottom-[-7rem] right-24 h-60 w-60 rounded-full bg-blue-300/10" />
+                    <h1
+                      className="home-text-reveal mt-1 truncate text-base font-black text-[#073456]"
+                      style={{
+                        animationDelay: "60ms",
+                      }}
+                    >
+                      {user.name || "Memuat profil..."}
+                    </h1>
 
-            <div className="relative z-10 flex items-center justify-between gap-8">
-              <div className="flex items-center gap-5">
-                <ProfileAvatar user={user} size="desktop" variant="blue" />
+                    {mainRoleLabel ? (
+                      <p
+                        className="home-text-reveal truncate text-xs font-bold text-slate-500"
+                        style={{
+                          animationDelay: "100ms",
+                        }}
+                      >
+                        {mainRoleLabel}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
 
-                <div>
-                  <h1 className="home-text-reveal text-4xl font-black tracking-tight">
-                    {firstName ? `Halo, ${firstName}` : "Memuat profil..."}
-                  </h1>
+                <div className="flex shrink-0 items-center gap-3">
+                  <WhatsAppButton />
 
                   <AnnouncementButton
                     href="/notifikasi"
@@ -799,44 +685,36 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <AnnouncementButton
-                unread={hasUnreadAnnouncement}
-                desktop
-                onClick={markAnnouncementsAsRead}
-              />
-            </div>
-          </div>
-        </section>
+              <div className="py-7 text-center">
+                <p
+                  className="home-text-reveal text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]"
+                  style={{
+                    animationDelay: "120ms",
+                  }}
+                >
+                  Selamat Datang
+                </p>
 
-        <section className="mx-auto w-full max-w-7xl bg-transparent md:bg-white/80 md:dark:bg-[#161b22]/85 md:backdrop-blur-xl md:border md:border-white/50 md:dark:border-[#21262d]/50 px-5 pb-[8.5rem] pt-2 md:mt-8 md:rounded-[2.5rem] md:px-8 md:pb-10 md:pt-8 lg:px-10">
-          <div className="mb-6 md:mb-8">
-            <QuickMenuGrid />
-          </div>
+                <h2
+                  className="home-text-reveal mt-3 text-4xl font-black tracking-tight text-[#073456]"
+                  style={{
+                    animationDelay: "170ms",
+                  }}
+                >
+                  {firstName ? `Halo, ${firstName}` : "Memuat profil..."}
+                </h2>
 
-          {/* Rekap Kehadiran Bulan Ini */}
-          <div className="mb-6 rounded-[2rem] border border-blue-50 dark:border-slate-800 bg-[#f8fbff] dark:bg-[#0d1117] p-5 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c] dark:text-blue-400 mb-4">
-              Rekap Kehadiran Bulan Ini
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="rounded-2xl border border-emerald-100 dark:border-emerald-950/20 bg-white dark:bg-[#161b22] p-4 text-center shadow-sm">
-                <p className="text-[10px] font-black text-emerald-800 dark:text-emerald-400 uppercase">Hadir</p>
-                <h4 className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-450">{recapStats.hadir}</h4>
-              </div>
-              <div className="rounded-2xl border border-amber-100 dark:border-amber-950/20 bg-white dark:bg-[#161b22] p-4 text-center shadow-sm">
-                <p className="text-[10px] font-black text-amber-800 dark:text-amber-400 uppercase">Telat</p>
-                <h4 className="mt-2 text-2xl font-black text-amber-600 dark:text-amber-450">{recapStats.telat}</h4>
-              </div>
-              <div className="rounded-2xl border border-blue-100 dark:border-blue-950/20 bg-white dark:bg-[#161b22] p-4 text-center shadow-sm">
-                <p className="text-[10px] font-black text-blue-800 dark:text-blue-400 uppercase">Cuti</p>
-                <h4 className="mt-2 text-2xl font-black text-blue-600 dark:text-blue-400">{recapStats.cuti}</h4>
-              </div>
-              <div className="rounded-2xl border border-yellow-100 dark:border-yellow-950/20 bg-white dark:bg-[#161b22] p-4 text-center shadow-sm">
-                <p className="text-[10px] font-black text-yellow-800 dark:text-yellow-400 uppercase">Izin / Sakit</p>
-                <h4 className="mt-2 text-2xl font-black text-yellow-600 dark:text-yellow-450">{recapStats.izinSakit}</h4>
+                <p
+                  className="home-text-reveal mt-3 text-lg font-bold text-slate-500"
+                  style={{
+                    animationDelay: "220ms",
+                  }}
+                >
+                  Semoga harimu produktif.
+                </p>
               </div>
             </div>
-          </div>
+          </section>
 
           <section className="mx-auto hidden max-w-7xl px-10 pt-8 md:block lg:px-16">
             <div className="home-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-8 text-white shadow-2xl shadow-blue-900/25">
@@ -860,73 +738,38 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <p className="mt-3 text-sm font-bold text-slate-500 md:text-base">
-                  {currentDate || "Memuat tanggal..."}
-                </p>
-
-                <p className="mt-3 text-sm font-semibold text-slate-500 md:mt-5 md:text-lg">
-                  {workScheduleText}
-                </p>
-
-                <p className="mt-1 text-sm font-semibold text-slate-500 md:mt-3 md:text-lg">
-                  Status hari ini:{" "}
-                  <span className="font-black text-[#123c8c]">
-                    {attendanceToday.status}
-                  </span>
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 lg:w-[460px]">
-                <AttendanceButton
-                  label="Masuk"
-                  href="/attendance"
-                  disabled={hasCheckedIn}
-                  variant="primary"
-                />
-
-                <AttendanceButton
-                  label="Keluar"
-                  href="/attendance"
-                  disabled={!hasCheckedIn || hasCheckedOut}
-                  variant="secondary"
+                <AnnouncementButton
+                  unread={hasUnreadAnnouncement}
+                  desktop
+                  onClick={markAnnouncementsAsRead}
                 />
               </div>
             </div>
-          </AppCard>
+          </section>
 
-          <div
-            className="home-card-enter mt-7 flex items-center justify-between md:mt-14"
-            style={{
-              animationDelay: "180ms",
-            }}
-          >
-            <div>
-              <h2 className="text-2xl font-black text-slate-950 md:text-2xl">
-                Pengumuman
-              </h2>
-
-              <p className="mt-1 hidden text-sm font-semibold text-slate-500 md:block">
-                Informasi terbaru dari perusahaan.
-              </p>
+          <section className="mx-auto w-full max-w-7xl bg-white px-5 pb-[8.5rem] pt-2 md:mt-8 md:rounded-[2.5rem] md:px-8 md:pb-10 md:pt-8 lg:px-10">
+            <div className="mb-6 md:mb-8">
+              <QuickMenuGrid />
             </div>
 
-            <Link
-              href="/pengumuman"
-              onClick={markAnnouncementsAsRead}
-              className="text-lg font-black text-[#123c8c] transition hover:text-[#0f3274] active:scale-[0.98] md:text-base"
+            <AppCard
+              padding="md"
+              className="home-card-enter rounded-[1.8rem] border-blue-100 bg-white p-5 shadow-sm transition hover:shadow-xl hover:shadow-slate-200/60 md:p-8"
+              style={{
+                animationDelay: "140ms",
+              }}
             >
-              Lihat Lainnya
-            </Link>
-          </div>
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-4xl font-black tracking-tight text-slate-950 md:text-6xl">
+                      {currentTime || "--:-- WIB"}
+                    </p>
 
-          <div className="mt-4 md:mt-6">
-            <AnnouncementList
-              announcements={announcements}
-              hasAnnouncement={hasAnnouncement}
-              onRead={markAnnouncementsAsRead}
-            />
-          </div>
-        </section>
+                    <div className="rounded-full bg-[#eaf1ff] px-3 py-1 text-xs font-black text-[#123c8c] md:px-3 md:py-1.5">
+                      WIB
+                    </div>
+                  </div>
 
                   <p className="mt-3 text-sm font-bold text-slate-500 md:text-base">
                     {currentDate || "Memuat tanggal..."}

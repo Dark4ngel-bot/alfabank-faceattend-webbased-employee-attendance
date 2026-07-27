@@ -17,36 +17,20 @@ import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
 import { isGpsAccuracyAllowed, isValidGpsCoordinate } from "@/lib/geo";
 
-const employeeIcon = L.divIcon({
-  className: "custom-employee-marker",
-  html: `<div style="background-color: #123c8c; width: 14px; height: 14px; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(18,60,140,0.5);"></div>`,
-  iconSize: [14, 14],
-  iconAnchor: [7, 7]
-});
+type AttendanceAction = "check-in" | "check-out";
 
-const officeIcon = L.divIcon({
-  className: "custom-office-marker",
-  html: `<div style="background-color: #10b981; width: 20px; height: 20px; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 12px rgba(16,185,129,0.5); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold; line-height: 20px;">🏢</div>`,
-  iconSize: [20, 20],
-  iconAnchor: [10, 10]
-});
+export default function AttendancePage() {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
-export type AttendanceMapProps = {
-  userLat?: number;
-  userLng?: number;
-  officeLat?: number;
-  officeLng?: number;
-  officeRadius?: number;
-  officeName?: string;
+  const [cameraReady, setCameraReady] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [lastPhotoUrl, setLastPhotoUrl] = useState<string | null>(null);
 
-  userLocation?: {
-    lat: number;
-    lng: number;
-  };
-  userAccuracy?: number;
-  offices?: any[];
-  matchedOfficeId?: string | null;
-};
+  const [lastLatitude, setLastLatitude] = useState<number | null>(null);
+  const [lastLongitude, setLastLongitude] = useState<number | null>(null);
+  const [lastAccuracy, setLastAccuracy] = useState<number | null>(null);
 
   const [statusTitle, setStatusTitle] = useState("Waiting for Camera");
   const [statusText, setStatusText] = useState(

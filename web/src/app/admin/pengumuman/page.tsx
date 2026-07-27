@@ -12,15 +12,10 @@ import {
   Search,
   Trash2,
   X,
-  Loader2,
-  Users,
-  Archive,
-  Send,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
-import { AppCard } from "@/components/ui/AppUI";
 
 type AnnouncementStatus = "draft" | "published" | "archived";
 
@@ -36,8 +31,6 @@ type Announcement = {
   documentSize?: number | null;
   target: string;
   status: AnnouncementStatus;
-  attachment_url: string | null;
-  attachmentUrl?: string | null;
   created_at: string;
   updated_at: string;
   author: {
@@ -362,9 +355,7 @@ export default function AdminAnnouncementsPage() {
   }
 
   async function deleteAnnouncement(id: string) {
-    const confirmed = window.customConfirm
-      ? await window.customConfirm("Yakin ingin menghapus pengumuman ini?")
-      : confirm("Yakin ingin menghapus pengumuman ini?");
+    const confirmed = confirm("Yakin ingin menghapus pengumuman ini?");
 
     if (!confirmed) return;
 
@@ -411,7 +402,7 @@ export default function AdminAnnouncementsPage() {
               onClick={openAddModal}
               className="inline-flex items-center justify-center gap-3 rounded-[1.4rem] bg-white px-6 py-4 text-sm font-black text-[#123c8c] shadow-sm ring-1 ring-white/70 transition duration-200 hover:bg-blue-50 active:scale-[0.98]"
             >
-              <Plus size={18} strokeWidth={3} />
+              <Plus size={20} strokeWidth={3} />
               Tambah Pengumuman
             </button>
           </div>
@@ -650,6 +641,10 @@ export default function AdminAnnouncementsPage() {
                     ? "Edit Data Pengumuman"
                     : "Tambah Pengumuman Baru"}
                 </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Pengumuman otomatis ditujukan untuk semua pengguna.
+                </p>
               </div>
 
               <button
@@ -710,84 +705,6 @@ export default function AdminAnnouncementsPage() {
                 className="admin-announcement-row-enter"
                 style={{ animationDelay: "80ms" }}
               >
-                <label className="mb-2 block text-sm font-black text-slate-700">
-                  Media Pengumuman (Foto/Video/PDF, Maks 50MB)
-                </label>
-
-                {form.attachmentUrl ? (
-                  <div className="relative overflow-hidden rounded-2xl border border-blue-100 bg-slate-50 p-2">
-                    {/\.pdf$/i.test(form.attachmentUrl) ? (
-                      <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100">
-                        <FileText className="text-red-500" size={32} />
-                        <div>
-                          <p className="text-sm font-black text-slate-800">Lampiran Dokumen PDF</p>
-                          <a href={form.attachmentUrl} target="_blank" className="text-xs font-bold text-[#123c8c] hover:underline">Buka PDF</a>
-                        </div>
-                      </div>
-                    ) : /\.(mp4|webm|ogg|mov)$/i.test(form.attachmentUrl) ? (
-                      <video src={form.attachmentUrl} controls className="max-h-60 w-full rounded-xl object-contain bg-black" />
-                    ) : (
-                      <img src={form.attachmentUrl} alt="Preview Attachment" className="max-h-60 w-full rounded-xl object-contain bg-slate-100" />
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => setForm(prev => ({ ...prev, attachmentUrl: null }))}
-                      className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white shadow hover:bg-rose-600 transition"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-200 bg-[#f6f8ff] py-6 hover:bg-[#eaf1ff] transition duration-200">
-                    <input
-                      type="file"
-                      accept="image/*,video/*,application/pdf"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-
-                        if (file.size > 50 * 1024 * 1024) {
-                          alert("Ukuran file tidak boleh melebihi 50MB.");
-                          return;
-                        }
-
-                        try {
-                          setIsSubmitting(true);
-                          const formData = new FormData();
-                          formData.append("file", file);
-
-                          const res = await fetch("/api/upload", {
-                            method: "POST",
-                            body: formData,
-                          });
-                          const data = await res.json();
-                          if (res.ok && data.success) {
-                            setForm(prev => ({ ...prev, attachmentUrl: data.url }));
-                          } else {
-                            alert(data.error || "Gagal mengunggah file.");
-                          }
-                        } catch (err) {
-                          console.error(err);
-                          alert("Gagal mengunggah file.");
-                        } finally {
-                          setIsSubmitting(false);
-                        }
-                      }}
-                      className="absolute inset-0 cursor-pointer opacity-0"
-                    />
-                    <Megaphone className="h-8 w-8 text-[#123c8c] opacity-60" />
-                    <p className="mt-2 text-xs font-black text-[#123c8c]">
-                      Pilih Foto / Video / PDF
-                    </p>
-                    <p className="mt-1 text-[10px] font-semibold text-slate-400">
-                      Mendukung gambar, video, dan dokumen PDF (Maks 50MB)
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div>
                 <label className="mb-2 block text-sm font-black text-slate-700">
                   Status
                 </label>
@@ -938,56 +855,6 @@ export default function AdminAnnouncementsPage() {
               </div>
             </form>
           </div>
-        </div>
-      )}
-      {activeReadersAnnouncementId && (
-        <div className="fixed inset-0 z-[85] flex items-center justify-center bg-slate-950/45 px-4 backdrop-blur-sm">
-          <AppCard className="w-full max-w-md overflow-hidden bg-white p-6 shadow-2xl rounded-[2rem]">
-            <div className="flex items-center justify-between border-b border-blue-50 pb-4 mb-4">
-              <h3 className="text-lg font-black text-slate-900">Daftar Pembaca</h3>
-              <button
-                onClick={() => setActiveReadersAnnouncementId(null)}
-                className="text-slate-400 hover:text-slate-600 transition"
-              >
-                <X size={20} strokeWidth={2.6} />
-              </button>
-            </div>
-
-            {isReadersLoading ? (
-              <div className="flex h-44 flex-col items-center justify-center gap-2">
-                <Loader2 className="animate-spin text-[#123c8c]" size={28} />
-                <p className="text-xs font-semibold text-slate-500">Memuat pembaca...</p>
-              </div>
-            ) : readers.length === 0 ? (
-              <div className="py-10 text-center">
-                <p className="text-sm font-semibold text-slate-500">Belum ada karyawan yang membaca pengumuman ini.</p>
-              </div>
-            ) : (
-              <div className="max-h-60 overflow-y-auto space-y-3 pr-2">
-                {readers.map((reader, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-slate-50 p-3 rounded-2xl">
-                    <div>
-                      <p className="text-sm font-black text-slate-900">{reader.userName}</p>
-                      <p className="text-xs text-slate-400 font-semibold">{reader.userEmail}</p>
-                    </div>
-                    <span className="text-[10px] font-semibold text-slate-400">
-                      {new Date(reader.timestamp).toLocaleTimeString("id-ID", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })} WIB
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <button
-              onClick={() => setActiveReadersAnnouncementId(null)}
-              className="mt-6 w-full rounded-2xl bg-[#123c8c] py-3 text-sm font-black text-white shadow-md transition hover:bg-[#0f3274]"
-            >
-              Tutup
-            </button>
-          </AppCard>
         </div>
       )}
 

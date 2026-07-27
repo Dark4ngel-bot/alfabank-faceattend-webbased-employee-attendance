@@ -29,9 +29,6 @@ const officeSelect = {
   id: true,
   name: true,
   address: true,
-  phone: true,
-  postal_code: true,
-  logo_url: true,
   latitude: true,
   longitude: true,
   radius_meters: true,
@@ -97,14 +94,6 @@ const employeeSelect = {
   npwp_number: true,
   ptkp_status: true,
   base_salary: true,
-  birth_place: true,
-  birth_date: true,
-  bank_account_number: true,
-  nik: true,
-  employment_status: true,
-  contract_start_date: true,
-  contract_end_date: true,
-  uploaded_document_url: true,
   created_at: true,
   updated_at: true,
   jabatan: {
@@ -339,25 +328,8 @@ export async function GET(req: NextRequest) {
     ) {
       return jsonError("Akses ditolak.", 403);
     }
-    await ensureDefaultShifts();
 
-    // Auto-deactivate employees whose contract/internship/PKL has ended
-    try {
-      const now = new Date();
-      await prisma.user.updateMany({
-        where: {
-          role: "employee",
-          status: "active",
-          employment_status: { in: ["kontrak", "magang", "pkl"] },
-          contract_end_date: { lt: now }
-        },
-        data: {
-          status: "inactive"
-        }
-      });
-    } catch (e) {
-      console.error("Auto deactivation error:", e);
-    }
+    await ensureDefaultShifts();
 
     const employees = await prisma.user.findMany({
       where: {
@@ -369,30 +341,12 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    let offices: any[] = [];
-    try {
-      offices = await prisma.officeLocation.findMany({
-        select: officeSelect,
-        orderBy: {
-          name: "asc",
-        },
-      });
-    } catch {
-      offices = await prisma.officeLocation.findMany({
-        select: {
-          id: true,
-          name: true,
-          address: true,
-          latitude: true,
-          longitude: true,
-          radius_meters: true,
-          status: true,
-        },
-        orderBy: {
-          name: "asc",
-        },
-      });
-    }
+    const offices = await prisma.officeLocation.findMany({
+      select: officeSelect,
+      orderBy: {
+        name: "asc",
+      },
+    });
 
     const departments = await prisma.department.findMany({
       select: departmentSelect,
@@ -450,6 +404,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       employees,
+      offices,
       officeLocations: offices,
       departments,
       jabatans,
@@ -526,7 +481,6 @@ export async function POST(req: NextRequest) {
     const ptkpStatus = body.ptkp_status
       ? String(body.ptkp_status).trim()
       : null;
-
     const baseSalary =
       body.base_salary !== undefined &&
       body.base_salary !== null &&
@@ -534,18 +488,7 @@ export async function POST(req: NextRequest) {
         ? Number(body.base_salary)
         : null;
 
-    const birthPlace = body.birth_place ? String(body.birth_place).trim() : null;
-    const birthDate = body.birth_date ? new Date(body.birth_date) : null;
-    const bankAccountNumber = body.bank_account_number ? String(body.bank_account_number).trim() : null;
-    const nik = body.nik ? String(body.nik).trim() : null;
-    const employmentStatus = body.employment_status ? String(body.employment_status).trim() : null;
-    const contractStartDate = body.contract_start_date ? new Date(body.contract_start_date) : null;
-    const contractEndDate = body.contract_end_date ? new Date(body.contract_end_date) : null;
-    const uploadedDocumentUrl = body.uploaded_document_url ? String(body.uploaded_document_url).trim() : null;
-
     if (!name) return jsonError("Nama karyawan wajib diisi.");
-    if (/\d/.test(name)) return jsonError("Nama lengkap tidak boleh mengandung angka.");
-    if (name.split(/\s+/).filter(Boolean).length < 2) return jsonError("Nama lengkap harus terdiri dari minimal 2 kata.");
     if (!email) return jsonError("Email karyawan wajib diisi.");
     if (!password) return jsonError("Password karyawan wajib diisi.");
 
@@ -621,24 +564,9 @@ export async function POST(req: NextRequest) {
         npwp_number: npwpNumber,
         ptkp_status: ptkpStatus,
         base_salary: baseSalary,
-        birth_place: birthPlace,
-        birth_date: birthDate,
-        bank_account_number: bankAccountNumber,
-        nik: nik,
-        employment_status: employmentStatus,
-        contract_start_date: contractStartDate,
-        contract_end_date: contractEndDate,
-        uploaded_document_url: uploadedDocumentUrl,
       },
       select: employeeSelect,
     });
-
-    await addAuditLog(
-      currentUser.email,
-      currentUser.name || "Admin",
-      "REGISTRASI_KARYAWAN",
-      `Berhasil mendaftarkan karyawan baru: ${name} (${email})`
-    );
 
     return NextResponse.json({
       success: true,
@@ -725,9 +653,12 @@ export async function PATCH(req: NextRequest) {
     const positionId = String(body.position_id || "").trim();
     const shiftId = String(body.shift_id || "").trim();
 
-    const npwpNumber = body.npwp_number ? String(body.npwp_number).trim() : null;
-    const ptkpStatus = body.ptkp_status ? String(body.ptkp_status).trim() : null;
-
+    const npwpNumber = body.npwp_number
+      ? String(body.npwp_number).trim()
+      : null;
+    const ptkpStatus = body.ptkp_status
+      ? String(body.ptkp_status).trim()
+      : null;
     const baseSalary =
       body.base_salary !== undefined &&
       body.base_salary !== null &&
@@ -735,19 +666,8 @@ export async function PATCH(req: NextRequest) {
         ? Number(body.base_salary)
         : null;
 
-    const birthPlace = body.birth_place ? String(body.birth_place).trim() : null;
-    const birthDate = body.birth_date ? new Date(body.birth_date) : null;
-    const bankAccountNumber = body.bank_account_number ? String(body.bank_account_number).trim() : null;
-    const nik = body.nik ? String(body.nik).trim() : null;
-    const employmentStatus = body.employment_status ? String(body.employment_status).trim() : null;
-    const contractStartDate = body.contract_start_date ? new Date(body.contract_start_date) : null;
-    const contractEndDate = body.contract_end_date ? new Date(body.contract_end_date) : null;
-    const uploadedDocumentUrl = body.uploaded_document_url ? String(body.uploaded_document_url).trim() : null;
-
     if (!id) return jsonError("ID karyawan wajib dikirim.");
     if (!name) return jsonError("Nama karyawan wajib diisi.");
-    if (/\d/.test(name)) return jsonError("Nama lengkap tidak boleh mengandung angka.");
-    if (name.split(/\s+/).filter(Boolean).length < 2) return jsonError("Nama lengkap harus terdiri dari minimal 2 kata.");
     if (!email) return jsonError("Email karyawan wajib diisi.");
 
     if (
@@ -776,7 +696,13 @@ export async function PATCH(req: NextRequest) {
     ensureValidEmploymentPeriod(employmentStartDate, employmentEndDate);
 
     const existingEmployee = await prisma.user.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        role: true,
+      },
     });
 
     if (
@@ -834,14 +760,6 @@ export async function PATCH(req: NextRequest) {
       npwp_number: string | null;
       ptkp_status: string | null;
       base_salary: number | null;
-      birth_place: string | null;
-      birth_date: Date | null;
-      bank_account_number: string | null;
-      nik: string | null;
-      employment_status: string | null;
-      contract_start_date: Date | null;
-      contract_end_date: Date | null;
-      uploaded_document_url: string | null;
       password_hash?: string;
     } = {
       name,
@@ -865,14 +783,6 @@ export async function PATCH(req: NextRequest) {
       npwp_number: npwpNumber,
       ptkp_status: ptkpStatus,
       base_salary: baseSalary,
-      birth_place: birthPlace,
-      birth_date: birthDate,
-      bank_account_number: bankAccountNumber,
-      nik: nik,
-      employment_status: employmentStatus,
-      contract_start_date: contractStartDate,
-      contract_end_date: contractEndDate,
-      uploaded_document_url: uploadedDocumentUrl,
     };
 
     if (password) {
