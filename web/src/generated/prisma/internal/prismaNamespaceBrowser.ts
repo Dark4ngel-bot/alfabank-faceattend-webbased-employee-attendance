@@ -22,7 +22,7 @@ export const ModelName = {
   User: 'User',
   LoginRateLimit: 'LoginRateLimit',
   Department: 'Department',
-  Unit: 'Unit',
+  Jabatan: 'Jabatan',
   Position: 'Position',
   Shift: 'Shift',
   WorkSchedule: 'WorkSchedule',
@@ -66,8 +66,17 @@ export const UserScalarFieldEnum = {
   employee_type: 'employee_type',
   phone: 'phone',
   status: 'status',
+  employment_status_id: 'employment_status_id',
+  employment_status: 'employment_status',
+  employment_start_date: 'employment_start_date',
+  employment_end_date: 'employment_end_date',
+  birth_place: 'birth_place',
+  birth_date: 'birth_date',
+  bank_account_number: 'bank_account_number',
+  nik: 'nik',
   profile_photo: 'profile_photo',
-  unit_id: 'unit_id',
+  profile_photo_public_id: 'profile_photo_public_id',
+  jabatan_id: 'jabatan_id',
   department_id: 'department_id',
   position_id: 'position_id',
   shift_id: 'shift_id',
@@ -75,14 +84,6 @@ export const UserScalarFieldEnum = {
   npwp_number: 'npwp_number',
   ptkp_status: 'ptkp_status',
   base_salary: 'base_salary',
-  birth_place: 'birth_place',
-  birth_date: 'birth_date',
-  bank_account_number: 'bank_account_number',
-  nik: 'nik',
-  employment_status: 'employment_status',
-  contract_start_date: 'contract_start_date',
-  contract_end_date: 'contract_end_date',
-  uploaded_document_url: 'uploaded_document_url',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const
@@ -115,7 +116,7 @@ export const DepartmentScalarFieldEnum = {
 export type DepartmentScalarFieldEnum = (typeof DepartmentScalarFieldEnum)[keyof typeof DepartmentScalarFieldEnum]
 
 
-export const UnitScalarFieldEnum = {
+export const JabatanScalarFieldEnum = {
   id: 'id',
   name: 'name',
   department_id: 'department_id',
@@ -124,13 +125,13 @@ export const UnitScalarFieldEnum = {
   updated_at: 'updated_at'
 } as const
 
-export type UnitScalarFieldEnum = (typeof UnitScalarFieldEnum)[keyof typeof UnitScalarFieldEnum]
+export type JabatanScalarFieldEnum = (typeof JabatanScalarFieldEnum)[keyof typeof JabatanScalarFieldEnum]
 
 
 export const PositionScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  unit_id: 'unit_id',
+  jabatan_id: 'jabatan_id',
   status: 'status',
   created_at: 'created_at',
   updated_at: 'updated_at'
@@ -207,6 +208,10 @@ export const AttendanceScalarFieldEnum = {
   check_out_photo: 'check_out_photo',
   check_in_photo_mime: 'check_in_photo_mime',
   check_out_photo_mime: 'check_out_photo_mime',
+  check_in_photo_url: 'check_in_photo_url',
+  check_in_photo_public_id: 'check_in_photo_public_id',
+  check_out_photo_url: 'check_out_photo_url',
+  check_out_photo_public_id: 'check_out_photo_public_id',
   work_mode: 'work_mode',
   registered_office_id: 'registered_office_id',
   check_in_office_id: 'check_in_office_id',
@@ -335,6 +340,11 @@ export const AnnouncementScalarFieldEnum = {
   id: 'id',
   title: 'title',
   content: 'content',
+  document_url: 'document_url',
+  document_public_id: 'document_public_id',
+  document_name: 'document_name',
+  document_mime: 'document_mime',
+  document_size: 'document_size',
   target: 'target',
   status: 'status',
   author_id: 'author_id',
@@ -448,19 +458,20 @@ export const UserOrderByRelevanceFieldEnum = {
   employee_type: 'employee_type',
   phone: 'phone',
   status: 'status',
+  employment_status_id: 'employment_status_id',
+  employment_status: 'employment_status',
+  birth_place: 'birth_place',
+  bank_account_number: 'bank_account_number',
+  nik: 'nik',
   profile_photo: 'profile_photo',
-  unit_id: 'unit_id',
+  profile_photo_public_id: 'profile_photo_public_id',
+  jabatan_id: 'jabatan_id',
   department_id: 'department_id',
   position_id: 'position_id',
   shift_id: 'shift_id',
   registered_office_id: 'registered_office_id',
   npwp_number: 'npwp_number',
-  ptkp_status: 'ptkp_status',
-  birth_place: 'birth_place',
-  bank_account_number: 'bank_account_number',
-  nik: 'nik',
-  employment_status: 'employment_status',
-  uploaded_document_url: 'uploaded_document_url'
+  ptkp_status: 'ptkp_status'
 } as const
 
 export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
@@ -485,20 +496,20 @@ export const DepartmentOrderByRelevanceFieldEnum = {
 export type DepartmentOrderByRelevanceFieldEnum = (typeof DepartmentOrderByRelevanceFieldEnum)[keyof typeof DepartmentOrderByRelevanceFieldEnum]
 
 
-export const UnitOrderByRelevanceFieldEnum = {
+export const JabatanOrderByRelevanceFieldEnum = {
   id: 'id',
   name: 'name',
   department_id: 'department_id',
   status: 'status'
 } as const
 
-export type UnitOrderByRelevanceFieldEnum = (typeof UnitOrderByRelevanceFieldEnum)[keyof typeof UnitOrderByRelevanceFieldEnum]
+export type JabatanOrderByRelevanceFieldEnum = (typeof JabatanOrderByRelevanceFieldEnum)[keyof typeof JabatanOrderByRelevanceFieldEnum]
 
 
 export const PositionOrderByRelevanceFieldEnum = {
   id: 'id',
   name: 'name',
-  unit_id: 'unit_id',
+  jabatan_id: 'jabatan_id',
   status: 'status'
 } as const
 
@@ -551,6 +562,10 @@ export const AttendanceOrderByRelevanceFieldEnum = {
   user_id: 'user_id',
   check_in_photo_mime: 'check_in_photo_mime',
   check_out_photo_mime: 'check_out_photo_mime',
+  check_in_photo_url: 'check_in_photo_url',
+  check_in_photo_public_id: 'check_in_photo_public_id',
+  check_out_photo_url: 'check_out_photo_url',
+  check_out_photo_public_id: 'check_out_photo_public_id',
   work_mode: 'work_mode',
   registered_office_id: 'registered_office_id',
   check_in_office_id: 'check_in_office_id',
@@ -619,6 +634,10 @@ export const AnnouncementOrderByRelevanceFieldEnum = {
   id: 'id',
   title: 'title',
   content: 'content',
+  document_url: 'document_url',
+  document_public_id: 'document_public_id',
+  document_name: 'document_name',
+  document_mime: 'document_mime',
   target: 'target',
   status: 'status',
   author_id: 'author_id',

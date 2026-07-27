@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useMemo } from "react";
 import { FileText, ShieldAlert } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
@@ -8,19 +10,21 @@ import MobileShell from "@/components/MobileShell";
 import { useAppData } from "@/context/AppDataContext";
 
 export default function AdminEmployeeRequestsPage() {
-  const { state, resolveAttendanceOverrideRequest } = useAppData();
+  const appData = useAppData();
+  const state = appData?.state || { attendance: [], overrideRequests: [] };
+  const resolveAttendanceOverrideRequest = appData?.resolveAttendanceOverrideRequest || (() => {});
 
   const leaveRequests = useMemo(
     () =>
       state.attendance
-        .filter((item) => item.workMode === "cuti")
-        .sort((a, b) => b.date.localeCompare(a.date)),
+        .filter((item: any) => item.workMode === "cuti")
+        .sort((a: any, b: any) => b.date.localeCompare(a.date)),
     [state.attendance],
   );
 
   const overrideRequests = useMemo(
     () =>
-      [...state.overrideRequests].sort((a, b) =>
+      [...state.overrideRequests].sort((a: any, b: any) =>
         b.createdAt.localeCompare(a.createdAt),
       ),
     [state.overrideRequests],
@@ -63,7 +67,7 @@ export default function AdminEmployeeRequestsPage() {
               </p>
             ) : (
               <div className="mt-4 space-y-3">
-                {overrideRequests.map((item) => (
+                {overrideRequests.map((item: any) => (
                   <div
                     key={item.id}
                     className="rounded-xl border border-blue-100 bg-[#f6f8ff] p-3"
@@ -136,7 +140,7 @@ export default function AdminEmployeeRequestsPage() {
               </p>
             ) : (
               <div className="mt-4 space-y-3">
-                {leaveRequests.map((item) => (
+                {leaveRequests.map((item: any) => (
                   <div
                     key={item.id}
                     className="rounded-xl border border-blue-100 bg-[#f6f8ff] p-3"

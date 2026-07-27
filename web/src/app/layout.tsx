@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
+import GlobalAlert from "@/components/GlobalAlert";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,12 +41,8 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('theme');
-                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
+                  localStorage.setItem('theme', 'light');
+                  document.documentElement.classList.remove('dark');
                 } catch (e) {}
               })();
             `,
@@ -76,9 +73,11 @@ export default function RootLayout({
         suppressHydrationWarning
         className="notranslate min-h-full flex flex-col"
       >
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <GlobalAlert />
+        </ThemeProvider>
       </body>
     </html>
   );
 }
-

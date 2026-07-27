@@ -1557,7 +1557,23 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 export function useAppData() {
   const context = useContext(AppDataContext);
   if (!context) {
-    throw new Error("useAppData must be used inside AppDataProvider");
+    return {
+      state: {
+        users: [],
+        attendance: [],
+        requests: [],
+        rewards: [],
+        offices: [],
+        shifts: [],
+        overrideRequests: [],
+        employmentStatuses: [],
+        notifications: [],
+      },
+      resolveAttendanceOverrideRequest: () => {},
+      addAttendanceRecord: () => {},
+      updateAttendanceStatus: () => {},
+      markNotificationAsRead: () => {},
+    } as any;
   }
   return context;
 }

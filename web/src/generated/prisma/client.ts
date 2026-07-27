@@ -59,10 +59,10 @@ export type LoginRateLimit = Prisma.LoginRateLimitModel
  */
 export type Department = Prisma.DepartmentModel
 /**
- * Model Unit
+ * Model Jabatan
  * 
  */
-export type Unit = Prisma.UnitModel
+export type Jabatan = Prisma.JabatanModel
 /**
  * Model Position
  * 

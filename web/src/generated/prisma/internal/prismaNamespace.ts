@@ -392,7 +392,7 @@ export const ModelName = {
   User: 'User',
   LoginRateLimit: 'LoginRateLimit',
   Department: 'Department',
-  Unit: 'Unit',
+  Jabatan: 'Jabatan',
   Position: 'Position',
   Shift: 'Shift',
   WorkSchedule: 'WorkSchedule',
@@ -424,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "loginRateLimit" | "department" | "unit" | "position" | "shift" | "workSchedule" | "officeLocation" | "employmentStatus" | "attendance" | "attendanceMonthlySummary" | "employeeVisit" | "wfhRequest" | "leaveRequest" | "announcement" | "adminNotification" | "payroll" | "payrollItem" | "permission" | "rolePermission"
+    modelProps: "user" | "loginRateLimit" | "department" | "jabatan" | "position" | "shift" | "workSchedule" | "officeLocation" | "employmentStatus" | "attendance" | "attendanceMonthlySummary" | "employeeVisit" | "wfhRequest" | "leaveRequest" | "announcement" | "adminNotification" | "payroll" | "payrollItem" | "permission" | "rolePermission"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -626,69 +626,69 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    Unit: {
-      payload: Prisma.$UnitPayload<ExtArgs>
-      fields: Prisma.UnitFieldRefs
+    Jabatan: {
+      payload: Prisma.$JabatanPayload<ExtArgs>
+      fields: Prisma.JabatanFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.UnitFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UnitPayload> | null
+          args: Prisma.JabatanFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JabatanPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.UnitFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UnitPayload>
+          args: Prisma.JabatanFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JabatanPayload>
         }
         findFirst: {
-          args: Prisma.UnitFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UnitPayload> | null
+          args: Prisma.JabatanFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JabatanPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.UnitFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UnitPayload>
+          args: Prisma.JabatanFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JabatanPayload>
         }
         findMany: {
-          args: Prisma.UnitFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UnitPayload>[]
+          args: Prisma.JabatanFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JabatanPayload>[]
         }
         create: {
-          args: Prisma.UnitCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UnitPayload>
+          args: Prisma.JabatanCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JabatanPayload>
         }
         createMany: {
-          args: Prisma.UnitCreateManyArgs<ExtArgs>
+          args: Prisma.JabatanCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         delete: {
-          args: Prisma.UnitDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UnitPayload>
+          args: Prisma.JabatanDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JabatanPayload>
         }
         update: {
-          args: Prisma.UnitUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UnitPayload>
+          args: Prisma.JabatanUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JabatanPayload>
         }
         deleteMany: {
-          args: Prisma.UnitDeleteManyArgs<ExtArgs>
+          args: Prisma.JabatanDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.UnitUpdateManyArgs<ExtArgs>
+          args: Prisma.JabatanUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         upsert: {
-          args: Prisma.UnitUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$UnitPayload>
+          args: Prisma.JabatanUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JabatanPayload>
         }
         aggregate: {
-          args: Prisma.UnitAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateUnit>
+          args: Prisma.JabatanAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateJabatan>
         }
         groupBy: {
-          args: Prisma.UnitGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.UnitGroupByOutputType>[]
+          args: Prisma.JabatanGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JabatanGroupByOutputType>[]
         }
         count: {
-          args: Prisma.UnitCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.UnitCountAggregateOutputType> | number
+          args: Prisma.JabatanCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JabatanCountAggregateOutputType> | number
         }
       }
     }
@@ -1797,8 +1797,17 @@ export const UserScalarFieldEnum = {
   employee_type: 'employee_type',
   phone: 'phone',
   status: 'status',
+  employment_status_id: 'employment_status_id',
+  employment_status: 'employment_status',
+  employment_start_date: 'employment_start_date',
+  employment_end_date: 'employment_end_date',
+  birth_place: 'birth_place',
+  birth_date: 'birth_date',
+  bank_account_number: 'bank_account_number',
+  nik: 'nik',
   profile_photo: 'profile_photo',
-  unit_id: 'unit_id',
+  profile_photo_public_id: 'profile_photo_public_id',
+  jabatan_id: 'jabatan_id',
   department_id: 'department_id',
   position_id: 'position_id',
   shift_id: 'shift_id',
@@ -1806,14 +1815,6 @@ export const UserScalarFieldEnum = {
   npwp_number: 'npwp_number',
   ptkp_status: 'ptkp_status',
   base_salary: 'base_salary',
-  birth_place: 'birth_place',
-  birth_date: 'birth_date',
-  bank_account_number: 'bank_account_number',
-  nik: 'nik',
-  employment_status: 'employment_status',
-  contract_start_date: 'contract_start_date',
-  contract_end_date: 'contract_end_date',
-  uploaded_document_url: 'uploaded_document_url',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const
@@ -1846,7 +1847,7 @@ export const DepartmentScalarFieldEnum = {
 export type DepartmentScalarFieldEnum = (typeof DepartmentScalarFieldEnum)[keyof typeof DepartmentScalarFieldEnum]
 
 
-export const UnitScalarFieldEnum = {
+export const JabatanScalarFieldEnum = {
   id: 'id',
   name: 'name',
   department_id: 'department_id',
@@ -1855,13 +1856,13 @@ export const UnitScalarFieldEnum = {
   updated_at: 'updated_at'
 } as const
 
-export type UnitScalarFieldEnum = (typeof UnitScalarFieldEnum)[keyof typeof UnitScalarFieldEnum]
+export type JabatanScalarFieldEnum = (typeof JabatanScalarFieldEnum)[keyof typeof JabatanScalarFieldEnum]
 
 
 export const PositionScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  unit_id: 'unit_id',
+  jabatan_id: 'jabatan_id',
   status: 'status',
   created_at: 'created_at',
   updated_at: 'updated_at'
@@ -1938,6 +1939,10 @@ export const AttendanceScalarFieldEnum = {
   check_out_photo: 'check_out_photo',
   check_in_photo_mime: 'check_in_photo_mime',
   check_out_photo_mime: 'check_out_photo_mime',
+  check_in_photo_url: 'check_in_photo_url',
+  check_in_photo_public_id: 'check_in_photo_public_id',
+  check_out_photo_url: 'check_out_photo_url',
+  check_out_photo_public_id: 'check_out_photo_public_id',
   work_mode: 'work_mode',
   registered_office_id: 'registered_office_id',
   check_in_office_id: 'check_in_office_id',
@@ -2066,6 +2071,11 @@ export const AnnouncementScalarFieldEnum = {
   id: 'id',
   title: 'title',
   content: 'content',
+  document_url: 'document_url',
+  document_public_id: 'document_public_id',
+  document_name: 'document_name',
+  document_mime: 'document_mime',
+  document_size: 'document_size',
   target: 'target',
   status: 'status',
   author_id: 'author_id',
@@ -2179,19 +2189,20 @@ export const UserOrderByRelevanceFieldEnum = {
   employee_type: 'employee_type',
   phone: 'phone',
   status: 'status',
+  employment_status_id: 'employment_status_id',
+  employment_status: 'employment_status',
+  birth_place: 'birth_place',
+  bank_account_number: 'bank_account_number',
+  nik: 'nik',
   profile_photo: 'profile_photo',
-  unit_id: 'unit_id',
+  profile_photo_public_id: 'profile_photo_public_id',
+  jabatan_id: 'jabatan_id',
   department_id: 'department_id',
   position_id: 'position_id',
   shift_id: 'shift_id',
   registered_office_id: 'registered_office_id',
   npwp_number: 'npwp_number',
-  ptkp_status: 'ptkp_status',
-  birth_place: 'birth_place',
-  bank_account_number: 'bank_account_number',
-  nik: 'nik',
-  employment_status: 'employment_status',
-  uploaded_document_url: 'uploaded_document_url'
+  ptkp_status: 'ptkp_status'
 } as const
 
 export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
@@ -2216,20 +2227,20 @@ export const DepartmentOrderByRelevanceFieldEnum = {
 export type DepartmentOrderByRelevanceFieldEnum = (typeof DepartmentOrderByRelevanceFieldEnum)[keyof typeof DepartmentOrderByRelevanceFieldEnum]
 
 
-export const UnitOrderByRelevanceFieldEnum = {
+export const JabatanOrderByRelevanceFieldEnum = {
   id: 'id',
   name: 'name',
   department_id: 'department_id',
   status: 'status'
 } as const
 
-export type UnitOrderByRelevanceFieldEnum = (typeof UnitOrderByRelevanceFieldEnum)[keyof typeof UnitOrderByRelevanceFieldEnum]
+export type JabatanOrderByRelevanceFieldEnum = (typeof JabatanOrderByRelevanceFieldEnum)[keyof typeof JabatanOrderByRelevanceFieldEnum]
 
 
 export const PositionOrderByRelevanceFieldEnum = {
   id: 'id',
   name: 'name',
-  unit_id: 'unit_id',
+  jabatan_id: 'jabatan_id',
   status: 'status'
 } as const
 
@@ -2282,6 +2293,10 @@ export const AttendanceOrderByRelevanceFieldEnum = {
   user_id: 'user_id',
   check_in_photo_mime: 'check_in_photo_mime',
   check_out_photo_mime: 'check_out_photo_mime',
+  check_in_photo_url: 'check_in_photo_url',
+  check_in_photo_public_id: 'check_in_photo_public_id',
+  check_out_photo_url: 'check_out_photo_url',
+  check_out_photo_public_id: 'check_out_photo_public_id',
   work_mode: 'work_mode',
   registered_office_id: 'registered_office_id',
   check_in_office_id: 'check_in_office_id',
@@ -2350,6 +2365,10 @@ export const AnnouncementOrderByRelevanceFieldEnum = {
   id: 'id',
   title: 'title',
   content: 'content',
+  document_url: 'document_url',
+  document_public_id: 'document_public_id',
+  document_name: 'document_name',
+  document_mime: 'document_mime',
   target: 'target',
   status: 'status',
   author_id: 'author_id',
@@ -2424,16 +2443,16 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
 
 
 /**
- * Reference to a field of type 'Decimal'
+ * Reference to a field of type 'DateTime'
  */
-export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
     
 
 
 /**
- * Reference to a field of type 'DateTime'
+ * Reference to a field of type 'Decimal'
  */
-export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
     
 
 
@@ -2582,7 +2601,7 @@ export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   loginRateLimit?: Prisma.LoginRateLimitOmit
   department?: Prisma.DepartmentOmit
-  unit?: Prisma.UnitOmit
+  jabatan?: Prisma.JabatanOmit
   position?: Prisma.PositionOmit
   shift?: Prisma.ShiftOmit
   workSchedule?: Prisma.WorkScheduleOmit

@@ -10,7 +10,7 @@
 export type * from './models/User'
 export type * from './models/LoginRateLimit'
 export type * from './models/Department'
-export type * from './models/Unit'
+export type * from './models/Jabatan'
 export type * from './models/Position'
 export type * from './models/Shift'
 export type * from './models/WorkSchedule'

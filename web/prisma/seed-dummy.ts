@@ -86,10 +86,10 @@ async function main() {
     console.log(`✅ Divisi ditemukan: ${dept.name}`);
   }
 
-  // Cari atau buat unit
-  let unit = await prisma.unit.findFirst({ where: { status: "active" } });
-  if (!unit) {
-    unit = await prisma.unit.create({
+  // Cari atau buat jabatan
+  let unit = await (prisma as any).jabatan?.findFirst({ where: { status: "active" } }) || await (prisma as any).unit?.findFirst({ where: { status: "active" } });
+  if (!unit && (prisma as any).jabatan) {
+    unit = await (prisma as any).jabatan.create({
       data: {
         name: "Unit Pengembangan Web",
         department_id: dept.id,
@@ -98,7 +98,7 @@ async function main() {
     });
     console.log("✅ Unit Pengembangan Web dibuat");
   } else {
-    console.log(`✅ Unit ditemukan: ${unit.name}`);
+    console.log(`✅ Unit ditemukan: ${unit?.name || "Unit"}`);
   }
 
   // Cari atau buat position
@@ -107,9 +107,9 @@ async function main() {
     posFrontend = await prisma.position.create({
       data: {
         name: "Frontend Developer",
-        unit_id: unit.id,
+        jabatan_id: unit?.id || null,
         status: "active",
-      },
+      } as any,
     });
     console.log("✅ Jabatan Frontend Developer dibuat");
   } else {
@@ -124,9 +124,9 @@ async function main() {
     posBackend = await prisma.position.create({
       data: {
         name: "Backend Developer",
-        unit_id: unit.id,
+        jabatan_id: unit?.id || null,
         status: "active",
-      },
+      } as any,
     });
     console.log("✅ Jabatan Backend Developer dibuat");
   } else {
@@ -148,7 +148,7 @@ async function main() {
         employee_type: "utama",
         phone: "081234567890",
         status: "active",
-        unit_id: unit.id,
+        jabatan_id: unit?.id || null,
         department_id: dept.id,
         position_id: posFrontend.id,
         shift_id: shift.id,
@@ -159,7 +159,7 @@ async function main() {
         nik: "320401120598",
         bank_account_number: "1234567890123",
         employment_status: "kartap",
-        contract_start_date: new Date("2024-01-15"),
+        employment_start_date: new Date("2024-01-15"),
         npwp_number: "12.345.678.9-012.000",
         ptkp_status: "TK0",
       },
@@ -181,7 +181,7 @@ async function main() {
         employee_type: "utama",
         phone: "087654321098",
         status: "active",
-        unit_id: unit.id,
+        jabatan_id: unit?.id || null,
         department_id: dept.id,
         position_id: posBackend.id,
         shift_id: shift.id,
@@ -192,8 +192,8 @@ async function main() {
         nik: "351701251196",
         bank_account_number: "9876543210987",
         employment_status: "kontrak",
-        contract_start_date: new Date("2025-03-01"),
-        contract_end_date: new Date("2026-12-31"),
+        employment_start_date: new Date("2025-03-01"),
+        employment_end_date: new Date("2026-12-31"),
         npwp_number: "98.765.432.1-098.000",
         ptkp_status: "K1",
       },

@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
     // 1. Fetch all departments and units
     const [departments, units, employees] = await Promise.all([
       prisma.department.findMany({ select: { id: true, name: true } }),
-      prisma.unit.findMany({ select: { id: true, name: true } }),
+      (prisma as any).jabatan?.findMany({ select: { id: true, name: true } }) || Promise.resolve([]),
       prisma.user.findMany({
         where: { role: "employee" },
         select: {
@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
           name: true,
           email: true,
           department_id: true,
-          unit_id: true,
+          jabatan_id: true,
           employee_code: true,
         },
       }),
@@ -80,10 +80,10 @@ export async function GET(req: NextRequest) {
     });
 
     // 3. Aggregate metrics by department
-    const departmentAnalytics = departments.map((dept) => {
-      const deptEmployees = employees.filter((e) => e.department_id === dept.id);
-      const deptSummaries = summaries.filter((s) =>
-        deptEmployees.some((e) => e.id === s.user_id)
+    const departmentAnalytics = departments.map((dept: any) => {
+      const deptEmployees = employees.filter((e: any) => e.department_id === dept.id);
+      const deptSummaries = summaries.filter((s: any) =>
+        deptEmployees.some((e: any) => e.id === s.user_id)
       );
 
       const totalEmployees = deptEmployees.length;
@@ -123,23 +123,23 @@ export async function GET(req: NextRequest) {
     // 5. Recommendations & Sanctions Check (Current Month)
     // Sanction Recommendation: late more than 3 times
     const sanctionRecommendations = employees
-      .map((emp) => {
+      .map((emp: any) => {
         const empSummary = summaries.find((s) => s.user_id === emp.id);
         const lateDays = empSummary?.total_late_days || 0;
         return {
           id: emp.id,
           name: emp.name,
           code: emp.employee_code || emp.id.slice(0, 8).toUpperCase(),
-          department: departments.find((d) => d.id === emp.department_id)?.name || "Lainnya",
+          department: departments.find((d: any) => d.id === emp.department_id)?.name || "Lainnya",
           lateCount: lateDays,
         };
       })
-      .filter((rec) => rec.lateCount >= 3)
-      .sort((a, b) => b.lateCount - a.lateCount);
+      .filter((rec: any) => rec.lateCount >= 3)
+      .sort((a: any, b: any) => b.lateCount - a.lateCount);
 
     // Promotion/Reward Recommendation: present >= 10 days, 0 late days
     const rewardRecommendations = employees
-      .map((emp) => {
+      .map((emp: any) => {
         const empSummary = summaries.find((s) => s.user_id === emp.id);
         const presentDays = empSummary?.total_present_days || 0;
         const lateDays = empSummary?.total_late_days || 0;
@@ -147,13 +147,13 @@ export async function GET(req: NextRequest) {
           id: emp.id,
           name: emp.name,
           code: emp.employee_code || emp.id.slice(0, 8).toUpperCase(),
-          department: departments.find((d) => d.id === emp.department_id)?.name || "Lainnya",
+          department: departments.find((d: any) => d.id === emp.department_id)?.name || "Lainnya",
           presentCount: presentDays,
           lateCount: lateDays,
         };
       })
-      .filter((rec) => rec.presentCount >= 10 && rec.lateCount === 0)
-      .sort((a, b) => b.presentCount - a.presentCount);
+      .filter((rec: any) => rec.presentCount >= 10 && rec.lateCount === 0)
+      .sort((a: any, b: any) => b.presentCount - a.presentCount);
 
     // Top late days of the week (mock stats derived for analytics presentation)
     const dayLatenessStats = [

@@ -1411,6 +1411,24 @@ export default function AdminEmployeesPage() {
               noValidate
               className="mt-6 grid gap-4"
             >
+              {editingEmployee && (
+                <AppFormReveal delay={15}>
+                  <div>
+                    <label className="mb-2 block text-sm font-black text-slate-700">
+                      ID Karyawan
+                    </label>
+                    <div className="app-field-smooth relative rounded-2xl">
+                      <input
+                        type="text"
+                        readOnly
+                        value={editingEmployee.id}
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-100 py-3 px-4 text-sm font-bold text-slate-500 outline-none cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+                </AppFormReveal>
+              )}
+
               <AppFormReveal delay={20}>
                 <div>
                   <label className="mb-2 block text-sm font-black text-slate-700">

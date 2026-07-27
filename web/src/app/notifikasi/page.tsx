@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Award,
   Bell,
   CalendarDays,
   CheckCircle2,
   ChevronRight,
+  Coins,
   Loader2,
   Megaphone,
 } from "lucide-react";
@@ -199,8 +201,9 @@ export default function EmployeeNotificationPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#f6f8ff] text-slate-950">
-      <AppHeader title="Notifikasi" />
+    <MobileShell>
+      <main className="min-h-screen bg-[#f6f8ff] text-slate-950">
+        <AppHeader title="Notifikasi" />
 
       <section className="mx-auto max-w-5xl px-5 pb-10 pt-6 md:px-8">
         <div className="grid gap-4 md:grid-cols-3">

@@ -132,7 +132,7 @@ function jsonError(message: string, status = 400) {
       success: false,
       message,
     },
-    { status }
+    { status },
   );
 }
 
@@ -157,7 +157,9 @@ function normalizeOptionalDate(value: unknown, label = "Tanggal") {
 }
 
 function normalizeAccountRole(value: unknown): AccountRole {
-  const role = String(value || "employee").trim().toLowerCase();
+  const role = String(value || "employee")
+    .trim()
+    .toLowerCase();
 
   if (role === "admin") return "admin";
   if (role === "employee" || role === "user") return "employee";
@@ -170,7 +172,9 @@ function ensureValidEmploymentPeriod(
   endDate: Date | null,
 ) {
   if (startDate && endDate && startDate.getTime() > endDate.getTime()) {
-    throw new Error("Tanggal mulai masa kerja tidak boleh melewati tanggal akhir.");
+    throw new Error(
+      "Tanggal mulai masa kerja tidak boleh melewati tanggal akhir.",
+    );
   }
 }
 
@@ -329,6 +333,33 @@ export async function GET(req: NextRequest) {
       return jsonError("Akses ditolak.", 403);
     }
 
+    const employeeId = String(req.nextUrl.searchParams.get("id") || "").trim();
+
+    if (employeeId) {
+      const employee = await prisma.user.findFirst({
+        where: {
+          id: employeeId,
+          role: "employee",
+        },
+        select: employeeSelect,
+      });
+
+      if (!employee) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Data karyawan tidak ditemukan.",
+          },
+          { status: 404 },
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        employee,
+      });
+    }
+
     await ensureDefaultShifts();
 
     const employees = await prisma.user.findMany({
@@ -389,9 +420,9 @@ export async function GET(req: NextRequest) {
           prisma.employmentStatus.upsert({
             where: { name },
             update: {},
-            create: { name, code: createStatusCode(name), status: "active" },
-          })
-        )
+            create: { name, code: createStatusCode(name), active: true },
+          }),
+        ),
       );
     }
 
@@ -420,7 +451,7 @@ export async function GET(req: NextRequest) {
         success: false,
         message: getApiErrorMessage(error, "Gagal mengambil data karyawan."),
       },
-      { status: getApiErrorStatus(error) }
+      { status: getApiErrorStatus(error) },
     );
   }
 }
@@ -435,18 +466,20 @@ export async function POST(req: NextRequest) {
     ) {
       return jsonError(
         "Akses ditolak. Hanya admin yang dapat menambah akun.",
-        403
+        403,
       );
     }
 
     const body = await req.json();
 
     const name = String(body.name || "").trim();
-    const email = String(body.email || "").trim().toLowerCase();
+    const email = String(body.email || "")
+      .trim()
+      .toLowerCase();
     const role = normalizeAccountRole(body.role || body.account_role);
     const phone = String(body.phone || "").trim();
     const password = String(
-      body.password || body.temporaryPassword || body.temp_password || ""
+      body.password || body.temporaryPassword || body.temp_password || "",
     ).trim();
 
     const employeeType = String(body.employee_type || "utama").trim();
@@ -454,21 +487,21 @@ export async function POST(req: NextRequest) {
     const employmentStatus = normalizeOptionalText(body.employment_status);
     const employmentStartDate = normalizeOptionalDate(
       body.employment_start_date,
-      "Tanggal mulai masa kerja"
+      "Tanggal mulai masa kerja",
     );
     const employmentEndDate = normalizeOptionalDate(
       body.employment_end_date,
-      "Tanggal akhir masa kerja"
+      "Tanggal akhir masa kerja",
     );
     const birthPlace = normalizeOptionalText(body.birth_place);
     const birthDate = normalizeOptionalDate(body.birth_date, "Tanggal lahir");
     const bankAccountNumber = normalizeOptionalText(
-      body.bank_account_number || body.no_rekening
+      body.bank_account_number || body.no_rekening,
     );
     const nik = normalizeOptionalText(body.nik);
 
     const registeredOfficeId = String(
-      body.registered_office_id || body.office_id || ""
+      body.registered_office_id || body.office_id || "",
     ).trim();
     const departmentId = String(body.department_id || "").trim();
     const jabatanId = String(body.jabatan_id || "").trim();
@@ -500,7 +533,7 @@ export async function POST(req: NextRequest) {
       !shiftId
     ) {
       return jsonError(
-        "Kantor, divisi, jabatan, posisi, dan shift wajib dipilih."
+        "Kantor, divisi, jabatan, posisi, dan shift wajib dipilih.",
       );
     }
 
@@ -570,7 +603,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: role === "admin" ? "Admin berhasil ditambahkan." : "Karyawan berhasil ditambahkan.",
+      message:
+        role === "admin"
+          ? "Admin berhasil ditambahkan."
+          : "Karyawan berhasil ditambahkan.",
       employee,
     });
   } catch (error) {
@@ -597,7 +633,7 @@ export async function POST(req: NextRequest) {
         success: false,
         message: getApiErrorMessage(error, "Gagal menambahkan karyawan."),
       },
-      { status: getApiErrorStatus(error) }
+      { status: getApiErrorStatus(error) },
     );
   }
 }
@@ -612,7 +648,7 @@ export async function PATCH(req: NextRequest) {
     ) {
       return jsonError(
         "Akses ditolak. Hanya admin yang dapat mengubah akun.",
-        403
+        403,
       );
     }
 
@@ -620,11 +656,13 @@ export async function PATCH(req: NextRequest) {
 
     const id = String(body.id || "").trim();
     const name = String(body.name || "").trim();
-    const email = String(body.email || "").trim().toLowerCase();
+    const email = String(body.email || "")
+      .trim()
+      .toLowerCase();
     const role = normalizeAccountRole(body.role || body.account_role);
     const phone = String(body.phone || "").trim();
     const password = String(
-      body.password || body.temporaryPassword || body.temp_password || ""
+      body.password || body.temporaryPassword || body.temp_password || "",
     ).trim();
 
     const employeeType = String(body.employee_type || "utama").trim();
@@ -632,21 +670,21 @@ export async function PATCH(req: NextRequest) {
     const employmentStatus = normalizeOptionalText(body.employment_status);
     const employmentStartDate = normalizeOptionalDate(
       body.employment_start_date,
-      "Tanggal mulai masa kerja"
+      "Tanggal mulai masa kerja",
     );
     const employmentEndDate = normalizeOptionalDate(
       body.employment_end_date,
-      "Tanggal akhir masa kerja"
+      "Tanggal akhir masa kerja",
     );
     const birthPlace = normalizeOptionalText(body.birth_place);
     const birthDate = normalizeOptionalDate(body.birth_date, "Tanggal lahir");
     const bankAccountNumber = normalizeOptionalText(
-      body.bank_account_number || body.no_rekening
+      body.bank_account_number || body.no_rekening,
     );
     const nik = normalizeOptionalText(body.nik);
 
     const registeredOfficeId = String(
-      body.registered_office_id || body.office_id || ""
+      body.registered_office_id || body.office_id || "",
     ).trim();
     const departmentId = String(body.department_id || "").trim();
     const jabatanId = String(body.jabatan_id || "").trim();
@@ -678,7 +716,7 @@ export async function PATCH(req: NextRequest) {
       !shiftId
     ) {
       return jsonError(
-        "Kantor, divisi, jabatan, posisi, dan shift wajib dipilih."
+        "Kantor, divisi, jabatan, posisi, dan shift wajib dipilih.",
       );
     }
 
@@ -826,7 +864,7 @@ export async function PATCH(req: NextRequest) {
         success: false,
         message: getApiErrorMessage(error, "Gagal memperbarui karyawan."),
       },
-      { status: getApiErrorStatus(error) }
+      { status: getApiErrorStatus(error) },
     );
   }
 }
@@ -841,7 +879,7 @@ export async function DELETE(req: NextRequest) {
     ) {
       return jsonError(
         "Akses ditolak. Hanya admin yang dapat menghapus akun.",
-        403
+        403,
       );
     }
 
@@ -852,7 +890,10 @@ export async function DELETE(req: NextRequest) {
     }
 
     if (currentUser.id === id) {
-      return jsonError("Akun yang sedang login tidak bisa menghapus dirinya sendiri.", 400);
+      return jsonError(
+        "Akun yang sedang login tidak bisa menghapus dirinya sendiri.",
+        400,
+      );
     }
 
     const employee = await prisma.user.findUnique({
@@ -942,7 +983,7 @@ export async function DELETE(req: NextRequest) {
     if (isPrismaForeignKeyError(error)) {
       return jsonError(
         "Karyawan tidak bisa dihapus karena masih memiliki relasi data lain.",
-        400
+        400,
       );
     }
 
@@ -951,7 +992,7 @@ export async function DELETE(req: NextRequest) {
         success: false,
         message: getApiErrorMessage(error, "Gagal menghapus karyawan."),
       },
-      { status: getApiErrorStatus(error) }
+      { status: getApiErrorStatus(error) },
     );
   }
 }

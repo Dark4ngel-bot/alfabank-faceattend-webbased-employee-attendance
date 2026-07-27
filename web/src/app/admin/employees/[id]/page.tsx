@@ -10,7 +10,9 @@ import {
   Building2,
   CalendarDays,
   Clock3,
+  Coins,
   CreditCard,
+  Gift,
   IdCard,
   Loader2,
   Mail,
@@ -96,11 +98,6 @@ type Employee = {
   photo_url?: string | null;
   avatar_url?: string | null;
 
-  birth_place?: string | null;
-  birth_date?: string | null;
-  bank_account_number?: string | null;
-  nik?: string | null;
-  employment_status?: string | null;
   contract_start_date?: string | null;
   contract_end_date?: string | null;
   base_salary?: number | string | null;
@@ -399,10 +396,13 @@ export default function AdminEmployeeDetailPage() {
       setIsLoading(true);
       setErrorMessage("");
 
-      const response = await fetch("/api/employees", {
-        method: "GET",
-        cache: "no-store",
-      });
+      const response = await fetch(
+        `/api/employees?id=${encodeURIComponent(id)}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        },
+      );
 
       const result = await readJsonResponse(response);
 
@@ -412,9 +412,12 @@ export default function AdminEmployeeDetailPage() {
         return;
       }
 
-      const employees = (result.employees || result.data || []) as Employee[];
       const selectedEmployee =
-        employees.find((item) => String(item.id) === id) || null;
+        (result.employee as Employee | undefined) ||
+        ((result.employees || result.data || []) as Employee[]).find(
+          (item) => String(item.id) === id,
+        ) ||
+        null;
 
       if (!selectedEmployee) {
         setEmployee(null);

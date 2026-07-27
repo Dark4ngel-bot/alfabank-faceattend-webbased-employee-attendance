@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import {
   Building2,
   Camera,
@@ -41,13 +42,16 @@ type CompanyOffice = {
 };
 
 export default function AdminProfilePage() {
+  const searchParams = useSearchParams();
   const companyLogo = useCompanyLogo();
   const companyName = useCompanyName();
   const DEFAULT_AVATAR = companyLogo;
-  const [activeTab, setActiveTab] = useState<"user" | "company" | "password">("user");
+  const [activeTab, setActiveTab] = useState<"user" | "company" | "password">(
+    "user",
+  );
   const [admin, setAdmin] = useState<AdminProfile | null>(null);
   const [office, setOffice] = useState<CompanyOffice | null>(null);
-  
+
   const [totalEmployees, setTotalEmployees] = useState(0);
   const [maxEmployeesLimit] = useState(50); // Demo limit
 
@@ -66,18 +70,34 @@ export default function AdminProfilePage() {
     longitude: 0,
     radius_meters: 100,
   });
-  const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" });
+  const [passwordForm, setPasswordForm] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
 
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
   const [isEditCompanyOpen, setIsEditCompanyOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  function resolveTab(tabValue: string | null) {
+    if (tabValue === "company") return "company";
+    if (tabValue === "password") return "password";
+
+    return "user";
+  }
+
   async function loadData() {
     try {
       setIsLoading(true);
-      // 1. Load Admin Data
-      const meResponse = await fetch("/api/auth/me", { cache: "no-store" });
+
+      const [meResponse, empResponse, officeResponse] = await Promise.all([
+        fetch("/api/auth/me", { cache: "no-store" }),
+        fetch("/api/employees", { cache: "no-store" }),
+        fetch("/api/admin/offices", { cache: "no-store" }),
+      ]);
+
       const meData = await meResponse.json();
       if (meData.success && meData.user) {
         setAdmin(meData.user);
@@ -88,15 +108,16 @@ export default function AdminProfilePage() {
         });
       }
 
-      // 2. Load Employees count and office data
-      const empResponse = await fetch("/api/employees", { cache: "no-store" });
       const empData = await empResponse.json();
       if (empData.success && empData.employees) {
         setTotalEmployees(empData.employees.length);
-        
-        // Find first office as company profile
-        if (empData.officeLocations && empData.officeLocations.length > 0) {
-          const mainOffice = empData.officeLocations[0];
+      }
+
+      const officeData = await officeResponse.json();
+      if (officeData.success && Array.isArray(officeData.offices)) {
+        const mainOffice = officeData.offices[0] || null;
+
+        if (mainOffice) {
           const officeLogo = mainOffice.logo_url || mainOffice.logoUrl || "";
           setOffice(mainOffice);
           setCompanyForm({
@@ -126,6 +147,11 @@ export default function AdminProfilePage() {
   useEffect(() => {
     void loadData();
   }, []);
+
+  useEffect(() => {
+    setActiveTab(resolveTab(searchParams.get("tab")));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Handle Logo Upload (Base64 file reader like profile photo)
   function handleLogoFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -163,8 +189,15 @@ export default function AdminProfilePage() {
       return;
     }
 
-    if (userForm.phone && (userForm.phone.length < 10 || userForm.phone.length > 13 || !/^\d+$/.test(userForm.phone))) {
-      alert("Nomor telepon harus berupa angka 10-13 digit tanpa spasi atau simbol.");
+    if (
+      userForm.phone &&
+      (userForm.phone.length < 10 ||
+        userForm.phone.length > 13 ||
+        !/^\d+$/.test(userForm.phone))
+    ) {
+      alert(
+        "Nomor telepon harus berupa angka 10-13 digit tanpa spasi atau simbol.",
+      );
       return;
     }
 
@@ -204,18 +237,29 @@ export default function AdminProfilePage() {
       return;
     }
 
-    if (companyForm.phone && (companyForm.phone.length < 10 || companyForm.phone.length > 13 || !/^\d+$/.test(companyForm.phone))) {
-      alert("Nomor telepon perusahaan harus berupa angka 10-13 digit tanpa spasi atau simbol.");
+    if (
+      companyForm.phone &&
+      (companyForm.phone.length < 10 ||
+        companyForm.phone.length > 13 ||
+        !/^\d+$/.test(companyForm.phone))
+    ) {
+      alert(
+        "Nomor telepon perusahaan harus berupa angka 10-13 digit tanpa spasi atau simbol.",
+      );
       return;
     }
 
     try {
       setIsSaving(true);
-      const response = await fetch("/api/admin/offices", {
-        method: "PATCH",
+      const endpoint = office?.id
+        ? `/api/admin/offices/${office.id}`
+        : "/api/admin/offices";
+      const method = office?.id ? "PATCH" : "POST";
+
+      const response = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: office?.id || undefined,
           name: companyForm.name,
           address: companyForm.address,
           phone: companyForm.phone,
@@ -234,9 +278,12 @@ export default function AdminProfilePage() {
         return;
       }
 
-      const updatedOffice = result.office || { id: result.office?.id || office?.id || "main", ...companyForm };
+      const updatedOffice = result.office || {
+        id: result.office?.id || office?.id || "main",
+        ...companyForm,
+      };
       setOffice(updatedOffice);
-      
+
       if (companyForm.name) {
         localStorage.setItem("faceattend_company_name", companyForm.name);
       }
@@ -274,7 +321,7 @@ export default function AdminProfilePage() {
 
     try {
       setIsSaving(true);
-      const response = await fetch("/api/profile/change-password", {
+      const response = await fetch("/api/profil/change-password", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -299,29 +346,45 @@ export default function AdminProfilePage() {
     }
   }
 
-  const isDefaultAvatar = !admin?.profile_photo || admin.profile_photo.includes("creativemu.png");
+  const isDefaultAvatar =
+    !admin?.profile_photo || admin.profile_photo.includes("creativemu.png");
   const avatarSrc = isDefaultAvatar ? companyLogo : admin.profile_photo!;
-  const companyLogoSrc = office?.logo_url || companyForm.logo_url || companyLogo;
-  const adminDisplayName = admin?.name ? admin.name.replace(/Creativemu/gi, companyName) : "";
-  const adminDisplayEmail = admin?.email ? admin.email.replace(/creativemu\.co\.id/gi, `${companyName.toLowerCase().replace(/\s+/g, "")}.co.id`).replace(/creativemu\.com/gi, `${companyName.toLowerCase().replace(/\s+/g, "")}.com`) : "";
-  const percentage = Math.min(Math.round((totalEmployees / maxEmployeesLimit) * 100), 100);
+  const companyLogoSrc =
+    office?.logo_url || companyForm.logo_url || companyLogo;
+  const adminDisplayName = admin?.name
+    ? admin.name.replace(/Creativemu/gi, companyName)
+    : "";
+  const adminDisplayEmail = admin?.email
+    ? admin.email
+        .replace(
+          /creativemu\.co\.id/gi,
+          `${companyName.toLowerCase().replace(/\s+/g, "")}.co.id`,
+        )
+        .replace(
+          /creativemu\.com/gi,
+          `${companyName.toLowerCase().replace(/\s+/g, "")}.com`,
+        )
+    : "";
+  const percentage = Math.min(
+    Math.round((totalEmployees / maxEmployeesLimit) * 100),
+    100,
+  );
 
   return (
     <MobileShell variant="admin">
       <main className="min-h-screen bg-[#f8fbff] dark:bg-[#0d1117] pb-24 transition-colors">
-        <AppHeader
-          title="Profil Admin / Owner"
-          variant="admin"
-        />
+        <AppHeader title="Profil Admin / Owner" variant="admin" />
 
         {isLoading ? (
           <div className="flex min-h-[300px] items-center justify-center">
-            <Loader2 className="animate-spin text-[#123c8c] dark:text-blue-400" size={36} />
+            <Loader2
+              className="animate-spin text-[#123c8c] dark:text-blue-400"
+              size={36}
+            />
           </div>
         ) : (
           <section className="mx-auto mt-6 max-w-5xl px-5 md:px-10">
             <div className="flex flex-col gap-6">
-              
               {/* TOP CARD: Avatar & Company Status Centered */}
               <div className="rounded-[2rem] border border-blue-100 dark:border-slate-800 bg-white dark:bg-[#161b22] p-6 shadow-xl shadow-slate-200/50 dark:shadow-none">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -337,9 +400,13 @@ export default function AdminProfilePage() {
                     </div>
 
                     <div>
-                      <h2 className="text-xl font-black text-slate-950 dark:text-white">{adminDisplayName || admin?.name}</h2>
-                      <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-0.5">{adminDisplayEmail || admin?.email}</p>
-                      
+                      <h2 className="text-xl font-black text-slate-950 dark:text-white">
+                        {adminDisplayName || admin?.name}
+                      </h2>
+                      <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+                        {adminDisplayEmail || admin?.email}
+                      </p>
+
                       <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 px-3.5 py-1 text-xs font-bold text-[#123c8c] dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
                         Role: {admin?.role || "Admin"}
                       </span>
@@ -429,24 +496,41 @@ export default function AdminProfilePage() {
 
                     <div className="grid gap-6 md:grid-cols-2">
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Nama Lengkap</p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{admin?.name || "-"}</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          Nama Lengkap
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {admin?.name || "-"}
+                        </p>
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Email Utama</p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{admin?.email || "-"}</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          Email Utama
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {admin?.email || "-"}
+                        </p>
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">No. Telepon / WhatsApp</p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{admin?.phone || "-"}</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          No. Telepon / WhatsApp
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {admin?.phone || "-"}
+                        </p>
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Zona Waktu</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          Zona Waktu
+                        </p>
                         <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-                          <Globe size={16} className="text-[#123c8c] dark:text-blue-400" />
+                          <Globe
+                            size={16}
+                            className="text-[#123c8c] dark:text-blue-400"
+                          />
                           <span>WIB (Asia/Jakarta)</span>
                         </div>
                       </div>
@@ -469,8 +553,12 @@ export default function AdminProfilePage() {
                           />
                         </div>
                         <div>
-                          <h4 className="text-base font-black text-slate-900 dark:text-white">{office?.name || "Profil Perusahaan"}</h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Logo resmi perusahaan di aplikasi</p>
+                          <h4 className="text-base font-black text-slate-900 dark:text-white">
+                            {office?.name || "Profil Perusahaan"}
+                          </h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                            Logo resmi perusahaan di aplikasi
+                          </p>
                         </div>
                       </div>
 
@@ -486,44 +574,74 @@ export default function AdminProfilePage() {
 
                     <div className="grid gap-6 md:grid-cols-2">
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Nama Perusahaan / Kantor</p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{office?.name || "-"}</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          Nama Perusahaan / Kantor
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {office?.name || "-"}
+                        </p>
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">No. Telepon Perusahaan</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          No. Telepon Perusahaan
+                        </p>
                         <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-                          <Phone size={15} className="text-[#123c8c] dark:text-blue-400" />
+                          <Phone
+                            size={15}
+                            className="text-[#123c8c] dark:text-blue-400"
+                          />
                           <span>{office?.phone || "-"}</span>
                         </div>
                       </div>
 
                       <div className="space-y-1 md:col-span-2">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Alamat Perusahaan</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          Alamat Perusahaan
+                        </p>
                         <div className="flex items-start gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-                          <MapPin size={16} className="mt-0.5 shrink-0 text-[#123c8c] dark:text-blue-400" />
+                          <MapPin
+                            size={16}
+                            className="mt-0.5 shrink-0 text-[#123c8c] dark:text-blue-400"
+                          />
                           <span>{office?.address || "-"}</span>
                         </div>
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Kode Pos</p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{office?.postal_code || "-"}</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          Kode Pos
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {office?.postal_code || "-"}
+                        </p>
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Radius Absensi</p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{office?.radius_meters || 100} Meter</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          Radius Absensi
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {office?.radius_meters || 100} Meter
+                        </p>
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Latitude</p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{office?.latitude || "-"}</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          Latitude
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {office?.latitude || "-"}
+                        </p>
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Longitude</p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{office?.longitude || "-"}</p>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          Longitude
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {office?.longitude || "-"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -531,35 +649,59 @@ export default function AdminProfilePage() {
 
                 {/* TAB CONTENT: RESET PASSWORD */}
                 {activeTab === "password" && (
-                  <form onSubmit={handleResetPassword} className="mt-6 space-y-4 max-w-md">
+                  <form
+                    onSubmit={handleResetPassword}
+                    className="mt-6 space-y-4 max-w-md"
+                  >
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Kata Sandi Lama</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        Kata Sandi Lama
+                      </label>
                       <input
                         type="password"
                         value={passwordForm.current}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
+                        onChange={(e) =>
+                          setPasswordForm({
+                            ...passwordForm,
+                            current: e.target.value,
+                          })
+                        }
                         className="mt-1 h-11 w-full rounded-2xl border border-blue-100 dark:border-slate-800 bg-[#f7f9ff] dark:bg-[#0d1117] px-4 text-sm font-normal text-slate-900 dark:text-white outline-none focus:border-[#123c8c] dark:focus:border-blue-500"
                         placeholder="Masukkan kata sandi lama"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Kata Sandi Baru</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        Kata Sandi Baru
+                      </label>
                       <input
                         type="password"
                         value={passwordForm.new}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
+                        onChange={(e) =>
+                          setPasswordForm({
+                            ...passwordForm,
+                            new: e.target.value,
+                          })
+                        }
                         className="mt-1 h-11 w-full rounded-2xl border border-blue-100 dark:border-slate-800 bg-[#f7f9ff] dark:bg-[#0d1117] px-4 text-sm font-normal text-slate-900 dark:text-white outline-none focus:border-[#123c8c] dark:focus:border-blue-500"
                         placeholder="Minimal 8 karakter"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Konfirmasi Kata Sandi Baru</label>
+                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        Konfirmasi Kata Sandi Baru
+                      </label>
                       <input
                         type="password"
                         value={passwordForm.confirm}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                        onChange={(e) =>
+                          setPasswordForm({
+                            ...passwordForm,
+                            confirm: e.target.value,
+                          })
+                        }
                         className="mt-1 h-11 w-full rounded-2xl border border-blue-100 dark:border-slate-800 bg-[#f7f9ff] dark:bg-[#0d1117] px-4 text-sm font-normal text-slate-900 dark:text-white outline-none focus:border-[#123c8c] dark:focus:border-blue-500"
                         placeholder="Ulangi kata sandi baru"
                       />
@@ -570,11 +712,14 @@ export default function AdminProfilePage() {
                       disabled={isSaving}
                       className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] dark:bg-blue-600 py-3 text-sm font-bold text-white hover:bg-[#0f3274] dark:hover:bg-blue-700 transition active:scale-[0.98] shadow-md shadow-blue-900/20"
                     >
-                      {isSaving ? <Loader2 className="animate-spin" size={18} /> : "Simpan Password Baru"}
+                      {isSaving ? (
+                        <Loader2 className="animate-spin" size={18} />
+                      ) : (
+                        "Simpan Password Baru"
+                      )}
                     </button>
                   </form>
                 )}
-
               </div>
             </div>
           </section>
@@ -585,37 +730,49 @@ export default function AdminProfilePage() {
           <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
             <div className="w-full max-w-md rounded-[2.5rem] border border-blue-100 bg-white p-6 shadow-2xl">
               <h3 className="text-xl font-black text-slate-900">Ubah Profil</h3>
-              
+
               <form onSubmit={handleUpdateUser} className="mt-4 space-y-4">
                 <div>
-                  <label className="text-xs font-black text-slate-500 uppercase">Nama Lengkap</label>
+                  <label className="text-xs font-black text-slate-500 uppercase">
+                    Nama Lengkap
+                  </label>
                   <input
                     type="text"
                     value={userForm.name}
-                    onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                    onChange={(e) =>
+                      setUserForm({ ...userForm, name: e.target.value })
+                    }
                     className="mt-1 h-12 w-full rounded-2xl border border-blue-100 bg-[#f7f9ff] px-4 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-black text-slate-500 uppercase">Email</label>
+                  <label className="text-xs font-black text-slate-500 uppercase">
+                    Email
+                  </label>
                   <input
                     type="email"
                     value={userForm.email}
-                    onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                    onChange={(e) =>
+                      setUserForm({ ...userForm, email: e.target.value })
+                    }
                     className="mt-1 h-12 w-full rounded-2xl border border-blue-100 bg-[#f7f9ff] px-4 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-slate-500">Telepon / WA (Maks 12 Digit)</label>
+                  <label className="text-xs font-semibold text-slate-500">
+                    Telepon / WA (Maks 12 Digit)
+                  </label>
                   <input
                     type="text"
                     inputMode="numeric"
                     maxLength={12}
                     value={userForm.phone}
                     onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "").slice(0, 12);
+                      const val = e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 12);
                       setUserForm({ ...userForm, phone: val });
                     }}
                     placeholder="Contoh: 081234567890"
@@ -648,8 +805,10 @@ export default function AdminProfilePage() {
         {isEditCompanyOpen && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
             <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[2.5rem] border border-blue-100 bg-white p-6 shadow-2xl">
-              <h3 className="text-xl font-black text-slate-900">Ubah Profil Perusahaan & Logo</h3>
-              
+              <h3 className="text-xl font-black text-slate-900">
+                Ubah Profil Perusahaan & Logo
+              </h3>
+
               <form onSubmit={handleUpdateCompany} className="mt-4 space-y-4">
                 {/* LOGO UPLOAD SECTION (Like Employee Photo Profile Change) */}
                 <div className="flex flex-col items-center justify-center gap-3 bg-blue-50/70 p-4 rounded-2xl border border-blue-100">
@@ -686,29 +845,40 @@ export default function AdminProfilePage() {
                     <Upload size={14} />
                     Unggah Logo Perusahaan
                   </button>
-                  <p className="text-[11px] text-slate-500 font-medium">Format: PNG, JPG, WebP, SVG (Transparan disarankan, maks 5MB)</p>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Format: PNG, JPG, WebP, SVG (Transparan disarankan, maks
+                    5MB)
+                  </p>
                 </div>
 
                 <div>
-                  <label className="text-xs font-black text-slate-500 uppercase">Nama Perusahaan / Kantor</label>
+                  <label className="text-xs font-black text-slate-500 uppercase">
+                    Nama Perusahaan / Kantor
+                  </label>
                   <input
                     type="text"
                     value={companyForm.name}
-                    onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
+                    onChange={(e) =>
+                      setCompanyForm({ ...companyForm, name: e.target.value })
+                    }
                     className="mt-1 h-12 w-full rounded-2xl border border-blue-100 bg-[#f7f9ff] px-4 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
                     placeholder="Contoh: PT Creativemu Digital Indonesia"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-black text-slate-500 uppercase">No. Telepon Perusahaan (12-13 Digit)</label>
+                  <label className="text-xs font-black text-slate-500 uppercase">
+                    No. Telepon Perusahaan (12-13 Digit)
+                  </label>
                   <input
                     type="text"
                     inputMode="numeric"
                     maxLength={13}
                     value={companyForm.phone}
                     onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "").slice(0, 13);
+                      const val = e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 13);
                       setCompanyForm({ ...companyForm, phone: val });
                     }}
                     className="mt-1 h-12 w-full rounded-2xl border border-blue-100 bg-[#f7f9ff] px-4 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
@@ -717,34 +887,56 @@ export default function AdminProfilePage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-black text-slate-500 uppercase">Alamat Kantor</label>
+                  <label className="text-xs font-black text-slate-500 uppercase">
+                    Alamat Kantor
+                  </label>
                   <textarea
                     value={companyForm.address}
-                    onChange={(e) => setCompanyForm({ ...companyForm, address: e.target.value })}
+                    onChange={(e) =>
+                      setCompanyForm({
+                        ...companyForm,
+                        address: e.target.value,
+                      })
+                    }
                     className="mt-1 h-20 w-full rounded-2xl border border-blue-100 bg-[#f7f9ff] p-4 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c] resize-none"
                     placeholder="Alamat lengkap gedung / jalan"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-black text-slate-500 uppercase">Kode Pos</label>
+                  <label className="text-xs font-black text-slate-500 uppercase">
+                    Kode Pos
+                  </label>
                   <input
                     type="text"
                     value={companyForm.postal_code}
-                    onChange={(e) => setCompanyForm({ ...companyForm, postal_code: e.target.value })}
+                    onChange={(e) =>
+                      setCompanyForm({
+                        ...companyForm,
+                        postal_code: e.target.value,
+                      })
+                    }
                     className="mt-1 h-12 w-full rounded-2xl border border-blue-100 bg-[#f7f9ff] px-4 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
                     placeholder="Contoh: 12340"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-black text-slate-500 uppercase">Koordinat / Link Google Maps (Tempel Sekaligus)</label>
+                  <label className="text-xs font-black text-slate-500 uppercase">
+                    Koordinat / Link Google Maps (Tempel Sekaligus)
+                  </label>
                   <input
                     type="text"
-                    value={companyForm.latitude && companyForm.longitude ? `${companyForm.latitude}, ${companyForm.longitude}` : ""}
+                    value={
+                      companyForm.latitude && companyForm.longitude
+                        ? `${companyForm.latitude}, ${companyForm.longitude}`
+                        : ""
+                    }
                     placeholder="Tempel '-6.2088, 106.8456' atau link Google Maps"
                     onChange={(e) => {
-                      const val = decodeURIComponent(String(e.target.value || "").trim());
+                      const val = decodeURIComponent(
+                        String(e.target.value || "").trim(),
+                      );
                       if (!val) return;
 
                       const patterns = [
@@ -759,7 +951,14 @@ export default function AdminProfilePage() {
                         if (match) {
                           const lat = Number(match[1]);
                           const lng = Number(match[2]);
-                          if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                          if (
+                            Number.isFinite(lat) &&
+                            Number.isFinite(lng) &&
+                            lat >= -90 &&
+                            lat <= 90 &&
+                            lng >= -180 &&
+                            lng <= 180
+                          ) {
                             setCompanyForm((prev) => ({
                               ...prev,
                               latitude: lat,
@@ -772,24 +971,38 @@ export default function AdminProfilePage() {
                     }}
                     className="mt-1 h-12 w-full rounded-2xl border border-blue-100 bg-[#f7f9ff] px-4 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
                   />
-                  <p className="mt-1 text-[11px] text-slate-500 font-medium">Cukup sekali tempel (*copy-paste*) link Google Maps atau teks koordinat langsung (contoh: <code>-6.2088, 106.8456</code>).</p>
+                  <p className="mt-1 text-[11px] text-slate-500 font-medium">
+                    Cukup sekali tempel (*copy-paste*) link Google Maps atau
+                    teks koordinat langsung (contoh:{" "}
+                    <code>-6.2088, 106.8456</code>).
+                  </p>
                 </div>
 
                 <div className="grid gap-4 grid-cols-2">
                   <div>
-                    <label className="text-xs font-black text-slate-500 uppercase">Radius Absensi (Meter)</label>
+                    <label className="text-xs font-black text-slate-500 uppercase">
+                      Radius Absensi (Meter)
+                    </label>
                     <input
                       type="number"
                       value={companyForm.radius_meters}
-                      onChange={(e) => setCompanyForm({ ...companyForm, radius_meters: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setCompanyForm({
+                          ...companyForm,
+                          radius_meters: Number(e.target.value),
+                        })
+                      }
                       className="mt-1 h-12 w-full rounded-2xl border border-blue-100 bg-[#f7f9ff] px-4 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
                     />
                   </div>
 
                   <div className="flex flex-col justify-center bg-blue-50/60 dark:bg-slate-800/40 p-3 rounded-2xl border border-blue-100/80">
-                    <p className="text-[11px] font-black text-slate-500 uppercase">Hasil Terdeteksi:</p>
+                    <p className="text-[11px] font-black text-slate-500 uppercase">
+                      Hasil Terdeteksi:
+                    </p>
                     <p className="text-xs font-bold text-[#123c8c] dark:text-blue-400 mt-0.5 truncate">
-                      Lat: {companyForm.latitude || "-"} | Lng: {companyForm.longitude || "-"}
+                      Lat: {companyForm.latitude || "-"} | Lng:{" "}
+                      {companyForm.longitude || "-"}
                     </p>
                   </div>
                 </div>
@@ -820,4 +1033,3 @@ export default function AdminProfilePage() {
     </MobileShell>
   );
 }
-

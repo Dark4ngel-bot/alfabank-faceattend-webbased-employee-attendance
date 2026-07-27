@@ -37,7 +37,7 @@ async function run() {
   const positions = await prisma.position.findMany({
     where: { status: "active" },
     include: {
-      unit: {
+      jabatan: {
         include: {
           department: true,
         },
@@ -156,9 +156,9 @@ async function run() {
 
     // Pick position safely
     const pos = positions[i % positions.length];
-    const unitId = pos.unit_id;
-    const deptId = pos.unit?.department_id || null;
-    const finalOfficeId = pos.unit?.department?.office_id || officeId;
+    const jabatanId = (pos as any).jabatan_id;
+    const deptId = (pos as any).jabatan?.department_id || null;
+    const finalOfficeId = (pos as any).jabatan?.department?.office_id || officeId;
 
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - Math.floor(Math.random() * 10));
@@ -179,11 +179,11 @@ async function run() {
         ptkp_status: emp.ptkp_status,
         registered_office_id: finalOfficeId,
         department_id: deptId,
-        unit_id: unitId,
+        jabatan_id: jabatanId,
         position_id: pos.id,
         shift_id: shiftId,
-        contract_start_date: startDate,
-        contract_end_date: emp.employment_status === "kartap" ? null : endDate,
+        employment_start_date: startDate,
+        employment_end_date: emp.employment_status === "kartap" ? null : endDate,
       },
       create: {
         name: emp.name,
@@ -199,11 +199,11 @@ async function run() {
         ptkp_status: emp.ptkp_status,
         registered_office_id: finalOfficeId,
         department_id: deptId,
-        unit_id: unitId,
+        jabatan_id: jabatanId,
         position_id: pos.id,
         shift_id: shiftId,
-        contract_start_date: startDate,
-        contract_end_date: emp.employment_status === "kartap" ? null : endDate,
+        employment_start_date: startDate,
+        employment_end_date: emp.employment_status === "kartap" ? null : endDate,
       },
     });
     createdCount++;
