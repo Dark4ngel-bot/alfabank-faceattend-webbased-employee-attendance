@@ -1,15 +1,38 @@
-import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import type { UploadApiResponse } from "cloudinary";
 import { Buffer } from "node:buffer";
+import { NextRequest, NextResponse } from "next/server";
+
+import { getCloudinary } from "@/lib/cloudinary";
+import { isPhoneAttendanceRequest } from "@/lib/attendance-device";
+import { requireAuth } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
-import { AttendanceStatus } from "@/generated/prisma/enums";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
+import {
+  findActiveLeaveForDate,
+  formatJakartaDate,
+  getLeaveTypeLabel,
+} from "@/lib/leave-attendance-guard";
+import {
+  getDistanceInMeters,
+  isGpsAccuracyAllowed,
+  isValidGeofence,
+  isValidGpsCoordinate,
+  type OfficeGeofence,
+} from "@/lib/geo";
 
 export const runtime = "nodejs";
 
 const MAX_GPS_ACCURACY_METERS = 100;
+const MAX_PHOTO_SIZE = 4 * 1024 * 1024;
 
-type WorkMode = "office" | "wfh" | "wfc" | "visit";
+const ALLOWED_PHOTO_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+]);
+
+type WorkMode = "office" | "wfh" | "visit";
 
 type ParsedAttendanceBody = {
   photoBuffer: Uint8Array<ArrayBuffer> | null;
@@ -26,56 +49,25 @@ type ParsedAttendanceBody = {
   visitNote: string;
 };
 
-type GeoPoint = {
-  lat: number;
-  lng: number;
-};
-
-type OfficeGeofence = {
-  id: string;
-  name: string;
-  latitude: number;
-  longitude: number;
-  radius_meters: number;
-};
-
-function isMobileAttendanceRequest(req: NextRequest) {
-  const secChMobile = req.headers.get("sec-ch-ua-mobile");
-
-  if (secChMobile === "?1") return true;
-
-  const userAgent = (req.headers.get("user-agent") || "").toLowerCase();
-
-  return /iphone|ipod|android.*mobile|blackberry|iemobile|opera mini|mobile/.test(
-    userAgent,
-  );
-}
-
 async function getUserIdFromRequest(req: NextRequest) {
-  const token = req.cookies.get("faceattend_token")?.value;
+  const authUser = await requireAuth(req);
 
-  if (!token) throw new Error("Token login tidak ditemukan.");
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET belum ada di file .env");
-  }
-
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-  const { payload } = await jwtVerify(token, secret);
-
-  const userId =
-    (payload.id as string | undefined) ||
-    (payload.userId as string | undefined) ||
-    (payload.sub as string | undefined);
-
-  if (!userId) throw new Error("User ID tidak ditemukan di token.");
-
-  return userId;
+  return authUser.id;
 }
 
 function getTodayDateOnly() {
-  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value || 0);
 
-  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  return new Date(
+    Date.UTC(getPart("year"), getPart("month") - 1, getPart("day")),
+  );
 }
 
 function toJakartaDate(date = new Date()) {
@@ -127,7 +119,6 @@ function normalizeWorkMode(value: unknown): WorkMode {
     .toLowerCase();
 
   if (mode === "wfh") return "wfh";
-  if (mode === "wfc") return "wfc";
   if (mode === "visit" || mode === "kunjungan") return "visit";
   if (mode === "office" || mode === "wfo" || mode === "kantor") {
     return "office";
@@ -138,7 +129,6 @@ function normalizeWorkMode(value: unknown): WorkMode {
 
 function getWorkModeLabel(workMode: WorkMode) {
   if (workMode === "wfh") return "WFH";
-  if (workMode === "wfc") return "WFC";
   if (workMode === "visit") return "Kunjungan";
   return "Kantor";
 }
@@ -168,45 +158,52 @@ async function fileToBuffer(file: File) {
   };
 }
 
-function getDistanceInMeters(from: GeoPoint, to: GeoPoint) {
-  const earthRadius = 6371000;
+async function uploadCheckInPhoto(
+  photoBuffer: Uint8Array<ArrayBuffer>,
+  userId: string,
+): Promise<UploadApiResponse> {
+  const cloudinary = getCloudinary();
 
-  const lat1 = (from.lat * Math.PI) / 180;
-  const lat2 = (to.lat * Math.PI) / 180;
-  const deltaLat = ((to.lat - from.lat) * Math.PI) / 180;
-  const deltaLng = ((to.lng - from.lng) * Math.PI) / 180;
+  return new Promise<UploadApiResponse>((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "presensi/attendance/check-in",
+        public_id: `user-${userId}-${Date.now()}`,
+        resource_type: "image",
+        overwrite: false,
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
 
-  const a =
-    Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-    Math.cos(lat1) *
-    Math.cos(lat2) *
-    Math.sin(deltaLng / 2) *
-    Math.sin(deltaLng / 2);
+        if (!result) {
+          reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
+          return;
+        }
 
-  return earthRadius * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+        resolve(result);
+      },
+    );
+
+    uploadStream.end(Buffer.from(photoBuffer));
+  });
 }
 
-function findNearestValidOffice(
-  userLocation: GeoPoint,
-  offices: OfficeGeofence[],
-) {
-  return (
-    offices
-      .map((office) => {
-        const distance = getDistanceInMeters(userLocation, {
-          lat: office.latitude,
-          lng: office.longitude,
-        });
+async function deleteCloudinaryPhoto(publicId: string | null | undefined) {
+  if (!publicId) return;
 
-        return {
-          office,
-          distance,
-          isWithinRadius: distance <= office.radius_meters,
-        };
-      })
-      .filter((item) => item.isWithinRadius)
-      .sort((a, b) => a.distance - b.distance)[0] ?? null
-  );
+  try {
+    const cloudinary = getCloudinary();
+
+    await cloudinary.uploader.destroy(publicId, {
+      resource_type: "image",
+      invalidate: true,
+    });
+  } catch (error) {
+    console.warn("DELETE_CHECK_IN_PHOTO_WARNING:", error);
+  }
 }
 
 function getFormText(formData: FormData, keys: string[]) {
@@ -466,6 +463,16 @@ async function parseAttendanceBody(
 
 export async function POST(req: NextRequest) {
   try {
+    if (!isPhoneAttendanceRequest(req)) {
+      return NextResponse.json(
+        {
+          error:
+            "Presensi hanya bisa dilakukan melalui handphone. Silakan buka Presensi dari browser HP.",
+        },
+        { status: 403 },
+      );
+    }
+
     const userId = await getUserIdFromRequest(req);
 
     if (!isMobileAttendanceRequest(req)) {
@@ -494,13 +501,26 @@ export async function POST(req: NextRequest) {
     } = await parseAttendanceBody(req);
     const isOfficeMode = workMode === "office";
     const isWfhMode = workMode === "wfh";
-    const isWfcMode = workMode === "wfc";
     const isVisitMode = workMode === "visit";
-    const isFlexibleMode = isWfhMode || isWfcMode || isVisitMode;
+    const isFlexibleMode = isWfhMode || isVisitMode;
 
     if (!photoBuffer) {
       return NextResponse.json(
         { error: "Foto check-in wajib dikirim." },
+        { status: 400 },
+      );
+    }
+
+    if (!ALLOWED_PHOTO_MIME_TYPES.has(photoMime.toLowerCase())) {
+      return NextResponse.json(
+        { error: "Format foto harus JPG, PNG, atau WEBP." },
+        { status: 400 },
+      );
+    }
+
+    if (photoBuffer.byteLength > MAX_PHOTO_SIZE) {
+      return NextResponse.json(
+        { error: "Ukuran foto maksimal 4MB." },
         { status: 400 },
       );
     }
@@ -519,7 +539,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (accuracy > MAX_GPS_ACCURACY_METERS) {
+    if (!isValidGpsCoordinate({ lat: latitude, lng: longitude })) {
+      return NextResponse.json(
+        { error: "Koordinat GPS check-in tidak valid." },
+        { status: 400 },
+      );
+    }
+
+    if (!isGpsAccuracyAllowed(accuracy, MAX_GPS_ACCURACY_METERS)) {
       return NextResponse.json(
         {
           error: `Akurasi GPS terlalu rendah. Maksimal ±${MAX_GPS_ACCURACY_METERS} meter.`,
@@ -625,17 +652,33 @@ export async function POST(req: NextRequest) {
       const officeLongitude = toNumber(registeredOffice.longitude);
       const officeRadius = toNumber(registeredOffice.radius_meters);
 
-      if (
-        officeLatitude === null ||
-        officeLongitude === null ||
-        officeRadius === null
-      ) {
+      if (officeLatitude === null || officeLongitude === null || officeRadius === null) {
         return NextResponse.json(
           {
             success: false,
             error: "Data titik GPS kantor belum lengkap.",
             message:
               "Latitude, longitude, atau radius kantor belum lengkap di master data kantor.",
+          },
+          { status: 400 },
+        );
+      }
+
+      if (
+        !isValidGeofence({
+          id: registeredOffice.id,
+          name: registeredOffice.name,
+          latitude: officeLatitude,
+          longitude: officeLongitude,
+          radius_meters: officeRadius,
+        })
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Data geofence kantor tidak valid.",
+            message:
+              "Latitude harus -90 sampai 90, longitude -180 sampai 180, dan radius kantor harus lebih dari 0 meter.",
           },
           { status: 400 },
         );
@@ -692,6 +735,33 @@ export async function POST(req: NextRequest) {
     const now = new Date();
     const today = getTodayDateOnly();
 
+    const activeLeave = await findActiveLeaveForDate({
+      userId,
+      date: today,
+    });
+
+    if (activeLeave) {
+      const leaveLabel = getLeaveTypeLabel(activeLeave.leave_type);
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Kamu sedang dalam periode ${leaveLabel} pada ${formatJakartaDate(
+            today,
+          )}. Check-in dan check-out tidak dapat dilakukan selama cuti/sakit/izin.`,
+          message: `Kamu sedang dalam periode ${leaveLabel} pada ${formatJakartaDate(
+            today,
+          )}. Check-in dan check-out tidak dapat dilakukan selama cuti/sakit/izin.`,
+          leaveBlock: {
+            id: activeLeave.id,
+            leaveType: activeLeave.leave_type,
+            status: activeLeave.status,
+          },
+        },
+        { status: 400 },
+      );
+    }
+
     const existingAttendance = await prisma.attendance.findFirst({
       where: {
         user_id: userId,
@@ -744,14 +814,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const uploadedPhoto = await uploadCheckInPhoto(photoBuffer, userId);
+
     const checkInData = {
       check_in_time: now,
-      check_in_photo: photoBuffer,
+      check_in_photo: null,
       check_in_photo_mime: photoMime,
+      check_in_photo_url: uploadedPhoto.secure_url,
+      check_in_photo_public_id: uploadedPhoto.public_id,
 
       work_mode: workMode,
       is_wfh: isWfhMode,
-      is_wfc: isWfcMode,
+      is_wfc: false,
       is_visit: isVisitMode,
 
       check_in_latitude: latitude,
@@ -772,8 +846,11 @@ export async function POST(req: NextRequest) {
       activity_note: activityNote || null,
     };
 
-    const attendance = await prisma.$transaction(async (tx: any) => {
-      const savedAttendance = existingAttendance
+    let attendance;
+
+    try {
+      attendance = await prisma.$transaction(async (tx) => {
+        const savedAttendance = existingAttendance
         ? await tx.attendance.update({
           where: {
             id: existingAttendance.id,
@@ -835,8 +912,19 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      return savedAttendance;
-    });
+        return savedAttendance;
+      });
+    } catch (databaseError) {
+      await deleteCloudinaryPhoto(uploadedPhoto.public_id);
+      throw databaseError;
+    }
+
+    if (
+      existingAttendance?.check_in_photo_public_id &&
+      existingAttendance.check_in_photo_public_id !== uploadedPhoto.public_id
+    ) {
+      await deleteCloudinaryPhoto(existingAttendance.check_in_photo_public_id);
+    }
 
     return NextResponse.json({
       success: true,
@@ -846,11 +934,12 @@ export async function POST(req: NextRequest) {
           ? `Check-in berhasil. Kamu terlambat ${lateMinutes} menit.`
           : "Check-in berhasil.",
       attendanceId: attendance.id,
+      photoUrl: uploadedPhoto.secure_url,
       status: attendanceStatus,
       workMode,
       workModeLabel: getWorkModeLabel(workMode),
       isWfh: isWfhMode,
-      isWfc: isWfcMode,
+      isWfc: false,
       isVisit: isVisitMode,
       lateMinutes,
       lateReason: isLate ? lateReason : null,

@@ -2,12 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
-import { AppDataProvider } from "@/context/AppDataContext";
 import { ThemeProvider } from "@/context/ThemeContext";
-import ScrollReloadGuard from "@/components/ScrollReloadGuard";
-import LateGuard from "@/components/LateGuard";
-import GlobalAlert from "@/components/GlobalAlert";
-import ToastContainer from "@/components/ToastContainer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FaceAttend",
-  description: "Employee Attendance System for Creativemu",
+  title: "Presensi",
+  description: "Sistem Presensi Karyawan Creativemu",
   other: {
     google: "notranslate",
   },
@@ -81,15 +76,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="notranslate min-h-full flex flex-col"
       >
-        <ThemeProvider>
-          <AppDataProvider>
-            <ScrollReloadGuard />
-            <LateGuard />
-            <GlobalAlert />
-            <ToastContainer />
-            {children}
-          </AppDataProvider>
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

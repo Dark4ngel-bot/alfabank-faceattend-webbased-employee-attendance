@@ -313,11 +313,6 @@ export default function ShiftsPage() {
     setIsModalOpen(false);
   }
 
-  function resetFilter() {
-    setSearch("");
-    setShiftFilter("all");
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -593,7 +588,7 @@ export default function ShiftsPage() {
       </section>
 
       {isModalOpen && editingShift ? (
-        <div className="shift-modal-backdrop fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 px-4 pb-4 backdrop-blur-sm md:items-center md:pb-0">
+        <div className="shift-modal-backdrop fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 px-4 pb-4 md:items-center md:pb-0">
           <div className="shift-modal-panel max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -689,7 +684,7 @@ export default function ShiftsPage() {
                   onClick={closeModal}
                   className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-200 active:scale-[0.98]"
                 >
-                  Cancel
+                  Batal
                 </button>
 
                 <button

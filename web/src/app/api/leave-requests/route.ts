@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
-import fs from "node:fs";
-import path from "node:path";
+import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
+import {
+  findAttendanceInDateRange,
+  formatJakartaDate,
+} from "@/lib/leave-attendance-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,47 +27,8 @@ const allowedLeaveTypes: LeaveType[] = [
 
 const allowedStatuses: LeaveStatus[] = ["pending", "approved", "rejected"];
 
-async function getCurrentUser(req: NextRequest) {
-  const token = req.cookies.get("faceattend_token")?.value;
-
-  if (!token) {
-    throw new Error("Token login tidak ditemukan. Silakan login ulang.");
-  }
-
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET belum ada di file .env.");
-  }
-
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-  const { payload } = await jwtVerify(token, secret);
-
-  const userId =
-    (payload.id as string | undefined) ||
-    (payload.userId as string | undefined) ||
-    (payload.sub as string | undefined);
-
-  if (!userId) {
-    throw new Error("User ID tidak ditemukan di token.");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      status: true,
-    },
-  });
-
-  if (!user) {
-    throw new Error("User tidak ditemukan.");
-  }
-
-  return user;
+function getCurrentUser(req: NextRequest) {
+  return requireAuth(req);
 }
 
 function jsonError(message: string, status = 400) {
@@ -88,7 +51,7 @@ function jsonError(message: string, status = 400) {
 }
 
 function canManageLeave(role: string) {
-  return ["owner", "admin"].includes(role.toLowerCase());
+  return ["admin", "owner"].includes(role.toLowerCase());
 }
 
 function normalizeDateOnly(value: string) {
@@ -417,6 +380,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const attendanceConflict = await findAttendanceInDateRange({
+      userId: currentUser.id,
+      startDate,
+      endDate,
+    });
+
+    if (attendanceConflict) {
+      return jsonError(
+        `Kamu sudah absen di kantor pada ${formatJakartaDate(
+          attendanceConflict.attendance_date,
+        )}, tidak dapat mengajukan cuti/sakit/izin pada tanggal tersebut.`,
+      );
+    }
+
     const leaveRequest = await prisma.leaveRequest.create({
       data: {
         user_id: currentUser.id,
@@ -500,6 +477,37 @@ export async function PATCH(req: NextRequest) {
 
     if (!status || !allowedStatuses.includes(status)) {
       return jsonError("Status pengajuan tidak valid.");
+    }
+
+    if (status === "approved") {
+      const existingRequest = await prisma.leaveRequest.findUnique({
+        where: {
+          id,
+        },
+        select: {
+          user_id: true,
+          start_date: true,
+          end_date: true,
+        },
+      });
+
+      if (!existingRequest) {
+        return jsonError("Data pengajuan tidak ditemukan.", 404);
+      }
+
+      const attendanceConflict = await findAttendanceInDateRange({
+        userId: existingRequest.user_id,
+        startDate: existingRequest.start_date,
+        endDate: existingRequest.end_date,
+      });
+
+      if (attendanceConflict) {
+        return jsonError(
+          `Pengajuan tidak bisa disetujui karena karyawan sudah absen di kantor pada ${formatJakartaDate(
+            attendanceConflict.attendance_date,
+          )}.`,
+        );
+      }
     }
 
     const leaveRequest = await prisma.leaveRequest.update({

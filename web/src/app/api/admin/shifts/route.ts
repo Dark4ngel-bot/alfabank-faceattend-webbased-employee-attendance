@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
-import { addAuditLog } from "@/lib/jsonDb";
+import { requireOwner } from "@/lib/api-auth";
 
 export const runtime = "nodejs";
 
-type AllowedRole = "owner" | "admin";
+type AllowedRole = "admin" | "owner";
 
-const VIEW_ROLES: AllowedRole[] = ["owner", "admin"];
-const MANAGE_ROLES: AllowedRole[] = ["owner", "admin"];
+const VIEW_ROLES: AllowedRole[] = ["admin", "owner"];
+const MANAGE_ROLES: AllowedRole[] = ["admin", "owner"];
 
 const defaultShifts = [
   {
@@ -33,45 +32,8 @@ const defaultShifts = [
   },
 ];
 
-async function getCurrentUser(req: NextRequest) {
-  const token = req.cookies.get("faceattend_token")?.value;
-
-  if (!token) {
-    throw new Error("Token login tidak ditemukan.");
-  }
-
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET belum ada di file .env");
-  }
-
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-  const { payload } = await jwtVerify(token, secret);
-
-  const userId =
-    (payload.id as string | undefined) ||
-    (payload.userId as string | undefined) ||
-    (payload.sub as string | undefined);
-
-  if (!userId) {
-    throw new Error("User ID tidak ditemukan di token.");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      role: true,
-      status: true,
-      name: true,
-      email: true,
-    },
-  });
-
-  if (!user) {
-    throw new Error("User tidak ditemukan.");
-  }
-
-  return user;
+function getCurrentUser(req: NextRequest) {
+  return requireOwner(req);
 }
 
 function sortShifts<T extends { name: string }>(shifts: T[]) {
@@ -162,7 +124,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json(
         {
           message:
-            "Akses ditolak. Hanya owner yang dapat mengubah shift.",
+            "Akses ditolak. Hanya admin yang dapat mengubah shift.",
         },
         { status: 403 },
       );

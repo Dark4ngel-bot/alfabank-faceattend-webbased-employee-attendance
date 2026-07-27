@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
-const ADMIN_ROLES = new Set(["owner", "admin"]);
-const EMPLOYEE_ROLES = new Set(["employee", "owner", "admin"]);
+const ADMIN_ROLES = new Set(["admin", "owner"]);
+const EMPLOYEE_ROLES = new Set(["employee"]);
 const EMPLOYEE_PATHS = [
-  "/home",
-  "/attendance",
+  "/beranda",
+  "/presensi",
   "/history",
-  "/profile",
+  "/profil",
+  "/face-card",
   "/cuti",
   "/notifikasi",
   "/pengumuman",
@@ -43,7 +44,7 @@ function redirectToLogin(req: NextRequest, pathname: string) {
 
 function redirectToHome(req: NextRequest) {
   const homeUrl = req.nextUrl.clone();
-  homeUrl.pathname = "/home";
+  homeUrl.pathname = "/beranda";
   homeUrl.search = "";
 
   return NextResponse.redirect(homeUrl);
@@ -68,7 +69,7 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = req.cookies.get("faceattend_token")?.value;
+  const token = req.cookies.get("presensi_token")?.value;
 
   if (!token) {
     if (isAdminApi) {
@@ -90,6 +91,10 @@ export async function proxy(req: NextRequest) {
       return redirectToHome(req);
     }
 
+    if (employeePage && ADMIN_ROLES.has(role)) {
+      return redirectToAdmin(req);
+    }
+
     if (employeePage && !EMPLOYEE_ROLES.has(role)) {
       return redirectToLogin(req, pathname);
     }
@@ -101,7 +106,7 @@ export async function proxy(req: NextRequest) {
     }
 
     const response = redirectToLogin(req, pathname);
-    response.cookies.delete("faceattend_token");
+    response.cookies.delete("presensi_token");
 
     return response;
   }
@@ -111,10 +116,11 @@ export const config = {
   matcher: [
     "/admin/:path*",
     "/api/admin/:path*",
-    "/home/:path*",
-    "/attendance/:path*",
+    "/beranda/:path*",
+    "/presensi/:path*",
     "/history/:path*",
-    "/profile/:path*",
+    "/profil/:path*",
+    "/face-card/:path*",
     "/cuti/:path*",
     "/notifikasi/:path*",
     "/pengumuman/:path*",

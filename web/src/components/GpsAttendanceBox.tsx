@@ -2,11 +2,18 @@
 
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
-import { MapPin, Navigation, RefreshCw, ShieldCheck, TriangleAlert } from "lucide-react";
+import {
+  Loader2,
+  MapPin,
+  Navigation,
+  ShieldCheck,
+  TriangleAlert,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   findNearestValidOffice,
   isGpsAccuracyAllowed,
+  isValidGpsCoordinate,
   type OfficeGeofence,
 } from "@/lib/geo";
 
@@ -75,8 +82,13 @@ export default function GpsAttendanceBox() {
   const isAccuracyAllowed = location
     ? isGpsAccuracyAllowed(location.accuracy, 100)
     : false;
+  const isCoordinateAllowed = location
+    ? isValidGpsCoordinate({ lat: location.lat, lng: location.lng })
+    : false;
 
-  const canAttend = Boolean(location && matchedOffice && isAccuracyAllowed);
+  const canAttend = Boolean(
+    location && matchedOffice && isAccuracyAllowed && isCoordinateAllowed,
+  );
 
   function getCurrentLocation() {
     setErrorMessage("");
@@ -131,10 +143,10 @@ export default function GpsAttendanceBox() {
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-blue-800">
-            GPS Attendance
+            Presensi GPS
           </p>
           <h2 className="mt-2 text-xl font-black text-slate-950">
-            Validasi Lokasi Absensi
+            Validasi Lokasi Presensi
           </h2>
           <p className="mt-1 text-sm font-medium text-slate-500">
             Ambil lokasi karyawan dan cocokkan dengan radius kantor aktif.
@@ -148,7 +160,7 @@ export default function GpsAttendanceBox() {
           className="inline-flex items-center gap-2 rounded-2xl bg-blue-900 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-900/20 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Navigation className="h-4 w-4" />
           )}
@@ -241,6 +253,12 @@ export default function GpsAttendanceBox() {
               {!isAccuracyAllowed ? (
                 <p className="mt-1 text-sm font-semibold">
                   Akurasi GPS terlalu besar. Maksimal disarankan ±100 meter.
+                </p>
+              ) : null}
+
+              {!isCoordinateAllowed ? (
+                <p className="mt-1 text-sm font-semibold">
+                  Koordinat GPS tidak valid. Coba ambil lokasi ulang.
                 </p>
               ) : null}
             </div>

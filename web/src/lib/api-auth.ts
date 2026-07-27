@@ -1,13 +1,16 @@
 import { NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
+import { deactivateExpiredEmployee } from "@/lib/employment-period";
 import { prisma } from "@/lib/prisma";
 
-export type AppRole = "owner" | "employee";
+export type AppRole = "admin" | "employee" | "owner";
 
 export type AuthUser = {
   id: string;
+  name: string;
   email: string;
   role: AppRole | string;
+  status: string | null;
 };
 
 export type DbAuthUser = {
@@ -17,10 +20,10 @@ export type DbAuthUser = {
 };
 
 export function getAuthToken(req: NextRequest) {
-  return req.cookies.get("faceattend_token")?.value || "";
+  return req.cookies.get("presensi_token")?.value || "";
 }
 
-export async function requireAuth(req: NextRequest): Promise<AuthUser> {
+async function getTokenUser(req: NextRequest) {
   const token = getAuthToken(req);
 
   if (!token) {
@@ -41,19 +44,50 @@ export async function requireAuth(req: NextRequest): Promise<AuthUser> {
   };
 }
 
-export async function requireRole(req: NextRequest, roles: AppRole[]) {
-  const user = await requireAuth(req);
-  const allowedRoles = new Set(roles.map((role) => role.toLowerCase()));
+export async function requireAuth(req: NextRequest): Promise<AuthUser> {
+  const authUser = await getTokenUser(req);
 
-  if (!allowedRoles.has(String(user.role).toLowerCase())) {
-    throw new Error("Akses ditolak.");
+  const user = await prisma.user.findUnique({
+    where: {
+      id: authUser.id,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      status: true,
+      employment_end_date: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User tidak ditemukan.");
   }
 
-  return user;
+  if (await deactivateExpiredEmployee(user)) {
+    throw new Error("Masa kerja akun sudah berakhir.");
+  }
+
+  if (String(user.status || "").toLowerCase() !== "active") {
+    throw new Error("Akun tidak aktif.");
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: String(user.role || "").toLowerCase(),
+    status: user.status,
+  };
+}
+
+export async function requireRole(req: NextRequest, roles: AppRole[]) {
+  return requireDbUser(req, roles);
 }
 
 export function requireOwner(req: NextRequest) {
-  return requireRole(req, ["owner", "admin" as any]);
+  return requireRole(req, ["admin", "owner"]);
 }
 
 export function requireEmployee(req: NextRequest) {
@@ -63,38 +97,23 @@ export function requireEmployee(req: NextRequest) {
 export async function requireDbUser(req: NextRequest, roles?: AppRole[]) {
   const authUser = await requireAuth(req);
 
-  const user = await prisma.user.findUnique({
-    where: {
-      id: authUser.id,
-    },
-    select: {
-      id: true,
-      role: true,
-      status: true,
-    },
-  });
-
-  if (!user) {
-    throw new Error("User tidak ditemukan.");
-  }
-
-  if (String(user.status || "").toLowerCase() !== "active") {
-    throw new Error("Akun tidak aktif.");
-  }
-
   if (roles?.length) {
     const allowedRoles = new Set(roles.map((role) => role.toLowerCase()));
 
-    if (!allowedRoles.has(String(user.role || "").toLowerCase())) {
+    if (!allowedRoles.has(String(authUser.role || "").toLowerCase())) {
       throw new Error("Akses ditolak.");
     }
   }
 
-  return user;
+  return {
+    id: authUser.id,
+    role: String(authUser.role || "").toLowerCase(),
+    status: authUser.status,
+  };
 }
 
 export function requireOwnerUser(req: NextRequest) {
-  return requireDbUser(req, ["owner"]);
+  return requireDbUser(req, ["admin", "owner"]);
 }
 
 export function requireEmployeeUser(req: NextRequest) {

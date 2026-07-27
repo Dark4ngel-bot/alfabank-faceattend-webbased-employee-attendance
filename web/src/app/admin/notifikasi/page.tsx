@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Bell,
-  BriefcaseBusiness,
   CalendarClock,
   CheckCircle2,
   Clock3,
@@ -13,7 +12,6 @@ import {
   Home,
   Loader2,
   MapPin,
-  RefreshCw,
   Search,
   ShieldAlert,
   UserRound,
@@ -27,7 +25,6 @@ type NotificationType =
   | "leave"
   | "permission"
   | "wfh"
-  | "wfc"
   | "visit";
 
 type NotificationItem = {
@@ -56,7 +53,6 @@ type NotificationStats = {
   leave: number;
   permission: number;
   wfh: number;
-  wfc: number;
   visit: number;
 };
 
@@ -75,7 +71,6 @@ const emptyStats: NotificationStats = {
   leave: 0,
   permission: 0,
   wfh: 0,
-  wfc: 0,
   visit: 0,
 };
 
@@ -85,7 +80,6 @@ const typeOptions = [
   { value: "leave", label: "Cuti" },
   { value: "permission", label: "Izin" },
   { value: "wfh", label: "WFH" },
-  { value: "wfc", label: "WFC" },
   { value: "visit", label: "Kunjungan" },
 ];
 
@@ -93,7 +87,7 @@ const statusOptions = [
   { value: "all", label: "Semua Status" },
   { value: "unread", label: "Belum Dibaca" },
   { value: "read", label: "Dibaca" },
-  { value: "pending", label: "Pending" },
+  { value: "pending", label: "Menunggu" },
   { value: "approved", label: "Disetujui" },
   { value: "rejected", label: "Ditolak" },
 ];
@@ -103,7 +97,6 @@ function getTypeLabel(type: NotificationType) {
   if (type === "leave") return "Cuti";
   if (type === "permission") return "Izin";
   if (type === "wfh") return "WFH";
-  if (type === "wfc") return "WFC";
   if (type === "visit") return "Kunjungan";
 
   return type;
@@ -114,7 +107,6 @@ function getTypeIcon(type: NotificationType) {
   if (type === "leave") return CalendarClock;
   if (type === "permission") return FileClock;
   if (type === "wfh") return Home;
-  if (type === "wfc") return BriefcaseBusiness;
   if (type === "visit") return MapPin;
 
   return Bell;
@@ -129,7 +121,6 @@ function getTypeClass(type: NotificationType) {
   if (type === "wfh") {
     return "bg-emerald-50 text-emerald-700 border-emerald-100";
   }
-  if (type === "wfc") return "bg-purple-50 text-purple-700 border-purple-100";
   if (type === "visit") {
     return "bg-orange-50 text-orange-700 border-orange-100";
   }
@@ -368,10 +359,11 @@ export default function AdminNotificationsPage() {
       label: "Cuti / Sakit / Izin",
       value: stats.leave + stats.sick + stats.permission,
       icon: FileClock,
+      description: "Dari CutiPengajuan",
     },
     {
-      label: "WFH / WFC / Kunjungan",
-      value: stats.wfh + stats.wfc + stats.visit,
+      label: "WFH / Kunjungan",
+      value: stats.wfh + stats.visit,
       icon: MapPin,
     },
   ];
@@ -380,17 +372,10 @@ export default function AdminNotificationsPage() {
     <MobileShell variant="admin">
       <NotificationMotionStyles />
 
-      <AppHeader
-        title="Notifikasi"
-        subtitle="Laporan sakit, cuti, izin, WFH, WFC, dan kunjungan"
-        variant="admin"
-      />
+      <AppHeader title="Notifikasi" variant="admin" />
 
       <main className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
         <section className="notification-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-6 text-white shadow-2xl shadow-blue-900/25 md:p-8">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute -bottom-24 left-16 h-64 w-64 rounded-full bg-blue-300/20 blur-3xl" />
-
           <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-blue-100">
@@ -401,17 +386,8 @@ export default function AdminNotificationsPage() {
               <h1 className="mt-5 text-3xl font-black tracking-tight md:text-4xl">
                 Pusat Notifikasi
               </h1>
-
             </div>
 
-            <button
-              type="button"
-              onClick={loadNotifications}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white dark:bg-[#21262d] px-5 text-sm font-black text-[#123c8c] dark:text-[#58a6ff] shadow-lg shadow-blue-950/20 transition hover:-translate-y-0.5 hover:bg-blue-50 dark:hover:bg-[#30363d] active:scale-[0.98]"
-            >
-              <RefreshCw size={18} />
-              Muat Ulang
-            </button>
           </div>
         </section>
 
@@ -520,7 +496,7 @@ export default function AdminNotificationsPage() {
                 }}
                 className="flex h-[58px] w-full items-center justify-center rounded-2xl border border-blue-100 bg-white px-5 text-sm font-black text-[#123c8c] shadow-sm transition hover:bg-blue-50 active:scale-[0.96] lg:w-auto"
               >
-                Reset
+                Atur Ulang
               </button>
             </div>
           </div>

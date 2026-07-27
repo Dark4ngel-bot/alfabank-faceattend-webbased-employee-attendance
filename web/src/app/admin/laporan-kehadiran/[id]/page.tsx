@@ -139,7 +139,7 @@ function normalizeMode(value?: string | null) {
 
   if (normalized === "office" || normalized === "kantor") return "office";
   if (normalized === "wfh") return "wfh";
-  if (normalized === "wfc") return "wfc";
+  if (normalized === "wfc") return "wfh";
   if (normalized === "visit" || normalized === "kunjungan") return "visit";
 
   return normalized;
@@ -150,7 +150,6 @@ function formatModeLabel(value?: string | null) {
 
   if (mode === "office") return "Kantor";
   if (mode === "wfh") return "WFH";
-  if (mode === "wfc") return "WFC";
   if (mode === "visit") return "Kunjungan";
 
   return value || "Kantor";
@@ -229,6 +228,10 @@ function isLateReport(report: AttendanceReportDetail) {
 
 function isCheckOutVisitReport(report: AttendanceReportDetail) {
   return normalizeMode(getCheckOutMode(report)) === "visit";
+}
+
+function isCheckOutWfhReport(report: AttendanceReportDetail) {
+  return normalizeMode(getCheckOutMode(report)) === "wfh";
 }
 
 function hasVisitReport(report: AttendanceReportDetail) {
@@ -450,7 +453,6 @@ function PhotoCard({
       {imageUrl ? (
         <div className="bg-[#f8fbff] p-4">
           <div className="mx-auto max-w-[320px] overflow-hidden rounded-[1.3rem] bg-slate-950 shadow-lg shadow-slate-300/40">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl}
               alt={title}
@@ -482,8 +484,11 @@ function EmployeeNotesSection({
 }) {
   const shouldShowLate = isLateReport(report);
   const shouldShowVisit = hasVisitReport(report);
+  const shouldShowWfhCheckout = isCheckOutWfhReport(report);
 
-  if (!shouldShowLate && !shouldShowVisit) return null;
+  if (!shouldShowLate && !shouldShowVisit && !shouldShowWfhCheckout) {
+    return null;
+  }
 
   const visitTitle = getVisitTitle(report);
   const visitClientName = getVisitClientName(report);
@@ -511,7 +516,7 @@ function EmployeeNotesSection({
             Keterangan Karyawan
           </p>
           <p className="mt-1 text-sm font-semibold text-slate-500">
-            Catatan terlambat atau kunjungan dari karyawan.
+            Catatan terlambat, kunjungan, atau mode check-out karyawan.
           </p>
         </div>
       </div>
@@ -578,6 +583,26 @@ function EmployeeNotesSection({
                     {visitNote}
                   </div>
                 ) : null}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {shouldShowWfhCheckout ? (
+          <div className="attendance-detail-row-enter rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#123c8c] ring-1 ring-blue-100">
+                <BriefcaseBusiness size={21} strokeWidth={2.7} />
+              </div>
+
+              <div className="min-w-0">
+                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#123c8c]">
+                  Keterangan Check-out
+                </p>
+
+                <p className="mt-2 text-sm font-bold leading-6 text-slate-700">
+                  Karyawan check-out dengan mode WFH.
+                </p>
               </div>
             </div>
           </div>
@@ -898,7 +923,6 @@ export default function AdminAttendanceReportDetailPage() {
                       <div className="attendance-detail-avatar-enter flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/15 ring-1 ring-white/20">
                         {getEmployeeProfilePhoto(report) ? (
                           <>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={getEmployeeProfilePhoto(report)}
                               alt={report.employeeName}

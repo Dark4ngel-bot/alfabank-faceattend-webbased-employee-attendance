@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
+import { requireOwner } from "@/lib/api-auth";
+import {
+  findAttendanceInDateRange,
+  formatJakartaDate,
+} from "@/lib/leave-attendance-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,51 +43,12 @@ function jsonError(message: string, status = 400) {
   );
 }
 
-async function getCurrentUser(req: NextRequest) {
-  const token = req.cookies.get("faceattend_token")?.value;
-
-  if (!token) {
-    throw new Error("Token login tidak ditemukan. Silakan login ulang.");
-  }
-
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET belum ada di file .env.");
-  }
-
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-  const { payload } = await jwtVerify(token, secret);
-
-  const userId =
-    (payload.id as string | undefined) ||
-    (payload.userId as string | undefined) ||
-    (payload.sub as string | undefined);
-
-  if (!userId) {
-    throw new Error("User ID tidak ditemukan di token.");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      status: true,
-    },
-  });
-
-  if (!user) {
-    throw new Error("User tidak ditemukan.");
-  }
-
-  return user;
+function getCurrentUser(req: NextRequest) {
+  return requireOwner(req);
 }
 
 function canManageLeave(role: string) {
-  return ["owner", "admin"].includes(role.toLowerCase());
+  return ["admin", "owner"].includes(role.toLowerCase());
 }
 
 function toIsoDate(value: Date | string | null | undefined) {
@@ -172,19 +137,34 @@ function mapLeaveRequest(item: {
   admin_note: string | null;
   created_at: Date;
   updated_at: Date;
-  user?: {
-    id: string;
-    employee_code?: string | null;
-    name: string;
-    email: string;
-    employee_type?: string;
-    shift?: {
-      name: string;
-    } | null;
+	  user?: {
+	    id: string;
+	    name: string;
+	    email: string;
+	    employee_code: string | null;
+	    phone: string | null;
+    status: string;
+    employment_status: string | null;
+    employment_start_date: Date | null;
+    employment_end_date: Date | null;
+    birth_place: string | null;
+    birth_date: Date | null;
+    bank_account_number: string | null;
+    nik: string | null;
+    profile_photo: string | null;
     position: {
       name: string;
     } | null;
+    jabatan: {
+      name: string;
+    } | null;
     department: {
+      name: string;
+    } | null;
+    shift: {
+      name: string;
+    } | null;
+    registered_office: {
       name: string;
     } | null;
   } | null;
@@ -193,26 +173,29 @@ function mapLeaveRequest(item: {
     id: item.id,
     userId: item.user_id,
 
-    employeeId: item.user?.id || item.user_id,
-    employeeCode: item.user?.employee_code || "-",
-    employeeName: item.user?.name || "-",
-    employeeEmail: item.user?.email || "-",
-    employeeType: item.user?.employee_type || "-",
-    employeeShift: item.user?.shift?.name || "-",
+	    employeeId: item.user?.id || item.user_id,
+	    employeeName: item.user?.name || "-",
+	    employeeCode: item.user?.employee_code || null,
+	    employeeEmail: item.user?.email || "-",
+    employeePhone: item.user?.phone || "-",
+    employeeStatus: item.user?.status || "-",
+    employeeEmploymentStatus: item.user?.employment_status || "-",
+    employeeEmploymentStartDate: formatDateDisplay(
+      item.user?.employment_start_date,
+    ),
+    employeeEmploymentEndDate: formatDateDisplay(
+      item.user?.employment_end_date,
+    ),
+    employeeBirthPlace: item.user?.birth_place || "-",
+    employeeBirthDate: formatDateDisplay(item.user?.birth_date),
+    employeeBankAccountNumber: item.user?.bank_account_number || "-",
+    employeeNik: item.user?.nik || "-",
+    employeeProfilePhoto: item.user?.profile_photo || null,
     employeePosition: item.user?.position?.name || "-",
+    employeeJabatan: item.user?.jabatan?.name || "-",
     employeeDepartment: item.user?.department?.name || "-",
-    employee: item.user
-      ? {
-          id: item.user.id,
-          employeeCode: item.user.employee_code || null,
-          name: item.user.name,
-          email: item.user.email,
-          employeeType: item.user.employee_type || null,
-          shift: item.user.shift?.name || null,
-          department: item.user.department?.name || null,
-          position: item.user.position?.name || null,
-        }
-      : null,
+    employeeShift: item.user?.shift?.name || "-",
+    employeeOffice: item.user?.registered_office?.name || "-",
 
     leaveType: item.leave_type,
     leaveTypeLabel: getLeaveTypeLabel(item.leave_type),
@@ -294,10 +277,22 @@ export async function GET(req: NextRequest) {
 
     const statusFilter = req.nextUrl.searchParams.get("status") || "all";
     const typeFilter = req.nextUrl.searchParams.get("type") || "all";
-    const search = req.nextUrl.searchParams.get("search") || "";
+	    const search = req.nextUrl.searchParams.get("search") || "";
+	    const requestId = req.nextUrl.searchParams.get("id") || "";
+	    const employeeId = req.nextUrl.searchParams.get("employeeId") || "";
 
     const leaveRequests = await prisma.leaveRequest.findMany({
       where: {
+	        ...(requestId
+	          ? {
+	              id: requestId,
+	            }
+	          : {}),
+	        ...(employeeId
+	          ? {
+	              user_id: employeeId,
+	            }
+	          : {}),
         ...(statusFilter !== "all"
           ? {
               status: statusFilter,
@@ -360,22 +355,41 @@ export async function GET(req: NextRequest) {
         updated_at: true,
         user: {
           select: {
-            id: true,
-            employee_code: true,
-            name: true,
-            email: true,
-            employee_type: true,
-            shift: {
-              select: {
-                name: true,
-              },
-            },
+	            id: true,
+	            name: true,
+	            email: true,
+	            employee_code: true,
+	            phone: true,
+            status: true,
+            employment_status: true,
+            employment_start_date: true,
+            employment_end_date: true,
+            birth_place: true,
+            birth_date: true,
+            bank_account_number: true,
+            nik: true,
+            profile_photo: true,
             position: {
               select: {
                 name: true,
               },
             },
+            jabatan: {
+              select: {
+                name: true,
+              },
+            },
             department: {
+              select: {
+                name: true,
+              },
+            },
+            shift: {
+              select: {
+                name: true,
+              },
+            },
+            registered_office: {
               select: {
                 name: true,
               },
@@ -439,12 +453,30 @@ export async function PATCH(req: NextRequest) {
         id: true,
         user_id: true,
         leave_type: true,
+        start_date: true,
+        end_date: true,
         status: true,
       },
     });
 
     if (!existingRequest) {
       return jsonError("Pengajuan tidak ditemukan.", 404);
+    }
+
+    if (status === "approved") {
+      const attendanceConflict = await findAttendanceInDateRange({
+        userId: existingRequest.user_id,
+        startDate: existingRequest.start_date,
+        endDate: existingRequest.end_date,
+      });
+
+      if (attendanceConflict) {
+        return jsonError(
+          `Pengajuan tidak bisa disetujui karena karyawan sudah absen di kantor pada ${formatJakartaDate(
+            attendanceConflict.attendance_date,
+          )}.`,
+        );
+      }
     }
 
     const finalAdminNote = adminNote || getDefaultAdminNote(status);
@@ -479,22 +511,41 @@ export async function PATCH(req: NextRequest) {
         updated_at: true,
         user: {
           select: {
-            id: true,
-            employee_code: true,
-            name: true,
-            email: true,
-            employee_type: true,
-            shift: {
-              select: {
-                name: true,
-              },
-            },
+	            id: true,
+	            name: true,
+	            email: true,
+	            employee_code: true,
+	            phone: true,
+            status: true,
+            employment_status: true,
+            employment_start_date: true,
+            employment_end_date: true,
+            birth_place: true,
+            birth_date: true,
+            bank_account_number: true,
+            nik: true,
+            profile_photo: true,
             position: {
               select: {
                 name: true,
               },
             },
+            jabatan: {
+              select: {
+                name: true,
+              },
+            },
             department: {
+              select: {
+                name: true,
+              },
+            },
+            shift: {
+              select: {
+                name: true,
+              },
+            },
+            registered_office: {
               select: {
                 name: true,
               },

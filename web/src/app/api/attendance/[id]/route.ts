@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { requireAuth } from "@/lib/api-auth";
+import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 
@@ -89,32 +90,6 @@ function calculateEarlyLeaveMinutes(
   return early > 0 ? early : 0;
 }
 
-async function getUserIdFromRequest(req: NextRequest) {
-  const token = req.cookies.get("faceattend_token")?.value;
-
-  if (!token) {
-    throw new Error("Token login tidak ditemukan.");
-  }
-
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET belum ada di file .env");
-  }
-
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-  const { payload } = await jwtVerify(token, secret);
-
-  const userId =
-    (payload.id as string | undefined) ||
-    (payload.userId as string | undefined) ||
-    (payload.sub as string | undefined);
-
-  if (!userId) {
-    throw new Error("User ID tidak ditemukan di token.");
-  }
-
-  return userId;
-}
-
 function formatTime(date?: Date | null) {
   if (!date) return "--:--";
 
@@ -169,7 +144,7 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const userId = await getUserIdFromRequest(req);
+    const { id: userId } = await requireAuth(req);
     const { id } = await context.params;
 
     const attendance = await prisma.attendance.findFirst({
@@ -188,6 +163,8 @@ export async function GET(
         check_out_photo: true,
         check_in_photo_mime: true,
         check_out_photo_mime: true,
+        check_in_photo_url: true,
+        check_out_photo_url: true,
 
         check_in_latitude: true,
         check_in_longitude: true,
@@ -231,7 +208,7 @@ export async function GET(
     if (!attendance) {
       return NextResponse.json(
         {
-          message: "Data absensi tidak ditemukan.",
+          message: "Data presensi tidak ditemukan.",
         },
         { status: 404 },
       );
@@ -288,11 +265,23 @@ export async function GET(
       scheduledCheckOutTime,
 
       hasCheckInPhoto: Boolean(
-        attendance.check_in_photo && attendance.check_in_photo_mime,
+        attendance.check_in_photo_url ||
+          (attendance.check_in_photo && attendance.check_in_photo_mime),
       ),
       hasCheckOutPhoto: Boolean(
-        attendance.check_out_photo && attendance.check_out_photo_mime,
+        attendance.check_out_photo_url ||
+          (attendance.check_out_photo && attendance.check_out_photo_mime),
       ),
+      checkInPhotoUrl:
+        attendance.check_in_photo_url ||
+        (attendance.check_in_photo
+          ? `/api/attendance/${attendance.id}/photo?type=check-in`
+          : null),
+      checkOutPhotoUrl:
+        attendance.check_out_photo_url ||
+        (attendance.check_out_photo
+          ? `/api/attendance/${attendance.id}/photo?type=check-out`
+          : null),
 
       checkInLocation: {
         latitude: attendance.check_in_latitude,
@@ -315,7 +304,7 @@ export async function GET(
 
     return NextResponse.json(
       {
-        message: getApiErrorMessage(error, "Gagal mengambil detail absensi."),
+        message: getApiErrorMessage(error, "Gagal mengambil detail presensi."),
       },
       { status: getApiErrorStatus(error) },
     );

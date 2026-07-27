@@ -3,27 +3,11 @@
 import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import {
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Loader2,
-  LogIn,
-  ShieldCheck,
-  X,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { AlertCircle, Loader2, LogIn, X } from "lucide-react";
 import MobileShell from "@/components/MobileShell";
 import { AppButton, AppCard, AppInput } from "@/components/ui/AppUI";
 import { useTheme } from "@/context/ThemeContext";
 import { useCompanyLogo, useCompanyName } from "@/hooks/useCompanyLogo";
-
-const ADMIN_DEMO_EMAIL = "admin@creativemu.co.id";
-const ADMIN_DEMO_PASSWORD = "123456";
-const ALLOWED_EMAIL_DOMAIN = "@creativemu.co.id";
-const OWNER_DEMO_EMAIL = "owner@creativemu.co.id";
-const OWNER_DEMO_PASSWORD = "123456";
 
 type LoginResponse = {
   success?: boolean;
@@ -56,7 +40,7 @@ function isCreativemuEmail(email: string) {
   const normalized = email.trim().toLowerCase();
   return (
     normalized.endsWith("@creativemu.co.id") ||
-    normalized.endsWith(".co.id")
+    normalized.endsWith("@creativemu.com")
   );
 }
 
@@ -339,6 +323,11 @@ function LoginMotionStyles() {
         }
       }
 
+      .login-presence-title {
+        background: none;
+        color: #123c8c;
+      }
+
       @media (prefers-reduced-motion: reduce) {
         .login-enter,
         .login-card-enter,
@@ -480,28 +469,12 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [introLeaving, setIntroLeaving] = useState(false);
   const [introHintVisible, setIntroHintVisible] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
 
-  const [showSplash, setShowSplash] = useState(true);
-  const [splashReady, setSplashReady] = useState(false);
-  const [fadeSplash, setFadeSplash] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setSplashReady(true), 1200);
-    return () => clearTimeout(t);
-  }, []);
-
-  function dismissSplash() {
-    setFadeSplash(true);
-    setTimeout(() => setShowSplash(false), 500);
-  }
-
   const [isLoading, setIsLoading] = useState(false);
-  const [isAdminDemoLoading, setIsAdminDemoLoading] = useState(false);
   const [loginRetryAt, setLoginRetryAt] = useState<number | null>(null);
   const [loginRetrySeconds, setLoginRetrySeconds] = useState(0);
 
@@ -512,6 +485,31 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const reason = searchParams.get("reason");
+
+    if (reason === "inactive") {
+      setShowIntro(false);
+      showAlert(
+        "Akun dinonaktifkan",
+        "Akun kamu sudah dinonaktifkan, silakan hubungi admin untuk mengaktifkan kembali.",
+      );
+      return;
+    }
+
+    if (reason === "expired") {
+      setShowIntro(false);
+      showAlert(
+        "Sesi berakhir",
+        "Silakan login kembali untuk melanjutkan.",
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    const restoreDarkMode = document.documentElement.classList.contains("dark");
+    document.documentElement.classList.remove("dark");
+
     const hintTimer = setTimeout(() => setIntroHintVisible(true), 900);
     const autoCloseTimer = setTimeout(() => {
       setIntroLeaving(true);
@@ -521,12 +519,11 @@ export default function LoginPage() {
     return () => {
       clearTimeout(hintTimer);
       clearTimeout(autoCloseTimer);
+      if (restoreDarkMode || localStorage.getItem("theme") === "dark") {
+        document.documentElement.classList.add("dark");
+      }
     };
   }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [theme]);
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -594,11 +591,7 @@ export default function LoginPage() {
     });
   }
 
-  async function loginUser(
-    loginEmail: string,
-    loginPassword: string,
-    mode: "manual" | "owner-demo" = "manual",
-  ) {
+  async function loginUser(loginEmail: string, loginPassword: string) {
     if (loginRetrySeconds > 0) {
       showAlert(
         "Tunggu 1 menit",
@@ -617,7 +610,7 @@ export default function LoginPage() {
     if (!isValidEmailFormat(normalizedEmail)) {
       showAlert(
         "Format email salah",
-        "Masukkan email dengan format yang benar, contoh: nama@creativemu.co.id",
+        "Masukkan email dengan format yang benar, contoh: nama@creativemu.com",
       );
       return;
     }
@@ -625,17 +618,13 @@ export default function LoginPage() {
     if (!isCreativemuEmail(normalizedEmail)) {
       showAlert(
         "Email tidak valid",
-        "Login hanya dapat menggunakan domain .co.id (contoh: nama@creativemu.co.id).",
+        "Masuk hanya dapat menggunakan email resmi Creativemu.",
       );
       return;
     }
 
     try {
-      if (mode === "owner-demo") {
-        setIsAdminDemoLoading(true);
-      } else {
-        setIsLoading(true);
-      }
+      setIsLoading(true);
 
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -666,13 +655,12 @@ export default function LoginPage() {
           return;
         }
 
-        showAlert("Login gagal", result.message || "Login gagal.");
+        showAlert("Masuk gagal", result.message || "Masuk gagal.");
         return;
       }
 
-      const targetUrl = result.redirectTo || "/home";
-      window.location.href = targetUrl;
-      return;
+      router.replace(result.redirectTo || "/beranda");
+      router.refresh();
     } catch (error) {
       console.error("LOGIN_ERROR:", error);
 
@@ -683,24 +671,16 @@ export default function LoginPage() {
           : "Terjadi kesalahan saat login.",
       );
     } finally {
-      if (mode === "owner-demo") {
-        setIsAdminDemoLoading(false);
-      } else {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await loginUser(email, password, "manual");
+    await loginUser(email, password);
   }
 
-  async function handleAdminDemoLogin() {
-    await loginUser(OWNER_DEMO_EMAIL, OWNER_DEMO_PASSWORD, "owner-demo");
-  }
-
-  const formIsBusy = isLoading || isAdminDemoLoading || loginRetrySeconds > 0;
+  const formIsBusy = isLoading || loginRetrySeconds > 0;
   const alertMessage =
     loginRetrySeconds > 0 && alert.title === "Tunggu 1 menit"
       ? `Tunggu ${loginRetrySeconds} detik hingga kamu bisa mencoba kembali.`
@@ -722,19 +702,18 @@ export default function LoginPage() {
           }}
           className={`fixed inset-0 z-[999] flex cursor-pointer select-none flex-col items-center justify-center overflow-hidden px-6 transition-all duration-500 ${
             introLeaving ? "scale-105 opacity-0 blur-md" : "opacity-100"
-          }`}
-          style={{ backgroundColor: theme === "dark" ? "#0d1117" : "#f6f8ff" }}
+          } bg-[#f6f8ff]`}
           aria-label="Lanjut ke halaman login"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(18,60,140,0.18),transparent_38%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(240,136,62,0.06),transparent_38%),radial-gradient(circle_at_top_right,rgba(88,166,255,0.06),transparent_38%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(18,60,140,0.18),transparent_38%)]" />
 
           <div className="relative flex h-56 w-56 items-center justify-center md:h-72 md:w-72">
-            <div className="absolute inset-3 rounded-[2rem] border border-[#123c8c]/10 bg-white/25 shadow-2xl shadow-slate-300/30 backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#161b22]/30" />
+            <div className="absolute inset-3 rounded-[2rem] border border-[#123c8c]/10 bg-white/25 shadow-2xl shadow-slate-300/30 backdrop-blur-xl" />
             <div className="intro-scan-line absolute left-8 right-8 top-1/2 z-20 h-0.5 bg-gradient-to-r from-transparent via-[#ff8a00] to-transparent shadow-[0_0_14px_rgba(255,138,0,0.72)]" />
 
-            <div className="relative z-10 flex h-32 w-32 items-center justify-center overflow-hidden rounded-[2rem] border border-white/80 bg-white p-5 shadow-[0_24px_58px_rgba(18,60,140,0.14)] md:h-40 md:w-40 md:p-7 dark:border-slate-800/80 dark:bg-[#0d1117] dark:shadow-none">
+            <div className="relative z-10 flex h-32 w-32 items-center justify-center overflow-hidden rounded-[2rem] border border-white/80 bg-white p-5 shadow-[0_24px_58px_rgba(18,60,140,0.14)] md:h-40 md:w-40 md:p-7">
               <Image
-                src={companyLogo}
+                src="/images/creativemu-logo/creativemu.png"
                 alt="Creativemu Logo"
                 width={140}
                 height={140}
@@ -745,14 +724,14 @@ export default function LoginPage() {
           </div>
 
           <div className="relative mt-9 text-center md:mt-12">
-            <h2 className="intro-text-in text-3xl font-black uppercase tracking-[0.18em] text-slate-950 dark:text-white md:text-5xl">
-              {companyName}
+            <h2 className="intro-text-in text-3xl font-black uppercase tracking-[0.18em] text-slate-950 md:text-5xl">
+              Creativemu
             </h2>
             <p
               className="intro-text-in mt-3 text-xs font-black uppercase tracking-[0.28em] text-[#ff8a00] md:text-sm"
               style={{ animationDelay: "160ms" }}
             >
-              Face Attend System
+              Sistem Presensi Wajah
             </p>
           </div>
 
@@ -766,32 +745,29 @@ export default function LoginPage() {
         </div>
       ) : null}
 
-      <section className="relative min-h-dvh w-full overflow-hidden bg-transparent">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(18,60,140,0.18),transparent_36%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(240,136,62,0.06),transparent_38%),radial-gradient(circle_at_top_right,rgba(88,166,255,0.06),transparent_38%)]" />
-
-        {/* Floating Theme Toggle (Allows theme switching directly from the login page) */}
-        <div className="absolute right-4 top-4 z-50 flex items-center gap-2 md:right-8 md:top-8">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-blue-100 bg-white/80 text-[#123c8c] shadow-lg backdrop-blur-md transition hover:bg-white active:scale-95 dark:border-slate-800/80 dark:bg-[#161b22]/80 dark:text-[#58a6ff] dark:hover:bg-[#161b22]"
-            title={
-              theme === "light" ? "Aktifkan Mode Gelap" : "Aktifkan Mode Terang"
-            }
-          >
-            {theme === "light" ? (
-              <Moon size={20} strokeWidth={2.5} />
-            ) : (
-              <Sun size={20} strokeWidth={2.5} />
-            )}
-          </button>
-        </div>
-
-        <div className="login-bg-float pointer-events-none absolute -left-28 top-20 h-72 w-72 rounded-full bg-orange-200/20 blur-3xl" />
-        <div className="login-bg-float pointer-events-none absolute -right-28 bottom-20 h-72 w-72 rounded-full bg-blue-300/20 blur-3xl" />
+      <section className="relative min-h-dvh w-full overflow-hidden bg-[#f6f8ff]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(18,60,140,0.18),transparent_36%)]" />
 
         <div className="relative z-10 grid min-h-dvh w-full grid-cols-1 lg:grid-cols-2">
           <div className="login-enter relative flex flex-col px-6 py-7 md:px-12 lg:justify-between lg:px-20 lg:py-14">
+            <Image
+              src="/images/creativemu-logo/creativemu.png"
+              alt="Logo Latar Creativemu"
+              width={620}
+              height={620}
+              className="pointer-events-none absolute -left-20 top-1/2 hidden -translate-y-1/2 opacity-[0.045] lg:block"
+              priority
+            />
+
+            <Image
+              src="/images/creativemu-logo/creativemu.png"
+              alt="Logo Latar Creativemu"
+              width={300}
+              height={300}
+              className="pointer-events-none absolute -right-20 top-24 opacity-[0.04] lg:hidden"
+              priority
+            />
+
             <div className="relative z-10">
               <div className="login-logo-pop flex items-center gap-4">
                 <div className="flex h-12 min-h-12 w-12 min-w-12 items-center justify-center overflow-hidden rounded-2xl bg-white keep-white p-2 shadow-xl shadow-slate-300/60 md:h-14 md:w-14">
@@ -820,7 +796,7 @@ export default function LoginPage() {
                     animationDelay: "120ms",
                   }}
                 >
-                  Welcome Back
+                  Selamat Datang Kembali
                 </p>
 
                 <h2
@@ -830,7 +806,7 @@ export default function LoginPage() {
                   }}
                 >
                   <span className="typewriter-title login-presence-title">
-                    {companyName} Presence
+                    Presensi Creativemu
                   </span>
                 </h2>
 
@@ -851,7 +827,7 @@ export default function LoginPage() {
                 animationDelay: "280ms",
               }}
             >
-              © 2026 FaceAttend for {companyName}
+              © 2026 Presensi for Creativemu
             </div>
           </div>
 
@@ -863,7 +839,7 @@ export default function LoginPage() {
               <form suppressHydrationWarning noValidate onSubmit={handleSubmit}>
                 <div className="login-field-enter mb-7 md:mb-8">
                   <h3 className="mt-2 text-3xl font-black tracking-tight text-slate-950">
-                    Sign In
+                    Masuk
                   </h3>
                 </div>
 
@@ -896,42 +872,14 @@ export default function LoginPage() {
                   >
                     <AppInput
                       suppressHydrationWarning
-                      label="Password"
-                      type={showPassword ? "text" : "password"}
+                      label="Kata Sandi"
+                      type="password"
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       placeholder="••••••••"
                       autoComplete="current-password"
                       disabled={formIsBusy}
-                      className="border-blue-100 bg-[#f8fbff] text-slate-700 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-[#f8fbff] focus:ring-blue-100/50 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-[#f8fbff] dark:focus:ring-blue-100/50"
-                      rightElement={
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          tabIndex={-1}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-200/50 hover:text-[#123c8c] active:scale-95 cursor-pointer"
-                          aria-label={
-                            showPassword
-                              ? "Sembunyikan password"
-                              : "Tampilkan password"
-                          }
-                          title={
-                            showPassword
-                              ? "Sembunyikan password"
-                              : "Tampilkan password"
-                          }
-                        >
-                          {showPassword ? (
-                            <EyeOff
-                              size={18}
-                              strokeWidth={2.4}
-                              className="text-[#123c8c]"
-                            />
-                          ) : (
-                            <Eye size={18} strokeWidth={2.4} />
-                          )}
-                        </button>
-                      }
+                      className="border-blue-100 bg-[#f8fbff] text-slate-700 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-blue-100/50 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
                     />
                   </div>
                 </div>
@@ -947,19 +895,18 @@ export default function LoginPage() {
                       type="submit"
                       full
                       disabled={formIsBusy}
-                      leftIcon={
-                        isLoading ? (
-                          <Loader2 size={18} className="animate-spin" />
-                        ) : (
-                          <LogIn size={18} />
-                        )
-                      }
+                      leftIcon={<LogIn size={18} />}
                     >
-                      {loginRetrySeconds > 0
-                        ? `Tunggu ${loginRetrySeconds}s`
-                        : isLoading
-                          ? "Memproses..."
-                          : "Masuk"}
+                      {loginRetrySeconds > 0 ? (
+                        `Tunggu ${loginRetrySeconds} detik`
+                      ) : isLoading ? (
+                        <>
+                          <Loader2 size={18} className="animate-spin" />
+                          Memproses...
+                        </>
+                      ) : (
+                        "Masuk"
+                      )}
                     </AppButton>
                   </div>
                 </div>
@@ -973,7 +920,7 @@ export default function LoginPage() {
               animationDelay: "300ms",
             }}
           >
-            © 2026 FaceAttend for Creativemu
+            © 2026 Presensi for Creativemu
           </div>
         </div>
 

@@ -1,12 +1,14 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Edit,
   FileText,
+  Loader2,
   Megaphone,
+  Paperclip,
   Plus,
-  RefreshCw,
   Search,
   Trash2,
   X,
@@ -26,6 +28,12 @@ type Announcement = {
   id: string;
   title: string;
   content: string;
+  document_url?: string | null;
+  document_name?: string | null;
+  document_size?: number | null;
+  documentUrl?: string | null;
+  documentName?: string | null;
+  documentSize?: number | null;
   target: string;
   status: AnnouncementStatus;
   attachment_url: string | null;
@@ -43,14 +51,20 @@ type AnnouncementForm = {
   title: string;
   content: string;
   status: AnnouncementStatus;
-  attachmentUrl: string | null;
+  document: File | null;
+  existingDocumentName: string;
+  existingDocumentUrl: string;
+  removeDocument: boolean;
 };
 
 const initialForm: AnnouncementForm = {
   title: "",
   content: "",
   status: "published",
-  attachmentUrl: null,
+  document: null,
+  existingDocumentName: "",
+  existingDocumentUrl: "",
+  removeDocument: false,
 };
 
 function formatStatus(status: AnnouncementStatus) {
@@ -69,6 +83,26 @@ function formatDate(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function formatFileSize(value?: number | null) {
+  if (!value || value < 1) return "";
+
+  if (value >= 1024 * 1024) {
+    return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  return `${Math.max(1, Math.round(value / 1024))} KB`;
+}
+
+async function readJsonResponse(response: Response) {
+  const text = await response.text();
+
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error("Response API bukan JSON.");
+  }
 }
 
 function AnnouncementMotionStyles() {
@@ -176,37 +210,7 @@ export default function AdminAnnouncementsPage() {
   >(null);
   const [form, setForm] = useState<AnnouncementForm>(initialForm);
 
-  const [readers, setReaders] = useState<{ userName: string; userEmail: string; timestamp: number }[]>([]);
-  const [activeReadersAnnouncementId, setActiveReadersAnnouncementId] = useState<string | null>(null);
-  const [isReadersLoading, setIsReadersLoading] = useState(false);
-
-  async function openReadersModal(announcementId: string) {
-    setActiveReadersAnnouncementId(announcementId);
-    setIsReadersLoading(true);
-    try {
-      const res = await fetch(`/api/announcements/read?announcementId=${announcementId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setReaders(data.readers || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsReadersLoading(false);
-    }
-  }
-
-  async function readJsonResponse(response: Response) {
-    const text = await response.text();
-
-    try {
-      return text ? JSON.parse(text) : {};
-    } catch {
-      throw new Error("Response API bukan JSON.");
-    }
-  }
-
-  async function loadAnnouncements() {
+  const loadAnnouncements = useCallback(async () => {
     try {
       setIsLoading(true);
       setErrorMessage("");
@@ -225,8 +229,6 @@ export default function AdminAnnouncementsPage() {
 
       setAnnouncements(data.announcements || data.data || []);
     } catch (error) {
-      console.error("ADMIN_ANNOUNCEMENTS_ERROR:", error);
-
       setErrorMessage(
         error instanceof Error
           ? error.message
@@ -235,11 +237,11 @@ export default function AdminAnnouncementsPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     void loadAnnouncements();
-  }, []);
+  }, [loadAnnouncements]);
 
   const filteredAnnouncements = useMemo(() => {
     return announcements.filter((announcement) => {
@@ -273,11 +275,6 @@ export default function AdminAnnouncementsPage() {
     (item) => item.status === "archived",
   ).length;
 
-  function resetFilter() {
-    setSearch("");
-    setFilterStatus("all");
-  }
-
   function openAddModal() {
     setEditingAnnouncementId(null);
     setForm(initialForm);
@@ -290,7 +287,12 @@ export default function AdminAnnouncementsPage() {
       title: announcement.title,
       content: announcement.content,
       status: announcement.status,
-      attachmentUrl: announcement.attachment_url || announcement.attachmentUrl || null,
+      document: null,
+      existingDocumentName:
+        announcement.document_name || announcement.documentName || "",
+      existingDocumentUrl:
+        announcement.document_url || announcement.documentUrl || "",
+      removeDocument: false,
     });
     setIsModalOpen(true);
   }
@@ -315,19 +317,27 @@ export default function AdminAnnouncementsPage() {
     try {
       setIsSubmitting(true);
 
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("content", content);
+      formData.append("target", "all");
+      formData.append("status", form.status);
+
+      if (editingAnnouncementId) {
+        formData.append("id", editingAnnouncementId);
+      }
+
+      if (form.document) {
+        formData.append("document", form.document);
+      }
+
+      if (form.removeDocument) {
+        formData.append("removeDocument", "true");
+      }
+
       const response = await fetch("/api/announcements", {
         method: editingAnnouncementId ? "PATCH" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: editingAnnouncementId,
-          title,
-          content,
-          target: "all",
-          status: form.status,
-          attachmentUrl: form.attachmentUrl,
-        }),
+        body: formData,
       });
 
       const data = await readJsonResponse(response);
@@ -381,40 +391,6 @@ export default function AdminAnnouncementsPage() {
     }
   }
 
-  async function updateStatus(id: string, status: AnnouncementStatus) {
-    try {
-      const response = await fetch("/api/announcements", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id,
-          target: "all",
-          status,
-        }),
-      });
-
-      const data = await readJsonResponse(response);
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Gagal mengubah status pengumuman.",
-        );
-      }
-
-      await loadAnnouncements();
-    } catch (error) {
-      console.error("UPDATE_STATUS_ANNOUNCEMENT_ERROR:", error);
-
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Gagal mengubah status pengumuman.",
-      );
-    }
-  }
-
   return (
     <MobileShell variant="admin">
       <AnnouncementMotionStyles />
@@ -422,21 +398,10 @@ export default function AdminAnnouncementsPage() {
       <AppHeader title="Pengumuman" variant="admin" />
 
       <main className="mx-auto max-w-7xl px-5 py-6 pb-28 md:px-10 lg:px-16">
-        <section
-          style={{ paddingTop: '12px', paddingBottom: '12px', paddingLeft: '24px', paddingRight: '24px' }}
-          className="admin-announcement-enter relative overflow-hidden rounded-[1.8rem] bg-[#123c8c] text-white shadow-2xl shadow-blue-900/25"
-        >
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute -bottom-24 left-16 h-64 w-64 rounded-full bg-blue-300/20 blur-3xl" />
-
-          <div className="relative z-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <section className="admin-announcement-enter relative overflow-hidden rounded-[2rem] bg-[#123c8c] p-6 text-white shadow-md shadow-slate-300/40 md:p-8">
+          <div className="relative z-10 flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-blue-100">
-                <Megaphone size={15} />
-                Announcement Center
-              </div>
-
-              <h1 className="mt-2 text-2xl font-black tracking-tight md:text-3xl">
+              <h1 className="mt-5 text-3xl font-black tracking-tight md:text-4xl">
                 Pengumuman Admin
               </h1>
             </div>
@@ -444,7 +409,7 @@ export default function AdminAnnouncementsPage() {
             <button
               type="button"
               onClick={openAddModal}
-              className="inline-flex items-center justify-center gap-3 rounded-[1.3rem] bg-white dark:bg-[#21262d] px-5 py-3 text-sm font-black text-[#123c8c] dark:text-[#58a6ff] shadow-2xl shadow-blue-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-50 dark:hover:bg-[#30363d] active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-3 rounded-[1.4rem] bg-white px-6 py-4 text-sm font-black text-[#123c8c] shadow-sm ring-1 ring-white/70 transition duration-200 hover:bg-blue-50 active:scale-[0.98]"
             >
               <Plus size={18} strokeWidth={3} />
               Tambah Pengumuman
@@ -454,7 +419,7 @@ export default function AdminAnnouncementsPage() {
 
         <section className="mt-6 grid gap-4 md:grid-cols-3">
           <div
-            className="admin-announcement-row-enter rounded-[1.7rem] border border-emerald-100 bg-white/90 p-5 shadow-xl shadow-slate-300/30"
+            className="admin-announcement-row-enter rounded-[1.5rem] border border-emerald-100 bg-white p-5 shadow-sm"
             style={{ animationDelay: "70ms" }}
           >
             <p className="text-sm font-bold text-slate-500">Published</p>
@@ -464,7 +429,7 @@ export default function AdminAnnouncementsPage() {
           </div>
 
           <div
-            className="admin-announcement-row-enter rounded-[1.7rem] border border-amber-100 bg-white/90 p-5 shadow-xl shadow-slate-300/30"
+            className="admin-announcement-row-enter rounded-[1.5rem] border border-amber-100 bg-white p-5 shadow-sm"
             style={{ animationDelay: "110ms" }}
           >
             <p className="text-sm font-bold text-slate-500">Draft</p>
@@ -474,7 +439,7 @@ export default function AdminAnnouncementsPage() {
           </div>
 
           <div
-            className="admin-announcement-row-enter rounded-[1.7rem] border border-slate-100 bg-white/90 p-5 shadow-xl shadow-slate-300/30"
+            className="admin-announcement-row-enter rounded-[1.5rem] border border-slate-100 bg-white p-5 shadow-sm"
             style={{ animationDelay: "150ms" }}
           >
             <p className="text-sm font-bold text-slate-500">Archived</p>
@@ -485,17 +450,20 @@ export default function AdminAnnouncementsPage() {
         </section>
 
         <section
-          className="admin-announcement-enter mt-6 rounded-[2rem] border border-white/70 bg-white/90 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl md:p-6"
+          className="admin-announcement-enter mt-6 rounded-3xl border border-blue-100 bg-white p-4 shadow-sm md:p-5"
           style={{ animationDelay: "120ms" }}
         >
-          <div className="flex flex-col gap-4">
-            <div>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0">
               <h2 className="text-xl font-black text-slate-950">
                 Daftar Pengumuman
               </h2>
+              <p className="mt-1 text-sm font-semibold text-slate-400">
+                {filteredAnnouncements.length} data ditampilkan
+              </p>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-[1.5fr_0.8fr_auto]">
+            <div className="grid gap-3 md:w-[34rem] md:grid-cols-[1.5fr_0.9fr_auto]">
               <div className="relative">
                 <Search
                   size={18}
@@ -524,15 +492,6 @@ export default function AdminAnnouncementsPage() {
                 <option value="draft">Draft</option>
                 <option value="archived">Archived</option>
               </select>
-
-              <button
-                type="button"
-                onClick={resetFilter}
-                className="inline-flex h-[46px] items-center justify-center rounded-2xl border border-blue-100 bg-white px-4 text-[#123c8c] shadow-sm transition duration-200 hover:bg-[#eaf1ff] active:scale-[0.96]"
-                title="Reset Filter"
-              >
-                <RefreshCw size={20} strokeWidth={2.6} />
-              </button>
             </div>
           </div>
 
@@ -542,10 +501,10 @@ export default function AdminAnnouncementsPage() {
             </div>
           ) : null}
 
-          <div className="mt-6 overflow-hidden rounded-2xl border border-blue-100">
-            <div className="hidden grid-cols-[1.4fr_2fr_0.8fr_1fr] bg-[#f6f8ff] px-5 py-4 text-xs font-black uppercase tracking-[0.16em] text-[#123c8c] md:grid">
-              <p>Judul</p>
-              <p>Isi Pengumuman</p>
+          <div className="mt-5 overflow-hidden rounded-2xl border border-blue-100">
+            <div className="hidden grid-cols-[minmax(0,1.7fr)_minmax(11rem,0.75fr)_0.5fr_0.75fr] items-center bg-[#f6f8ff] px-5 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-[#123c8c] md:grid">
+              <p>Pengumuman</p>
+              <p>Dokumen</p>
               <p>Status</p>
               <p className="text-center">Aksi</p>
             </div>
@@ -553,7 +512,7 @@ export default function AdminAnnouncementsPage() {
             <div className="divide-y divide-blue-50 bg-white">
               {isLoading ? (
                 <div className="admin-announcement-row-enter px-5 py-10 text-center">
-                  <RefreshCw className="mx-auto h-8 w-8 animate-spin text-[#123c8c]" />
+                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#123c8c]" />
                   <p className="mt-3 font-black text-slate-700">
                     Mengambil data pengumuman...
                   </p>
@@ -571,102 +530,97 @@ export default function AdminAnnouncementsPage() {
                 filteredAnnouncements.map((announcement, index) => (
                   <div
                     key={announcement.id}
-                    className="admin-announcement-row-enter grid gap-4 px-5 py-5 text-sm transition duration-200 hover:bg-[#f8fbff] md:grid-cols-[1.4fr_2fr_0.8fr_1fr] md:items-center"
+                    className="admin-announcement-row-enter grid gap-3 px-4 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] md:grid-cols-[minmax(0,1.7fr)_minmax(11rem,0.75fr)_0.5fr_0.75fr] md:items-start md:px-5"
                     style={{
                       animationDelay: `${index * 55}ms`,
                     }}
                   >
-                    <div>
-                      <p className="font-black text-slate-950">
-                        {announcement.title}
-                      </p>
-                      <p className="mt-1 text-xs font-semibold text-slate-400">
-                        {formatDate(announcement.created_at)}
-                      </p>
-                      <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => openReadersModal(announcement.id)}
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/70 px-3 py-1.5 text-xs font-bold text-[#123c8c] transition hover:bg-blue-100 dark:border-blue-800/60 dark:bg-blue-950/60 dark:text-blue-300 dark:hover:bg-blue-900/80 active:scale-[0.97]"
-                        >
-                          <Users size={14} />
-                          Lihat Pembaca
-                        </button>
+                    <Link
+                      href={`/admin/pengumuman/${announcement.id}`}
+                      className="min-w-0 rounded-2xl transition hover:bg-blue-50/50 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#123c8c]">
+                          <Megaphone size={17} strokeWidth={2.6} />
+                        </span>
 
-                        {(announcement.attachment_url || announcement.attachmentUrl) && (
-                          /\.pdf$/i.test(announcement.attachment_url || announcement.attachmentUrl || "") ? (
-                            <a
-                              href={announcement.attachment_url || announcement.attachmentUrl || ""}
-                              target="_blank"
-                              className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/70 px-3 py-1.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100 dark:border-rose-800/60 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-900/80 active:scale-[0.97]"
-                            >
-                              <FileText size={14} />
-                              Lihat PDF
-                            </a>
-                          ) : /\.(mp4|webm|ogg|mov)$/i.test(announcement.attachment_url || announcement.attachmentUrl || "") ? (
-                            <video src={announcement.attachment_url || announcement.attachmentUrl || ""} className="max-h-20 w-full rounded-lg object-cover bg-black" />
-                          ) : (
-                            <img src={announcement.attachment_url || announcement.attachmentUrl || ""} alt="Media" className="max-h-20 w-full rounded-lg object-cover bg-slate-100" />
-                          )
-                        )}
+                        <div className="min-w-0">
+                          <p className="line-clamp-2 break-words font-black leading-6 text-slate-950 [overflow-wrap:anywhere]">
+                            {announcement.title}
+                          </p>
+                          <p className="mt-1 line-clamp-2 break-words text-xs font-semibold leading-5 text-slate-500 [overflow-wrap:anywhere]">
+                            {announcement.content}
+                          </p>
+                          <p className="mt-2 text-[11px] font-bold text-slate-400">
+                            {formatDate(announcement.created_at)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    </Link>
 
-                    <p className="line-clamp-2 font-semibold leading-6 text-slate-600 dark:text-slate-300">
-                      {announcement.content}
-                    </p>
+                    {announcement.document_url || announcement.documentUrl ? (
+                      <a
+                        href={
+                          announcement.document_url ||
+                          announcement.documentUrl ||
+                          "#"
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex min-w-0 items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-xs font-black text-[#123c8c] transition hover:bg-blue-100 md:mt-1"
+                      >
+                        <FileText size={15} className="shrink-0" />
+                        <span className="min-w-0">
+                          <span className="block truncate">
+                            {announcement.document_name ||
+                              announcement.documentName ||
+                              "Dokumen PDF"}
+                          </span>
+                          {formatFileSize(
+                            announcement.document_size ||
+                              announcement.documentSize,
+                          ) ? (
+                            <span className="block text-[10px] font-bold text-blue-500">
+                              {formatFileSize(
+                                announcement.document_size ||
+                                  announcement.documentSize,
+                              )}
+                            </span>
+                          ) : null}
+                        </span>
+                      </a>
+                    ) : (
+                      <span className="inline-flex w-fit rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-300">
+                        Tidak ada
+                      </span>
+                    )}
 
                     <span
-                      className={`w-fit rounded-full px-3 py-1 text-xs font-black ${announcement.status === "published"
-                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300"
-                        : announcement.status === "draft"
-                          ? "bg-amber-50 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300"
-                          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                        }`}
+                      className={`w-fit rounded-full px-3 py-1 text-xs font-black md:justify-self-start ${
+                        announcement.status === "published"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : announcement.status === "draft"
+                            ? "bg-amber-50 text-amber-700"
+                            : "bg-slate-100 text-slate-600"
+                      }`}
                     >
                       {formatStatus(announcement.status)}
                     </span>
 
-                    <div className="flex flex-wrap items-center gap-2 md:justify-center">
+                    <div className="grid grid-cols-2 gap-2 md:mt-1 md:justify-self-end">
                       <button
                         type="button"
                         onClick={() => openEditModal(announcement)}
-                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/70 px-3 py-1.5 text-xs font-bold text-[#123c8c] transition hover:bg-blue-100 dark:border-blue-800/60 dark:bg-blue-950/60 dark:text-blue-300 dark:hover:bg-blue-900/80 active:scale-[0.97]"
+                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-blue-100 bg-white px-3 text-xs font-black text-[#123c8c] transition hover:bg-[#eaf1ff] active:scale-[0.97]"
                       >
                         <Edit size={14} />
                         Edit
                       </button>
 
-                      {announcement.status !== "published" && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateStatus(announcement.id, "published")
-                          }
-                          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-1.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-800/60 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900/80 active:scale-[0.97]"
-                        >
-                          <Send size={14} />
-                          Publish
-                        </button>
-                      )}
-
-                      {announcement.status !== "archived" && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateStatus(announcement.id, "archived")
-                          }
-                          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 active:scale-[0.97]"
-                        >
-                          <Archive size={14} />
-                          Archive
-                        </button>
-                      )}
-
                       <button
                         type="button"
                         onClick={() => deleteAnnouncement(announcement.id)}
-                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/70 px-3 py-1.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100 dark:border-rose-800/60 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-900/80 active:scale-[0.97]"
+                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-rose-50 px-3 text-xs font-black text-rose-600 transition hover:bg-rose-100 active:scale-[0.97]"
                       >
                         <Trash2 size={14} />
                         Hapus
@@ -681,17 +635,17 @@ export default function AdminAnnouncementsPage() {
       </main>
 
       {isModalOpen && (
-        <div className="admin-announcement-modal-backdrop fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 px-4 pb-4 backdrop-blur-sm md:items-center md:pb-0">
-          <div className="admin-announcement-modal-panel max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
-            <div className="flex items-start justify-between gap-4">
+        <div className="admin-announcement-modal-backdrop fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/45 p-4">
+          <div className="admin-announcement-modal-panel flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-xl shadow-slate-950/25">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 md:px-6">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-[#123c8c]">
                   {editingAnnouncementId
                     ? "Edit Pengumuman"
                     : "Tambah Pengumuman"}
                 </p>
 
-                <h2 className="mt-2 text-2xl font-black text-slate-950">
+                <h2 className="mt-1 text-xl font-black text-slate-950 md:text-2xl">
                   {editingAnnouncementId
                     ? "Edit Data Pengumuman"
                     : "Tambah Pengumuman Baru"}
@@ -701,13 +655,17 @@ export default function AdminAnnouncementsPage() {
               <button
                 type="button"
                 onClick={closeModal}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 active:scale-[0.96]"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 active:scale-[0.96]"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <form
+              onSubmit={handleSubmit}
+              className="flex min-h-0 flex-1 flex-col overflow-hidden"
+            >
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5 md:px-6">
               <div className="admin-announcement-row-enter">
                 <label className="mb-2 block text-sm font-black text-slate-700">
                   Judul Pengumuman
@@ -721,8 +679,8 @@ export default function AdminAnnouncementsPage() {
                       title: event.target.value,
                     }))
                   }
-                  placeholder="Contoh: Pengingat Absensi Harian"
-                  className="admin-announcement-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  placeholder="Contoh: Pengingat Presensi Harian"
+                  className="admin-announcement-field w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
@@ -744,7 +702,7 @@ export default function AdminAnnouncementsPage() {
                   }
                   rows={6}
                   placeholder="Tulis isi pemberitahuan..."
-                  className="admin-announcement-field w-full resize-none rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold leading-6 text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="admin-announcement-field w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
@@ -842,7 +800,7 @@ export default function AdminAnnouncementsPage() {
                       status: event.target.value as AnnouncementStatus,
                     }))
                   }
-                  className="admin-announcement-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="admin-announcement-field w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-2 focus:ring-blue-100"
                 >
                   <option value="published">Published</option>
                   <option value="draft">Draft</option>
@@ -851,21 +809,125 @@ export default function AdminAnnouncementsPage() {
               </div>
 
               <div
-                className="admin-announcement-row-enter flex flex-col-reverse gap-3 pt-2 md:flex-row md:justify-end"
+                className="admin-announcement-row-enter"
                 style={{ animationDelay: "120ms" }}
+              >
+                <label className="mb-2 block text-sm font-black text-slate-700">
+                  Dokumen PDF
+                </label>
+
+                <label className="admin-announcement-field flex cursor-pointer flex-col gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-4 py-4 text-sm font-bold text-slate-600 outline-none transition hover:border-[#123c8c] hover:ring-2 hover:ring-blue-100 md:flex-row md:items-center md:justify-between">
+                  <span className="inline-flex min-w-0 items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-[#123c8c]">
+                      <Paperclip size={20} strokeWidth={2.6} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-slate-800">
+                        {form.document
+                          ? form.document.name
+                          : form.existingDocumentName
+                            ? form.existingDocumentName
+                            : "Pilih dokumen PDF"}
+                      </span>
+                      <span className="mt-0.5 block text-xs font-semibold text-slate-400">
+                        Maksimal 10MB, hanya PDF.
+                      </span>
+                    </span>
+                  </span>
+
+                  <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-[#123c8c]">
+                    Pilih File
+                  </span>
+
+                  <input
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    className="sr-only"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] || null;
+
+                      if (!file) {
+                        setForm((prev) => ({
+                          ...prev,
+                          document: null,
+                        }));
+                        return;
+                      }
+
+                      if (
+                        file.type !== "application/pdf" &&
+                        !file.name.toLowerCase().endsWith(".pdf")
+                      ) {
+                        alert("Dokumen pengumuman harus berformat PDF.");
+                        event.target.value = "";
+                        return;
+                      }
+
+                      if (file.size > 10 * 1024 * 1024) {
+                        alert("Ukuran dokumen PDF maksimal 10MB.");
+                        event.target.value = "";
+                        return;
+                      }
+
+                      setForm((prev) => ({
+                        ...prev,
+                        document: file,
+                        removeDocument: false,
+                      }));
+                    }}
+                  />
+                </label>
+
+                {form.existingDocumentUrl && !form.document ? (
+                  <div className="mt-3 flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 text-xs font-bold text-slate-500 md:flex-row md:items-center md:justify-between">
+                    <a
+                      href={form.existingDocumentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-w-0 items-center gap-2 text-[#123c8c] hover:text-[#0f3274]"
+                    >
+                      <FileText size={15} />
+                      <span className="truncate">
+                        {form.existingDocumentName || "Dokumen PDF"}
+                      </span>
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm((prev) => ({
+                          ...prev,
+                          existingDocumentName: "",
+                          existingDocumentUrl: "",
+                          removeDocument: true,
+                        }))
+                      }
+                      className="w-fit rounded-xl bg-rose-50 px-3 py-2 font-black text-rose-600 transition hover:bg-rose-100 active:scale-[0.97]"
+                    >
+                      Hapus Dokumen
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+
+              </div>
+
+              <div
+                className="admin-announcement-row-enter flex shrink-0 flex-col-reverse gap-3 border-t border-slate-200 bg-white px-5 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] md:flex-row md:justify-end md:px-6"
+                style={{ animationDelay: "160ms" }}
               >
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-200 active:scale-[0.98]"
+                  className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-black text-slate-600 transition hover:bg-slate-50 active:scale-[0.98]"
                 >
-                  Cancel
+                  Batal
                 </button>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-xl bg-[#123c8c] px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting
                     ? "Menyimpan..."

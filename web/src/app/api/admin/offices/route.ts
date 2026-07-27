@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { requireOwner } from "@/lib/api-auth";
+import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -19,38 +20,6 @@ type OfficeBody = {
   radiusMeters?: string | number;
   status?: string;
 };
-
-async function getAdminFromRequest(req: NextRequest) {
-  const token = req.cookies.get("faceattend_token")?.value;
-
-  if (!token) {
-    throw new Error("Token login tidak ditemukan.");
-  }
-
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET belum ada di file .env");
-  }
-
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-  const { payload } = await jwtVerify(token, secret);
-
-  const userId =
-    (payload.id as string | undefined) ||
-    (payload.userId as string | undefined) ||
-    (payload.sub as string | undefined);
-
-  const role = String(payload.role || "");
-
-  if (!userId) {
-    throw new Error("User ID tidak ditemukan di token.");
-  }
-
-  if (role !== "owner" && role !== "admin") {
-    throw new Error("Akses hanya untuk admin & owner.");
-  }
-
-  return userId;
-}
 
 function toNumber(value: unknown) {
   if (value === null || value === undefined || value === "") return null;
@@ -152,8 +121,7 @@ const basicOfficeSelect = {
 
 export async function GET(req: NextRequest) {
   try {
-    await getAdminFromRequest(req);
-    await ensureOfficeColumnsExist();
+    await requireOwner(req);
 
     let offices;
     try {
@@ -178,20 +146,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Gagal mengambil data kantor.",
+        message: getApiErrorMessage(error, "Gagal mengambil data kantor."),
       },
-      { status: 500 }
+      { status: getApiErrorStatus(error) }
     );
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    await getAdminFromRequest(req);
-    await ensureOfficeColumnsExist();
+    await requireOwner(req);
 
     const body = (await req.json()) as OfficeBody;
     const result = validateOfficeBody(body);
@@ -237,96 +201,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          error instanceof Error ? error.message : "Gagal menambahkan kantor.",
+        message: getApiErrorMessage(error, "Gagal menambahkan kantor."),
       },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PATCH(req: NextRequest) {
-  try {
-    await getAdminFromRequest(req);
-    await ensureOfficeColumnsExist();
-
-    const body = (await req.json()) as OfficeBody;
-    const result = validateOfficeBody(body);
-
-    if (!result.data) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: result.error,
-        },
-        { status: 400 }
-      );
-    }
-
-    let officeId = body.id;
-    if (!officeId) {
-      try {
-        const firstOffice = await (prisma as any).officeLocation.findFirst({
-          select: { id: true },
-        });
-        officeId = firstOffice?.id;
-      } catch {
-        officeId = undefined;
-      }
-    }
-
-    let office;
-    if (officeId) {
-      try {
-        office = await (prisma as any).officeLocation.update({
-          where: { id: officeId },
-          data: result.data,
-          select: fullOfficeSelect,
-        });
-      } catch {
-        const { phone, postal_code, logo_url, ...basicData } = result.data as any;
-        office = await (prisma as any).officeLocation.update({
-          where: { id: officeId },
-          data: basicData,
-          select: basicOfficeSelect,
-        });
-      }
-    } else {
-      try {
-        office = await (prisma as any).officeLocation.create({
-          data: {
-            id: crypto.randomUUID(),
-            ...result.data,
-          },
-          select: fullOfficeSelect,
-        });
-      } catch {
-        const { phone, postal_code, logo_url, ...basicData } = result.data as any;
-        office = await (prisma as any).officeLocation.create({
-          data: {
-            id: crypto.randomUUID(),
-            ...basicData,
-          },
-          select: basicOfficeSelect,
-        });
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Profil perusahaan berhasil diperbarui.",
-      office,
-    });
-  } catch (error) {
-    console.error("PATCH_ADMIN_OFFICE_ERROR:", error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Gagal memperbarui kantor.",
-      },
-      { status: 500 }
+      { status: getApiErrorStatus(error) }
     );
   }
 }

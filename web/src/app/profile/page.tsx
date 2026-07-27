@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { FormEvent, useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -32,13 +32,19 @@ import {
   X,
   AlertTriangle,
   CheckCircle2,
-  Info,
   type LucideIcon,
 } from "lucide-react";
 
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import {
+  IDENTITY_VALIDATION,
+  isValidBankAccountNumber,
+  isValidNik,
+  isValidPhoneNumber,
+  normalizeDigits,
+} from "@/lib/identity-validation";
 
 type ShiftWorkSchedule = {
   day_of_week: string;
@@ -53,6 +59,10 @@ type ProfileUser = {
   email: string;
   role: string;
   phone: string | null;
+  birth_place?: string | null;
+  birth_date?: string | null;
+  nik?: string | null;
+  bank_account_number?: string | null;
   status: string;
   profile_photo: string | null;
   unit?: {
@@ -131,10 +141,6 @@ const dayLabels: Record<string, string> = {
   SUNDAY: "Minggu",
 };
 
-function cleanValue(value?: string | null) {
-  return value?.trim() || "";
-}
-
 function getInitials(name: string) {
   return name
     .split(" ")
@@ -176,11 +182,7 @@ function formatDay(day: string) {
 }
 
 function normalizePhoneInput(value: string) {
-  return value.replace(/\D/g, "").slice(0, 12);
-}
-
-function isValidPhoneNumber(value: string) {
-  return /^\d{10,12}$/.test(value);
+  return normalizeDigits(value, IDENTITY_VALIDATION.phone.max);
 }
 
 function formatDate(value?: string | null) {
@@ -220,10 +222,14 @@ function formatEmploymentStatus(status?: string | null) {
 function getProfileAlertTheme(type: NonNullable<ProfileAlert>["type"]) {
   if (type === "success") {
     return {
-      shell: "from-emerald-50 via-white to-blue-50 dark:from-[#0f291e] dark:via-[#161b22] dark:to-[#0d141e] dark:border-[#21262d]",
-      iconWrap: "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
-      badge: "text-emerald-600 bg-white/70 dark:bg-[#30363d] dark:text-emerald-400",
-      button: "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20 dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-[#0d1117]",
+      shell:
+        "from-emerald-50 via-white to-blue-50 dark:from-[#0f291e] dark:via-[#161b22] dark:to-[#0d141e] dark:border-[#21262d]",
+      iconWrap:
+        "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
+      badge:
+        "text-emerald-600 bg-white/70 dark:bg-[#30363d] dark:text-emerald-400",
+      button:
+        "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20 dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-[#0d1117]",
       icon: CheckCircle2,
       label: "BERHASIL",
     };
@@ -231,10 +237,12 @@ function getProfileAlertTheme(type: NonNullable<ProfileAlert>["type"]) {
 
   if (type === "error") {
     return {
-      shell: "from-red-50 via-white to-blue-50 dark:from-[#2d1918] dark:via-[#161b22] dark:to-[#0f141c] dark:border-[#21262d]",
+      shell:
+        "from-red-50 via-white to-blue-50 dark:from-[#2d1918] dark:via-[#161b22] dark:to-[#0f141c] dark:border-[#21262d]",
       iconWrap: "bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400",
       badge: "text-red-600 bg-white/70 dark:bg-[#30363d] dark:text-red-400",
-      button: "bg-red-600 hover:bg-red-700 shadow-red-900/20 dark:bg-red-500 dark:hover:bg-red-600 dark:text-[#0d1117]",
+      button:
+        "bg-red-600 hover:bg-red-700 shadow-red-900/20 dark:bg-red-500 dark:hover:bg-red-600 dark:text-[#0d1117]",
       icon: AlertTriangle,
       label: "GAGAL",
     };
@@ -242,20 +250,26 @@ function getProfileAlertTheme(type: NonNullable<ProfileAlert>["type"]) {
 
   if (type === "info") {
     return {
-      shell: "from-blue-50 via-white to-blue-50 dark:from-[#0d1f3d] dark:via-[#161b22] dark:to-[#0d1f3d] dark:border-[#21262d]",
-      iconWrap: "bg-blue-100 text-[#123c8c] dark:bg-blue-950/40 dark:text-[#58a6ff]",
+      shell:
+        "from-blue-50 via-white to-blue-50 dark:from-[#0d1f3d] dark:via-[#161b22] dark:to-[#0d1f3d] dark:border-[#21262d]",
+      iconWrap:
+        "bg-blue-100 text-[#123c8c] dark:bg-blue-950/40 dark:text-[#58a6ff]",
       badge: "text-[#123c8c] bg-white/70 dark:bg-[#30363d] dark:text-[#58a6ff]",
-      button: "bg-[#123c8c] hover:bg-[#0f3274] shadow-blue-900/20 dark:bg-[#1f6feb] dark:hover:bg-[#388bfd]",
+      button:
+        "bg-[#123c8c] hover:bg-[#0f3274] shadow-blue-900/20 dark:bg-[#1f6feb] dark:hover:bg-[#388bfd]",
       icon: ShieldCheck,
       label: "INFO",
     };
   }
 
   return {
-    shell: "from-orange-50 via-white to-blue-50 dark:from-[#2e1d0f] dark:via-[#161b22] dark:to-[#121d2f] dark:border-[#21262d]",
-    iconWrap: "bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400",
+    shell:
+      "from-orange-50 via-white to-blue-50 dark:from-[#2e1d0f] dark:via-[#161b22] dark:to-[#121d2f] dark:border-[#21262d]",
+    iconWrap:
+      "bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400",
     badge: "text-orange-600 bg-white/70 dark:bg-[#30363d] dark:text-orange-400",
-    button: "bg-[#526fae] hover:bg-[#46629d] shadow-blue-900/20 dark:bg-[#1f6feb] dark:hover:bg-[#388bfd]",
+    button:
+      "bg-[#526fae] hover:bg-[#46629d] shadow-blue-900/20 dark:bg-[#1f6feb] dark:hover:bg-[#388bfd]",
     icon: AlertTriangle,
     label: "PERHATIAN",
   };
@@ -437,7 +451,6 @@ function ProfileAvatar({ user, initials, size = "md" }: ProfileAvatarProps) {
     >
       {user.profile_photo ? (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={user.profile_photo}
             alt={user.name}
@@ -526,7 +539,9 @@ function DetailItem({
         ) : null}
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-slate-400 dark:text-slate-500">{label}</p>
+          <p className="text-sm font-bold text-slate-400 dark:text-slate-500">
+            {label}
+          </p>
           <p className="mt-2 break-words text-lg font-black leading-7 text-[#123456] dark:text-[#c9d1d9]">
             {value || "-"}
           </p>
@@ -690,7 +705,7 @@ export default function ProfilePage() {
     if (value !== normalizedPhone) {
       showProfileAlert(
         "Nomor telepon tidak valid",
-        "Nomor telepon hanya boleh menggunakan angka tanpa spasi atau simbol, maksimal 12 digit.",
+        "Nomor telepon hanya boleh menggunakan angka tanpa spasi atau simbol, 10 sampai 13 digit.",
         "warning",
       );
     }
@@ -698,6 +713,28 @@ export default function ProfilePage() {
     setEditProfileForm((prev) => ({
       ...prev,
       phone: normalizedPhone,
+    }));
+  }
+
+  function handleNumericProfileInputChange(
+    field: "bank_account_number" | "nik",
+    value: string,
+  ) {
+    const normalizedValue = normalizeDigits(value, 16);
+
+    if (value !== normalizedValue) {
+      showProfileAlert(
+        field === "nik" ? "NIK tidak valid" : "Nomor Rekening tidak valid",
+        field === "nik"
+          ? "NIK harus berupa angka dan berjumlah tepat 16 digit."
+          : "Nomor rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
+        "warning",
+      );
+    }
+
+    setEditProfileForm((prev) => ({
+      ...prev,
+      [field]: normalizedValue,
     }));
   }
 
@@ -737,10 +774,12 @@ export default function ProfilePage() {
     setEditProfileForm({
       name: user.name || "",
       phone: user.phone || "",
-      birth_place: (user as any).birth_place || "",
-      birth_date: (user as any).birth_date ? String((user as any).birth_date).substring(0, 10) : "",
-      nik: (user as any).nik || "",
-      bank_account_number: (user as any).bank_account_number || "",
+      birth_place: user.birth_place || "",
+      birth_date: user.birth_date
+        ? String(user.birth_date).substring(0, 10)
+        : "",
+      nik: user.nik || "",
+      bank_account_number: user.bank_account_number || "",
     });
 
     setIsEditProfileModalOpen(true);
@@ -782,7 +821,7 @@ export default function ProfilePage() {
     if (!phone) {
       showProfileAlert(
         "Nomor telepon wajib diisi",
-        "Nomor telepon harus berisi angka dengan panjang 10 sampai 12 digit.",
+        "Nomor telepon harus berisi angka dengan panjang 10 sampai 13 digit.",
         "warning",
       );
       return;
@@ -791,7 +830,25 @@ export default function ProfilePage() {
     if (!isValidPhoneNumber(phone)) {
       showProfileAlert(
         "Nomor telepon tidak valid",
-        "Nomor telepon hanya boleh berisi angka tanpa spasi, dengan panjang 10 sampai 12 digit.",
+        "Nomor telepon hanya boleh berisi angka tanpa spasi, dengan panjang 10 sampai 13 digit.",
+        "warning",
+      );
+      return;
+    }
+
+    if (nik && !isValidNik(nik)) {
+      showProfileAlert(
+        "NIK tidak valid",
+        "NIK harus berupa angka dan berjumlah tepat 16 digit.",
+        "warning",
+      );
+      return;
+    }
+
+    if (bank_account_number && !isValidBankAccountNumber(bank_account_number)) {
+      showProfileAlert(
+        "Nomor Rekening tidak valid",
+        "Nomor rekening harus berupa angka dengan panjang antara 10 sampai 16 digit.",
         "warning",
       );
       return;
@@ -853,7 +910,8 @@ export default function ProfilePage() {
               birth_place: data.user?.birth_place || birth_place || null,
               birth_date: data.user?.birth_date || birth_date || null,
               nik: data.user?.nik || nik || null,
-              bank_account_number: data.user?.bank_account_number || bank_account_number || null,
+              bank_account_number:
+                data.user?.bank_account_number || bank_account_number || null,
             }
           : currentUser,
       );
@@ -885,7 +943,7 @@ export default function ProfilePage() {
         cache: "no-store",
       });
 
-      window.localStorage.removeItem("faceattend_read_announcement_id");
+      window.localStorage.removeItem("presensi_read_announcement_id");
       window.sessionStorage.clear();
 
       document.cookie.split(";").forEach((cookie) => {
@@ -1077,18 +1135,6 @@ export default function ProfilePage() {
   const initials = useMemo(() => {
     if (!user?.name) return "";
     return getInitials(user.name);
-  }, [user?.name]);
-
-  const subtitleInfo = useMemo(() => {
-    if (!user) return "";
-
-    return [
-      cleanValue(user.position?.name),
-      cleanValue(user.unit?.name),
-      cleanValue(user.department?.name),
-    ]
-      .filter(Boolean)
-      .join(" • ");
   }, [user]);
 
   const workSchedule = useMemo(() => {
@@ -1270,12 +1316,6 @@ export default function ProfilePage() {
                 {user.name}
               </h2>
 
-              {user.position?.name ? (
-                <p className="mt-2 text-center text-base font-semibold text-slate-400">
-                  {user.position.name}
-                </p>
-              ) : null}
-
               <button
                 type="button"
                 onClick={openEditProfileModal}
@@ -1328,10 +1368,6 @@ export default function ProfilePage() {
                 <h2 className="truncate text-xl font-black text-[#123456] md:text-3xl">
                   {user.name}
                 </h2>
-
-                <p className="mt-1 truncate text-base font-semibold text-slate-400 md:text-lg">
-                  {subtitleInfo || formatRole(user.role)}
-                </p>
               </div>
             </div>
 
@@ -1512,17 +1548,17 @@ export default function ProfilePage() {
                       onPaste={(event) => {
                         const pastedText = event.clipboardData.getData("text");
 
-                        if (/\D/.test(pastedText) || pastedText.length > 12) {
+                        if (/\D/.test(pastedText) || pastedText.length > 13) {
                           showProfileAlert(
                             "Nomor telepon tidak valid",
-                            "Nomor telepon hanya boleh menggunakan angka tanpa spasi atau simbol, maksimal 12 digit.",
+                            "Nomor telepon hanya boleh menggunakan angka tanpa spasi atau simbol, 10 sampai 13 digit.",
                             "warning",
                           );
                         }
                       }}
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      maxLength={12}
+                      maxLength={13}
                       placeholder="Contoh: 081234567890"
                       className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     />
@@ -1568,17 +1604,31 @@ export default function ProfilePage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="profile-row-enter">
                     <label className="mb-2 block text-sm font-black text-slate-700">
-                      NIK (12 Digit)
+                      NIK (16 Digit)
                     </label>
                     <input
                       value={editProfileForm.nik}
                       onChange={(event) =>
-                        setEditProfileForm((prev) => ({
-                          ...prev,
-                          nik: event.target.value.replace(/\D/g, "").substring(0, 12),
-                        }))
+                        handleNumericProfileInputChange(
+                          "nik",
+                          event.target.value,
+                        )
                       }
-                      placeholder="Contoh: 123456789012"
+                      onPaste={(event) => {
+                        const pastedText = event.clipboardData.getData("text");
+
+                        if (/\D/.test(pastedText) || pastedText.length > 16) {
+                          showProfileAlert(
+                            "NIK tidak valid",
+                            "NIK harus berupa angka dan berjumlah tepat 16 digit.",
+                            "warning",
+                          );
+                        }
+                      }}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="Contoh: 3201010101010001"
+                      maxLength={16}
                       className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     />
                   </div>
@@ -1590,12 +1640,26 @@ export default function ProfilePage() {
                     <input
                       value={editProfileForm.bank_account_number}
                       onChange={(event) =>
-                        setEditProfileForm((prev) => ({
-                          ...prev,
-                          bank_account_number: event.target.value.replace(/\D/g, ""),
-                        }))
+                        handleNumericProfileInputChange(
+                          "bank_account_number",
+                          event.target.value,
+                        )
                       }
+                      onPaste={(event) => {
+                        const pastedText = event.clipboardData.getData("text");
+
+                        if (/\D/.test(pastedText) || pastedText.length > 16) {
+                          showProfileAlert(
+                            "Nomor Rekening tidak valid",
+                            "Nomor rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
+                            "warning",
+                          );
+                        }
+                      }}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       placeholder="Masukkan nomor rekening"
+                      maxLength={16}
                       className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     />
                   </div>
@@ -1766,33 +1830,50 @@ export default function ProfilePage() {
                 : "translate-y-0 opacity-100"
             }`}
           >
-            <div className="relative p-5">
-              <div className="absolute -left-12 -top-12 h-40 w-40 rounded-full bg-orange-200/30 blur-3xl" />
-              <div className="absolute -right-12 -bottom-12 h-40 w-40 rounded-full bg-blue-300/30 blur-3xl" />
+            <div
+              className={`overflow-hidden rounded-[2rem] border border-white/70 dark:border-[#21262d] bg-gradient-to-br ${profileAlertTheme.shell} shadow-2xl shadow-slate-900/20 backdrop-blur-xl transition-all duration-300 ease-out ${
+                isProfileAlertClosing
+                  ? "translate-y-2 opacity-0"
+                  : "translate-y-0 opacity-100"
+              }`}
+            >
+              <div className="relative p-5">
+                <div className="absolute -left-12 -top-12 h-40 w-40 rounded-full bg-orange-200/30 blur-3xl" />
+                <div className="absolute -right-12 -bottom-12 h-40 w-40 rounded-full bg-blue-300/30 blur-3xl" />
 
-              <div className="relative flex items-start gap-4">
-                <div
-                  className={`profile-avatar-pop flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] ${profileAlertTheme.iconWrap} shadow-lg shadow-slate-300/40`}
-                >
-                  <ProfileAlertIcon size={32} strokeWidth={3} />
-                </div>
-
-                <div className="min-w-0 flex-1 pt-1">
+                <div className="relative flex items-start gap-4">
                   <div
-                    className={`inline-flex rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-[0.24em] ${profileAlertTheme.badge}`}
+                    className={`profile-avatar-pop flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] ${profileAlertTheme.iconWrap} shadow-lg shadow-slate-300/40`}
                   >
-                    {profileAlertTheme.label}
+                    <ProfileAlertIcon size={32} strokeWidth={3} />
                   </div>
 
-                  <h3 className="mt-3 text-2xl font-black leading-tight text-slate-950 dark:text-white">
-                    {profileAlert.title}
-                  </h3>
+                  <div className="min-w-0 flex-1 pt-1">
+                    <div
+                      className={`inline-flex rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-[0.24em] ${profileAlertTheme.badge}`}
+                    >
+                      {profileAlertTheme.label}
+                    </div>
 
-                  <p className="mt-2 text-sm font-bold leading-6 text-slate-600 dark:text-slate-400">
-                    {profileAlert.message}
-                  </p>
+                    <h3 className="mt-3 text-2xl font-black leading-tight text-slate-950 dark:text-white">
+                      {profileAlert.title}
+                    </h3>
+
+                    <p className="mt-2 text-sm font-bold leading-6 text-slate-600 dark:text-slate-400">
+                      {profileAlert.message}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={closeProfileAlert}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-slate-500 shadow-sm transition hover:bg-white hover:text-slate-800 dark:bg-slate-800/70 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200 active:scale-[0.96]"
+                  >
+                    <X size={22} strokeWidth={2.8} />
+                  </button>
                 </div>
 
+              <div className="border-t border-white/60 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/90 p-4">
                 <button
                   type="button"
                   onClick={closeProfileAlert}

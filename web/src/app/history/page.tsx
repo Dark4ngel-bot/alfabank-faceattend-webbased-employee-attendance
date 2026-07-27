@@ -178,17 +178,6 @@ function HistoryMotionStyles() {
         }
       }
 
-      @keyframes historyFloatGlow {
-        0%,
-        100% {
-          transform: translate3d(0, 0, 0) scale(1);
-        }
-
-        50% {
-          transform: translate3d(12px, -10px, 0) scale(1.04);
-        }
-      }
-
       .history-enter {
         animation: historyEnter 340ms ease-out both;
       }
@@ -200,10 +189,6 @@ function HistoryMotionStyles() {
 
       .history-icon-pop {
         animation: historyIconPop 280ms ease-out both;
-      }
-
-      .history-float-glow {
-        animation: historyFloatGlow 6s ease-in-out infinite;
       }
 
       .history-field {
@@ -221,8 +206,7 @@ function HistoryMotionStyles() {
       @media (prefers-reduced-motion: reduce) {
         .history-enter,
         .history-row-enter,
-        .history-icon-pop,
-        .history-float-glow {
+        .history-icon-pop {
           animation: none !important;
           opacity: 1 !important;
           transform: none !important;
@@ -259,7 +243,7 @@ function MobileHeader() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">
-            FaceAttend
+            Presensi
           </p>
 
           <h1 className="mt-2 text-3xl font-black tracking-tight text-[#073456] dark:text-white">
@@ -289,9 +273,6 @@ function DesktopHero({
   return (
     <section className="mx-auto hidden max-w-7xl px-10 pt-8 md:block lg:px-16">
       <div className="history-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-8 text-white shadow-2xl shadow-blue-900/25">
-        <div className="history-float-glow absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10" />
-        <div className="history-float-glow absolute bottom-[-7rem] right-24 h-60 w-60 rounded-full bg-blue-300/10" />
-
         <div className="relative z-10 flex items-center justify-between gap-8">
           <div className="flex items-center gap-5">
             <div className="history-icon-pop flex h-20 w-20 shrink-0 items-center justify-center rounded-[1.6rem] bg-white/15 text-white ring-1 ring-white/20">
@@ -665,7 +646,7 @@ function HistoryContent({
   if (isLoading) {
     return (
       <div className="history-row-enter">
-        <AppLoadingState text="Memuat riwayat absensi..." />
+        <AppLoadingState text="Memuat riwayat presensi..." />
       </div>
     );
   }
@@ -675,8 +656,8 @@ function HistoryContent({
       <div className="history-row-enter">
         <AppEmptyState
           icon={<CalendarDays size={28} strokeWidth={2.6} />}
-          title="Belum ada data absensi"
-          description={`Data absensi untuk periode ${monthLabel} ${year} belum tersedia.`}
+          title="Belum ada data presensi"
+          description={`Data presensi untuk periode ${monthLabel} ${year} belum tersedia.`}
         />
       </div>
     );
@@ -791,15 +772,13 @@ export default function HistoryPage() {
     <MobileShell variant="employee" withBottomPadding={false}>
       <HistoryMotionStyles />
 
-      <div className="print:hidden">
-        <div className="hidden md:block">
-          <AppHeader
-            title="Riwayat Presensi"
-            subtitle="Riwayat absensi karyawan"
-            rightLabel={`${currentMonthLabel} ${year}`}
-            variant="employee"
-          />
-        </div>
+      <div className="hidden md:block">
+        <AppHeader
+          title="Riwayat"
+          rightLabel={`${currentMonthLabel} ${year}`}
+          variant="employee"
+        />
+      </div>
 
         <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff] dark:from-[#0d1117] dark:via-[#161b22] dark:to-[#0d1117] pb-28 text-slate-950 dark:text-white">
           <MobileHeader />

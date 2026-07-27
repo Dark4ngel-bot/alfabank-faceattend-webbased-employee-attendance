@@ -17,6 +17,16 @@ function photoToDataUrl(
   return `data:${mime || "image/jpeg"};base64,${buffer.toString("base64")}`;
 }
 
+function resolvePhoto(
+  photoUrl: string | null,
+  photo: Uint8Array | Buffer | null,
+  mime: string | null,
+) {
+  if (photoUrl?.trim()) return photoUrl;
+
+  return photoToDataUrl(photo, mime);
+}
+
 function getAttendanceStatus(
   checkInTime: Date | null,
   checkOutTime: Date | null,
@@ -77,6 +87,8 @@ export async function GET(req: NextRequest) {
 
         check_in_photo_mime: true,
         check_out_photo_mime: true,
+        check_in_photo_url: true,
+        check_out_photo_url: true,
 
         registered_office_id: true,
         registered_office: {
@@ -169,7 +181,16 @@ export async function GET(req: NextRequest) {
       return {
         id: attendance.id,
 
-        attendanceDate: attendance.attendance_date.toISOString(),
+      checkInPhoto: resolvePhoto(
+        attendance.check_in_photo_url,
+        attendance.check_in_photo,
+        attendance.check_in_photo_mime,
+      ),
+      checkOutPhoto: resolvePhoto(
+        attendance.check_out_photo_url,
+        attendance.check_out_photo,
+        attendance.check_out_photo_mime,
+      ),
 
         scheduledCheckIn: toIsoString(attendance.scheduled_check_in),
         scheduledCheckOut: toIsoString(attendance.scheduled_check_out),
@@ -261,7 +282,7 @@ export async function GET(req: NextRequest) {
     console.error("GET_HISTORY_ERROR:", error);
 
     return NextResponse.json(
-      { error: getApiErrorMessage(error, "Gagal mengambil riwayat absensi.") },
+      { error: getApiErrorMessage(error, "Gagal mengambil riwayat presensi.") },
       { status: getApiErrorStatus(error) }
     );
   }

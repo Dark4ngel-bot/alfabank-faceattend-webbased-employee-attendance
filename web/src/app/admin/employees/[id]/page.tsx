@@ -11,9 +11,6 @@ import {
   CalendarDays,
   Clock3,
   CreditCard,
-  FileText,
-  Gift,
-  Coins,
   IdCard,
   Loader2,
   Mail,
@@ -43,7 +40,7 @@ type DepartmentRelation = {
   office?: OfficeMiniRelation;
 } | null;
 
-type UnitRelation = {
+type JabatanRelation = {
   id: string;
   name: string;
   department_id?: string | null;
@@ -53,8 +50,8 @@ type UnitRelation = {
 type PositionRelation = {
   id: string;
   name: string;
-  unit_id?: string | null;
-  unit?: UnitRelation;
+  jabatan_id?: string | null;
+  jabatan?: JabatanRelation;
 } | null;
 
 type ShiftRelation = {
@@ -78,14 +75,20 @@ type Employee = {
   id: string;
   name: string;
   email: string;
-  role: string;
-  unit: UnitRelation;
+  jabatan: JabatanRelation;
   department: DepartmentRelation;
   position: PositionRelation;
   shift: ShiftRelation;
   registered_office: OfficeRelation;
   phone: string | null;
   status: "active" | "inactive";
+  employment_status: string | null;
+  employment_start_date: string | null;
+  employment_end_date: string | null;
+  birth_place: string | null;
+  birth_date: string | null;
+  bank_account_number: string | null;
+  nik: string | null;
   created_at: string;
 
   profile_photo?: string | null;
@@ -127,7 +130,7 @@ function getInitialName(name: string) {
 
 function getRelationName(
   item:
-    | UnitRelation
+    | JabatanRelation
     | DepartmentRelation
     | PositionRelation
     | ShiftRelation
@@ -218,7 +221,18 @@ function formatCurrency(amount?: number | string | null) {
 }
 
 function formatStatus(status: "active" | "inactive") {
-  return status === "active" ? "Active" : "Inactive";
+  return status === "active" ? "Aktif" : "Nonaktif";
+}
+
+function formatEmploymentPeriod(employee: Employee) {
+  const startDate = formatDate(employee.employment_start_date);
+  const endDate = formatDate(employee.employment_end_date);
+
+  if (startDate === "-" && endDate === "-") return "-";
+  if (startDate === "-") return `Sampai ${endDate}`;
+  if (endDate === "-") return `Mulai ${startDate}`;
+
+  return `${startDate} - ${endDate}`;
 }
 
 function EmployeeDetailMotionStyles() {
@@ -293,7 +307,6 @@ function EmployeeProfileAvatar({ employee }: { employee: Employee }) {
   if (profilePhoto && !imageError) {
     return (
       <div className="employee-detail-avatar-enter h-28 w-28 overflow-hidden rounded-[2rem] bg-white/15 ring-4 ring-white/20">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={profilePhoto}
           alt={`Foto profil ${employee.name}`}
@@ -440,11 +453,7 @@ export default function AdminEmployeeDetailPage() {
     <MobileShell variant="admin">
       <EmployeeDetailMotionStyles />
 
-      <AppHeader
-        title="Profil Karyawan"
-        subtitle="Detail data employee untuk admin"
-        variant="admin"
-      />
+      <AppHeader title="Profil Karyawan" variant="admin" />
 
       <main className="mx-auto max-w-7xl px-5 py-6 pb-28 md:px-10 lg:px-16">
         <Link
@@ -452,7 +461,7 @@ export default function AdminEmployeeDetailPage() {
           className="employee-detail-enter inline-flex items-center gap-2 rounded-2xl bg-white dark:bg-[#21262d] px-4 py-3 text-sm font-black text-[#123c8c] dark:text-[#58a6ff] shadow-sm ring-1 ring-blue-100 dark:ring-[#30363d] transition hover:bg-[#f8fbff] dark:hover:bg-[#30363d] active:scale-[0.98]"
         >
           <ArrowLeft size={18} strokeWidth={2.7} />
-          Kembali ke Employees
+          Kembali ke Karyawan
         </Link>
 
         {isLoading ? (
@@ -473,9 +482,6 @@ export default function AdminEmployeeDetailPage() {
             <section className="employee-detail-enter mt-6 overflow-hidden rounded-[2.2rem] border border-blue-100 bg-white shadow-2xl shadow-slate-300/30">
               <div className="grid lg:grid-cols-[0.82fr_1.18fr]">
                 <div className="relative overflow-hidden bg-[#123c8c] p-7 text-white md:p-8">
-                  <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-                  <div className="absolute -bottom-24 left-10 h-64 w-64 rounded-full bg-blue-300/20 blur-3xl" />
-
                   <div className="relative z-10">
                     <EmployeeProfileAvatar employee={employee} />
 
@@ -484,7 +490,7 @@ export default function AdminEmployeeDetailPage() {
                       style={{ animationDelay: "80ms" }}
                     >
                       <p className="text-xs font-black uppercase tracking-[0.24em] text-blue-100">
-                        Employee Profile
+                        Profil Karyawan
                       </p>
 
                       <h1 className="mt-2 break-words text-4xl font-black tracking-tight">
@@ -500,10 +506,6 @@ export default function AdminEmployeeDetailPage() {
                           }`}
                         >
                           {formatStatus(employee.status)}
-                        </span>
-
-                        <span className="inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-black text-white ring-1 ring-white/20">
-                          {employee.role || "employee"}
                         </span>
                       </div>
 
@@ -525,7 +527,7 @@ export default function AdminEmployeeDetailPage() {
                     icon={Mail}
                     label="Email"
                     value={employee.email}
-                    description="Email login karyawan"
+                    description="Email masuk karyawan"
                     delay={80}
                   />
 
@@ -587,10 +589,18 @@ export default function AdminEmployeeDetailPage() {
 
                   <DetailCard
                     icon={IdCard}
-                    label="Employee ID"
-                    value={employee.id}
-                    description="ID unik akun di database"
+                    label="NIK"
+                    value={employee.nik || "-"}
+                    description="Nomor Induk Kependudukan"
                     delay={220}
+                  />
+
+                  <DetailCard
+                    icon={CreditCard}
+                    label="No Rekening"
+                    value={employee.bank_account_number || "-"}
+                    description="Nomor rekening payroll karyawan"
+                    delay={240}
                   />
 
                   <DetailCard
@@ -598,7 +608,7 @@ export default function AdminEmployeeDetailPage() {
                     label="Tanggal Dibuat"
                     value={formatDate(employee.created_at)}
                     description="Tanggal akun employee didaftarkan"
-                    delay={240}
+                    delay={260}
                   />
                 </div>
               </div>
@@ -610,7 +620,7 @@ export default function AdminEmployeeDetailPage() {
             >
               <SectionTitle
                 title="Struktur Organisasi"
-                subtitle="Kantor, divisi, posisi, jabatan, dan shift"
+                subtitle="Kantor, divisi, jabatan, posisi, dan shift"
               />
 
               <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -631,14 +641,14 @@ export default function AdminEmployeeDetailPage() {
 
                 <DetailCard
                   icon={Building2}
-                  label="Posisi"
-                  value={getRelationName(employee.unit)}
+                  label="Jabatan"
+                  value={getRelationName(employee.jabatan)}
                   delay={160}
                 />
 
                 <DetailCard
                   icon={BriefcaseBusiness}
-                  label="Jabatan"
+                  label="Posisi"
                   value={getRelationName(employee.position)}
                   delay={200}
                 />
@@ -661,10 +671,40 @@ export default function AdminEmployeeDetailPage() {
                   value={formatStatus(employee.status)}
                   description={
                     employee.status === "active"
-                      ? "Akun dapat digunakan untuk login dan absensi."
+                      ? "Akun dapat digunakan untuk login dan presensi."
                       : "Akun sedang nonaktif."
                   }
                   delay={280}
+                />
+
+                <DetailCard
+                  icon={BadgeCheck}
+                  label="Status Kepegawaian"
+                  value={employee.employment_status || "-"}
+                  description="Data status kepegawaian dari profil karyawan"
+                  delay={320}
+                />
+
+                <DetailCard
+                  icon={CalendarDays}
+                  label="Masa Kerja"
+                  value={formatEmploymentPeriod(employee)}
+                  description="Akun otomatis nonaktif setelah tanggal akhir lewat"
+                  delay={340}
+                />
+
+                <DetailCard
+                  icon={MapPin}
+                  label="Tempat Lahir"
+                  value={employee.birth_place || "-"}
+                  delay={380}
+                />
+
+                <DetailCard
+                  icon={CalendarDays}
+                  label="Tanggal Lahir"
+                  value={formatDate(employee.birth_date)}
+                  delay={420}
                 />
               </div>
             </section>
@@ -717,7 +757,7 @@ export default function AdminEmployeeDetailPage() {
                     <BriefcaseBusiness size={24} strokeWidth={2.7} />
                   </div>
                   <p className="mt-4 text-xs font-black uppercase tracking-[0.18em] text-slate-400">
-                    Jabatan
+                    Posisi
                   </p>
                   <p className="mt-2 break-words text-lg font-black text-slate-950">
                     {getRelationName(employee.position)}

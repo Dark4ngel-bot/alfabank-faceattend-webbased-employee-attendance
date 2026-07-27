@@ -1,55 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
+import { requireOwner } from "@/lib/api-auth";
 
 export const runtime = "nodejs";
 
-const db = prisma as any;
+type AllowedRole = "admin" | "owner";
 
-type AllowedRole = "owner" | "admin";
+const VIEW_ROLES: AllowedRole[] = ["admin", "owner"];
+const MANAGE_ROLES: AllowedRole[] = ["admin", "owner"];
 
-const VIEW_ROLES: AllowedRole[] = ["owner", "admin"];
-const MANAGE_ROLES: AllowedRole[] = ["owner", "admin"];
-
-async function getCurrentUser(req: NextRequest) {
-  const token = req.cookies.get("faceattend_token")?.value;
-
-  if (!token) {
-    throw new Error("Token login tidak ditemukan.");
-  }
-
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET belum ada di file .env");
-  }
-
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-  const { payload } = await jwtVerify(token, secret);
-
-  const userId =
-    (payload.id as string | undefined) ||
-    (payload.userId as string | undefined) ||
-    (payload.sub as string | undefined);
-
-  if (!userId) {
-    throw new Error("User ID tidak ditemukan di token.");
-  }
-
-  const user = await db.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      id: true,
-      role: true,
-      status: true,
-    },
-  });
-
-  if (!user) {
-    throw new Error("User tidak ditemukan.");
-  }
-
-  return user;
+function getCurrentUser(req: NextRequest) {
+  return requireOwner(req);
 }
 
 function canAccess(role: string, roles: AllowedRole[]) {
@@ -163,7 +124,7 @@ export async function GET(req: NextRequest) {
         _count: {
           select: {
             users: true,
-            units: true,
+            jabatans: true,
           },
         },
       },
@@ -224,7 +185,7 @@ export async function POST(req: NextRequest) {
         {
           success: false,
           message:
-            "Akses ditolak. Hanya owner yang dapat menambah divisi.",
+            "Akses ditolak. Hanya admin yang dapat menambah divisi.",
         },
         { status: 403 }
       );
@@ -333,7 +294,7 @@ export async function POST(req: NextRequest) {
         _count: {
           select: {
             users: true,
-            units: true,
+            jabatans: true,
           },
         },
       },
@@ -380,7 +341,7 @@ export async function PATCH(req: NextRequest) {
         {
           success: false,
           message:
-            "Akses ditolak. Hanya owner yang dapat mengubah divisi.",
+            "Akses ditolak. Hanya admin yang dapat mengubah divisi.",
         },
         { status: 403 }
       );
@@ -515,7 +476,7 @@ export async function PATCH(req: NextRequest) {
         _count: {
           select: {
             users: true,
-            units: true,
+            jabatans: true,
           },
         },
       },
@@ -561,7 +522,7 @@ export async function DELETE(req: NextRequest) {
         {
           success: false,
           message:
-            "Akses ditolak. Hanya owner yang dapat menghapus divisi.",
+            "Akses ditolak. Hanya admin yang dapat menghapus divisi.",
         },
         { status: 403 }
       );
@@ -589,7 +550,7 @@ export async function DELETE(req: NextRequest) {
         _count: {
           select: {
             users: true,
-            units: true,
+            jabatans: true,
           },
         },
       },
@@ -605,12 +566,12 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    if (department._count.users > 0 || department._count.units > 0) {
+    if (department._count.users > 0 || department._count.jabatans > 0) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "Divisi tidak bisa dihapus karena masih memiliki unit atau karyawan. Ubah status menjadi Nonaktif.",
+            "Divisi tidak bisa dihapus karena masih memiliki jabatan atau karyawan. Ubah status menjadi Nonaktif.",
         },
         { status: 400 }
       );

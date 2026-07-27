@@ -18,5 +18,5 @@ dist/
 # Environment
 .env
 .env*
-
-/generated/prisma
+.DS_Store
+**/.DS_Store

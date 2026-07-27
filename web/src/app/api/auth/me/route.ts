@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
@@ -11,91 +9,6 @@ import {
   updateDemoUserProfile,
 } from "@/lib/demoStore";
 
-
-function getJwtSecret() {
-  const secret = process.env.JWT_SECRET;
-
-  if (!secret) {
-    throw new Error("JWT_SECRET belum diatur di .env");
-  }
-
-  return new TextEncoder().encode(secret);
-}
-
-function isSchemaMigrationMissing(error: unknown) {
-  const message = String(error || "").toLowerCase();
-  return (
-    message.includes("unknown column") || message.includes("doesn't exist")
-  );
-}
-
-async function getUserIdFromRequest(req: NextRequest) {
-  const token = req.cookies.get("faceattend_token")?.value;
-
-  if (!token) {
-    return null;
-  }
-
-  const payload = await verifyToken(token);
-  return payload ? payload.id : null;
-}
-
-function buildDemoUserPayload(
-  user: NonNullable<ReturnType<typeof findDemoUserById>>,
-) {
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    phone: user.phone,
-    status: user.status,
-    department: user.department,
-    city_id: user.city_id,
-    village_id: user.village_id,
-    profile_photo_url: user.profile_photo_url,
-    must_change_password: user.must_change_password,
-  };
-}
-
-function isDemoUserId(userId: string) {
-  return userId.includes("-DEMO-");
-}
-
-async function getTokenFromCookie() {
-  const cookieStore = await cookies();
-
-  return (
-    cookieStore.get("token")?.value ||
-    cookieStore.get("auth_token")?.value ||
-    cookieStore.get("authToken")?.value ||
-    cookieStore.get("faceattend_token")?.value ||
-    ""
-  );
-}
-
-async function getUserIdFromToken() {
-  const token = await getTokenFromCookie();
-
-  if (!token) {
-    return null;
-  }
-
-  const { payload } = await jwtVerify(token, getJwtSecret());
-
-  const userId =
-    payload.id ||
-    payload.userId ||
-    payload.user_id ||
-    payload.sub ||
-    null;
-
-  if (!userId) {
-    return null;
-  }
-
-  return String(userId);
-}
 
 function serializeOffice(
   office:
@@ -126,22 +39,6 @@ export async function GET(req: NextRequest) {
   try {
     const authUser = await requireAuth(req);
 
-    if (isDemoUserId(authUser.id)) {
-      const demoUser = findDemoUserById(authUser.id);
-
-      if (!demoUser) {
-        return NextResponse.json(
-          { success: false, message: "User tidak ditemukan" },
-          { status: 404 },
-        );
-      }
-
-      return NextResponse.json({
-        success: true,
-        user: buildDemoUserPayload(demoUser),
-      });
-    }
-
     const user = await prisma.user.findUnique({
       where: {
         id: authUser.id,
@@ -154,9 +51,16 @@ export async function GET(req: NextRequest) {
         role: true,
         phone: true,
         status: true,
+        employment_status: true,
+        employment_start_date: true,
+        employment_end_date: true,
+        birth_place: true,
+        birth_date: true,
+        bank_account_number: true,
+        nik: true,
         profile_photo: true,
 
-        unit: {
+        jabatan: {
           select: {
             id: true,
             name: true,
@@ -246,9 +150,16 @@ export async function GET(req: NextRequest) {
         role: user.role,
         phone: user.phone,
         status: user.status,
+        employment_status: user.employment_status,
+        employment_start_date: user.employment_start_date,
+        employment_end_date: user.employment_end_date,
+        birth_place: user.birth_place,
+        birth_date: user.birth_date,
+        bank_account_number: user.bank_account_number,
+        nik: user.nik,
         profile_photo: user.profile_photo,
 
-        unit: user.unit,
+        jabatan: user.jabatan,
         department: user.department,
         position: user.position,
         shift: user.shift,
@@ -268,132 +179,6 @@ export async function GET(req: NextRequest) {
       {
         status: getApiErrorStatus(error),
       }
-    );
-  }
-}
-
-export async function PUT(req: NextRequest) {
-  try {
-    const userId = await getUserIdFromRequest(req);
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, message: "Belum login" },
-        { status: 401 },
-      );
-    }
-
-    const body = await req.json();
-    const payload = {
-      name: String(body.name || "").trim(),
-      email: String(body.email || "")
-        .trim()
-        .toLowerCase(),
-      phone: String(body.phone || "").trim(),
-      profilePhotoUrl: String(body.profilePhotoUrl || "").trim(),
-    };
-    const profilePhotoForLegacyColumn =
-      payload.profilePhotoUrl.length <= 255 ? payload.profilePhotoUrl : "";
-
-    if (!payload.name || !payload.email) {
-      return NextResponse.json(
-        { success: false, message: "Nama dan email wajib diisi" },
-        { status: 400 },
-      );
-    }
-
-    if (isDemoUserId(userId)) {
-      const result = updateDemoUserProfile(userId, payload);
-
-      if (!result.ok) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              result.reason === "email-exists"
-                ? "Email sudah digunakan"
-                : "User tidak ditemukan",
-          },
-          { status: result.reason === "email-exists" ? 409 : 404 },
-        );
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: "Profil berhasil diperbarui (demo mode)",
-        user: buildDemoUserPayload(result.user),
-      });
-    }
-
-    const existing = await prisma.user.findFirst({
-      where: {
-        email: payload.email,
-        NOT: { id: userId },
-      },
-      select: { id: true },
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        { success: false, message: "Email sudah digunakan" },
-        { status: 409 },
-      );
-    }
-
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        name: payload.name,
-        email: payload.email,
-        phone: payload.phone || null,
-        profile_photo: profilePhotoForLegacyColumn || null,
-      },
-      select: {
-        id: true,
-        employee_code: true,
-        name: true,
-        email: true,
-        role: true,
-        phone: true,
-        status: true,
-        profile_photo: true,
-      },
-    });
-
-    let profile_photo_url = user.profile_photo;
-
-    try {
-      await prisma.$executeRaw`
-        UPDATE users
-        SET profile_photo_url = ${payload.profilePhotoUrl || null}
-        WHERE id = ${userId}
-      `;
-      profile_photo_url = payload.profilePhotoUrl || null;
-    } catch (error) {
-      if (!isSchemaMigrationMissing(error)) {
-        throw error;
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Profil berhasil diperbarui",
-      user: {
-        ...user,
-        profile_photo_url,
-      },
-    });
-  } catch (error) {
-    if (isDatabaseUnavailable(error)) {
-      return NextResponse.json(
-        { success: false, message: "Database tidak tersedia" },
-        { status: 503 },
-      );
-    }
-
-    return NextResponse.json(
-      { success: false, message: "Gagal memperbarui profil" },
-      { status: 500 },
     );
   }
 }

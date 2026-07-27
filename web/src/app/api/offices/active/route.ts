@@ -5,13 +5,11 @@ import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 
 export const runtime = "nodejs";
 
-const db = prisma as any;
-
 export async function GET(req: NextRequest) {
   try {
     await requireAuth(req);
 
-    const offices = await db.officeLocation.findMany({
+    const offices = await prisma.officeLocation.findMany({
       where: {
         status: "active",
       },

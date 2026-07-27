@@ -162,7 +162,7 @@ export async function GET(req: NextRequest) {
 
     return jsonError(
       getApiErrorMessage(error, "Gagal mengambil notifikasi."),
-      getApiErrorStatus(error),
+      getApiErrorStatus(error)
     );
   }
 }
@@ -222,7 +222,7 @@ export async function PATCH(req: NextRequest) {
 
     return jsonError(
       getApiErrorMessage(error, "Gagal memperbarui notifikasi."),
-      getApiErrorStatus(error),
+      getApiErrorStatus(error)
     );
   }
 }

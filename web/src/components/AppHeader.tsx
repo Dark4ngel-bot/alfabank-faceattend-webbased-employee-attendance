@@ -8,9 +8,11 @@ import {
   BarChart3,
   Bell,
   Building2,
+  CalendarCheck,
   CalendarClock,
   CalendarDays,
   Clock3,
+  ClipboardList,
   FileImage,
   History,
   Home,
@@ -20,8 +22,8 @@ import {
   Menu,
   Network,
   PhoneCall,
-  ScanFace,
   Settings,
+  Trophy,
   UserPlus,
   UserRound,
   UserCheck,
@@ -51,7 +53,6 @@ type NotificationStats = {
   leave?: number;
   permission?: number;
   wfh?: number;
-  wfc?: number;
   visit?: number;
 };
 
@@ -62,23 +63,18 @@ type NotificationResponse = {
 };
 
 const employeeNav = [
-  { href: "/home", label: "Beranda", icon: Home },
-  { href: "/attendance", label: "Presensi", icon: ScanFace },
-  { href: "/history", label: "Laporan Kehadiran", icon: FileImage },
+  { href: "/beranda", label: "Beranda", icon: Home },
+  { href: "/presensi", label: "Presensi", icon: CalendarCheck },
+  { href: "/pengumuman", label: "Pengumuman", icon: Megaphone },
+  { href: "/history", label: "Riwayat", icon: History },
   { href: "/cuti", label: "Cuti", icon: CalendarDays },
-  { href: "/pengumuman", label: "Info", icon: Megaphone },
-  { href: "/profile", label: "Profil", icon: UserRound },
-  {
-    href: "/salary",
-    label: "Gaji & Slip Payroll",
-    icon: Coins,
-  },
+  { href: "/profil", label: "Profil", icon: UserRound },
 ];
 
 const adminMenus = [
   {
     href: "/admin/dashboard",
-    label: "Dashboard",
+    label: "Dasbor",
     icon: LayoutDashboard,
   },
   {
@@ -115,31 +111,31 @@ const masterDataMenus = [
     icon: Building2,
   },
   {
-    href: "/admin/departments",
+    href: "/admin/divisi",
     label: "Divisi",
     icon: Network,
   },
   {
-    href: "/admin/positions",
+    href: "/admin/jabatans",
     label: "Jabatan",
-    icon: UserRoundCog,
-  },
-  {
-    href: "/admin/units",
-    label: "Posisi",
     icon: Building2,
   },
   {
-    href: "/admin/master-data?tab=status-kepegawaian",
+    href: "/admin/positions",
+    label: "Posisi",
+    icon: UserRoundCog,
+  },
+  {
+    href: "/admin/employment-status",
     label: "Status Kepegawaian",
-    icon: UserCheck,
+    icon: UserRound,
   },
 ];
 
 const operationalMenus = [
   {
     href: "/admin/employees",
-    label: "Registrasi Karyawan",
+    label: "Daftar Karyawan",
     icon: UserPlus,
   },
   {
@@ -153,30 +149,14 @@ const operationalMenus = [
     icon: CalendarDays,
   },
   {
-    href: "/admin/profil-karyawan",
-    label: "Profil Karyawan",
-    icon: UserRound,
+    href: "/admin/rekap-kehadiran-karyawan",
+    label: "Rekap Kehadiran Karyawan",
+    icon: ClipboardList,
   },
   {
-    href: "/admin/profile",
-    label: "Profil Saya",
-    icon: UserCheck,
-  },
-  {
-    href: "/admin/salary",
-    label: "Gaji & Slip Payroll",
-    icon: Coins,
-  },
-  {
-    href: "#",
-    label: "Penghargaan Karyawan (Segera Hadir)",
-    icon: Award,
-    isComingSoon: true,
-  },
-  {
-    href: "/admin/hr-analytics",
-    label: "Analitik HR",
-    icon: TrendingUp,
+    href: "/admin/rank-kehadiran-karyawan",
+    label: "Rank Kehadiran Karyawan",
+    icon: Trophy,
   },
 ];
 
@@ -1160,7 +1140,7 @@ export default function AppHeader({
         cache: "no-store",
       });
     } finally {
-      window.localStorage.removeItem("faceattend_read_announcement_id");
+      window.localStorage.removeItem("presensi_read_announcement_id");
       window.sessionStorage.clear();
       router.replace("/login");
       router.refresh();
@@ -1517,15 +1497,9 @@ export default function AppHeader({
                   <span className="hidden lg:inline font-black text-sm">
                     Notifikasi
                   </span>
-                </button>
-
-                {isBellMenuOpen && (
-                  <div
-                    className={`absolute right-0 top-14 z-50 w-[calc(100vw-2rem)] max-w-sm sm:w-84 md:w-90 rounded-2xl border p-4 shadow-2xl ${theme === "dark" ? "border-[#30363d] bg-[#161b22] shadow-black/40" : "border-blue-100 bg-white shadow-slate-300/40"}`}
-                  >
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c] dark:text-[#58a6ff]">
-                      Notifikasi Karyawan
-                    </p>
+                ) : null}
+              </span>
+            </Link>
 
                     {employeeNotifications.length === 0 ? (
                       <p className="mt-3 text-sm font-semibold text-slate-400">
@@ -1647,13 +1621,14 @@ export default function AppHeader({
 
       <div className="h-[70px] md:h-[88px]" />
 
-      {/* Backdrop: always rendered, animated via opacity */}
-      <button
-        type="button"
-        aria-label="Tutup menu"
-        onClick={() => setIsSidebarOpen(false)}
-        className={`sidebar-backdrop ${isSidebarOpen ? "open" : ""}`}
-      />
+      {isSidebarOpen ? (
+        <button
+          type="button"
+          aria-label="Tutup menu"
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 z-50 bg-slate-950/40"
+        />
+      ) : null}
 
       <aside
         className={`sidebar-drawer ${isSidebarOpen ? "open" : ""} fixed left-0 top-0 z-[1001] h-dvh w-[82vw] max-w-80 border-r border-indigo-100/70 dark:border-[#21262d] bg-[#f4f2ff] dark:bg-[#161b22] shadow-2xl shadow-slate-950/20`}
@@ -1673,11 +1648,11 @@ export default function AppHeader({
               </div>
 
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c] dark:text-blue-400">
-                  {companyName}
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c]">
+                  Creativemu
                 </p>
 
-                <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950 dark:text-white">
+                <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">
                   {isAdmin ? "Panel Admin" : "Menu Karyawan"}
                 </h2>
               </div>
@@ -1842,16 +1817,18 @@ export default function AppHeader({
             )}
           </div>
 
-          <div className="border-t border-blue-50 dark:border-slate-800/80 p-4 space-y-2">
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-black text-rose-600 transition hover:bg-rose-100 active:scale-[0.98] dark:bg-rose-950/20 dark:text-rose-400"
-            >
-              <LogOut size={18} strokeWidth={2.5} />
-              Keluar
-            </button>
-          </div>
+          {isAdmin ? (
+            <div className="border-t border-blue-50 p-4">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-black text-rose-600 transition hover:bg-rose-100 active:scale-[0.98]"
+              >
+                <LogOut size={18} strokeWidth={2.5} />
+                Keluar
+              </button>
+            </div>
+          ) : null}
         </div>
       </aside>
 

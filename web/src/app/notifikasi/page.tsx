@@ -9,9 +9,6 @@ import {
   ChevronRight,
   Loader2,
   Megaphone,
-  RefreshCcw,
-  Coins,
-  Award,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MobileShell from "@/components/MobileShell";
@@ -106,20 +103,14 @@ export default function EmployeeNotificationPage() {
     unread: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [pageError, setPageError] = useState("");
 
   const monthTitle = useMemo(() => getMonthTitle(), []);
 
-  async function loadNotifications(mode: "initial" | "refresh" = "initial") {
+  async function loadNotifications() {
     try {
-      if (mode === "initial") {
-        setIsLoading(true);
-      } else {
-        setIsRefreshing(true);
-      }
-
+      setIsLoading(true);
       setPageError("");
 
       const response = await fetch("/api/notifications", {
@@ -138,17 +129,14 @@ export default function EmployeeNotificationPage() {
         data.stats || {
           total: 0,
           unread: 0,
-        }
+        },
       );
     } catch (error) {
       setPageError(
-        error instanceof Error
-          ? error.message
-          : "Gagal mengambil notifikasi."
+        error instanceof Error ? error.message : "Gagal mengambil notifikasi.",
       );
     } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
     }
   }
 
@@ -187,8 +175,8 @@ export default function EmployeeNotificationPage() {
                 status: "read",
                 statusText: "Dibaca",
               }
-            : item
-        )
+            : item,
+        ),
       );
 
       setStats((prev) => ({
@@ -199,9 +187,7 @@ export default function EmployeeNotificationPage() {
       router.push(notification.href);
     } catch (error) {
       setPageError(
-        error instanceof Error
-          ? error.message
-          : "Gagal membaca notifikasi."
+        error instanceof Error ? error.message : "Gagal membaca notifikasi.",
       );
     } finally {
       setActiveId(null);
@@ -209,16 +195,12 @@ export default function EmployeeNotificationPage() {
   }
 
   useEffect(() => {
-    void loadNotifications("initial");
+    void loadNotifications();
   }, []);
 
   return (
-    <MobileShell variant="employee">
-      <main className="w-full max-w-full text-slate-950">
-        <AppHeader
-          title="Notifikasi"
-          subtitle="Pusat informasi cuti, izin, sakit, dan pengumuman terbaru."
-        />
+    <main className="min-h-screen bg-[#f6f8ff] text-slate-950">
+      <AppHeader title="Notifikasi" />
 
       <section className="mx-auto max-w-5xl px-5 pb-10 pt-6 md:px-8">
         <div className="grid gap-4 md:grid-cols-3">
@@ -288,19 +270,6 @@ export default function EmployeeNotificationPage() {
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => loadNotifications("refresh")}
-              disabled={isRefreshing}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isRefreshing ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <RefreshCcw size={18} />
-              )}
-              Refresh
-            </button>
           </div>
 
           {pageError ? (
