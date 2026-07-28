@@ -8,8 +8,7 @@ import MobileShell from "@/components/MobileShell";
 import { AppButton, AppCard, AppInput } from "@/components/ui/AppUI";
 
 const CREATIVEMU_LOGO_SRC = "/images/creativemu-logo/creativemu.png";
-const CREATIVEMU_INTRO_LOGO_SRC =
-  "/images/creativemu-logo/creativemu-solo.png";
+const CREATIVEMU_INTRO_LOGO_SRC = "/images/creativemu-logo/creativemu-solo.png";
 const CREATIVEMU_BACKGROUND_LOGO_SRC = "/images/creativemu-logo/creativemu.png";
 const CREATIVEMU_MOBILE_BACKGROUND_LOGO_SRC =
   "/images/creativemu-logo/creativemu-solo.png";
@@ -658,8 +657,8 @@ export default function LoginPage() {
             />
 
             <div className="relative z-10">
-              <div className="login-logo-pop flex items-center gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-xl shadow-slate-300/60 md:h-[4.5rem] md:w-[4.5rem] md:p-2">
+              <div className="login-logo-pop flex items-center justify-center gap-4 lg:justify-start">
+                <div className="flex h-16 w-100 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-slate-300 bg-white/95 px-5 py-2 shadow-2xl shadow-slate-400/40 backdrop-blur transition-transform duration-300 hover:-translate-y-0.5 md:h-[4.5rem] md:w-56 lg:w-[4.5rem] lg:p-2">
                   <Image
                     src={CREATIVEMU_LOGO_SRC}
                     alt="Creativemu Logo"
