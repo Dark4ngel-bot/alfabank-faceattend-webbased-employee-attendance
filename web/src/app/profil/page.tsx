@@ -52,6 +52,7 @@ type ShiftWorkSchedule = {
 
 type ProfileUser = {
   id: string;
+  employee_code: string | null;
   name: string;
   email: string;
   role: string;
@@ -1116,6 +1117,11 @@ export function ProfilPageContent({
         label: "Tanggal Lahir",
         value: formatDate(user.birth_date),
         icon: CalendarDays,
+      },
+      {
+        label: "No Induk Karyawan",
+        value: user.employee_code || "-",
+        icon: IdCard,
       },
       {
         label: "NIK",

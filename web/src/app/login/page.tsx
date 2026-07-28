@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2, LogIn, X } from "lucide-react";
 import MobileShell from "@/components/MobileShell";
 import { AppButton, AppCard, AppInput } from "@/components/ui/AppUI";
-
-const CREATIVEMU_LOGO_SRC = "/images/creativemu-logo/creativemu.png";
-const CREATIVEMU_INTRO_LOGO_SRC = "/images/creativemu-logo/creativemu-solo.png";
-const CREATIVEMU_BACKGROUND_LOGO_SRC = "/images/creativemu-logo/creativemu.png";
-const CREATIVEMU_MOBILE_BACKGROUND_LOGO_SRC =
-  "/images/creativemu-logo/creativemu-solo.png";
+import { useSiteLogo } from "@/hooks/useSiteLogo";
+import {
+  CREATIVEMU_EMAIL_EXAMPLE,
+  isCreativemuEmail,
+  isValidEmailFormat,
+} from "@/lib/creativemu-email";
 
 type LoginResponse = {
   success?: boolean;
@@ -34,18 +34,6 @@ async function readJsonResponse(response: Response) {
   } catch {
     throw new Error("Response API bukan JSON.");
   }
-}
-
-function isValidEmailFormat(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim().toLowerCase());
-}
-
-function isCreativemuEmail(email: string) {
-  const normalized = email.trim().toLowerCase();
-  return (
-    normalized.endsWith("@creativemu.co.id") ||
-    normalized.endsWith("@creativemu.com")
-  );
 }
 
 function LoginMotionStyles() {
@@ -357,6 +345,7 @@ function FloatingAlert({
 
 export default function LoginPage() {
   const router = useRouter();
+  const logoSrc = useSiteLogo();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -498,7 +487,7 @@ export default function LoginPage() {
     if (!isValidEmailFormat(normalizedEmail)) {
       showAlert(
         "Format email salah",
-        "Masukkan email dengan format yang benar, contoh: nama@creativemu.com",
+        `Masukkan email dengan format yang benar, contoh: ${CREATIVEMU_EMAIL_EXAMPLE}`,
       );
       return;
     }
@@ -601,7 +590,7 @@ export default function LoginPage() {
 
             <div className="relative z-10 flex h-32 w-32 items-center justify-center overflow-hidden rounded-[2rem] border border-white/80 bg-white p-5 shadow-[0_24px_58px_rgba(18,60,140,0.14)] md:h-40 md:w-40 md:p-7">
               <Image
-                src={CREATIVEMU_INTRO_LOGO_SRC}
+                src={logoSrc}
                 alt="Creativemu Logo"
                 width={421}
                 height={390}
@@ -639,7 +628,7 @@ export default function LoginPage() {
         <div className="relative z-10 grid min-h-dvh w-full grid-cols-1 lg:grid-cols-2">
           <div className="login-enter relative flex flex-col px-6 py-7 md:px-12 lg:justify-between lg:px-20 lg:py-14">
             <Image
-              src={CREATIVEMU_BACKGROUND_LOGO_SRC}
+              src={logoSrc}
               alt="Logo Latar Creativemu"
               width={1452}
               height={390}
@@ -648,7 +637,7 @@ export default function LoginPage() {
             />
 
             <Image
-              src={CREATIVEMU_MOBILE_BACKGROUND_LOGO_SRC}
+              src={logoSrc}
               alt="Logo Latar Creativemu"
               width={421}
               height={390}
@@ -660,7 +649,7 @@ export default function LoginPage() {
               <div className="login-logo-pop flex items-center justify-center gap-4 lg:justify-start">
                 <div className="flex h-16 w-100 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-slate-300 bg-white/95 px-5 py-2 shadow-2xl shadow-slate-400/40 backdrop-blur transition-transform duration-300 hover:-translate-y-0.5 md:h-[4.5rem] md:w-56 lg:w-[4.5rem] lg:p-2">
                   <Image
-                    src={CREATIVEMU_LOGO_SRC}
+                    src={logoSrc}
                     alt="Creativemu Logo"
                     width={72}
                     height={19}
@@ -738,7 +727,7 @@ export default function LoginPage() {
                       inputMode="email"
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
-                      placeholder="nama@creativemu.co.id"
+                      placeholder={CREATIVEMU_EMAIL_EXAMPLE}
                       autoComplete="email"
                       disabled={formIsBusy}
                       className="border-blue-100 bg-[#f8fbff] text-slate-700 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-blue-100/50 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"

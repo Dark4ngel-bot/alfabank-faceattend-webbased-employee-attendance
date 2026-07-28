@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createToken, verifyPassword } from "@/lib/auth";
+import { isCreativemuEmail } from "@/lib/creativemu-email";
 import { deactivateExpiredEmployee } from "@/lib/employment-period";
 
 const LOGIN_RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -10,14 +11,6 @@ type LoginAttempt = {
   attempt_count: number | bigint;
   reset_at: Date | string;
 };
-
-function isCreativemuEmail(email: string) {
-  const normalized = email.trim().toLowerCase();
-  return (
-    normalized.endsWith("@creativemu.co.id") ||
-    normalized.endsWith("@creativemu.com")
-  );
-}
 
 function getClientIp(req: Request) {
   const forwardedFor = req.headers.get("x-forwarded-for");

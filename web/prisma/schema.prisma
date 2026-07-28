@@ -517,6 +517,16 @@ model AdminContactNumber {
   @@map("admin_contact_numbers")
 }
 
+model AppSetting {
+  setting_key   String @id @db.VarChar(100)
+  setting_value String @db.Text
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("app_settings")
+}
+
 model Payroll {
   id String @id @default(uuid()) @db.Char(36)
 

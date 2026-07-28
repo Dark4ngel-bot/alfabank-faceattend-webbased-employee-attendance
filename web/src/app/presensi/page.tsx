@@ -12,7 +12,9 @@ import {
   LogIn,
   LogOut,
   MapPin,
+  RefreshCw,
   ScanFace,
+  Settings,
   ShieldCheck,
   X,
 } from "lucide-react";
@@ -30,6 +32,10 @@ import {
 type AttendanceAction = "check-in" | "check-out";
 type AlertType = "success" | "error" | "warning";
 type WorkMode = "office" | "wfh" | "visit";
+type BrowserGuide = {
+  name: string;
+  steps: string[];
+};
 
 type CustomAlert = {
   open: boolean;
@@ -175,6 +181,93 @@ function isPermissionDeniedError(error: unknown) {
     name === "PermissionDeniedError" ||
     name === "SecurityError"
   );
+}
+
+function getCameraPermissionGuide(): BrowserGuide {
+  if (typeof navigator === "undefined") {
+    return {
+      name: "Browser",
+      steps: [
+        "Buka pengaturan izin situs.",
+        "Ubah izin Camera atau Kamera menjadi Allow/Izinkan.",
+        "Kembali ke halaman presensi lalu tekan Aktifkan Kamera.",
+      ],
+    };
+  }
+
+  const userAgent = navigator.userAgent || "";
+  const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+  const isAndroid = /Android/i.test(userAgent);
+  const isEdge = /Edg\//.test(userAgent);
+  const isFirefox = /Firefox\//.test(userAgent);
+  const isChrome =
+    /Chrome|CriOS/i.test(userAgent) && !isEdge && !/OPR\//.test(userAgent);
+  const isSafari =
+    /Safari/i.test(userAgent) && !isChrome && !isEdge && !isFirefox;
+
+  if (isIOS && isSafari) {
+    return {
+      name: "Safari iPhone",
+      steps: [
+        "Buka Settings iPhone.",
+        "Masuk ke Safari lalu pilih Camera.",
+        "Pilih Allow atau Ask, lalu buka ulang halaman presensi.",
+      ],
+    };
+  }
+
+  if (isAndroid && isChrome) {
+    return {
+      name: "Chrome Android",
+      steps: [
+        "Tekan ikon gembok di address bar.",
+        "Masuk ke Permissions lalu pilih Camera.",
+        "Ubah menjadi Allow, lalu kembali dan tekan Aktifkan Kamera.",
+      ],
+    };
+  }
+
+  if (isChrome) {
+    return {
+      name: "Google Chrome",
+      steps: [
+        "Klik ikon gembok atau kamera di address bar.",
+        "Buka Site settings.",
+        "Ubah Camera menjadi Allow, lalu refresh halaman.",
+      ],
+    };
+  }
+
+  if (isEdge) {
+    return {
+      name: "Microsoft Edge",
+      steps: [
+        "Klik ikon gembok di address bar.",
+        "Buka Permissions for this site.",
+        "Ubah Camera menjadi Allow, lalu refresh halaman.",
+      ],
+    };
+  }
+
+  if (isFirefox) {
+    return {
+      name: "Firefox",
+      steps: [
+        "Klik ikon kamera atau gembok di address bar.",
+        "Hapus blokir kamera atau pilih Allow.",
+        "Refresh halaman lalu tekan Aktifkan Kamera.",
+      ],
+    };
+  }
+
+  return {
+    name: "Browser",
+    steps: [
+      "Buka pengaturan izin situs dari ikon gembok di address bar.",
+      "Ubah izin Camera atau Kamera menjadi Allow/Izinkan.",
+      "Refresh halaman presensi lalu tekan Aktifkan Kamera.",
+    ],
+  };
 }
 
 function isMobileAttendanceDevice() {
@@ -657,10 +750,16 @@ function PhotoFrameOverlay() {
 
 function CameraEmptyState({
   cameraStarting,
+  permissionDenied,
   laptopBlocked,
+  deniedAttempts,
+  onRetry,
 }: {
   cameraStarting: boolean;
+  permissionDenied: boolean;
   laptopBlocked: boolean;
+  deniedAttempts: number;
+  onRetry: () => void;
 }) {
   return (
     <div className="attendance-row-enter absolute inset-0 flex items-center justify-center px-6 text-center text-white">
@@ -678,18 +777,59 @@ function CameraEmptyState({
         <p className="mt-4 text-sm font-black text-white">
           {laptopBlocked
             ? "Presensi khusus HP"
-            : cameraStarting
-              ? "Menyalakan Kamera"
-              : "Pratinjau Kamera"}
+            : permissionDenied
+              ? "Izin Kamera Ditolak"
+              : cameraStarting
+                ? "Menyalakan Kamera"
+                : "Pratinjau Kamera"}
         </p>
 
         <p className="mt-1 text-xs font-semibold leading-5 text-slate-400">
           {laptopBlocked
             ? "Check-in dan check-out hanya dapat dilakukan melalui HP."
-            : cameraStarting
-              ? "Mohon tunggu sampai kamera memuat gambar."
-              : "Kamera sedang memuat otomatis."}
+            : permissionDenied
+              ? deniedAttempts >= 3
+                ? "Izin kamera masih diblokir. Ikuti panduan di bawah."
+                : "Tekan tombol di bawah untuk mencoba meminta izin kamera lagi."
+              : cameraStarting
+                ? "Mohon tunggu sampai kamera memuat gambar."
+                : "Kamera sedang memuat otomatis."}
         </p>
+
+        {permissionDenied && !laptopBlocked ? (
+          <button
+            type="button"
+            onClick={onRetry}
+            disabled={cameraStarting}
+            className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-black text-[#123c8c] shadow-xl transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+          >
+            <RefreshCw size={16} className={cameraStarting ? "animate-spin" : ""} />
+            Aktifkan Kamera
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function CameraPermissionGuide({ guide }: { guide: BrowserGuide }) {
+  return (
+    <div className="attendance-row-enter mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+          <Settings size={19} />
+        </div>
+
+        <div>
+          <p className="text-sm font-black">
+            Panduan izin kamera untuk {guide.name}
+          </p>
+          <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs font-bold leading-5">
+            {guide.steps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+        </div>
       </div>
     </div>
   );
@@ -1563,6 +1703,8 @@ export default function AttendancePage() {
 
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraStarting, setCameraStarting] = useState(false);
+  const [cameraPermissionDenied, setCameraPermissionDenied] = useState(false);
+  const [cameraDeniedAttempts, setCameraDeniedAttempts] = useState(0);
   const [loading, setLoading] = useState(false);
   const [activeAction, setActiveAction] = useState<AttendanceAction | null>(
     null,
@@ -1598,6 +1740,10 @@ export default function AttendancePage() {
   const isLeaveBlocked = Boolean(leaveBlock?.active);
   const displayedWorkMinutes = getDisplayedWorkMinutes(todayAttendance);
   const displayedWorkDuration = formatDurationHoursMinutes(displayedWorkMinutes);
+  const browserGuide =
+    cameraPermissionDenied && cameraDeniedAttempts >= 3
+      ? getCameraPermissionGuide()
+      : null;
 
   useEffect(() => {
     mountedRef.current = true;
@@ -2073,6 +2219,8 @@ export default function AttendancePage() {
 
       setCameraReady(true);
       setCameraStarting(false);
+      setCameraPermissionDenied(false);
+      setCameraDeniedAttempts(0);
 
       safeSetStatus(
         "Camera Ready",
@@ -2088,19 +2236,23 @@ export default function AttendancePage() {
       releaseCamera(false, true);
 
       if (isPermissionDeniedError(error)) {
+        setCameraPermissionDenied(true);
+        setCameraDeniedAttempts((current) => current + 1);
         safeSetStatus(
           "Akses Kamera Ditolak",
-          "Akses kamera ditolak. Aktifkan izin kamera di browser untuk melakukan presensi.",
+          "Akses kamera ditolak. Tekan Aktifkan Kamera untuk mencoba lagi.",
         );
 
         showCustomAlert(
           "Akses Kamera Ditolak",
-          "Kamera belum bisa digunakan karena izin kamera ditolak. Buka pengaturan browser lalu izinkan kamera.",
+          "Kamera belum bisa digunakan karena izin kamera ditolak. Coba aktifkan lagi, nanti panduan browser muncul setelah 3 kali gagal.",
           "warning",
         );
 
         return;
       }
+
+      setCameraPermissionDenied(false);
 
       safeSetStatus(
         "Camera Permission Needed",
@@ -2116,6 +2268,10 @@ export default function AttendancePage() {
     } finally {
       startingRef.current = false;
     }
+  }
+
+  async function retryCameraPermission() {
+    await startCamera();
   }
 
   function getCurrentLocation(): Promise<GeolocationPosition> {
@@ -2728,12 +2884,17 @@ export default function AttendancePage() {
                   {!cameraReady ? (
                     <CameraEmptyState
                       cameraStarting={cameraStarting}
+                      permissionDenied={cameraPermissionDenied}
                       laptopBlocked={isLaptopBlocked}
+                      deniedAttempts={cameraDeniedAttempts}
+                      onRetry={retryCameraPermission}
                     />
                   ) : null}
                 </div>
               </div>
             </div>
+
+            {browserGuide ? <CameraPermissionGuide guide={browserGuide} /> : null}
 
             <canvas ref={canvasRef} className="hidden" />
 

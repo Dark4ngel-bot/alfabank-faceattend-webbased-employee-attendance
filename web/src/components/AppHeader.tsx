@@ -30,11 +30,7 @@ import {
   X,
 } from "lucide-react";
 
-const CREATIVEMU_LOGO_SRC = "/images/creativemu-logo/creativemu-solo.png";
-const CREATIVEMU_BACKGROUND_LOGO_SRC =
-  "/images/creativemu-logo/creativemu-solo.png";
-const CREATIVEMU_SOLO_LOGO_SRC =
-  "/images/creativemu-logo/creativemu-solo.png";
+import { useSiteLogo } from "@/hooks/useSiteLogo";
 
 type AppHeaderProps = {
   title: string;
@@ -165,6 +161,11 @@ const operationalMenus = [
     label: "Nomor Admin",
     icon: PhoneCall,
   },
+  {
+    href: "/admin/logo-aplikasi",
+    label: "Logo Aplikasi",
+    icon: Settings,
+  },
 ];
 
 const WHATSAPP_LINK = "https://wa.me/6282123459565";
@@ -233,6 +234,7 @@ export default function AppHeader({
   const [hasScrolled, setHasScrolled] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [whatsappLink, setWhatsappLink] = useState(WHATSAPP_LINK);
+  const logoSrc = useSiteLogo();
 
   const resolvedVariant = useMemo(() => {
     if (pathname === "/admin" || pathname.startsWith("/admin/")) {
@@ -243,10 +245,6 @@ export default function AppHeader({
   }, [pathname, variant]);
 
   const isAdmin = resolvedVariant === "admin";
-  const headerLogoSrc = isAdmin ? CREATIVEMU_SOLO_LOGO_SRC : CREATIVEMU_LOGO_SRC;
-  const headerBackgroundLogoSrc = isAdmin
-    ? CREATIVEMU_SOLO_LOGO_SRC
-    : CREATIVEMU_BACKGROUND_LOGO_SRC;
   const notificationHref = isAdmin ? "/admin/notifikasi" : "/notifikasi";
   const isNotificationPage = isActivePath(pathname, notificationHref);
   const hasNewNotification = notificationCount > 0;
@@ -398,7 +396,7 @@ export default function AppHeader({
           aria-hidden="true"
           className="pointer-events-none absolute right-16 top-1/2 hidden h-64 w-64 -translate-y-1/2 bg-contain bg-center bg-no-repeat opacity-[0.11] blur-[0.5px] md:block"
           style={{
-            backgroundImage: `url('${headerBackgroundLogoSrc}')`,
+            backgroundImage: `url('${logoSrc}')`,
           }}
         />
 
@@ -504,7 +502,7 @@ export default function AppHeader({
             <div className="flex items-center gap-3">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-slate-300/50 ring-1 ring-blue-100">
                 <Image
-                  src={headerLogoSrc}
+                  src={logoSrc}
                   alt="Creativemu Logo"
                   width={64}
                   height={59}

@@ -4,6 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import {
+  CREATIVEMU_EMAIL_EXAMPLE,
+  isCreativemuEmail,
+  isValidEmailFormat,
+} from "@/lib/creativemu-email";
+import {
   IDENTITY_VALIDATION,
   assertDigitRange,
 } from "@/lib/identity-validation";
@@ -72,6 +77,7 @@ const positionSelect = {
 
 const employeeSelect = {
   id: true,
+  employee_code: true,
   name: true,
   email: true,
   role: true,
@@ -186,6 +192,20 @@ function isPrismaUniqueError(error: unknown) {
   return getPrismaCode(error) === "P2002";
 }
 
+function getUniqueEmployeeMessage(error: unknown) {
+  const target =
+    typeof error === "object" && error !== null && "meta" in error
+      ? (error as { meta?: { target?: string[] | string } }).meta?.target
+      : undefined;
+  const columns = Array.isArray(target) ? target : target ? [target] : [];
+
+  if (columns.some((column) => String(column).includes("employee_code"))) {
+    return "No induk karyawan sudah digunakan.";
+  }
+
+  return "Email sudah digunakan.";
+}
+
 function isPrismaForeignKeyError(error: unknown) {
   return getPrismaCode(error) === "P2003";
 }
@@ -294,6 +314,7 @@ async function validateEmployeeHierarchy(params: {
     },
     select: {
       id: true,
+      name: true,
       status: true,
     },
   });
@@ -301,6 +322,10 @@ async function validateEmployeeHierarchy(params: {
   if (!shift || shift.status !== "active") {
     throw new Error("Shift tidak ditemukan atau tidak aktif.");
   }
+
+  return {
+    shift,
+  };
 }
 
 export async function GET(req: NextRequest) {
@@ -427,6 +452,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const name = String(body.name || "").trim();
+    const employeeCode = normalizeOptionalText(
+      body.employee_code || body.employeeCode || body.no_induk_karyawan
+    );
     const email = String(body.email || "").trim().toLowerCase();
     const role = normalizeAccountRole(body.role || body.account_role);
     const phone = String(body.phone || "").trim();
@@ -476,6 +504,17 @@ export async function POST(req: NextRequest) {
     if (!name) return jsonError("Nama karyawan wajib diisi.");
     if (!email) return jsonError("Email karyawan wajib diisi.");
     if (!password) return jsonError("Password karyawan wajib diisi.");
+    if (!isValidEmailFormat(email)) {
+      return jsonError(
+        `Format email tidak valid. Contoh: ${CREATIVEMU_EMAIL_EXAMPLE}.`
+      );
+    }
+    if (!isCreativemuEmail(email)) {
+      return jsonError(
+        "Email akun wajib menggunakan domain resmi @creativemu.id.",
+        403
+      );
+    }
 
     if (
       !registeredOfficeId ||
@@ -497,18 +536,25 @@ export async function POST(req: NextRequest) {
       return jsonError("Status karyawan tidak valid.");
     }
 
-    assertDigitRange(phone || null, IDENTITY_VALIDATION.phone);
-    assertDigitRange(bankAccountNumber, IDENTITY_VALIDATION.bankAccount);
-    assertDigitRange(nik, IDENTITY_VALIDATION.nik);
-    ensureValidEmploymentPeriod(employmentStartDate, employmentEndDate);
-
-    await validateEmployeeHierarchy({
+    const { shift } = await validateEmployeeHierarchy({
       registeredOfficeId,
       departmentId,
       jabatanId,
       positionId,
       shiftId,
     });
+
+    const normalizedEmploymentEndDate =
+      shift.name.trim().toLowerCase() === "utama" ? null : employmentEndDate;
+    const normalizedEmploymentStatus =
+      shift.name.trim().toLowerCase() === "utama"
+        ? "Utama"
+        : employmentStatus;
+
+    assertDigitRange(phone || null, IDENTITY_VALIDATION.phone);
+    assertDigitRange(bankAccountNumber, IDENTITY_VALIDATION.bankAccount);
+    assertDigitRange(nik, IDENTITY_VALIDATION.nik);
+    ensureValidEmploymentPeriod(employmentStartDate, normalizedEmploymentEndDate);
 
     const existingEmail = await prisma.user.findUnique({
       where: {
@@ -527,6 +573,7 @@ export async function POST(req: NextRequest) {
 
     const employee = await prisma.user.create({
       data: {
+        employee_code: employeeCode,
         name,
         email,
         password_hash: passwordHash,
@@ -534,9 +581,9 @@ export async function POST(req: NextRequest) {
         employee_type: employeeType,
         phone: phone || null,
         status,
-        employment_status: employmentStatus,
+        employment_status: normalizedEmploymentStatus,
         employment_start_date: employmentStartDate,
-        employment_end_date: employmentEndDate,
+        employment_end_date: normalizedEmploymentEndDate,
         birth_place: birthPlace,
         birth_date: birthDate,
         bank_account_number: bankAccountNumber,
@@ -562,7 +609,7 @@ export async function POST(req: NextRequest) {
     console.error("POST /api/employees error:", error);
 
     if (isPrismaUniqueError(error)) {
-      return jsonError("Email sudah digunakan.", 409);
+      return jsonError(getUniqueEmployeeMessage(error), 409);
     }
 
     if (
@@ -605,6 +652,9 @@ export async function PATCH(req: NextRequest) {
 
     const id = String(body.id || "").trim();
     const name = String(body.name || "").trim();
+    const employeeCode = normalizeOptionalText(
+      body.employee_code || body.employeeCode || body.no_induk_karyawan
+    );
     const email = String(body.email || "").trim().toLowerCase();
     const role = normalizeAccountRole(body.role || body.account_role);
     const phone = String(body.phone || "").trim();
@@ -654,6 +704,17 @@ export async function PATCH(req: NextRequest) {
     if (!id) return jsonError("ID karyawan wajib dikirim.");
     if (!name) return jsonError("Nama karyawan wajib diisi.");
     if (!email) return jsonError("Email karyawan wajib diisi.");
+    if (!isValidEmailFormat(email)) {
+      return jsonError(
+        `Format email tidak valid. Contoh: ${CREATIVEMU_EMAIL_EXAMPLE}.`
+      );
+    }
+    if (!isCreativemuEmail(email)) {
+      return jsonError(
+        "Email akun wajib menggunakan domain resmi @creativemu.id.",
+        403
+      );
+    }
 
     if (
       !registeredOfficeId ||
@@ -675,11 +736,6 @@ export async function PATCH(req: NextRequest) {
       return jsonError("Status karyawan tidak valid.");
     }
 
-    assertDigitRange(phone || null, IDENTITY_VALIDATION.phone);
-    assertDigitRange(bankAccountNumber, IDENTITY_VALIDATION.bankAccount);
-    assertDigitRange(nik, IDENTITY_VALIDATION.nik);
-    ensureValidEmploymentPeriod(employmentStartDate, employmentEndDate);
-
     const existingEmployee = await prisma.user.findUnique({
       where: {
         id,
@@ -699,13 +755,25 @@ export async function PATCH(req: NextRequest) {
       return jsonError("Akun tidak ditemukan.", 404);
     }
 
-    await validateEmployeeHierarchy({
+    const { shift } = await validateEmployeeHierarchy({
       registeredOfficeId,
       departmentId,
       jabatanId,
       positionId,
       shiftId,
     });
+
+    const normalizedEmploymentEndDate =
+      shift.name.trim().toLowerCase() === "utama" ? null : employmentEndDate;
+    const normalizedEmploymentStatus =
+      shift.name.trim().toLowerCase() === "utama"
+        ? "Utama"
+        : employmentStatus;
+
+    assertDigitRange(phone || null, IDENTITY_VALIDATION.phone);
+    assertDigitRange(bankAccountNumber, IDENTITY_VALIDATION.bankAccount);
+    assertDigitRange(nik, IDENTITY_VALIDATION.nik);
+    ensureValidEmploymentPeriod(employmentStartDate, normalizedEmploymentEndDate);
 
     const existingEmail = await prisma.user.findFirst({
       where: {
@@ -725,6 +793,7 @@ export async function PATCH(req: NextRequest) {
 
     const updateData: {
       name: string;
+      employee_code: string | null;
       email: string;
       role: string;
       phone: string | null;
@@ -748,14 +817,15 @@ export async function PATCH(req: NextRequest) {
       password_hash?: string;
     } = {
       name,
+      employee_code: employeeCode,
       email,
       role,
       phone: phone || null,
       employee_type: employeeType,
       status,
-      employment_status: employmentStatus,
+      employment_status: normalizedEmploymentStatus,
       employment_start_date: employmentStartDate,
-      employment_end_date: employmentEndDate,
+      employment_end_date: normalizedEmploymentEndDate,
       birth_place: birthPlace,
       birth_date: birthDate,
       bank_account_number: bankAccountNumber,
@@ -791,7 +861,7 @@ export async function PATCH(req: NextRequest) {
     console.error("PATCH /api/employees error:", error);
 
     if (isPrismaUniqueError(error)) {
-      return jsonError("Email sudah digunakan.", 409);
+      return jsonError(getUniqueEmployeeMessage(error), 409);
     }
 
     if (

@@ -72,6 +72,7 @@ type OfficeRelation = {
 
 type Employee = {
   id: string;
+  employee_code: string | null;
   name: string;
   email: string;
   jabatan: JabatanRelation;
@@ -478,6 +479,14 @@ export default function AdminEmployeeDetailPage() {
                 </div>
 
                 <div className="grid gap-4 p-5 md:grid-cols-2 md:p-7">
+                  <DetailCard
+                    icon={IdCard}
+                    label="No Induk Karyawan"
+                    value={employee.employee_code || "-"}
+                    description="Nomor induk internal karyawan"
+                    delay={60}
+                  />
+
                   <DetailCard
                     icon={Mail}
                     label="Email"

@@ -3,6 +3,8 @@
 import { ReactNode, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
+import { useSiteLogo } from "@/hooks/useSiteLogo";
+
 type MobileShellProps = {
   children: ReactNode;
   variant?: "employee" | "admin" | "auth";
@@ -67,6 +69,7 @@ export default function MobileShell({
   withBottomPadding = true,
   className = "",
 }: MobileShellProps) {
+  const logoSrc = useSiteLogo();
   const bottomPaddingClass = withBottomPadding ? "pb-24 md:pb-0" : "";
 
   const backgroundGlow =
@@ -87,8 +90,7 @@ export default function MobileShell({
         <div
           className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 bg-contain bg-center bg-no-repeat opacity-[0.075] blur-[2px] md:h-[760px] md:w-[760px] lg:h-[860px] lg:w-[860px]"
           style={{
-            backgroundImage:
-              "url('/images/creativemu-logo/creativemu-solo.png')",
+            backgroundImage: `url('${logoSrc}')`,
           }}
         />
       </div>

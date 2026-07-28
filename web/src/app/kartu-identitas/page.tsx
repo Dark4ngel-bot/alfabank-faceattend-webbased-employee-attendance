@@ -17,6 +17,7 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import { useSiteLogo } from "@/hooks/useSiteLogo";
 
 type UserRelation = {
   id: string;
@@ -25,6 +26,7 @@ type UserRelation = {
 
 type KartuIdentitasUser = {
   id: string;
+  employee_code?: string | null;
   name: string;
   email: string;
   role: string;
@@ -144,6 +146,7 @@ function KartuIdentitasMotionStyles() {
 
 export default function KartuIdentitasPage() {
   const router = useRouter();
+  const logoSrc = useSiteLogo();
   const [user, setUser] = useState<KartuIdentitasUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -188,6 +191,11 @@ export default function KartuIdentitasPage() {
     if (!user) return [];
 
     return [
+      {
+        label: "No Induk Karyawan",
+        value: user.employee_code || "-",
+        icon: IdCard,
+      },
       {
         label: "NIK",
         value: user.nik || "-",
@@ -291,7 +299,7 @@ export default function KartuIdentitasPage() {
                 <div className="absolute right-0 top-0 h-24 w-44 rounded-bl-full bg-white/10" />
                 <div className="absolute bottom-0 left-0 h-28 w-56 rounded-tr-full bg-white/10" />
                 <img
-                  src="/images/creativemu-logo/creativemu-solo.png"
+                  src={logoSrc}
                   alt=""
                   aria-hidden="true"
                   className="pointer-events-none absolute right-4 top-1/2 h-28 w-28 -translate-y-1/2 object-contain opacity-[0.07] md:right-10 md:h-60 md:w-60"
@@ -324,7 +332,7 @@ export default function KartuIdentitasPage() {
 
                   <div className="relative min-w-0 bg-[#f8fbff]/95 p-6 md:p-8">
                     <img
-                      src="/images/creativemu-logo/creativemu-solo.png"
+                      src={logoSrc}
                       alt=""
                       aria-hidden="true"
                       className="pointer-events-none absolute bottom-5 right-4 h-24 w-24 object-contain opacity-[0.06] md:bottom-10 md:right-10 md:h-52 md:w-52"

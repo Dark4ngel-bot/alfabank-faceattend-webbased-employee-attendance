@@ -47,6 +47,11 @@ import {
   isValidNik,
   normalizeDigits,
 } from "@/lib/identity-validation";
+import {
+  CREATIVEMU_EMAIL_EXAMPLE,
+  isCreativemuEmail,
+  isValidEmailFormat,
+} from "@/lib/creativemu-email";
 
 type OfficeMiniRelation = {
   id: string;
@@ -172,6 +177,7 @@ type OfficeRelation = {
 
 type Employee = {
   id: string;
+  employee_code: string | null;
   name: string;
   email: string;
   role: "admin" | "employee" | "owner" | string;
@@ -198,6 +204,7 @@ type Employee = {
 };
 
 type EmployeeForm = {
+  employee_code: string;
   name: string;
   email: string;
   role: "admin" | "employee";
@@ -225,6 +232,7 @@ type EmployeeAlert = {
 } | null;
 
 const initialForm: EmployeeForm = {
+  employee_code: "",
   name: "",
   email: "",
   role: "employee",
@@ -271,19 +279,6 @@ function formatDateInput(value?: string | null) {
   if (!value) return "";
 
   return String(value).slice(0, 10);
-}
-
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function isCreativemuEmail(email: string) {
-  const normalizedEmail = email.toLowerCase();
-
-  return (
-    normalizedEmail.endsWith("@creativemu.com") ||
-    normalizedEmail.endsWith("@creativemu.co.id")
-  );
 }
 
 function normalizeProfilePhotoUrl(photo?: string | null) {
@@ -643,6 +638,16 @@ export default function AdminEmployeesPage() {
     return shifts.filter((shift) => shift.status === "active");
   }, [shifts]);
 
+  const selectedShift = useMemo(() => {
+    return activeShifts.find((shift) => shift.id === form.shift_id) || null;
+  }, [activeShifts, form.shift_id]);
+
+  const isMainShiftSelected =
+    selectedShift?.name.trim().toLowerCase() === "utama";
+  const finalEmploymentStatus = isMainShiftSelected
+    ? "Utama"
+    : form.employment_status.trim();
+
   const activeEmploymentStatuses = useMemo(() => {
     const list = employmentStatuses.filter((item) => item.status === "active");
     const currentVal = form.employment_status;
@@ -667,6 +672,7 @@ export default function AdminEmployeesPage() {
     return employeeAccounts.filter((employee) => {
       const text = `
         ${employee.id || ""}
+        ${employee.employee_code || ""}
         ${employee.name}
         ${employee.email}
         ${employee.role || ""}
@@ -707,6 +713,7 @@ export default function AdminEmployeesPage() {
   function openEditModal(employee: Employee) {
     setEditingEmployee(employee);
     setForm({
+      employee_code: employee.employee_code || "",
       name: employee.name,
       email: employee.email,
       role:
@@ -776,10 +783,10 @@ export default function AdminEmployeesPage() {
       return;
     }
 
-    if (!isValidEmail(email)) {
+    if (!isValidEmailFormat(email)) {
       showEmployeeAlert(
         "Format email tidak valid",
-        "Masukkan email yang benar, contohnya employee@creativemu.com.",
+        `Masukkan email yang benar, contohnya ${CREATIVEMU_EMAIL_EXAMPLE}.`,
         "warning",
       );
       return;
@@ -844,6 +851,7 @@ export default function AdminEmployeesPage() {
 
     if (
       form.employment_start_date &&
+      !isMainShiftSelected &&
       form.employment_end_date &&
       form.employment_start_date > form.employment_end_date
     ) {
@@ -877,13 +885,16 @@ export default function AdminEmployeesPage() {
           position_id: form.position_id,
           shift_id: form.shift_id,
           status: form.status,
-          employment_status: form.employment_status.trim(),
+          employment_status: finalEmploymentStatus,
           employment_start_date: form.employment_start_date,
-          employment_end_date: form.employment_end_date,
+          employment_end_date: isMainShiftSelected
+            ? ""
+            : form.employment_end_date,
           birth_place: form.birth_place.trim(),
           birth_date: form.birth_date,
           bank_account_number: form.bank_account_number,
           nik: form.nik,
+          employee_code: form.employee_code.trim(),
         }),
       });
 
@@ -1143,6 +1154,9 @@ export default function AdminEmployeesPage() {
                               <p className="truncate text-sm font-black text-slate-950">
                                 {employee.name}
                               </p>
+                              <p className="mt-0.5 truncate text-[11px] font-black uppercase tracking-[0.12em] text-[#123c8c]">
+                                {employee.employee_code || "No induk -"}
+                              </p>
                               <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
                                 <p className="truncate text-xs font-bold text-slate-500">
                                   {employee.email}
@@ -1228,6 +1242,9 @@ export default function AdminEmployeesPage() {
                         <div className="min-w-0">
                           <p className="truncate text-sm font-black text-slate-950">
                             {employee.name}
+                          </p>
+                          <p className="mt-0.5 truncate text-[11px] font-black uppercase tracking-[0.12em] text-[#123c8c]">
+                            {employee.employee_code || "No induk -"}
                           </p>
                           <span
                             className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-black ${
@@ -1398,7 +1415,33 @@ export default function AdminEmployeesPage() {
                           email: event.target.value,
                         }))
                       }
-                      placeholder="employee@creativemu.com"
+                      placeholder={CREATIVEMU_EMAIL_EXAMPLE}
+                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
+              </AppFormReveal>
+
+              <AppFormReveal delay={42}>
+                <div>
+                  <label className="mb-2 block text-sm font-black text-slate-700">
+                    No Induk Karyawan
+                  </label>
+                  <div className="app-field-smooth relative rounded-2xl">
+                    <IdCard
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                    <input
+                      value={form.employee_code}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          employee_code: event.target.value,
+                        }))
+                      }
+                      maxLength={30}
+                      placeholder="Contoh: CR-001"
                       className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     />
                   </div>
@@ -1658,10 +1701,24 @@ export default function AdminEmployeesPage() {
                     <select
                       value={form.shift_id}
                       onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          shift_id: event.target.value,
-                        }))
+                        setForm((prev) => {
+                          const nextShift = activeShifts.find(
+                            (shift) => shift.id === event.target.value,
+                          );
+                          const isNextMainShift =
+                            nextShift?.name.trim().toLowerCase() === "utama";
+
+                          return {
+                            ...prev,
+                            shift_id: event.target.value,
+                            employment_status: isNextMainShift
+                              ? "Utama"
+                              : prev.employment_status,
+                            employment_end_date: isNextMainShift
+                              ? ""
+                              : prev.employment_end_date,
+                          };
+                        })
                       }
                       className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     >
@@ -1800,14 +1857,17 @@ export default function AdminEmployeesPage() {
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                     />
                     <select
-                      value={form.employment_status}
+                      value={
+                        isMainShiftSelected ? "Utama" : form.employment_status
+                      }
                       onChange={(event) =>
                         setForm((prev) => ({
                           ...prev,
                           employment_status: event.target.value,
                         }))
                       }
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                      disabled={isMainShiftSelected}
+                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500"
                     >
                       <option value="">Pilih Status Kepegawaian</option>
                       {activeEmploymentStatuses.map((status) => (
@@ -1853,15 +1913,18 @@ export default function AdminEmployeesPage() {
                     />
                     <input
                       type="date"
-                      value={form.employment_end_date}
+                      value={
+                        isMainShiftSelected ? "" : form.employment_end_date
+                      }
                       onChange={(event) =>
                         setForm((prev) => ({
                           ...prev,
                           employment_end_date: event.target.value,
                         }))
                       }
+                      disabled={isMainShiftSelected}
                       min={form.employment_start_date || undefined}
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
                     />
                   </div>
                 </div>

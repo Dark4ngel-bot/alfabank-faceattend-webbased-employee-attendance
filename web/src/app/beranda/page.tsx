@@ -16,6 +16,7 @@ import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
 import { AppCard } from "@/components/ui/AppUI";
+import { useSiteLogo } from "@/hooks/useSiteLogo";
 
 type AttendanceToday = {
   checkIn: string;
@@ -482,6 +483,7 @@ function AnnouncementList({
 }
 
 export default function HomePage() {
+  const logoSrc = useSiteLogo();
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [user, setUser] = useState<CurrentUser>(defaultUser);
@@ -636,7 +638,7 @@ export default function HomePage() {
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="home-icon-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-blue-100">
                     <Image
-                      src="/images/creativemu-logo/creativemu-solo.png"
+                      src={logoSrc}
                       alt="Creativemu Logo"
                       width={64}
                       height={59}
