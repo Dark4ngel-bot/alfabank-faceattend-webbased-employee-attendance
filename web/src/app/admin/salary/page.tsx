@@ -254,7 +254,7 @@ export default function AdminSalaryPage() {
         );
         const activeCount = hadir + telat + izin + sakit + cuti;
 
-        const base = 2000000;
+        const base = Number(emp.base_salary || 0);
         const paidDays = Math.min(activeCount, effectiveWorkdays);
         const recommended =
           effectiveWorkdays > 0
@@ -611,7 +611,7 @@ export default function AdminSalaryPage() {
                               style: "currency",
                               currency: "IDR",
                               maximumFractionDigits: 0,
-                            }).format(2000000)}
+                            }).format(Number(emp.base_salary || 0))}
                           </td>
                           <td className="px-4 py-3 text-center whitespace-nowrap">
                             <button

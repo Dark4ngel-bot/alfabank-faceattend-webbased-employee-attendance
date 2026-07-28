@@ -665,18 +665,8 @@ export default function ProfilePage() {
     field: "bank_account_number" | "nik",
     value: string,
   ) {
-    const maxLength = field === "nik" ? 16 : 16;
+    const maxLength = 16;
     const normalizedValue = normalizeNumericInput(value).slice(0, maxLength);
-
-    if (value !== normalizedValue) {
-      showProfileAlert(
-        field === "nik" ? "NIK tidak valid" : "No rekening tidak valid",
-        field === "nik"
-          ? "NIK harus berupa angka dan berjumlah tepat 16 digit."
-          : "No rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
-        "warning",
-      );
-    }
 
     setEditProfileForm((prev) => ({
       ...prev,
@@ -1585,17 +1575,6 @@ export default function ProfilePage() {
                           event.target.value,
                         )
                       }
-                      onPaste={(event) => {
-                        const pastedText = event.clipboardData.getData("text");
-
-                        if (/\D/.test(pastedText) || pastedText.length > 16) {
-                          showProfileAlert(
-                            "NIK tidak valid",
-                            "NIK harus berupa angka dan berjumlah tepat 16 digit.",
-                            "warning",
-                          );
-                        }
-                      }}
                       inputMode="numeric"
                       pattern="[0-9]*"
                       maxLength={16}
@@ -1627,17 +1606,6 @@ export default function ProfilePage() {
                           event.target.value,
                         )
                       }
-                      onPaste={(event) => {
-                        const pastedText = event.clipboardData.getData("text");
-
-                        if (/\D/.test(pastedText) || pastedText.length > 16) {
-                          showProfileAlert(
-                            "No rekening tidak valid",
-                            "No rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
-                            "warning",
-                          );
-                        }
-                      }}
                       inputMode="numeric"
                       pattern="[0-9]*"
                       maxLength={16}

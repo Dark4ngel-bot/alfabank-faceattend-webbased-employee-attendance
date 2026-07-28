@@ -91,9 +91,13 @@ const employeeSelect = {
   position_id: true,
   shift_id: true,
   registered_office_id: true,
+  employee_code: true,
   npwp_number: true,
   ptkp_status: true,
   base_salary: true,
+  sk_number: true,
+  sk_document_url: true,
+  sk_uploaded_at: true,
   created_at: true,
   updated_at: true,
   jabatan: {
@@ -118,8 +122,8 @@ const employeeSelect = {
   },
 } as const;
 
-function getCurrentUser(req: NextRequest) {
-  return requireOwner(req);
+async function getCurrentUser(req: NextRequest) {
+  return await requireOwner(req);
 }
 
 function canAccess(role: string, roles: AllowedRole[]) {
@@ -230,7 +234,7 @@ async function validateEmployeeHierarchy(params: {
   registeredOfficeId: string;
   departmentId: string;
   jabatanId: string;
-  positionId: string;
+  positionId?: string | null;
   shiftId: string;
 }) {
   const { registeredOfficeId, departmentId, jabatanId, positionId, shiftId } =
@@ -288,23 +292,25 @@ async function validateEmployeeHierarchy(params: {
     throw new Error("Jabatan tidak sesuai dengan divisi yang dipilih.");
   }
 
-  const position = await prisma.position.findUnique({
-    where: {
-      id: positionId,
-    },
-    select: {
-      id: true,
-      jabatan_id: true,
-      status: true,
-    },
-  });
+  if (positionId) {
+    const position = await prisma.position.findUnique({
+      where: {
+        id: positionId,
+      },
+      select: {
+        id: true,
+        jabatan_id: true,
+        status: true,
+      },
+    });
 
-  if (!position || position.status !== "active") {
-    throw new Error("Posisi tidak ditemukan atau tidak aktif.");
-  }
+    if (!position || position.status !== "active") {
+      throw new Error("Posisi tidak ditemukan atau tidak aktif.");
+    }
 
-  if (position.jabatan_id !== jabatanId) {
-    throw new Error("Posisi tidak sesuai dengan jabatan yang dipilih.");
+    if (position.jabatan_id !== jabatanId) {
+      throw new Error("Posisi tidak sesuai dengan jabatan yang dipilih.");
+    }
   }
 
   const shift = await prisma.shift.findUnique({
@@ -521,6 +527,11 @@ export async function POST(req: NextRequest) {
         ? Number(body.base_salary)
         : null;
 
+    const employeeCode = normalizeOptionalText(body.employee_code);
+    const skNumber = normalizeOptionalText(body.sk_number);
+    const skDocumentUrl = normalizeOptionalText(body.sk_document_url);
+    const skUploadedAt = body.sk_uploaded_at ? new Date(body.sk_uploaded_at) : (skDocumentUrl ? new Date() : null);
+
     if (!name) return jsonError("Nama karyawan wajib diisi.");
     if (!email) return jsonError("Email karyawan wajib diisi.");
     if (!password) return jsonError("Password karyawan wajib diisi.");
@@ -529,11 +540,10 @@ export async function POST(req: NextRequest) {
       !registeredOfficeId ||
       !departmentId ||
       !jabatanId ||
-      !positionId ||
       !shiftId
     ) {
       return jsonError(
-        "Kantor, divisi, jabatan, posisi, dan shift wajib dipilih.",
+        "Kantor, divisi, jabatan, dan shift wajib dipilih.",
       );
     }
 
@@ -589,14 +599,18 @@ export async function POST(req: NextRequest) {
         birth_date: birthDate,
         bank_account_number: bankAccountNumber,
         nik,
+        employee_code: employeeCode,
         registered_office_id: registeredOfficeId,
         department_id: departmentId,
         jabatan_id: jabatanId,
-        position_id: positionId,
+        position_id: positionId || null,
         shift_id: shiftId,
         npwp_number: npwpNumber,
         ptkp_status: ptkpStatus,
         base_salary: baseSalary,
+        sk_number: skNumber,
+        sk_document_url: skDocumentUrl,
+        sk_uploaded_at: skUploadedAt,
       },
       select: employeeSelect,
     });
@@ -704,6 +718,11 @@ export async function PATCH(req: NextRequest) {
         ? Number(body.base_salary)
         : null;
 
+    const employeeCode = normalizeOptionalText(body.employee_code);
+    const skNumber = normalizeOptionalText(body.sk_number);
+    const skDocumentUrl = normalizeOptionalText(body.sk_document_url);
+    const skUploadedAt = body.sk_uploaded_at ? new Date(body.sk_uploaded_at) : (skDocumentUrl ? new Date() : null);
+
     if (!id) return jsonError("ID karyawan wajib dikirim.");
     if (!name) return jsonError("Nama karyawan wajib diisi.");
     if (!email) return jsonError("Email karyawan wajib diisi.");
@@ -712,11 +731,10 @@ export async function PATCH(req: NextRequest) {
       !registeredOfficeId ||
       !departmentId ||
       !jabatanId ||
-      !positionId ||
       !shiftId
     ) {
       return jsonError(
-        "Kantor, divisi, jabatan, posisi, dan shift wajib dipilih.",
+        "Kantor, divisi, jabatan, dan shift wajib dipilih.",
       );
     }
 
@@ -790,14 +808,18 @@ export async function PATCH(req: NextRequest) {
       birth_date: Date | null;
       bank_account_number: string | null;
       nik: string | null;
+      employee_code: string | null;
       registered_office_id: string;
       department_id: string;
       jabatan_id: string;
-      position_id: string;
+      position_id: string | null;
       shift_id: string;
       npwp_number: string | null;
       ptkp_status: string | null;
       base_salary: number | null;
+      sk_number: string | null;
+      sk_document_url: string | null;
+      sk_uploaded_at: Date | null;
       password_hash?: string;
     } = {
       name,
@@ -813,14 +835,18 @@ export async function PATCH(req: NextRequest) {
       birth_date: birthDate,
       bank_account_number: bankAccountNumber,
       nik,
+      employee_code: employeeCode,
       registered_office_id: registeredOfficeId,
       department_id: departmentId,
       jabatan_id: jabatanId,
-      position_id: positionId,
+      position_id: positionId || null,
       shift_id: shiftId,
       npwp_number: npwpNumber,
       ptkp_status: ptkpStatus,
       base_salary: baseSalary,
+      sk_number: skNumber,
+      sk_document_url: skDocumentUrl,
+      sk_uploaded_at: skUploadedAt,
     };
 
     if (password) {

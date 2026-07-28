@@ -163,9 +163,9 @@ export default function EmployeeSalaryPage() {
         const salData = await salRes.json();
 
         if (profileData.success && profileData.user) {
-          const userWithFixedSalary = { ...profileData.user, base_salary: 2000000 };
-          setProfile(userWithFixedSalary);
-          void fetchStats(profileData.user.email, 2000000);
+          const userSalary = Number(profileData.user.base_salary || 0);
+          setProfile(profileData.user);
+          void fetchStats(profileData.user.email, userSalary);
         }
         if (salData.success && salData.records) {
           setRecords(salData.records);

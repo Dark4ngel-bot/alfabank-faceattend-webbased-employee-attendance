@@ -556,9 +556,6 @@ export default function AdminProfilePage() {
                           <h4 className="text-base font-black text-slate-900 dark:text-white">
                             {office?.name || "Profil Perusahaan"}
                           </h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                            Logo resmi perusahaan di aplikasi
-                          </p>
                         </div>
                       </div>
 
@@ -623,24 +620,6 @@ export default function AdminProfilePage() {
                         </p>
                         <p className="text-sm font-semibold text-slate-900 dark:text-white">
                           {office?.radius_meters || 100} Meter
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                          Latitude
-                        </p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                          {office?.latitude || "-"}
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                          Longitude
-                        </p>
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                          {office?.longitude || "-"}
                         </p>
                       </div>
                     </div>

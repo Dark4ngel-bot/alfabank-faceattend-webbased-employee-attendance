@@ -27,6 +27,7 @@ export const ModelName = {
   Shift: 'Shift',
   WorkSchedule: 'WorkSchedule',
   OfficeLocation: 'OfficeLocation',
+  AdminNumber: 'AdminNumber',
   EmploymentStatus: 'EmploymentStatus',
   Attendance: 'Attendance',
   AttendanceMonthlySummary: 'AttendanceMonthlySummary',
@@ -84,6 +85,9 @@ export const UserScalarFieldEnum = {
   npwp_number: 'npwp_number',
   ptkp_status: 'ptkp_status',
   base_salary: 'base_salary',
+  sk_number: 'sk_number',
+  sk_document_url: 'sk_document_url',
+  sk_uploaded_at: 'sk_uploaded_at',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const
@@ -182,6 +186,18 @@ export const OfficeLocationScalarFieldEnum = {
 } as const
 
 export type OfficeLocationScalarFieldEnum = (typeof OfficeLocationScalarFieldEnum)[keyof typeof OfficeLocationScalarFieldEnum]
+
+
+export const AdminNumberScalarFieldEnum = {
+  id: 'id',
+  label: 'label',
+  whatsapp: 'whatsapp',
+  is_active: 'is_active',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type AdminNumberScalarFieldEnum = (typeof AdminNumberScalarFieldEnum)[keyof typeof AdminNumberScalarFieldEnum]
 
 
 export const EmploymentStatusScalarFieldEnum = {
@@ -471,7 +487,9 @@ export const UserOrderByRelevanceFieldEnum = {
   shift_id: 'shift_id',
   registered_office_id: 'registered_office_id',
   npwp_number: 'npwp_number',
-  ptkp_status: 'ptkp_status'
+  ptkp_status: 'ptkp_status',
+  sk_number: 'sk_number',
+  sk_document_url: 'sk_document_url'
 } as const
 
 export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
@@ -546,6 +564,15 @@ export const OfficeLocationOrderByRelevanceFieldEnum = {
 } as const
 
 export type OfficeLocationOrderByRelevanceFieldEnum = (typeof OfficeLocationOrderByRelevanceFieldEnum)[keyof typeof OfficeLocationOrderByRelevanceFieldEnum]
+
+
+export const AdminNumberOrderByRelevanceFieldEnum = {
+  id: 'id',
+  label: 'label',
+  whatsapp: 'whatsapp'
+} as const
+
+export type AdminNumberOrderByRelevanceFieldEnum = (typeof AdminNumberOrderByRelevanceFieldEnum)[keyof typeof AdminNumberOrderByRelevanceFieldEnum]
 
 
 export const EmploymentStatusOrderByRelevanceFieldEnum = {

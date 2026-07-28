@@ -48,6 +48,10 @@ model User {
   ptkp_status String?  @db.VarChar(20) // TK0, K0, K1, K2, K3
   base_salary Decimal? @db.Decimal(15, 2)
 
+  sk_number       String?   @db.VarChar(100)
+  sk_document_url String?   @db.Text
+  sk_uploaded_at  DateTime?
+
   jabatan           Jabatan?        @relation(fields: [jabatan_id], references: [id], onDelete: SetNull)
   department        Department?     @relation(fields: [department_id], references: [id], onDelete: SetNull)
   position          Position?       @relation(fields: [position_id], references: [id], onDelete: SetNull)
@@ -223,6 +227,17 @@ model OfficeLocation {
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
+}
+
+model AdminNumber {
+  id         String   @id @default(uuid()) @db.Char(36)
+  label      String   @db.VarChar(100)
+  whatsapp   String   @db.VarChar(30)
+  is_active  Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("admin_numbers")
 }
 
 model EmploymentStatus {

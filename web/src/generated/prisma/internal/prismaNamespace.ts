@@ -397,6 +397,7 @@ export const ModelName = {
   Shift: 'Shift',
   WorkSchedule: 'WorkSchedule',
   OfficeLocation: 'OfficeLocation',
+  AdminNumber: 'AdminNumber',
   EmploymentStatus: 'EmploymentStatus',
   Attendance: 'Attendance',
   AttendanceMonthlySummary: 'AttendanceMonthlySummary',
@@ -424,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "loginRateLimit" | "department" | "jabatan" | "position" | "shift" | "workSchedule" | "officeLocation" | "employmentStatus" | "attendance" | "attendanceMonthlySummary" | "employeeVisit" | "wfhRequest" | "leaveRequest" | "announcement" | "adminNotification" | "payroll" | "payrollItem" | "permission" | "rolePermission"
+    modelProps: "user" | "loginRateLimit" | "department" | "jabatan" | "position" | "shift" | "workSchedule" | "officeLocation" | "adminNumber" | "employmentStatus" | "attendance" | "attendanceMonthlySummary" | "employeeVisit" | "wfhRequest" | "leaveRequest" | "announcement" | "adminNotification" | "payroll" | "payrollItem" | "permission" | "rolePermission"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -953,6 +954,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.OfficeLocationCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.OfficeLocationCountAggregateOutputType> | number
+        }
+      }
+    }
+    AdminNumber: {
+      payload: Prisma.$AdminNumberPayload<ExtArgs>
+      fields: Prisma.AdminNumberFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AdminNumberFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNumberPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AdminNumberFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNumberPayload>
+        }
+        findFirst: {
+          args: Prisma.AdminNumberFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNumberPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AdminNumberFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNumberPayload>
+        }
+        findMany: {
+          args: Prisma.AdminNumberFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNumberPayload>[]
+        }
+        create: {
+          args: Prisma.AdminNumberCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNumberPayload>
+        }
+        createMany: {
+          args: Prisma.AdminNumberCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.AdminNumberDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNumberPayload>
+        }
+        update: {
+          args: Prisma.AdminNumberUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNumberPayload>
+        }
+        deleteMany: {
+          args: Prisma.AdminNumberDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AdminNumberUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.AdminNumberUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminNumberPayload>
+        }
+        aggregate: {
+          args: Prisma.AdminNumberAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAdminNumber>
+        }
+        groupBy: {
+          args: Prisma.AdminNumberGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminNumberGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AdminNumberCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminNumberCountAggregateOutputType> | number
         }
       }
     }
@@ -1815,6 +1882,9 @@ export const UserScalarFieldEnum = {
   npwp_number: 'npwp_number',
   ptkp_status: 'ptkp_status',
   base_salary: 'base_salary',
+  sk_number: 'sk_number',
+  sk_document_url: 'sk_document_url',
+  sk_uploaded_at: 'sk_uploaded_at',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const
@@ -1913,6 +1983,18 @@ export const OfficeLocationScalarFieldEnum = {
 } as const
 
 export type OfficeLocationScalarFieldEnum = (typeof OfficeLocationScalarFieldEnum)[keyof typeof OfficeLocationScalarFieldEnum]
+
+
+export const AdminNumberScalarFieldEnum = {
+  id: 'id',
+  label: 'label',
+  whatsapp: 'whatsapp',
+  is_active: 'is_active',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type AdminNumberScalarFieldEnum = (typeof AdminNumberScalarFieldEnum)[keyof typeof AdminNumberScalarFieldEnum]
 
 
 export const EmploymentStatusScalarFieldEnum = {
@@ -2202,7 +2284,9 @@ export const UserOrderByRelevanceFieldEnum = {
   shift_id: 'shift_id',
   registered_office_id: 'registered_office_id',
   npwp_number: 'npwp_number',
-  ptkp_status: 'ptkp_status'
+  ptkp_status: 'ptkp_status',
+  sk_number: 'sk_number',
+  sk_document_url: 'sk_document_url'
 } as const
 
 export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
@@ -2277,6 +2361,15 @@ export const OfficeLocationOrderByRelevanceFieldEnum = {
 } as const
 
 export type OfficeLocationOrderByRelevanceFieldEnum = (typeof OfficeLocationOrderByRelevanceFieldEnum)[keyof typeof OfficeLocationOrderByRelevanceFieldEnum]
+
+
+export const AdminNumberOrderByRelevanceFieldEnum = {
+  id: 'id',
+  label: 'label',
+  whatsapp: 'whatsapp'
+} as const
+
+export type AdminNumberOrderByRelevanceFieldEnum = (typeof AdminNumberOrderByRelevanceFieldEnum)[keyof typeof AdminNumberOrderByRelevanceFieldEnum]
 
 
 export const EmploymentStatusOrderByRelevanceFieldEnum = {
@@ -2606,6 +2699,7 @@ export type GlobalOmitConfig = {
   shift?: Prisma.ShiftOmit
   workSchedule?: Prisma.WorkScheduleOmit
   officeLocation?: Prisma.OfficeLocationOmit
+  adminNumber?: Prisma.AdminNumberOmit
   employmentStatus?: Prisma.EmploymentStatusOmit
   attendance?: Prisma.AttendanceOmit
   attendanceMonthlySummary?: Prisma.AttendanceMonthlySummaryOmit

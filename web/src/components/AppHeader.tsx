@@ -214,6 +214,24 @@ export default function AppHeader({
   const [hasScrolled, setHasScrolled] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [activeWhatsapp, setActiveWhatsapp] = useState("6282123459565");
+
+  useEffect(() => {
+    async function fetchActiveNumber() {
+      try {
+        const res = await fetch("/api/admin/nomor-admin", { cache: "no-store" });
+        const data = await res.json();
+        if (data.success && data.activeNumber?.whatsapp) {
+          const rawNum = data.activeNumber.whatsapp.replace(/\D/g, "");
+          const formatted = rawNum.startsWith("0") ? `62${rawNum.slice(1)}` : rawNum;
+          setActiveWhatsapp(formatted);
+        }
+      } catch {}
+    }
+    void fetchActiveNumber();
+  }, []);
+
+  const whatsappHref = `https://wa.me/${activeWhatsapp}`;
 
   const resolvedVariant = useMemo(() => {
     if (pathname === "/admin" || pathname.startsWith("/admin/")) {
@@ -399,7 +417,7 @@ export default function AppHeader({
 
           <div className="flex shrink-0 items-center justify-end gap-3">
             <a
-              href={WHATSAPP_LINK}
+              href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Hubungi via WhatsApp"

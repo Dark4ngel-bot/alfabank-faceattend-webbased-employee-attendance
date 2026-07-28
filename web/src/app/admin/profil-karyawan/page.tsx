@@ -44,6 +44,9 @@ type Employee = {
   employment_status?: string | null;
   contract_start_date?: string | null;
   contract_end_date?: string | null;
+  sk_number?: string | null;
+  sk_document_url?: string | null;
+  sk_uploaded_at?: string | null;
   uploaded_document_url?: string | null;
   base_salary?: number | string | null;
 };
@@ -301,18 +304,29 @@ function AdminEmployeeProfilesContent() {
                     </div>
                   )}
 
-                  {selectedEmployee.uploaded_document_url && (
+                  {(selectedEmployee.sk_document_url || selectedEmployee.uploaded_document_url) && (
                     <div className="flex flex-col gap-1 text-slate-700 pt-2 border-t border-slate-50">
                       <span className="text-xs font-black uppercase text-slate-400">
                         Dokumen SK / Kontrak
                       </span>
+                      {selectedEmployee.sk_number && (
+                        <span className="text-xs font-bold text-slate-600">
+                          No SK: {selectedEmployee.sk_number}
+                        </span>
+                      )}
                       <a
-                        href={selectedEmployee.uploaded_document_url}
-                        download={`SK_${selectedEmployee.name}`}
-                        className="text-xs font-bold text-[#123c8c] hover:underline"
+                        href={selectedEmployee.sk_document_url || selectedEmployee.uploaded_document_url || "#"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs font-black text-[#123c8c] hover:underline flex items-center gap-1"
                       >
-                        📥 Download SK Kartap / Kontrak
+                        📄 lihat / Unduh SK Karyawan
                       </a>
+                      {selectedEmployee.sk_uploaded_at && (
+                        <span className="text-[10px] font-bold text-emerald-600">
+                          ✓ Bukti Upload: {new Date(selectedEmployee.sk_uploaded_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                        </span>
+                      )}
                     </div>
                   )}
 

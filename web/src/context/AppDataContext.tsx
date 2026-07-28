@@ -520,9 +520,9 @@ const getDistanceMeters = (from: GeoPosition, to: GeoPosition) => {
   const a =
     Math.sin(latitudeDiff / 2) * Math.sin(latitudeDiff / 2) +
     Math.cos(latitudeOne) *
-      Math.cos(latitudeTwo) *
-      Math.sin(longitudeDiff / 2) *
-      Math.sin(longitudeDiff / 2);
+    Math.cos(latitudeTwo) *
+    Math.sin(longitudeDiff / 2) *
+    Math.sin(longitudeDiff / 2);
 
   return 2 * earthRadiusMeters * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
@@ -639,9 +639,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       employees: prev.employees.map((employee) =>
         employee.id === employeeId
           ? {
-              ...employee,
-              rewardPoints: Math.max(0, employee.rewardPoints + delta),
-            }
+            ...employee,
+            rewardPoints: Math.max(0, employee.rewardPoints + delta),
+          }
           : employee,
       ),
       notifications: [
@@ -763,9 +763,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     const distanceMeters =
       workMode === "onsite" && geo && assignedVillage
         ? getDistanceMeters(geo, {
-            latitude: assignedVillage.latitude,
-            longitude: assignedVillage.longitude,
-          })
+          latitude: assignedVillage.latitude,
+          longitude: assignedVillage.longitude,
+        })
         : 0;
 
     if (
@@ -845,19 +845,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           const checkInUpdate =
             type === "check-in"
               ? {
-                  checkInPhotoUrl: imageDataUrl ?? record.checkInPhotoUrl,
-                  checkInLatitude: geo?.latitude ?? record.checkInLatitude,
-                  checkInLongitude: geo?.longitude ?? record.checkInLongitude,
-                }
+                checkInPhotoUrl: imageDataUrl ?? record.checkInPhotoUrl,
+                checkInLatitude: geo?.latitude ?? record.checkInLatitude,
+                checkInLongitude: geo?.longitude ?? record.checkInLongitude,
+              }
               : {};
 
           const checkOutUpdate =
             type === "check-out"
               ? {
-                  checkOutPhotoUrl: imageDataUrl ?? record.checkOutPhotoUrl,
-                  checkOutLatitude: geo?.latitude ?? record.checkOutLatitude,
-                  checkOutLongitude: geo?.longitude ?? record.checkOutLongitude,
-                }
+                checkOutPhotoUrl: imageDataUrl ?? record.checkOutPhotoUrl,
+                checkOutLatitude: geo?.latitude ?? record.checkOutLatitude,
+                checkOutLongitude: geo?.longitude ?? record.checkOutLongitude,
+              }
               : {};
 
           nextRecord = {
@@ -988,10 +988,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       employees: prev.employees.map((employee) =>
         employee.id === employeeId
           ? {
-              ...employee,
-              faceRegistered: true,
-              faceImageUrl: imageDataUrl ?? employee.faceImageUrl,
-            }
+            ...employee,
+            faceRegistered: true,
+            faceImageUrl: imageDataUrl ?? employee.faceImageUrl,
+          }
           : employee,
       ),
       notifications: [
@@ -1199,11 +1199,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       villages: prev.villages.map((village) =>
         village.id === villageId
           ? {
-              ...village,
-              latitude,
-              longitude,
-              allowedRadiusMeters,
-            }
+            ...village,
+            latitude,
+            longitude,
+            allowedRadiusMeters,
+          }
           : village,
       ),
     }));
@@ -1318,11 +1318,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       overrideRequests: prev.overrideRequests.map((request) =>
         request.id === requestId
           ? {
-              ...request,
-              status: action,
-              resolvedAt,
-              resolverId: authUser.id,
-            }
+            ...request,
+            status: action,
+            resolvedAt,
+            resolverId: authUser.id,
+          }
           : request,
       ),
       notifications: [
@@ -1431,9 +1431,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       employees: prev.employees.map((employee) =>
         employee.id === authUser.id
           ? {
-              ...employee,
-              paymentProfile: nextProfile,
-            }
+            ...employee,
+            paymentProfile: nextProfile,
+          }
           : employee,
       ),
       notifications: [
@@ -1504,9 +1504,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       employees: prev.employees.map((employee) =>
         employee.id === authUser.id
           ? {
-              ...employee,
-              rewardPoints: employee.rewardPoints + adjustedAmount,
-            }
+            ...employee,
+            rewardPoints: employee.rewardPoints + adjustedAmount,
+          }
           : employee,
       ),
       notifications: [
@@ -1569,10 +1569,10 @@ export function useAppData() {
         employmentStatuses: [],
         notifications: [],
       },
-      resolveAttendanceOverrideRequest: () => {},
-      addAttendanceRecord: () => {},
-      updateAttendanceStatus: () => {},
-      markNotificationAsRead: () => {},
+      resolveAttendanceOverrideRequest: () => { },
+      addAttendanceRecord: () => { },
+      updateAttendanceStatus: () => { },
+      markNotificationAsRead: () => { },
     } as any;
   }
   return context;

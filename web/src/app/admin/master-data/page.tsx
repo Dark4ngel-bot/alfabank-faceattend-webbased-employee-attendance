@@ -95,6 +95,7 @@ type AttendanceLocationItem = {
   latitude: number;
   longitude: number;
   radiusMeters: number;
+  phone?: string;
   active: boolean;
 };
 
@@ -370,6 +371,7 @@ function AdminMasterDataPageContent() {
   const [newAttendanceLatitude, setNewAttendanceLatitude] = useState("");
   const [newAttendanceLongitude, setNewAttendanceLongitude] = useState("");
   const [newAttendanceRadius, setNewAttendanceRadius] = useState("350");
+  const [newAttendancePhone, setNewAttendancePhone] = useState("");
   const [newTerm, setNewTerm] = useState("");
   const [newTermDescription, setNewTermDescription] = useState("");
 
@@ -1070,12 +1072,15 @@ function AdminMasterDataPageContent() {
         latitude,
         longitude,
         radiusMeters: Number.isNaN(radiusMeters) ? 350 : radiusMeters,
+        phone: newAttendancePhone.trim() || undefined,
         active: true,
       },
     ]);
 
     setNewAttendanceLocationName("");
     setNewAttendanceLatitude("");
+    setNewAttendanceLongitude("");
+    setNewAttendancePhone("");
     setNewAttendanceLongitude("");
     setNewAttendanceRadius("350");
   }
@@ -2021,6 +2026,14 @@ function AdminMasterDataPageContent() {
                   placeholder="Radius"
                   className="rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none"
                 />
+                <input
+                  value={newAttendancePhone}
+                  onChange={(event) =>
+                    setNewAttendancePhone(event.target.value)
+                  }
+                  placeholder="No Kontak Admin (Opsional)"
+                  className="rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none"
+                />
                 <button
                   type="button"
                   onClick={handleAddAttendanceLocation}
@@ -2045,7 +2058,12 @@ function AdminMasterDataPageContent() {
                       key={item.id}
                       className="grid grid-cols-[1fr_0.7fr_0.7fr_0.6fr_0.6fr_0.7fr] items-center px-4 py-3 text-sm"
                     >
-                      <p className="font-black text-slate-900">{item.name}</p>
+                      <div>
+                        <p className="font-black text-slate-900">{item.name}</p>
+                        {item.phone && (
+                          <p className="text-xs font-semibold text-slate-400">📞 Kontak Admin: {item.phone}</p>
+                        )}
+                      </div>
                       <p className="font-semibold text-slate-600">
                         {item.latitude}
                       </p>

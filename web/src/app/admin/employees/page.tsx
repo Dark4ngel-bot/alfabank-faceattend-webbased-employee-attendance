@@ -174,6 +174,7 @@ type Employee = {
   id: string;
   name: string;
   email: string;
+  employee_code?: string | null;
   role: "admin" | "employee" | "owner" | string;
   jabatan: JabatanRelation;
   department: DepartmentRelation;
@@ -189,6 +190,9 @@ type Employee = {
   birth_date: string | null;
   bank_account_number: string | null;
   nik: string | null;
+  sk_number?: string | null;
+  sk_document_url?: string | null;
+  sk_uploaded_at?: string | null;
   created_at: string;
 
   profile_photo?: string | null;
@@ -198,6 +202,7 @@ type Employee = {
 };
 
 type EmployeeForm = {
+  employee_code: string;
   name: string;
   email: string;
   role: "admin" | "employee";
@@ -216,6 +221,9 @@ type EmployeeForm = {
   birth_date: string;
   bank_account_number: string;
   nik: string;
+  sk_number: string;
+  sk_document_url: string;
+  sk_uploaded_at: string;
 };
 
 type EmployeeAlert = {
@@ -225,6 +233,7 @@ type EmployeeAlert = {
 } | null;
 
 const initialForm: EmployeeForm = {
+  employee_code: "",
   name: "",
   email: "",
   role: "employee",
@@ -243,6 +252,9 @@ const initialForm: EmployeeForm = {
   birth_date: "",
   bank_account_number: "",
   nik: "",
+  sk_number: "",
+  sk_document_url: "",
+  sk_uploaded_at: "",
 };
 
 function getInitialName(name: string) {
@@ -582,9 +594,10 @@ export default function AdminEmployeesPage() {
       const result = await readJsonResponse(response);
 
       if (!response.ok) {
+        const isAuthErr = response.status === 401 || response.status === 403 || result.message?.includes("Akses") || result.message?.includes("token");
         showEmployeeAlert(
-          "Gagal mengambil data employee",
-          result.message || "Gagal mengambil data karyawan.",
+          isAuthErr ? "Sesi Login Diperlukan" : "Gagal mengambil data employee",
+          result.message || "Gagal mengambil data karyawan. Silakan login kembali dengan akun Admin.",
           "error",
         );
         return;
@@ -756,6 +769,7 @@ export default function AdminEmployeesPage() {
 
     setEditingEmployee(employee);
     setForm({
+      employee_code: employee.employee_code || "",
       name: employee.name,
       email: employee.email,
       role:
@@ -778,6 +792,9 @@ export default function AdminEmployeesPage() {
       birth_date: formatDateInput(employee.birth_date),
       bank_account_number: employee.bank_account_number || "",
       nik: employee.nik || "",
+      sk_number: employee.sk_number || "",
+      sk_document_url: employee.sk_document_url || "",
+      sk_uploaded_at: employee.sk_uploaded_at || "",
     });
     setIsModalOpen(true);
   }
@@ -793,16 +810,6 @@ export default function AdminEmployeesPage() {
     value: string,
   ) {
     const normalizedValue = normalizeNumericInput(value).slice(0, 16);
-
-    if (value !== normalizedValue) {
-      showEmployeeAlert(
-        field === "nik" ? "NIK tidak valid" : "No rekening tidak valid",
-        field === "nik"
-          ? "NIK harus berupa angka dan berjumlah tepat 16 digit."
-          : "No rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
-        "warning",
-      );
-    }
 
     setForm((prev) => ({
       ...prev,
@@ -824,12 +831,11 @@ export default function AdminEmployeesPage() {
       !form.registered_office_id ||
       !form.department_id ||
       !form.jabatan_id ||
-      !form.position_id ||
       !form.shift_id
     ) {
       showEmployeeAlert(
         "Data belum lengkap",
-        "Nama, email, role, kantor, divisi, jabatan, posisi, dan shift wajib diisi.",
+        "Nama, email, role, kantor, divisi, jabatan, dan shift wajib diisi.",
         "warning",
       );
       return;
@@ -1429,6 +1435,31 @@ export default function AdminEmployeesPage() {
                 </AppFormReveal>
               )}
 
+              <AppFormReveal delay={15}>
+                <div>
+                  <label className="mb-2 block text-sm font-black text-slate-700">
+                    ID Karyawan (Kode Karyawan)
+                  </label>
+                  <div className="app-field-smooth relative rounded-2xl">
+                    <IdCard
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                    <input
+                      value={form.employee_code}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          employee_code: event.target.value,
+                        }))
+                      }
+                      placeholder="Contoh: EMP-001 (Opsional)"
+                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
+              </AppFormReveal>
+
               <AppFormReveal delay={20}>
                 <div>
                   <label className="mb-2 block text-sm font-black text-slate-700">
@@ -1570,17 +1601,6 @@ export default function AdminEmployeesPage() {
                       onChange={(event) =>
                         handleNumericFormChange("nik", event.target.value)
                       }
-                      onPaste={(event) => {
-                        const pastedText = event.clipboardData.getData("text");
-
-                        if (/\D/.test(pastedText) || pastedText.length > 16) {
-                          showEmployeeAlert(
-                            "NIK tidak valid",
-                            "NIK harus berupa angka dan berjumlah tepat 16 digit.",
-                            "warning",
-                          );
-                        }
-                      }}
                       inputMode="numeric"
                       pattern="[0-9]*"
                       maxLength={16}
@@ -1607,17 +1627,6 @@ export default function AdminEmployeesPage() {
                           event.target.value,
                         )
                       }
-                      onPaste={(event) => {
-                        const pastedText = event.clipboardData.getData("text");
-
-                        if (/\D/.test(pastedText) || pastedText.length > 16) {
-                          showEmployeeAlert(
-                            "No rekening tidak valid",
-                            "No rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
-                            "warning",
-                          );
-                        }
-                      }}
                       inputMode="numeric"
                       pattern="[0-9]*"
                       maxLength={16}
@@ -1625,6 +1634,94 @@ export default function AdminEmployeesPage() {
                       className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     />
                   </div>
+                </div>
+              </AppFormReveal>
+
+              <AppFormReveal delay={65} className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm font-black text-slate-700">
+                    Nomor SK (Kontrak / Kartap)
+                  </label>
+                  <div className="app-field-smooth relative rounded-2xl">
+                    <BadgeCheck
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                    <input
+                      value={form.sk_number}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          sk_number: event.target.value,
+                        }))
+                      }
+                      placeholder="Contoh: SK/001/HRD/2026"
+                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-black text-slate-700">
+                    Upload Dokumen SK (PDF / Gambar)
+                  </label>
+                  <div className="app-field-smooth relative rounded-2xl">
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        try {
+                          const formData = new FormData();
+                          formData.append("file", file);
+                          const res = await fetch("/api/employees/upload-sk", {
+                            method: "POST",
+                            body: formData,
+                          });
+                          const resData = await res.json();
+                          if (resData.success && resData.file_url) {
+                            setForm((prev) => ({
+                              ...prev,
+                              sk_document_url: resData.file_url,
+                              sk_uploaded_at: resData.uploaded_at || new Date().toISOString(),
+                            }));
+                            showEmployeeAlert(
+                              "Upload Berhasil",
+                              "File Dokumen SK berhasil diunggah sebagai bukti.",
+                              "success",
+                            );
+                          } else {
+                            showEmployeeAlert(
+                              "Gagal Upload",
+                              resData.message || "Gagal mengunggah file SK.",
+                              "error",
+                            );
+                          }
+                        } catch {
+                          showEmployeeAlert(
+                            "Gagal Upload",
+                            "Terjadi kesalahan saat mengunggah file SK.",
+                            "error",
+                          );
+                        }
+                      }}
+                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-2 text-xs font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 file:mr-3 file:rounded-xl file:border-0 file:bg-[#123c8c] file:px-3 file:py-1.5 file:text-xs file:font-black file:text-white hover:file:bg-blue-800"
+                    />
+                  </div>
+                  {form.sk_document_url && (
+                    <div className="mt-2 flex items-center justify-between rounded-xl bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700 font-bold border border-emerald-200">
+                      <span>✓ Dokumen SK Terunggah</span>
+                      <a
+                        href={form.sk_document_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline text-emerald-800 font-black"
+                      >
+                        Lihat File
+                      </a>
+                    </div>
+                  )}
                 </div>
               </AppFormReveal>
 

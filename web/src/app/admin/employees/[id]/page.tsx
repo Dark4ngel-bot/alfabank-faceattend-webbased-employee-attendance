@@ -98,11 +98,15 @@ type Employee = {
   photo_url?: string | null;
   avatar_url?: string | null;
 
+  employee_code?: string | null;
   contract_start_date?: string | null;
   contract_end_date?: string | null;
   base_salary?: number | string | null;
   npwp_number?: string | null;
   ptkp_status?: string | null;
+  sk_number?: string | null;
+  sk_document_url?: string | null;
+  sk_uploaded_at?: string | null;
 };
 
 async function readJsonResponse(response: Response) {
@@ -559,6 +563,22 @@ export default function AdminEmployeeDetailPage() {
                   />
 
                   <DetailCard
+                    icon={IdCard}
+                    label="ID Karyawan"
+                    value={employee.employee_code || employee.id.slice(0, 8).toUpperCase()}
+                    description="Nomor / Kode Identitas Karyawan"
+                    delay={140}
+                  />
+
+                  <DetailCard
+                    icon={BadgeCheck}
+                    label="Nomor SK"
+                    value={employee.sk_number || "-"}
+                    description="Nomor Surat Keputusan / Kontrak"
+                    delay={150}
+                  />
+
+                  <DetailCard
                     icon={CreditCard}
                     label="No. Rekening Bank"
                     value={employee.bank_account_number || "-"}
@@ -599,14 +619,6 @@ export default function AdminEmployeeDetailPage() {
                   />
 
                   <DetailCard
-                    icon={CreditCard}
-                    label="No Rekening"
-                    value={employee.bank_account_number || "-"}
-                    description="Nomor rekening payroll karyawan"
-                    delay={240}
-                  />
-
-                  <DetailCard
                     icon={CalendarDays}
                     label="Tanggal Dibuat"
                     value={formatDate(employee.created_at)}
@@ -614,6 +626,30 @@ export default function AdminEmployeeDetailPage() {
                     delay={260}
                   />
                 </div>
+
+                {employee.sk_document_url && (
+                  <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2 font-black text-emerald-800 text-sm">
+                          <BadgeCheck size={18} />
+                          <span>Dokumen SK Karyawan Terverifikasi</span>
+                        </div>
+                        <p className="text-xs text-emerald-700/80 mt-1 font-medium">
+                          Diunggah pada: {employee.sk_uploaded_at ? formatDate(employee.sk_uploaded_at) : "Sudah Tersimpan"}
+                        </p>
+                      </div>
+                      <a
+                        href={employee.sk_document_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-700 transition"
+                      >
+                        Pratinjau / Unduh SK
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 
