@@ -13,6 +13,7 @@ import {
   getLeaveTypeLabel,
 } from "@/lib/leave-attendance-guard";
 import {
+  findNearestValidOffice,
   getDistanceInMeters,
   getEffectiveGeofenceRadius,
   isGpsAccuracyAllowed,
@@ -23,7 +24,7 @@ import {
 
 export const runtime = "nodejs";
 
-const MAX_GPS_ACCURACY_METERS = 500;
+const MAX_GPS_ACCURACY_METERS = 1000;
 const MAX_PHOTO_SIZE = 4 * 1024 * 1024;
 
 const ALLOWED_PHOTO_MIME_TYPES = new Set([
@@ -688,11 +689,12 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const registeredOffice = await prisma.officeLocation.findFirst({
-        where: {
-          id: officeId,
-          status: "active",
-        },
+      const activeOffices = await prisma.officeLocation.findMany({
+        where: { status: "active" },
+        orderBy: [
+          { id: officeId ? "asc" : "desc" },
+          { name: "asc" },
+        ],
         select: {
           id: true,
           name: true,
@@ -701,6 +703,9 @@ export async function POST(req: NextRequest) {
           radius_meters: true,
         },
       });
+      const registeredOffice = activeOffices.find(
+        (office) => office.id === officeId,
+      );
 
       if (!registeredOffice) {
         return NextResponse.json(
@@ -714,15 +719,35 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const officeLatitude = toNumber(registeredOffice.latitude);
-      const officeLongitude = toNumber(registeredOffice.longitude);
-      const officeRadius = toNumber(registeredOffice.radius_meters);
+      const officeGeofences = activeOffices
+        .map((office) => {
+          const officeLatitude = toNumber(office.latitude);
+          const officeLongitude = toNumber(office.longitude);
+          const officeRadius = toNumber(office.radius_meters);
 
-      if (
-        officeLatitude === null ||
-        officeLongitude === null ||
-        officeRadius === null
-      ) {
+          if (
+            officeLatitude === null ||
+            officeLongitude === null ||
+            officeRadius === null
+          ) {
+            return null;
+          }
+
+          return {
+            id: office.id,
+            name: office.name,
+            latitude: officeLatitude,
+            longitude: officeLongitude,
+            radius_meters: officeRadius,
+          };
+        })
+        .filter((office): office is OfficeGeofence => office !== null);
+
+      const registeredOfficeGeofence = officeGeofences.find(
+        (office) => office.id === registeredOffice.id,
+      );
+
+      if (!registeredOfficeGeofence) {
         return NextResponse.json(
           {
             success: false,
@@ -734,15 +759,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      if (
-        !isValidGeofence({
-          id: registeredOffice.id,
-          name: registeredOffice.name,
-          latitude: officeLatitude,
-          longitude: officeLongitude,
-          radius_meters: officeRadius,
-        })
-      ) {
+      if (!isValidGeofence(registeredOfficeGeofence)) {
         return NextResponse.json(
           {
             success: false,
@@ -754,63 +771,66 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const distance = getDistanceInMeters(
-        {
-          lat: latitude,
-          lng: longitude,
-        },
-        {
-          lat: officeLatitude,
-          lng: officeLongitude,
-        },
-      );
+      const sortedOfficeGeofences = [
+        registeredOfficeGeofence,
+        ...officeGeofences.filter((office) => office.id !== registeredOffice.id),
+      ];
 
-      const effectiveRadius = getEffectiveGeofenceRadius(
-        officeRadius,
+      matchedOffice = findNearestValidOffice(
+        { lat: latitude, lng: longitude },
+        sortedOfficeGeofences,
         accuracy,
       );
-      const isWithinRadius = distance <= effectiveRadius;
 
-      if (!isWithinRadius) {
+      if (!matchedOffice) {
+        const nearestOffice = sortedOfficeGeofences
+          .filter(isValidGeofence)
+          .map((office) => {
+            const distance = getDistanceInMeters(
+              { lat: latitude, lng: longitude },
+              { lat: office.latitude, lng: office.longitude },
+            );
+            const effectiveRadius = getEffectiveGeofenceRadius(
+              office.radius_meters,
+              accuracy,
+            );
+
+            return { office, distance, effectiveRadius };
+          })
+          .sort((a, b) => a.distance - b.distance)[0];
+
         return NextResponse.json(
           {
             success: false,
             error: `Lokasi kamu berada di luar radius kantor ${registeredOffice.name}.`,
-            message: `Kamu hanya bisa check-out mode Kantor di radius kantor terdaftar: ${registeredOffice.name}. Jarak terdeteksi ${Math.round(
-              distance,
-            )} meter, batas efektif ${Math.round(
-              effectiveRadius,
-            )} meter termasuk toleransi akurasi GPS.`,
+            message: nearestOffice
+              ? `Kamu hanya bisa check-out mode Kantor di radius kantor aktif. Kantor terdekat: ${nearestOffice.office.name}. Jarak terdeteksi ${Math.round(
+                  nearestOffice.distance,
+                )} meter, batas efektif ${Math.round(
+                  nearestOffice.effectiveRadius,
+                )} meter termasuk toleransi akurasi GPS. Jika kamu memang di kantor, periksa titik latitude/longitude kantor di menu Admin > Kantor.`
+              : "Tidak ada data titik kantor aktif yang valid. Hubungi admin untuk memperbaiki master data kantor.",
             latitude,
             longitude,
             accuracy,
-            distance: Math.round(distance),
-            radius: officeRadius,
-            effectiveRadius: Math.round(effectiveRadius),
-            office: {
-              id: registeredOffice.id,
-              name: registeredOffice.name,
-              latitude: officeLatitude,
-              longitude: officeLongitude,
-              radius: officeRadius,
-            },
+            distance: nearestOffice ? Math.round(nearestOffice.distance) : null,
+            radius: nearestOffice?.office.radius_meters ?? null,
+            effectiveRadius: nearestOffice
+              ? Math.round(nearestOffice.effectiveRadius)
+              : null,
+            office: nearestOffice
+              ? {
+                  id: nearestOffice.office.id,
+                  name: nearestOffice.office.name,
+                  latitude: nearestOffice.office.latitude,
+                  longitude: nearestOffice.office.longitude,
+                  radius: nearestOffice.office.radius_meters,
+                }
+              : null,
           },
           { status: 400 },
         );
       }
-
-      matchedOffice = {
-        office: {
-          id: registeredOffice.id,
-          name: registeredOffice.name,
-          latitude: officeLatitude,
-          longitude: officeLongitude,
-          radius_meters: officeRadius,
-        },
-        distance,
-        effectiveRadius,
-        isWithinRadius,
-      };
     }
 
     const todayName = getDayOfWeekEnum(now);

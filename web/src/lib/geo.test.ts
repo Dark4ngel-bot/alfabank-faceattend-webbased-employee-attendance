@@ -66,7 +66,8 @@ describe("geo helpers", () => {
   });
 
   it("caps the GPS accuracy buffer for geofence matching", () => {
-    expect(getEffectiveGeofenceRadius(100, 300)).toBe(350);
+    expect(getEffectiveGeofenceRadius(100, 900)).toBe(850);
+    expect(getEffectiveGeofenceRadius(100, 300)).toBe(400);
     expect(getEffectiveGeofenceRadius(100, 50)).toBe(150);
     expect(getEffectiveGeofenceRadius(100, null)).toBe(100);
   });
@@ -115,10 +116,10 @@ describe("geo helpers", () => {
 
   it("accepts only finite GPS accuracy within the configured maximum", () => {
     expect(isGpsAccuracyAllowed(99.9)).toBe(true);
-    expect(isGpsAccuracyAllowed(500)).toBe(true);
+    expect(isGpsAccuracyAllowed(1000)).toBe(true);
     expect(isGpsAccuracyAllowed(0)).toBe(false);
     expect(isGpsAccuracyAllowed(-1)).toBe(false);
-    expect(isGpsAccuracyAllowed(501)).toBe(false);
+    expect(isGpsAccuracyAllowed(1001)).toBe(false);
     expect(isGpsAccuracyAllowed(Number.POSITIVE_INFINITY)).toBe(false);
   });
 });
