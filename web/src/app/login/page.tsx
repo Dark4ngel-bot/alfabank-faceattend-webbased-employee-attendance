@@ -7,6 +7,7 @@ import { AlertCircle, Eye, EyeOff, Loader2, LogIn, X } from "lucide-react";
 import MobileShell from "@/components/MobileShell";
 import { AppButton, AppCard, AppInput } from "@/components/ui/AppUI";
 import { useSiteLogo } from "@/hooks/useSiteLogo";
+import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
 import {
   CREATIVEMU_EMAIL_EXAMPLE,
   isCreativemuEmail,
@@ -626,74 +627,68 @@ export default function LoginPage() {
       <section className="relative min-h-dvh w-full overflow-hidden bg-[#f6f8ff]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(18,60,140,0.18),transparent_36%)]" />
 
+        {/* 1. WATERMARK C-SOLO LOGO - DEAD CENTERED IN ENTIRE PAGE (X & Y) */}
+        <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
+          <Image
+            src={DEFAULT_SITE_MARK_LOGO_SRC}
+            alt="Watermark C Creativemu"
+            width={500}
+            height={500}
+            className="mx-auto w-[22rem] max-w-[85vw] opacity-[0.05] mix-blend-multiply sm:w-[24rem] md:w-[25rem] lg:w-[24rem]"
+            priority
+          />
+        </div>
+
+        {/* 2. MAIN LOGO CREATIVEMU - DEAD CENTERED AT TOP OF ENTIRE PAGE (X) */}
+        <div className="login-logo-pop pointer-events-none absolute left-1/2 top-5 z-30 flex -translate-x-1/2 justify-center text-center sm:top-7 lg:top-8">
+          <div className="pointer-events-auto flex h-20 w-72 shrink-0 items-center justify-center transition-transform duration-300 hover:scale-[1.02] sm:h-24 sm:w-80 md:h-28 md:w-[26rem] lg:h-32 lg:w-[32rem]">
+            <Image
+              src={logoSrc}
+              alt="Creativemu Logo"
+              width={512}
+              height={128}
+              className="h-full w-full object-contain object-center"
+              priority
+            />
+          </div>
+        </div>
+
         <div className="relative z-10 grid min-h-dvh w-full grid-cols-1 lg:grid-cols-2">
-          <div className="login-enter relative flex flex-col px-6 py-7 md:px-12 lg:justify-between lg:px-20 lg:py-14">
-            <Image
-              src={logoSrc}
-              alt="Logo Latar Creativemu"
-              width={1452}
-              height={390}
-              className="pointer-events-none absolute left-[80%] top-1/2 hidden w-[34rem] -translate-x-1/2 -translate-y-1/2 opacity-[0.045] mix-blend-multiply lg:block"
-              priority
-            />
+          {/* Left Column Content */}
+          <div className="login-enter relative flex flex-col justify-between px-6 pb-8 pt-28 md:px-12 lg:px-20 lg:pb-14 lg:pt-36">
+            <div className="relative z-10 my-auto max-w-2xl text-left">
+              <p
+                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#123c8c] md:text-sm"
+                style={{
+                  animationDelay: "120ms",
+                }}
+              >
+                Selamat Datang Kembali
+              </p>
 
-            <Image
-              src={logoSrc}
-              alt="Logo Latar Creativemu"
-              width={421}
-              height={390}
-              className="pointer-events-none absolute left-[78%] top-24 w-[18rem] -translate-x-1/2 opacity-[0.04] mix-blend-multiply lg:hidden"
-              priority
-            />
+              <h2
+                className="login-text-reveal mt-4 text-[2rem] font-black leading-[1.05] tracking-tight text-slate-950 sm:text-4xl md:mt-5 md:text-6xl"
+                style={{
+                  animationDelay: "180ms",
+                }}
+              >
+                <span className="typewriter-title login-presence-title">
+                  Presensi Creativemu
+                </span>
+              </h2>
 
-            <div className="relative z-10">
-              <div className="login-logo-pop flex items-center justify-center gap-4 lg:justify-start">
-                <div className="flex h-20 w-60 shrink-0 items-center justify-center p-0 transition-transform duration-300 hover:-translate-y-0.5 md:h-24 md:w-72 lg:h-[4.5rem] lg:w-[4.5rem] lg:overflow-hidden lg:rounded-2xl lg:border-2 lg:border-slate-300 lg:bg-white/95 lg:p-2 lg:shadow-2xl lg:shadow-slate-400/40 lg:backdrop-blur">
-                  <Image
-                    src={logoSrc}
-                    alt="Creativemu Logo"
-                    width={72}
-                    height={19}
-                    className="h-full w-full object-contain"
-                    priority
-                  />
-                </div>
-              </div>
-
-              <div className="mt-14 max-w-2xl md:mt-16 lg:mt-28">
-                <p
-                  className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#123c8c] md:text-sm"
-                  style={{
-                    animationDelay: "120ms",
-                  }}
-                >
-                  Selamat Datang Kembali
-                </p>
-
-                <h2
-                  className="login-text-reveal mt-4 text-[2rem] font-black leading-[1.05] tracking-tight text-slate-950 sm:text-4xl md:mt-5 md:text-6xl"
-                  style={{
-                    animationDelay: "180ms",
-                  }}
-                >
-                  <span className="typewriter-title login-presence-title">
-                    Presensi Creativemu
-                  </span>
-                </h2>
-
-                <p
-                  className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#123c8c] md:text-2xl"
-                  style={{
-                    animationDelay: "240ms",
-                  }}
-                >
-                  {currentTime || "--:--:--"} WIB
-                </p>
-              </div>
+              <p
+                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#123c8c] md:text-2xl"
+                style={{
+                  animationDelay: "240ms",
+                }}
+              >
+                {currentTime || "--:--:--"} WIB
+              </p>
             </div>
 
             <div
-              className="login-field-enter relative z-10 mt-10 hidden text-sm font-semibold text-slate-400 lg:block"
+              className="login-field-enter relative z-10 text-left text-xs font-semibold text-slate-400 sm:text-sm"
               style={{
                 animationDelay: "280ms",
               }}

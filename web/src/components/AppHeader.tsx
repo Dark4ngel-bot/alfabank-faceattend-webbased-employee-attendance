@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 
 import { useSiteLogo } from "@/hooks/useSiteLogo";
+import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
 
 type AppHeaderProps = {
   title: string;
@@ -392,14 +393,6 @@ export default function AppHeader({
             : "border-white/60 bg-white/90 shadow-sm shadow-slate-200/40"
         }`}
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute right-16 top-1/2 hidden h-64 w-64 -translate-y-1/2 bg-contain bg-center bg-no-repeat opacity-[0.11] blur-[0.5px] md:block"
-          style={{
-            backgroundImage: `url('${logoSrc}')`,
-          }}
-        />
-
         <div className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-4">
             <button
@@ -471,6 +464,17 @@ export default function AppHeader({
                 </span>
               ) : null}
             </Link>
+
+            {/* Solo C Logo Icon Box on the far right next to Bell */}
+            <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-white p-2.5 shadow-sm ring-1 ring-blue-100/90 transition hover:bg-[#eaf1ff] active:scale-[0.96]">
+              <Image
+                src={DEFAULT_SITE_MARK_LOGO_SRC}
+                alt="Logo C Creativemu"
+                width={36}
+                height={36}
+                className="h-full w-full object-contain"
+              />
+            </div>
 
             {rightLabel ? (
               <span className="hidden rounded-2xl bg-white px-4 py-2 text-xs font-black text-slate-600 shadow-sm ring-1 ring-blue-100 md:inline-flex">
