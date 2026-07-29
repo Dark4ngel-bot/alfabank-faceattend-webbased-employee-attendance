@@ -49,6 +49,20 @@ type ParsedAttendanceBody = {
   visitNote: string;
 };
 
+type StoredAttendancePhoto =
+  | {
+      storage: "cloudinary";
+      data: null;
+      secureUrl: string;
+      publicId: string;
+    }
+  | {
+      storage: "database";
+      data: Uint8Array<ArrayBuffer>;
+      secureUrl: null;
+      publicId: null;
+    };
+
 async function getUserIdFromRequest(req: NextRequest) {
   const authUser = await requireAuth(req);
 
@@ -250,8 +264,15 @@ async function fileToBuffer(file: File) {
 async function uploadCheckOutPhoto(
   photoBuffer: Uint8Array<ArrayBuffer>,
   userId: string,
-): Promise<UploadApiResponse> {
-  const cloudinary = getCloudinary();
+): Promise<UploadApiResponse | null> {
+  let cloudinary: ReturnType<typeof getCloudinary>;
+
+  try {
+    cloudinary = getCloudinary();
+  } catch (error) {
+    console.warn("CHECK_OUT_CLOUDINARY_UNAVAILABLE:", error);
+    return null;
+  }
 
   return new Promise<UploadApiResponse>((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
@@ -278,6 +299,29 @@ async function uploadCheckOutPhoto(
 
     uploadStream.end(Buffer.from(photoBuffer));
   });
+}
+
+async function storeCheckOutPhoto(
+  photoBuffer: Uint8Array<ArrayBuffer>,
+  userId: string,
+): Promise<StoredAttendancePhoto> {
+  const uploadedPhoto = await uploadCheckOutPhoto(photoBuffer, userId);
+
+  if (uploadedPhoto) {
+    return {
+      storage: "cloudinary",
+      data: null,
+      secureUrl: uploadedPhoto.secure_url,
+      publicId: uploadedPhoto.public_id,
+    };
+  }
+
+  return {
+    storage: "database",
+    data: photoBuffer,
+    secureUrl: null,
+    publicId: null,
+  };
 }
 
 async function deleteCloudinaryPhoto(publicId: string | null | undefined) {
@@ -863,7 +907,7 @@ export async function POST(req: NextRequest) {
     const checkOutStatus =
       earlyLeaveMinutes > 0 ? ("EARLY" as const) : ("NORMAL" as const);
 
-    const uploadedPhoto = await uploadCheckOutPhoto(photoBuffer, userId);
+    const storedPhoto = await storeCheckOutPhoto(photoBuffer, userId);
 
     let updatedAttendance;
 
@@ -875,10 +919,10 @@ export async function POST(req: NextRequest) {
         },
         data: {
           check_out_time: now,
-          check_out_photo: null,
+          check_out_photo: storedPhoto.data,
           check_out_photo_mime: photoMime,
-          check_out_photo_url: uploadedPhoto.secure_url,
-          check_out_photo_public_id: uploadedPhoto.public_id,
+          check_out_photo_url: storedPhoto.secureUrl,
+          check_out_photo_public_id: storedPhoto.publicId,
 
           check_out_latitude: latitude,
           check_out_longitude: longitude,
@@ -970,13 +1014,13 @@ export async function POST(req: NextRequest) {
         return savedAttendance;
       });
     } catch (databaseError) {
-      await deleteCloudinaryPhoto(uploadedPhoto.public_id);
+      await deleteCloudinaryPhoto(storedPhoto.publicId);
       throw databaseError;
     }
 
     if (
       attendance.check_out_photo_public_id &&
-      attendance.check_out_photo_public_id !== uploadedPhoto.public_id
+      attendance.check_out_photo_public_id !== storedPhoto.publicId
     ) {
       await deleteCloudinaryPhoto(attendance.check_out_photo_public_id);
     }
@@ -988,7 +1032,7 @@ export async function POST(req: NextRequest) {
           ? `Check-out berhasil. Kamu pulang lebih awal ${earlyLeaveMinutes} menit.`
           : "Check-out berhasil.",
       attendanceId: updatedAttendance.id,
-      photoUrl: uploadedPhoto.secure_url,
+      photoUrl: storedPhoto.secureUrl,
       workMode,
       workModeLabel: getWorkModeLabel(workMode),
       isWfh: isWfhMode,
