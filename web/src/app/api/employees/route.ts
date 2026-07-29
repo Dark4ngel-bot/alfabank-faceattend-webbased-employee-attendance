@@ -926,11 +926,66 @@ export async function DELETE(req: NextRequest) {
     }
 
     await prisma.$transaction(async (tx) => {
+      const attendances = await tx.attendance.findMany({
+        where: { user_id: id },
+        select: { id: true },
+      });
+      const attendanceIds = attendances.map((attendance) => attendance.id);
+
+      const wfhRequests = await tx.wfhRequest.findMany({
+        where: {
+          OR: [{ user_id: id }, { approved_by_id: id }],
+        },
+        select: { id: true },
+      });
+      const wfhRequestIds = wfhRequests.map((request) => request.id);
+
       const payrolls = await tx.payroll.findMany({
         where: { user_id: id },
         select: { id: true },
       });
       const payrollIds = payrolls.map((payroll) => payroll.id);
+
+      await tx.wfhRequest.updateMany({
+        where: { approved_by_id: id },
+        data: { approved_by_id: null },
+      });
+
+      await tx.announcement.updateMany({
+        where: { author_id: id },
+        data: { author_id: null },
+      });
+
+      if (attendanceIds.length > 0) {
+        await tx.adminNotification.updateMany({
+          where: {
+            attendance_id: {
+              in: attendanceIds,
+            },
+          },
+          data: { attendance_id: null },
+        });
+
+        await tx.employeeVisit.updateMany({
+          where: {
+            attendance_id: {
+              in: attendanceIds,
+            },
+          },
+          data: { attendance_id: null },
+        });
+      }
+
+      if (wfhRequestIds.length > 0) {
+        await tx.attendance.updateMany({
+          where: {
+            wfh_request_id: {
+              in: wfhRequestIds,
+            },
+          },
+          data: { wfh_request_id: null },
+        });
+      }
 
       if (payrollIds.length > 0) {
         await tx.payrollItem.deleteMany({
@@ -941,10 +996,6 @@ export async function DELETE(req: NextRequest) {
           },
         });
       }
-
-      await tx.payroll.deleteMany({
-        where: { user_id: id },
-      });
 
       await tx.adminNotification.deleteMany({
         where: { user_id: id },
@@ -962,21 +1013,15 @@ export async function DELETE(req: NextRequest) {
         where: { user_id: id },
       });
 
-      await tx.wfhRequest.updateMany({
-        where: { approved_by_id: id },
-        data: { approved_by_id: null },
+      await tx.attendance.deleteMany({
+        where: { user_id: id },
       });
 
       await tx.wfhRequest.deleteMany({
         where: { user_id: id },
       });
 
-      await tx.announcement.updateMany({
-        where: { author_id: id },
-        data: { author_id: null },
-      });
-
-      await tx.attendance.deleteMany({
+      await tx.payroll.deleteMany({
         where: { user_id: id },
       });
 
@@ -996,7 +1041,7 @@ export async function DELETE(req: NextRequest) {
 
     if (isPrismaForeignKeyError(error)) {
       return jsonError(
-        "Karyawan tidak bisa dihapus karena masih memiliki relasi data lain.",
+        "Karyawan tidak bisa dihapus karena masih memiliki relasi data lain. Pastikan migration production sudah dijalankan.",
         400
       );
     }

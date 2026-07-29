@@ -255,6 +255,8 @@ const initialForm: EmployeeForm = {
   nik: "",
 };
 
+const EMPLOYEE_REQUEST_TIMEOUT_MS = 15_000;
+
 function getInitialName(name: string) {
   return name
     .split(" ")
@@ -567,12 +569,19 @@ export default function AdminEmployeesPage() {
   }, []);
 
   const loadEmployees = useCallback(async () => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(
+      () => controller.abort(),
+      EMPLOYEE_REQUEST_TIMEOUT_MS,
+    );
+
     try {
       setIsLoading(true);
 
       const response = await fetch("/api/employees", {
         method: "GET",
         cache: "no-store",
+        signal: controller.signal,
       });
 
       const result = await readJsonResponse(response);
@@ -602,11 +611,16 @@ export default function AdminEmployeesPage() {
       console.error("LOAD_EMPLOYEES_ERROR:", error);
 
       showEmployeeAlert(
-        "Terjadi kesalahan",
-        "Terjadi kesalahan saat mengambil data karyawan.",
+        error instanceof DOMException && error.name === "AbortError"
+          ? "Koneksi terlalu lama"
+          : "Terjadi kesalahan",
+        error instanceof DOMException && error.name === "AbortError"
+          ? "Server terlalu lama merespons data karyawan. Coba refresh halaman."
+          : "Terjadi kesalahan saat mengambil data karyawan.",
         "error",
       );
     } finally {
+      window.clearTimeout(timeoutId);
       setIsLoading(false);
     }
   }, [showEmployeeAlert]);
@@ -965,13 +979,18 @@ export default function AdminEmployeesPage() {
       if (!response.ok) {
         showEmployeeAlert(
           "Gagal menghapus employee",
-          result.message || "Gagal menghapus employee.",
+          result.message ||
+            result.error ||
+            "Gagal menghapus employee. Coba refresh halaman lalu ulangi.",
           "error",
         );
         return;
       }
 
-      await loadEmployees();
+      setEmployees((prev) =>
+        prev.filter((item) => item.id !== employee.id),
+      );
+      void loadEmployees();
 
       showEmployeeAlert(
         "Karyawan berhasil dihapus",
