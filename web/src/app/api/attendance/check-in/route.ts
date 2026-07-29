@@ -14,6 +14,7 @@ import {
 } from "@/lib/leave-attendance-guard";
 import {
   getDistanceInMeters,
+  getEffectiveGeofenceRadius,
   isGpsAccuracyAllowed,
   isValidGeofence,
   isValidGpsCoordinate,
@@ -596,6 +597,7 @@ export async function POST(req: NextRequest) {
     let matchedOffice: {
       office: OfficeGeofence;
       distance: number;
+      effectiveRadius: number;
       isWithinRadius: boolean;
     } | null = null;
 
@@ -685,19 +687,28 @@ export async function POST(req: NextRequest) {
         },
       );
 
-      const isWithinRadius = distance <= officeRadius;
+      const effectiveRadius = getEffectiveGeofenceRadius(
+        officeRadius,
+        accuracy,
+      );
+      const isWithinRadius = distance <= effectiveRadius;
 
       if (!isWithinRadius) {
         return NextResponse.json(
           {
             success: false,
             error: `Lokasi kamu berada di luar radius kantor ${registeredOffice.name}.`,
-            message: `Kamu hanya bisa absen mode Kantor di radius kantor terdaftar: ${registeredOffice.name}.`,
+            message: `Kamu hanya bisa absen mode Kantor di radius kantor terdaftar: ${registeredOffice.name}. Jarak terdeteksi ${Math.round(
+              distance,
+            )} meter, batas efektif ${Math.round(
+              effectiveRadius,
+            )} meter termasuk toleransi akurasi GPS.`,
             latitude,
             longitude,
             accuracy,
             distance: Math.round(distance),
             radius: officeRadius,
+            effectiveRadius: Math.round(effectiveRadius),
             office: {
               id: registeredOffice.id,
               name: registeredOffice.name,
@@ -719,6 +730,7 @@ export async function POST(req: NextRequest) {
           radius_meters: officeRadius,
         },
         distance,
+        effectiveRadius,
         isWithinRadius,
       };
     }

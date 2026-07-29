@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   findNearestValidOffice,
+  getEffectiveGeofenceRadius,
   getDistanceInMeters,
   isGpsAccuracyAllowed,
   isValidGeofence,
@@ -50,6 +51,24 @@ describe("geo helpers", () => {
     expect(
       findNearestValidOffice({ lat: -6.23, lng: 106.85 }, offices),
     ).toBeNull();
+  });
+
+  it("allows a GPS accuracy buffer around the configured geofence", () => {
+    const match = findNearestValidOffice(
+      { lat: -6.20135, lng: 106.8167 },
+      [offices[1]],
+      75,
+    );
+
+    expect(match?.office.id).toBe("office-near");
+    expect(match?.isWithinRadius).toBe(true);
+    expect(Math.round(match?.effectiveRadius ?? 0)).toBe(175);
+  });
+
+  it("caps the GPS accuracy buffer for geofence matching", () => {
+    expect(getEffectiveGeofenceRadius(100, 250)).toBe(200);
+    expect(getEffectiveGeofenceRadius(100, 50)).toBe(150);
+    expect(getEffectiveGeofenceRadius(100, null)).toBe(100);
   });
 
   it("rejects impossible user coordinates before matching geofences", () => {
