@@ -19,6 +19,8 @@ import {
   Clock3,
   CreditCard,
   Edit,
+  Eye,
+  EyeOff,
   IdCard,
   Info,
   KeyRound,
@@ -498,6 +500,9 @@ export default function AdminEmployeesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState("");
   const [form, setForm] = useState<EmployeeForm>(initialForm);
+  const [showTemporaryPassword, setShowTemporaryPassword] = useState(false);
+  const [showConfirmTemporaryPassword, setShowConfirmTemporaryPassword] =
+    useState(false);
 
   const [employeeAlert, setEmployeeAlert] = useState<EmployeeAlert>(null);
   const [isAlertClosing, setIsAlertClosing] = useState(false);
@@ -707,11 +712,15 @@ export default function AdminEmployeesPage() {
   function openRegisterModal() {
     setEditingEmployee(null);
     setForm(initialForm);
+    setShowTemporaryPassword(false);
+    setShowConfirmTemporaryPassword(false);
     setIsModalOpen(true);
   }
 
   function openEditModal(employee: Employee) {
     setEditingEmployee(employee);
+    setShowTemporaryPassword(false);
+    setShowConfirmTemporaryPassword(false);
     setForm({
       employee_code: employee.employee_code || "",
       name: employee.name,
@@ -744,6 +753,8 @@ export default function AdminEmployeesPage() {
     setIsModalOpen(false);
     setEditingEmployee(null);
     setForm(initialForm);
+    setShowTemporaryPassword(false);
+    setShowConfirmTemporaryPassword(false);
   }
 
   function handleNumericFormChange(
@@ -1785,7 +1796,7 @@ export default function AdminEmployeesPage() {
                         className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                       />
                       <input
-                        type="password"
+                        type={showTemporaryPassword ? "text" : "password"}
                         value={form.temporaryPassword}
                         onChange={(event) =>
                           setForm((prev) => ({
@@ -1794,8 +1805,24 @@ export default function AdminEmployeesPage() {
                           }))
                         }
                         placeholder="Minimal 8 karakter"
-                        className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowTemporaryPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+                        aria-label={
+                          showTemporaryPassword
+                            ? "Sembunyikan password"
+                            : "Tampilkan password"
+                        }
+                      >
+                        {showTemporaryPassword ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
+                      </button>
                     </div>
                   </div>
                 ) : null}
@@ -1811,7 +1838,9 @@ export default function AdminEmployeesPage() {
                         className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                       />
                       <input
-                        type="password"
+                        type={
+                          showConfirmTemporaryPassword ? "text" : "password"
+                        }
                         value={form.confirmTemporaryPassword}
                         onChange={(event) =>
                           setForm((prev) => ({
@@ -1820,8 +1849,26 @@ export default function AdminEmployeesPage() {
                           }))
                         }
                         placeholder="Ulangi password"
-                        className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                       />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmTemporaryPassword((prev) => !prev)
+                        }
+                        className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+                        aria-label={
+                          showConfirmTemporaryPassword
+                            ? "Sembunyikan password"
+                            : "Tampilkan password"
+                        }
+                      >
+                        {showConfirmTemporaryPassword ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
+                      </button>
                     </div>
                   </div>
                 ) : null}

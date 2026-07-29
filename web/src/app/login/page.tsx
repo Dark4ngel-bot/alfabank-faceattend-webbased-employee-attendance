@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { AlertCircle, Loader2, LogIn, X } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2, LogIn, X } from "lucide-react";
 import MobileShell from "@/components/MobileShell";
 import { AppButton, AppCard, AppInput } from "@/components/ui/AppUI";
 import { useSiteLogo } from "@/hooks/useSiteLogo";
@@ -349,6 +349,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [introLeaving, setIntroLeaving] = useState(false);
   const [introHintVisible, setIntroHintVisible] = useState(false);
@@ -740,17 +741,38 @@ export default function LoginPage() {
                       animationDelay: "130ms",
                     }}
                   >
-                    <AppInput
-                      suppressHydrationWarning
-                      label="Kata Sandi"
-                      type="password"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder="••••••••"
-                      autoComplete="current-password"
-                      disabled={formIsBusy}
-                      className="border-blue-100 bg-[#f8fbff] text-slate-700 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-blue-100/50 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
-                    />
+                    <label className="block">
+                      <span className="text-sm font-black text-slate-700">
+                        Kata Sandi
+                      </span>
+
+                      <div className="relative mt-2">
+                        <input
+                          suppressHydrationWarning
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(event) => setPassword(event.target.value)}
+                          placeholder="••••••••"
+                          autoComplete="current-password"
+                          disabled={formIsBusy}
+                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          disabled={formIsBusy}
+                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c] disabled:cursor-not-allowed disabled:opacity-50"
+                          aria-label={
+                            showPassword
+                              ? "Sembunyikan password"
+                              : "Tampilkan password"
+                          }
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </label>
                   </div>
                 </div>
 
