@@ -110,23 +110,16 @@ async function readJsonResponse(response: Response) {
 function getStatusStyle(status: string) {
   const normalized = String(status || "").toLowerCase();
 
-  if (
-    normalized === "present" ||
-    normalized === "hadir" ||
-    normalized.includes("masuk kerja")
-  ) {
+  if (normalized === "present" || normalized === "hadir") {
     return "bg-emerald-50 text-emerald-700 ring-emerald-100";
   }
 
-  if (
-    normalized === "late" ||
-    normalized === "terlambat" ||
-    normalized.includes("cuti") ||
-    normalized.includes("sakit") ||
-    normalized.includes("izin") ||
-    normalized.includes("tidak")
-  ) {
-    return "bg-red-50 text-red-700 ring-red-100";
+  if (normalized === "late" || normalized === "terlambat") {
+    return "bg-amber-50 text-amber-700 ring-amber-100";
+  }
+
+  if (normalized === "cuti") {
+    return "bg-blue-50 text-[#123c8c] ring-blue-100";
   }
 
   return "bg-slate-100 text-slate-600 ring-slate-200";
@@ -895,7 +888,7 @@ export default function AdminAttendanceReportDetailPage() {
           <button
             type="button"
             onClick={() => router.push("/admin/laporan-kehadiran")}
-            className="attendance-detail-enter inline-flex items-center gap-2 rounded-2xl bg-white dark:bg-[#21262d] px-4 py-3 text-sm font-black text-[#123c8c] dark:text-[#58a6ff] shadow-sm ring-1 ring-blue-100 dark:ring-[#30363d] transition hover:bg-[#f8fbff] dark:hover:bg-[#30363d] active:scale-[0.98]"
+            className="attendance-detail-enter inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#123c8c] shadow-sm ring-1 ring-blue-100 transition hover:bg-[#f8fbff] active:scale-[0.98]"
           >
             <ArrowLeft size={18} strokeWidth={2.6} />
             Kembali ke Laporan

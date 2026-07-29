@@ -13,7 +13,9 @@ import {
   getLeaveTypeLabel,
 } from "@/lib/leave-attendance-guard";
 import {
+  findNearestValidOffice,
   getDistanceInMeters,
+  getEffectiveGeofenceRadius,
   isGpsAccuracyAllowed,
   isValidGeofence,
   isValidGpsCoordinate,
@@ -22,7 +24,7 @@ import {
 
 export const runtime = "nodejs";
 
-const MAX_GPS_ACCURACY_METERS = 100;
+const MAX_GPS_ACCURACY_METERS = 1000;
 const MAX_PHOTO_SIZE = 4 * 1024 * 1024;
 
 const ALLOWED_PHOTO_MIME_TYPES = new Set([
@@ -48,6 +50,20 @@ type ParsedAttendanceBody = {
   visitAddress: string;
   visitNote: string;
 };
+
+type StoredAttendancePhoto =
+  | {
+      storage: "cloudinary";
+      data: null;
+      secureUrl: string;
+      publicId: string;
+    }
+  | {
+      storage: "database";
+      data: Uint8Array<ArrayBuffer>;
+      secureUrl: null;
+      publicId: null;
+    };
 
 async function getUserIdFromRequest(req: NextRequest) {
   const authUser = await requireAuth(req);
@@ -161,8 +177,15 @@ async function fileToBuffer(file: File) {
 async function uploadCheckInPhoto(
   photoBuffer: Uint8Array<ArrayBuffer>,
   userId: string,
-): Promise<UploadApiResponse> {
-  const cloudinary = getCloudinary();
+): Promise<UploadApiResponse | null> {
+  let cloudinary: ReturnType<typeof getCloudinary>;
+
+  try {
+    cloudinary = getCloudinary();
+  } catch (error) {
+    console.warn("CHECK_IN_CLOUDINARY_UNAVAILABLE:", error);
+    return null;
+  }
 
   return new Promise<UploadApiResponse>((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
@@ -189,6 +212,29 @@ async function uploadCheckInPhoto(
 
     uploadStream.end(Buffer.from(photoBuffer));
   });
+}
+
+async function storeCheckInPhoto(
+  photoBuffer: Uint8Array<ArrayBuffer>,
+  userId: string,
+): Promise<StoredAttendancePhoto> {
+  const uploadedPhoto = await uploadCheckInPhoto(photoBuffer, userId);
+
+  if (uploadedPhoto) {
+    return {
+      storage: "cloudinary",
+      data: null,
+      secureUrl: uploadedPhoto.secure_url,
+      publicId: uploadedPhoto.public_id,
+    };
+  }
+
+  return {
+    storage: "database",
+    data: photoBuffer,
+    secureUrl: null,
+    publicId: null,
+  };
 }
 
 async function deleteCloudinaryPhoto(publicId: string | null | undefined) {
@@ -596,6 +642,7 @@ export async function POST(req: NextRequest) {
     let matchedOffice: {
       office: OfficeGeofence;
       distance: number;
+      effectiveRadius: number;
       isWithinRadius: boolean;
     } | null = null;
 
@@ -612,11 +659,12 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const registeredOffice = await prisma.officeLocation.findFirst({
-        where: {
-          id: user.registered_office_id,
-          status: "active",
-        },
+      const activeOffices = await prisma.officeLocation.findMany({
+        where: { status: "active" },
+        orderBy: [
+          { id: user.registered_office_id ? "asc" : "desc" },
+          { name: "asc" },
+        ],
         select: {
           id: true,
           name: true,
@@ -625,6 +673,9 @@ export async function POST(req: NextRequest) {
           radius_meters: true,
         },
       });
+      const registeredOffice = activeOffices.find(
+        (office) => office.id === user.registered_office_id,
+      );
 
       if (!registeredOffice) {
         return NextResponse.json(
@@ -638,11 +689,35 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const officeLatitude = toNumber(registeredOffice.latitude);
-      const officeLongitude = toNumber(registeredOffice.longitude);
-      const officeRadius = toNumber(registeredOffice.radius_meters);
+      const officeGeofences = activeOffices
+        .map((office) => {
+          const officeLatitude = toNumber(office.latitude);
+          const officeLongitude = toNumber(office.longitude);
+          const officeRadius = toNumber(office.radius_meters);
 
-      if (officeLatitude === null || officeLongitude === null || officeRadius === null) {
+          if (
+            officeLatitude === null ||
+            officeLongitude === null ||
+            officeRadius === null
+          ) {
+            return null;
+          }
+
+          return {
+            id: office.id,
+            name: office.name,
+            latitude: officeLatitude,
+            longitude: officeLongitude,
+            radius_meters: officeRadius,
+          };
+        })
+        .filter((office): office is OfficeGeofence => office !== null);
+
+      const registeredOfficeGeofence = officeGeofences.find(
+        (office) => office.id === registeredOffice.id,
+      );
+
+      if (!registeredOfficeGeofence) {
         return NextResponse.json(
           {
             success: false,
@@ -654,15 +729,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      if (
-        !isValidGeofence({
-          id: registeredOffice.id,
-          name: registeredOffice.name,
-          latitude: officeLatitude,
-          longitude: officeLongitude,
-          radius_meters: officeRadius,
-        })
-      ) {
+      if (!isValidGeofence(registeredOfficeGeofence)) {
         return NextResponse.json(
           {
             success: false,
@@ -674,53 +741,66 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const distance = getDistanceInMeters(
-        {
-          lat: latitude,
-          lng: longitude,
-        },
-        {
-          lat: officeLatitude,
-          lng: officeLongitude,
-        },
+      const sortedOfficeGeofences = [
+        registeredOfficeGeofence,
+        ...officeGeofences.filter((office) => office.id !== registeredOffice.id),
+      ];
+
+      matchedOffice = findNearestValidOffice(
+        { lat: latitude, lng: longitude },
+        sortedOfficeGeofences,
+        accuracy,
       );
 
-      const isWithinRadius = distance <= officeRadius;
+      if (!matchedOffice) {
+        const nearestOffice = sortedOfficeGeofences
+          .filter(isValidGeofence)
+          .map((office) => {
+            const distance = getDistanceInMeters(
+              { lat: latitude, lng: longitude },
+              { lat: office.latitude, lng: office.longitude },
+            );
+            const effectiveRadius = getEffectiveGeofenceRadius(
+              office.radius_meters,
+              accuracy,
+            );
 
-      if (!isWithinRadius) {
+            return { office, distance, effectiveRadius };
+          })
+          .sort((a, b) => a.distance - b.distance)[0];
+
         return NextResponse.json(
           {
             success: false,
             error: `Lokasi kamu berada di luar radius kantor ${registeredOffice.name}.`,
-            message: `Kamu hanya bisa absen mode Kantor di radius kantor terdaftar: ${registeredOffice.name}.`,
+            message: nearestOffice
+              ? `Kamu hanya bisa absen mode Kantor di radius kantor aktif. Kantor terdekat: ${nearestOffice.office.name}. Jarak terdeteksi ${Math.round(
+                  nearestOffice.distance,
+                )} meter, batas efektif ${Math.round(
+                  nearestOffice.effectiveRadius,
+                )} meter termasuk toleransi akurasi GPS. Jika kamu memang di kantor, periksa titik latitude/longitude kantor di menu Admin > Kantor.`
+              : "Tidak ada data titik kantor aktif yang valid. Hubungi admin untuk memperbaiki master data kantor.",
             latitude,
             longitude,
             accuracy,
-            distance: Math.round(distance),
-            radius: officeRadius,
-            office: {
-              id: registeredOffice.id,
-              name: registeredOffice.name,
-              latitude: officeLatitude,
-              longitude: officeLongitude,
-              radius: officeRadius,
-            },
+            distance: nearestOffice ? Math.round(nearestOffice.distance) : null,
+            radius: nearestOffice?.office.radius_meters ?? null,
+            effectiveRadius: nearestOffice
+              ? Math.round(nearestOffice.effectiveRadius)
+              : null,
+            office: nearestOffice
+              ? {
+                  id: nearestOffice.office.id,
+                  name: nearestOffice.office.name,
+                  latitude: nearestOffice.office.latitude,
+                  longitude: nearestOffice.office.longitude,
+                  radius: nearestOffice.office.radius_meters,
+                }
+              : null,
           },
           { status: 400 },
         );
       }
-
-      matchedOffice = {
-        office: {
-          id: registeredOffice.id,
-          name: registeredOffice.name,
-          latitude: officeLatitude,
-          longitude: officeLongitude,
-          radius_meters: officeRadius,
-        },
-        distance,
-        isWithinRadius,
-      };
     }
     const now = new Date();
     const today = getTodayDateOnly();
@@ -804,14 +884,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const uploadedPhoto = await uploadCheckInPhoto(photoBuffer, userId);
+    const storedPhoto = await storeCheckInPhoto(photoBuffer, userId);
 
     const checkInData = {
       check_in_time: now,
-      check_in_photo: null,
+      check_in_photo: storedPhoto.data,
       check_in_photo_mime: photoMime,
-      check_in_photo_url: uploadedPhoto.secure_url,
-      check_in_photo_public_id: uploadedPhoto.public_id,
+      check_in_photo_url: storedPhoto.secureUrl,
+      check_in_photo_public_id: storedPhoto.publicId,
 
       work_mode: workMode,
       is_wfh: isWfhMode,
@@ -905,13 +985,13 @@ export async function POST(req: NextRequest) {
         return savedAttendance;
       });
     } catch (databaseError) {
-      await deleteCloudinaryPhoto(uploadedPhoto.public_id);
+      await deleteCloudinaryPhoto(storedPhoto.publicId);
       throw databaseError;
     }
 
     if (
       existingAttendance?.check_in_photo_public_id &&
-      existingAttendance.check_in_photo_public_id !== uploadedPhoto.public_id
+      existingAttendance.check_in_photo_public_id !== storedPhoto.publicId
     ) {
       await deleteCloudinaryPhoto(existingAttendance.check_in_photo_public_id);
     }
@@ -924,7 +1004,7 @@ export async function POST(req: NextRequest) {
           ? `Check-in berhasil. Kamu terlambat ${lateMinutes} menit.`
           : "Check-in berhasil.",
       attendanceId: attendance.id,
-      photoUrl: uploadedPhoto.secure_url,
+      photoUrl: storedPhoto.secureUrl,
       status: attendanceStatus,
       workMode,
       workModeLabel: getWorkModeLabel(workMode),

@@ -29,13 +29,6 @@ type LeaveRequest = {
   status: string;
   statusLabel: string;
   adminNote: string | null;
-  requestedWorkMode: string | null;
-  locationUnlockRequested: boolean;
-  locationUnlockApproved: boolean;
-  visitLocationName: string | null;
-  visitAddress: string | null;
-  visitLatitude: number | null;
-  visitLongitude: number | null;
   createdAt: string | null;
 };
 
@@ -173,35 +166,11 @@ export default function LeaveRequestPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
-  const [requestedWorkMode, setRequestedWorkMode] = useState("office");
-  const [locationUnlockRequested, setLocationUnlockRequested] = useState(false);
-  const [visitLocationName, setVisitLocationName] = useState("");
-  const [visitAddress, setVisitAddress] = useState("");
-  const [visitLatitude, setVisitLatitude] = useState("");
-  const [visitLongitude, setVisitLongitude] = useState("");
-  const [fileBase64, setFileBase64] = useState("");
 
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [stats, setStats] = useState<LeaveStats>(emptyStats);
 
   const [isLoading, setIsLoading] = useState(true);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Ukuran file maksimal adalah 2MB.");
-      e.target.value = "";
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setFileBase64(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [pageAlert, setPageAlert] = useState<PageAlert>(null);
@@ -299,13 +268,7 @@ export default function LeaveRequestPage() {
           leaveType,
           startDate,
           endDate,
-          reason: fileBase64 ? `${reason.trim()} | Attachment: ${fileBase64}` : reason.trim(),
-          requestedWorkMode,
-          locationUnlockRequested,
-          visitLocationName,
-          visitAddress,
-          visitLatitude,
-          visitLongitude,
+          reason: reason.trim(),
         }),
       });
 
@@ -325,13 +288,6 @@ export default function LeaveRequestPage() {
       setStartDate("");
       setEndDate("");
       setReason("");
-      setFileBase64("");
-      setRequestedWorkMode("office");
-      setLocationUnlockRequested(false);
-      setVisitLocationName("");
-      setVisitAddress("");
-      setVisitLatitude("");
-      setVisitLongitude("");
 
       setPageAlert({
         type: "success",
@@ -433,89 +389,14 @@ export default function LeaveRequestPage() {
                 suppressHydrationWarning
                 value={leaveType}
                 onChange={(event) => setLeaveType(event.target.value)}
-                className="mt-2 min-h-[52px] w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 min-h-[52px] w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px- py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
               >
                 <option value="annual">Cuti Tahunan</option>
                 <option value="permission">Izin</option>
                 <option value="sick">Sakit</option>
-                <option value="wfh">WFH</option>
-                <option value="visit">Kunjungan</option>
-                <option value="overtime">Lembur</option>
                 <option value="other">Lainnya</option>
               </select>
             </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-black text-slate-700">
-                  Mode Kerja
-                </label>
-
-                <select
-                  value={requestedWorkMode}
-                  onChange={(event) => setRequestedWorkMode(event.target.value)}
-                  className="mt-2 h-14 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                >
-                  <option value="office">WFO / Kantor</option>
-                  <option value="wfh">WFH</option>
-                  <option value="visit">Kunjungan Lokasi</option>
-                  <option value="flexible">Shift Fleksibel</option>
-                </select>
-              </div>
-
-              <label className="flex min-h-14 items-center gap-3 rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 text-sm font-bold text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={locationUnlockRequested}
-                  onChange={(event) => setLocationUnlockRequested(event.target.checked)}
-                  className="h-5 w-5 rounded border-blue-200 text-[#123c8c]"
-                />
-                Minta admin membuka kunci lokasi
-              </label>
-            </div>
-
-            {leaveType === "visit" || requestedWorkMode === "visit" ? (
-              <div className="space-y-4 rounded-2xl border border-blue-100 bg-[#f8fbff] p-4">
-                <div>
-                  <label className="text-sm font-black text-slate-700">
-                    Nama Lokasi Kunjungan
-                  </label>
-                  <input
-                    value={visitLocationName}
-                    onChange={(event) => setVisitLocationName(event.target.value)}
-                    placeholder="Contoh: Client Bandung"
-                    className="mt-2 h-12 w-full rounded-xl border border-blue-100 bg-white px-4 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-black text-slate-700">
-                    Alamat / Catatan Lokasi
-                  </label>
-                  <input
-                    value={visitAddress}
-                    onChange={(event) => setVisitAddress(event.target.value)}
-                    placeholder="Alamat lokasi kunjungan"
-                    className="mt-2 h-12 w-full rounded-xl border border-blue-100 bg-white px-4 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c]"
-                  />
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-2">
-                  <input
-                    value={visitLatitude}
-                    onChange={(event) => setVisitLatitude(event.target.value)}
-                    placeholder="Latitude opsional"
-                    className="h-12 rounded-xl border border-blue-100 bg-white px-4 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c]"
-                  />
-                  <input
-                    value={visitLongitude}
-                    onChange={(event) => setVisitLongitude(event.target.value)}
-                    placeholder="Longitude opsional"
-                    className="h-12 rounded-xl border border-blue-100 bg-white px-4 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c]"
-                  />
-                </div>
-              </div>
-            ) : null}
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
@@ -574,25 +455,6 @@ export default function LeaveRequestPage() {
                 placeholder="Contoh: Mengajukan cuti karena keperluan keluarga."
                 className="mt-2 min-h-28 w-full resize-none rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
               />
-            </div>
-
-            <div>
-              <label className="text-sm font-black text-slate-700">
-                Bukti Lampiran (Foto/PDF, Maks 2MB - Opsional)
-              </label>
-
-              <input
-                type="file"
-                accept="image/*,application/pdf"
-                onChange={handleFileChange}
-                className="mt-2 block w-full text-xs font-bold text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-[#123c8c]/10 file:text-[#123c8c] hover:file:bg-[#123c8c]/20"
-              />
-
-              {fileBase64 && (
-                <p className="mt-2 text-xs font-semibold text-emerald-600">
-                  ✓ Dokumen berhasil dilampirkan.
-                </p>
-              )}
             </div>
 
             <button
@@ -705,54 +567,9 @@ export default function LeaveRequestPage() {
                       </div>
                     </div>
 
-                    {(() => {
-                      const [displayReason, attachmentUrl] = item.reason.split(" | Attachment: ");
-                      return (
-                        <>
-                          <p className="mt-4 rounded-2xl bg-[#f8fbff] p-4 text-sm font-semibold leading-6 text-slate-600">
-                            {displayReason}
-                          </p>
-
-                          {attachmentUrl && (
-                            <div className="mt-3">
-                              {attachmentUrl.startsWith("data:image/") || /\.(png|jpe?g|gif|webp)$/i.test(attachmentUrl) ? (
-                                <div className="mt-2 max-w-xs rounded-xl overflow-hidden border border-slate-100 bg-slate-50 p-2">
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img
-                                    src={attachmentUrl}
-                                    alt="Bukti Dokumen Cuti"
-                                    className="w-full max-h-40 object-contain rounded-lg"
-                                  />
-                                </div>
-                              ) : (
-                                <a
-                                  href={attachmentUrl}
-                                  download={`bukti-${item.leaveType}-${item.startDate}.pdf`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 text-xs font-black text-[#123c8c] hover:underline bg-[#123c8c]/5 px-3 py-1.5 rounded-xl transition"
-                                >
-                                  <FileText size={14} />
-                                  Lihat/Unduh Bukti Lampiran
-                                </a>
-                              )}
-                            </div>
-                          )}
-                        </>
-                      );
-                    })()}
-
-                    {item.locationUnlockRequested ? (
-                      <p className="mt-3 rounded-2xl bg-amber-50 p-4 text-sm font-semibold leading-6 text-amber-700">
-                        Kunci lokasi: {item.locationUnlockApproved ? "dibuka admin" : "menunggu approval admin"}
-                      </p>
-                    ) : null}
-
-                    {item.visitLocationName || item.visitAddress ? (
-                      <p className="mt-3 rounded-2xl bg-[#f8fbff] p-4 text-sm font-semibold leading-6 text-slate-600">
-                        Lokasi: {[item.visitLocationName, item.visitAddress].filter(Boolean).join(" - ")}
-                      </p>
-                    ) : null}
+                    <p className="mt-4 rounded-2xl bg-[#f8fbff] p-4 text-sm font-semibold leading-6 text-slate-600">
+                      {item.reason}
+                    </p>
 
                     {item.adminNote ? (
                       <p className="mt-3 rounded-2xl bg-blue-50 p-4 text-sm font-semibold leading-6 text-[#123c8c]">

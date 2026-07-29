@@ -11,6 +11,8 @@ export type OfficeGeofence = {
   radius_meters: number;
 };
 
+export const DEFAULT_GEOFENCE_ACCURACY_BUFFER_METERS = 750;
+
 export function getDistanceInMeters(from: GeoPoint, to: GeoPoint) {
   const earthRadius = 6371000;
 
@@ -56,7 +58,8 @@ export function isValidGeofence(office: OfficeGeofence) {
 
 export function findNearestValidOffice(
   userLocation: GeoPoint,
-  offices: OfficeGeofence[]
+  offices: OfficeGeofence[],
+  gpsAccuracy?: number | null,
 ) {
   if (!isValidGpsCoordinate(userLocation)) return null;
 
@@ -67,11 +70,16 @@ export function findNearestValidOffice(
         lat: office.latitude,
         lng: office.longitude,
       });
+      const effectiveRadius = getEffectiveGeofenceRadius(
+        office.radius_meters,
+        gpsAccuracy,
+      );
 
       return {
         office,
         distance,
-        isWithinRadius: distance <= office.radius_meters,
+        effectiveRadius,
+        isWithinRadius: distance <= effectiveRadius,
       };
     })
     .filter((item) => item.isWithinRadius)
@@ -80,7 +88,20 @@ export function findNearestValidOffice(
   return validOffices[0] ?? null;
 }
 
-export function isGpsAccuracyAllowed(accuracy: number, maxAccuracy = 100) {
+export function getEffectiveGeofenceRadius(
+  officeRadiusMeters: number,
+  gpsAccuracy?: number | null,
+  maxAccuracyBufferMeters = DEFAULT_GEOFENCE_ACCURACY_BUFFER_METERS,
+) {
+  const accuracyBuffer =
+    typeof gpsAccuracy === "number" && Number.isFinite(gpsAccuracy)
+      ? Math.min(Math.max(gpsAccuracy, 0), maxAccuracyBufferMeters)
+      : 0;
+
+  return officeRadiusMeters + accuracyBuffer;
+}
+
+export function isGpsAccuracyAllowed(accuracy: number, maxAccuracy = 1000) {
   return (
     Number.isFinite(accuracy) &&
     accuracy > 0 &&

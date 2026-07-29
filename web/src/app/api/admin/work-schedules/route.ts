@@ -47,17 +47,24 @@ const defaultShifts = [
 function getDefaultTimeByShift(shiftName: string) {
   const name = shiftName.toUpperCase();
 
+  if (name.includes("MAGANG")) {
+    return {
+      checkIn: "09:00",
+      checkOut: "16:00",
+    };
+  }
+
   if (name.includes("PAGI")) {
     return {
-      checkIn: "08:00",
-      checkOut: "11:00",
+      checkIn: "07:00",
+      checkOut: "15:00",
     };
   }
 
   if (name.includes("SIANG")) {
     return {
       checkIn: "13:00",
-      checkOut: "15:00",
+      checkOut: "21:00",
     };
   }
 
@@ -83,11 +90,14 @@ function sortShifts<T extends { name: string }>(shifts: T[]) {
     const aIndex = order.indexOf(a.name.toUpperCase());
     const bIndex = order.indexOf(b.name.toUpperCase());
 
-    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-    if (aIndex !== -1) return -1;
-    if (bIndex !== -1) return 1;
+    if (aIndex === -1 && bIndex === -1) {
+      return a.name.localeCompare(b.name);
+    }
 
-    return a.name.localeCompare(b.name);
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+
+    return aIndex - bIndex;
   });
 }
 
@@ -133,10 +143,7 @@ async function ensureDefaultWorkSchedules() {
               day_of_week: day,
             },
           },
-          update: {
-            check_in_time: defaultTime.checkIn,
-            check_out_time: defaultTime.checkOut,
-          },
+          update: {},
           create: {
             shift_id: shift.id,
             day_of_week: day,

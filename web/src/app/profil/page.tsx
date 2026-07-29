@@ -1,5 +1,5 @@
 "use client";
-// Force HMR Cache Refresh
+
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -42,7 +42,6 @@ import {
   isValidPhoneNumber,
   normalizeDigits,
 } from "@/lib/identity-validation";
-import { getRemainingContractText } from "@/lib/employment-period";
 
 type ShiftWorkSchedule = {
   day_of_week: string;
@@ -53,6 +52,7 @@ type ShiftWorkSchedule = {
 
 type ProfileUser = {
   id: string;
+  employee_code: string | null;
   name: string;
   email: string;
   role: string;
@@ -586,10 +586,16 @@ function PasswordInput({
   );
 }
 
-export default function ProfilePage() {
+type ProfilPageContentProps = {
+  initialView?: ProfileView;
+};
+
+export function ProfilPageContent({
+  initialView = "menu",
+}: ProfilPageContentProps = {}) {
   const router = useRouter();
 
-  const [activeView, setActiveView] = useState<ProfileView>("menu");
+  const [activeView, setActiveView] = useState<ProfileView>(initialView);
 
   const [user, setUser] = useState<ProfileUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -666,8 +672,18 @@ export default function ProfilePage() {
     field: "bank_account_number" | "nik",
     value: string,
   ) {
-    const maxLength = 16;
+    const maxLength = field === "nik" ? 16 : 16;
     const normalizedValue = normalizeNumericInput(value).slice(0, maxLength);
+
+    if (value !== normalizedValue) {
+      showProfileAlert(
+        field === "nik" ? "NIK tidak valid" : "No rekening tidak valid",
+        field === "nik"
+          ? "NIK harus berupa angka dan berjumlah tepat 16 digit."
+          : "No rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
+        "warning",
+      );
+    }
 
     setEditProfileForm((prev) => ({
       ...prev,
@@ -1088,11 +1104,6 @@ export default function ProfilePage() {
         icon: CalendarDays,
       },
       {
-        label: "Sisa Kontrak",
-        value: getRemainingContractText(user.employment_end_date),
-        icon: Clock3,
-      },
-      {
         label: "Role Akun",
         value: formatRole(user.role),
         icon: ShieldCheck,
@@ -1106,6 +1117,11 @@ export default function ProfilePage() {
         label: "Tanggal Lahir",
         value: formatDate(user.birth_date),
         icon: CalendarDays,
+      },
+      {
+        label: "No Induk Karyawan",
+        value: user.employee_code || "-",
+        icon: IdCard,
       },
       {
         label: "NIK",
@@ -1159,6 +1175,15 @@ export default function ProfilePage() {
     ? getProfileAlertTheme(profileAlert.type)
     : null;
   const ProfileAlertIcon = profileAlertTheme?.icon || AlertTriangle;
+  const isDetailRoute = initialView === "personal-detail";
+  const handleBackToMenu = () => {
+    if (isDetailRoute) {
+      router.push("/profil");
+      return;
+    }
+
+    setActiveView("menu");
+  };
 
   return (
     <MobileShell variant="employee" withBottomPadding={false}>
@@ -1195,7 +1220,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-4 border-b border-slate-100 pb-5 md:hidden">
               <button
                 type="button"
-                onClick={() => setActiveView("menu")}
+                onClick={handleBackToMenu}
                 className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#123456] transition hover:bg-[#f8fbff] active:scale-[0.96]"
               >
                 <ArrowLeft size={25} strokeWidth={2.8} />
@@ -1209,7 +1234,7 @@ export default function ProfilePage() {
             <div className="hidden items-center gap-4 md:flex">
               <button
                 type="button"
-                onClick={() => setActiveView("menu")}
+                onClick={handleBackToMenu}
                 className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200 transition hover:-translate-y-0.5 hover:bg-[#f8fbff] active:scale-[0.96]"
               >
                 <ArrowLeft size={25} strokeWidth={2.8} />
@@ -1286,7 +1311,7 @@ export default function ProfilePage() {
 
             <button
               type="button"
-              onClick={() => router.push("/face-card")}
+              onClick={() => router.push("/kartu-identitas")}
               className="profile-row-enter mt-6 flex w-full items-center gap-5 rounded-[2rem] bg-white text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-200/50 active:scale-[0.99] md:border md:border-blue-100 md:p-6 md:shadow-xl md:shadow-slate-200/50"
               style={{ animationDelay: "60ms" }}
             >
@@ -1322,7 +1347,7 @@ export default function ProfilePage() {
                   icon={UserRound}
                   title="Info Pribadi"
                   subtitle="Lihat detail personal dan data karyawan"
-                  onClick={() => setActiveView("personal-detail")}
+                  onClick={() => router.push(`/profil/${user.id}`)}
                   delay="120ms"
                 />
 
@@ -1581,6 +1606,17 @@ export default function ProfilePage() {
                           event.target.value,
                         )
                       }
+                      onPaste={(event) => {
+                        const pastedText = event.clipboardData.getData("text");
+
+                        if (/\D/.test(pastedText) || pastedText.length > 16) {
+                          showProfileAlert(
+                            "NIK tidak valid",
+                            "NIK harus berupa angka dan berjumlah tepat 16 digit.",
+                            "warning",
+                          );
+                        }
+                      }}
                       inputMode="numeric"
                       pattern="[0-9]*"
                       maxLength={16}
@@ -1612,6 +1648,17 @@ export default function ProfilePage() {
                           event.target.value,
                         )
                       }
+                      onPaste={(event) => {
+                        const pastedText = event.clipboardData.getData("text");
+
+                        if (/\D/.test(pastedText) || pastedText.length > 16) {
+                          showProfileAlert(
+                            "No rekening tidak valid",
+                            "No rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
+                            "warning",
+                          );
+                        }
+                      }}
                       inputMode="numeric"
                       pattern="[0-9]*"
                       maxLength={16}
@@ -1838,4 +1885,8 @@ export default function ProfilePage() {
       </main>
     </MobileShell>
   );
+}
+
+export default function ProfilePage() {
+  return <ProfilPageContent />;
 }

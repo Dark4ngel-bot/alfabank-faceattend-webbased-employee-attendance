@@ -8,11 +8,6 @@ export const runtime = "nodejs";
 type OfficeBody = {
   name?: string;
   address?: string;
-  phone?: string;
-  postal_code?: string;
-  postalCode?: string;
-  logo_url?: string;
-  logoUrl?: string;
   latitude?: string | number;
   longitude?: string | number;
   radius_meters?: string | number;
@@ -43,9 +38,6 @@ function normalizeStatus(value: unknown) {
 function validateOfficeBody(body: OfficeBody) {
   const name = String(body.name || "").trim();
   const address = String(body.address || "").trim();
-  const phone = String(body.phone || "").trim();
-  const postal_code = String(body.postal_code || body.postalCode || "").trim();
-  const logo_url = String(body.logo_url || body.logoUrl || "").trim();
   const latitude = toNumber(body.latitude);
   const longitude = toNumber(body.longitude);
   const radius = toNumber(body.radius_meters ?? body.radiusMeters);
@@ -77,9 +69,6 @@ function validateOfficeBody(body: OfficeBody) {
     data: {
       name,
       address: address || null,
-      phone: phone || null,
-      postal_code: postal_code || null,
-      logo_url: logo_url || null,
       latitude,
       longitude,
       radius_meters: Math.round(radius),
@@ -102,9 +91,6 @@ export async function GET(req: NextRequest, context: RouteContext) {
         id: true,
         name: true,
         address: true,
-        phone: true,
-        postal_code: true,
-        logo_url: true,
         latitude: true,
         longitude: true,
         radius_meters: true,
@@ -116,7 +102,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           success: false,
-          message: "Kantor tidak ditemukan.",
+          message: "Data kantor tidak ditemukan.",
         },
         { status: 404 }
       );
@@ -166,9 +152,6 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
         id: true,
         name: true,
         address: true,
-        phone: true,
-        postal_code: true,
-        logo_url: true,
         latitude: true,
         longitude: true,
         radius_meters: true,

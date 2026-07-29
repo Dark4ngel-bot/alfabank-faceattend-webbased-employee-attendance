@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/api-auth";
@@ -493,36 +492,6 @@ export async function GET(req: NextRequest) {
           !recordsByUserId.has(employee.id) && !leaveUserIds.has(employee.id),
       ).length;
 
-      const presentNames = records
-        .filter((record) => Boolean(record.check_in_time))
-        .map((r) => r.user?.name || "Tanpa Nama");
-
-      const lateNames = records
-        .filter(
-          (record) =>
-            record.check_in_status === "LATE" ||
-            record.status === "LATE" ||
-            Number(record.late_minutes || 0) > 0,
-        )
-        .map((r) => `${r.user?.name || "Tanpa Nama"} (${r.late_minutes}m)`);
-
-      const wfhNames = records
-        .filter((record) => record.is_wfh || record.work_mode === "wfh")
-        .map((r) => r.user?.name || "Tanpa Nama");
-
-      const visitNames = records
-        .filter((record) => record.is_visit || record.work_mode === "visit")
-        .map((r) => r.user?.name || "Tanpa Nama");
-
-      const cutiNames = approvedLeaveThisMonth
-        .filter((leave) => {
-          const s = normalizeDate(leave.start_date);
-          const e = normalizeDate(leave.end_date);
-          const curr = normalizeDate(currentDate);
-          return s <= curr && e >= curr;
-        })
-        .map((leave) => leave.user?.name || "Tanpa Nama");
-
       return {
         label: String(day),
         date: currentKey,
@@ -598,37 +567,6 @@ export async function GET(req: NextRequest) {
         reason: record.late_reason || "Belum ada alasan",
       }));
 
-    const monthVisits = await prisma.employeeVisit.findMany({
-      where: {
-        visit_date: {
-          gte: monthStart,
-          lt: nextMonthStart,
-        },
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        visit_date: "desc",
-      },
-    });
-
-    const visits = monthVisits.map((v) => ({
-      id: v.id,
-      date: formatDateKey(v.visit_date),
-      employeeName: v.user?.name || "Tanpa Nama",
-      title: v.title,
-      clientName: v.client_name,
-      address: v.address,
-      startTime: formatTime(v.start_time),
-      note: v.note,
-      hasPhoto: Boolean(v.visit_photo_mime),
-    }));
-
     return NextResponse.json({
       month,
       year,
@@ -660,7 +598,6 @@ export async function GET(req: NextRequest) {
       dailyChart,
       alerts,
       lateReasons,
-      visits,
     });
   } catch (error) {
     console.error("GET /api/admin/monitor-perusahaan error:", error);

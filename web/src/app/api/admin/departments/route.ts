@@ -197,16 +197,6 @@ export async function POST(req: NextRequest) {
     const officeId = String(body.office_id || "").trim();
     const status = String(body.status || "active").trim();
 
-    if (!officeId) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Kantor divisi wajib dipilih.",
-        },
-        { status: 400 }
-      );
-    }
-
     if (!name) {
       return NextResponse.json(
         {
@@ -227,30 +217,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const office = await prisma.officeLocation.findUnique({
-      where: {
-        id: officeId,
-      },
-      select: {
-        id: true,
-        name: true,
-        status: true,
-      },
-    });
-
-    if (!office || office.status !== "active") {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Kantor tidak ditemukan atau tidak aktif.",
+    if (officeId) {
+      const office = await prisma.officeLocation.findUnique({
+        where: {
+          id: officeId,
         },
-        { status: 404 }
-      );
+        select: {
+          id: true,
+          name: true,
+          status: true,
+        },
+      });
+
+      if (!office || office.status !== "active") {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Kantor tidak ditemukan atau tidak aktif.",
+          },
+          { status: 404 }
+        );
+      }
     }
 
-    const existingDepartment = await prisma.department.findFirst({
+    const duplicate = await prisma.department.findFirst({
       where: {
-        office_id: officeId,
         name,
       },
       select: {
@@ -258,11 +249,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (existingDepartment) {
+    if (duplicate) {
       return NextResponse.json(
         {
           success: false,
-          message: "Nama divisi sudah ada pada kantor yang dipilih.",
+          message: "Nama divisi sudah ada.",
         },
         { status: 409 }
       );
@@ -271,7 +262,7 @@ export async function POST(req: NextRequest) {
     const department = await prisma.department.create({
       data: {
         name,
-        office_id: officeId,
+        office_id: officeId || null,
         status,
       },
       select: {
@@ -312,7 +303,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "Nama divisi sudah ada pada kantor yang dipilih.",
+          message: "Nama divisi sudah ada.",
         },
         { status: 409 }
       );
@@ -364,16 +355,6 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    if (!officeId) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Kantor divisi wajib dipilih.",
-        },
-        { status: 400 }
-      );
-    }
-
     if (!name) {
       return NextResponse.json(
         {
@@ -394,12 +375,16 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const currentDepartment = await prisma.department.findUnique({
-      where: { id },
-      select: { id: true },
+    const existingDepartment = await prisma.department.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+      },
     });
 
-    if (!currentDepartment) {
+    if (!existingDepartment) {
       return NextResponse.json(
         {
           success: false,
@@ -409,51 +394,58 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const office = await prisma.officeLocation.findUnique({
+    if (officeId) {
+      const office = await prisma.officeLocation.findUnique({
+        where: {
+          id: officeId,
+        },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+        },
+      });
+
+      if (!office || office.status !== "active") {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Kantor tidak ditemukan atau tidak aktif.",
+          },
+          { status: 404 }
+        );
+      }
+    }
+
+    const duplicate = await prisma.department.findFirst({
       where: {
-        id: officeId,
+        name,
+        NOT: {
+          id,
+        },
       },
       select: {
         id: true,
-        name: true,
-        status: true,
       },
     });
 
-    if (!office || office.status !== "active") {
+    if (duplicate) {
       return NextResponse.json(
         {
           success: false,
-          message: "Kantor tidak ditemukan atau tidak aktif.",
-        },
-        { status: 404 }
-      );
-    }
-
-    const existingDepartment = await prisma.department.findFirst({
-      where: {
-        office_id: officeId,
-        name,
-        NOT: { id },
-      },
-      select: { id: true },
-    });
-
-    if (existingDepartment) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Nama divisi sudah ada pada kantor yang dipilih.",
+          message: "Nama divisi sudah ada.",
         },
         { status: 409 }
       );
     }
 
     const department = await prisma.department.update({
-      where: { id },
+      where: {
+        id,
+      },
       data: {
         name,
-        office_id: officeId,
+        office_id: officeId || null,
         status,
       },
       select: {
@@ -494,7 +486,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "Nama divisi sudah ada pada kantor yang dipilih.",
+          message: "Nama divisi sudah ada.",
         },
         { status: 409 }
       );
@@ -503,7 +495,8 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : "Gagal memperbarui divisi.",
+        message:
+          error instanceof Error ? error.message : "Gagal memperbarui divisi.",
       },
       { status: 500 }
     );
@@ -595,7 +588,7 @@ export async function DELETE(req: NextRequest) {
         {
           success: false,
           message:
-            "Divisi tidak bisa dihapus karena masih memiliki relasi. Ubah status menjadi Nonaktif.",
+            "Divisi tidak bisa dihapus karena masih digunakan data lain. Ubah status menjadi Nonaktif.",
         },
         { status: 400 }
       );

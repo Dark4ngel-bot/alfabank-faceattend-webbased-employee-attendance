@@ -18,8 +18,6 @@ type Announcement = {
   documentName?: string | null;
   documentSize?: number | null;
   status?: string;
-  attachment_url?: string | null;
-  attachmentUrl?: string | null;
   created_at?: string;
   createdAt?: string;
 };
@@ -151,15 +149,6 @@ export default function AnnouncementPage() {
       const safeList = Array.isArray(list) ? list : [];
 
       setAnnouncements(safeList);
-
-      // Post read receipts for all loaded announcements
-      for (const ann of safeList) {
-        void fetch("/api/announcements/read", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ announcementId: ann.id }),
-        });
-      }
 
       const latestId = safeList[0]?.id;
 

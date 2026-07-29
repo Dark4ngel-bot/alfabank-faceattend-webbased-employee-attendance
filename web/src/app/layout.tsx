@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
-import GlobalAlert from "@/components/GlobalAlert";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,48 +34,11 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} notranslate h-full antialiased`}
     >
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  localStorage.setItem('theme', 'light');
-                  document.documentElement.classList.remove('dark');
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                  for (let registration of registrations) {
-                    registration.unregister();
-                  }
-                });
-                if ('caches' in window) {
-                  caches.keys().then(function(names) {
-                    for (let name of names) {
-                      caches.delete(name);
-                    }
-                  });
-                }
-              }
-            `,
-          }}
-        />
-      </head>
       <body
         suppressHydrationWarning
         className="notranslate min-h-full flex flex-col"
       >
-        <ThemeProvider>
-          {children}
-          <GlobalAlert />
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

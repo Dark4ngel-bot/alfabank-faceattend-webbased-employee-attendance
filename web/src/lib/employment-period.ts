@@ -1,3 +1,5 @@
+import { prisma } from "@/lib/prisma";
+
 type EmploymentPeriodUser = {
   id: string;
   role: string | null;
@@ -48,8 +50,6 @@ export async function deactivateExpiredEmployee(user: EmploymentPeriodUser) {
     return false;
   }
 
-  const { prisma } = await import("@/lib/prisma");
-
   await prisma.user.updateMany({
     where: {
       id: user.id,
@@ -62,44 +62,3 @@ export async function deactivateExpiredEmployee(user: EmploymentPeriodUser) {
 
   return true;
 }
-
-export function getRemainingContractText(
-  employmentEndDate: Date | string | null,
-  now = new Date(),
-) {
-  if (!employmentEndDate) return "Tetap / Tidak Berbatas";
-
-  const endDate = new Date(employmentEndDate);
-  if (Number.isNaN(endDate.getTime())) return "-";
-
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const target = new Date(
-    endDate.getFullYear(),
-    endDate.getMonth(),
-    endDate.getDate(),
-  );
-
-  const diffTime = target.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) {
-    return "Kontrak Berakhir";
-  }
-  if (diffDays === 0) {
-    return "Berakhir Hari Ini";
-  }
-
-  if (diffDays < 30) {
-    return `${diffDays} Hari Tersisa`;
-  }
-
-  const months = Math.floor(diffDays / 30);
-  const days = diffDays % 30;
-
-  if (days === 0) {
-    return `${months} Bulan Tersisa`;
-  }
-
-  return `${months} Bulan ${days} Hari Tersisa`;
-}
-

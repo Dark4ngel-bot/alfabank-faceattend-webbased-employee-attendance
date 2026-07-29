@@ -53,7 +53,7 @@ async function ensureDefaultStatuses() {
         prisma.employmentStatus.upsert({
           where: { name },
           update: {},
-          create: { name, code: createStatusCode(name), active: true },
+          create: { name, code: createStatusCode(name), status: "active" },
         })
       )
     );
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
       data: {
         name,
         code: createStatusCode(requestedCode || name),
-        active: status === "active",
+        status,
       },
     });
 
@@ -181,7 +181,7 @@ export async function PATCH(req: NextRequest) {
       where: { id },
       data: {
         name,
-        active: status === "active",
+        status,
       },
     });
 

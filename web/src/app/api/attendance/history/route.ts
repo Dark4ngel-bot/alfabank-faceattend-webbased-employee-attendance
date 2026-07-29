@@ -24,8 +24,7 @@ function formatDateKey(date: Date) {
   }).format(date);
 }
 
-function formatStatus(status?: string | null, lateMinutes = 0, activityNote?: string | null) {
-  if (activityNote?.includes("overtime")) return "Lembur";
+function formatStatus(status?: string | null, lateMinutes = 0) {
   if (lateMinutes > 0) return "Terlambat";
 
   const statusMap: Record<string, string> = {
@@ -83,7 +82,6 @@ export async function GET(req: NextRequest) {
         late_minutes: true,
         early_leave_minutes: true,
         work_minutes: true,
-        activity_note: true,
       },
     });
 
@@ -92,7 +90,7 @@ export async function GET(req: NextRequest) {
       date: formatDateKey(item.attendance_date),
       checkIn: formatTime(item.check_in_time),
       checkOut: formatTime(item.check_out_time),
-      status: formatStatus(item.status, item.late_minutes, item.activity_note),
+      status: formatStatus(item.status, item.late_minutes),
       lateMinutes: item.late_minutes,
       earlyLeaveMinutes: item.early_leave_minutes,
       workMinutes: item.work_minutes,

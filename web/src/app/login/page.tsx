@@ -3,10 +3,15 @@
 import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { AlertCircle, Loader2, LogIn, X } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2, LogIn, X } from "lucide-react";
 import MobileShell from "@/components/MobileShell";
 import { AppButton, AppCard, AppInput } from "@/components/ui/AppUI";
-import { useCompanyLogo, useCompanyName } from "@/hooks/useCompanyLogo";
+import { useSiteLogo } from "@/hooks/useSiteLogo";
+import {
+  CREATIVEMU_EMAIL_EXAMPLE,
+  isCreativemuEmail,
+  isValidEmailFormat,
+} from "@/lib/creativemu-email";
 
 type LoginResponse = {
   success?: boolean;
@@ -31,95 +36,9 @@ async function readJsonResponse(response: Response) {
   }
 }
 
-function isValidEmailFormat(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim().toLowerCase());
-}
-
-function isCreativemuEmail(email: string) {
-  const normalized = email.trim().toLowerCase();
-  return (
-    normalized.endsWith("@creativemu.id") ||
-    normalized.endsWith("@creativemu.co.id") ||
-    normalized.endsWith("@creativemu.com")
-  );
-}
-
 function LoginMotionStyles() {
   return (
     <style>{`
-      @keyframes faceScannerLine {
-        0%, 100% {
-          top: 0%;
-          opacity: 0;
-        }
-        10%, 90% {
-          opacity: 1;
-        }
-        50% {
-          top: 100%;
-          opacity: 1;
-        }
-      }
-
-      @keyframes faceScanBracket {
-        0%, 100% {
-          transform: scale(1);
-          opacity: 0.7;
-        }
-        50% {
-          transform: scale(1.06);
-          opacity: 1;
-        }
-      }
-
-      @keyframes biometricPulse {
-        0%, 100% {
-          transform: scale(1);
-          opacity: 0.15;
-        }
-        50% {
-          transform: scale(1.05);
-          opacity: 0.35;
-        }
-      }
-
-      @keyframes techStatusPulse {
-        0%, 100% {
-          opacity: 0.4;
-          transform: translateY(0);
-        }
-        50% {
-          opacity: 1;
-          transform: translateY(-2px);
-        }
-      }
-
-
-
-      @keyframes splashLogoPulse {
-        0%, 100% {
-          transform: scale(1);
-          filter: drop-shadow(0 4px 6px rgba(18, 60, 140, 0.08));
-        }
-        50% {
-          transform: scale(1.05);
-          filter: drop-shadow(0 10px 15px rgba(255, 138, 0, 0.18));
-        }
-      }
-
-      @keyframes splashTextFadeIn {
-        0% {
-          opacity: 0;
-          transform: translateY(10px);
-          filter: blur(4px);
-        }
-        100% {
-          opacity: 1;
-          transform: translateY(0);
-          filter: blur(0px);
-        }
-      }
-
       @keyframes loginEnter {
         0% {
           opacity: 0;
@@ -276,51 +195,14 @@ function LoginMotionStyles() {
 
       .login-field-smooth input {
         transition:
-          border-color 220ms ease,
-          background-color 220ms ease,
-          box-shadow 220ms ease,
-          transform 220ms ease;
-      }
-
-      .login-field-smooth input:hover {
-        transform: translateY(-1px);
-        border-color: rgba(18, 60, 140, 0.25);
-        box-shadow: 0 4px 12px rgba(18, 60, 140, 0.04);
+          border-color 180ms ease,
+          background-color 180ms ease,
+          box-shadow 180ms ease,
+          transform 180ms ease;
       }
 
       .login-field-smooth input:focus {
-        transform: translateY(-3px);
-        border-color: #123c8c;
-        background-color: #edf3fa;
-        box-shadow: 
-          0 10px 20px -5px rgba(18, 60, 140, 0.12),
-          0 0 0 4px rgba(18, 60, 140, 0.08);
-      }
-
-      .login-field-smooth label span {
-        display: inline-block;
-        transition: color 220ms ease, transform 220ms ease;
-      }
-
-      .login-field-smooth label:has(input:focus) span {
-        color: #123c8c;
-        transform: translateX(3px) scale(1.02);
-      }
-
-      .login-presence-title {
-        background: none;
-        color: #123c8c;
-      }
-
-      @media (max-width: 767px) {
-        .login-presence-title {
-          width: auto !important;
-          max-width: 100%;
-          overflow: visible;
-          white-space: normal;
-          border-right: 0 !important;
-          animation: none !important;
-        }
+        transform: translateY(-1px);
       }
 
       .login-presence-title {
@@ -408,15 +290,15 @@ function FloatingAlert({
       `}</style>
 
       <div className="fixed right-4 top-4 z-[100] w-[calc(100%-2rem)] max-w-[25rem] md:right-7 md:top-7">
-        <div className="relative overflow-hidden rounded-[2rem] border border-[#c8d3e2]/70 bg-[#dde6f2]/80 shadow-2xl shadow-slate-950/15 ring-1 ring-[#c8d3e2]/60 backdrop-blur-[20px] animate-[floatingAlertIn_320ms_cubic-bezier(0.2,0.9,0.2,1)] dark:border-[#2f394a] dark:bg-[#1a2230]/90 dark:ring-[#2f394a]">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#f1f5fb]/45 via-[#e2eaf5]/20 to-[#dbe5f1]/15 dark:from-[#232d3c]/65 dark:via-[#1d2635]/30 dark:to-[#1a2230]/20" />
+        <div className="relative overflow-hidden rounded-[2rem] border border-white/40 bg-white/15 shadow-2xl shadow-slate-950/20 ring-1 ring-white/35 backdrop-blur-[26px] animate-[floatingAlertIn_320ms_cubic-bezier(0.2,0.9,0.2,1)]">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/12 to-white/5" />
 
           <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_44%),radial-gradient(circle_at_top_right,rgba(18,60,140,0.16),transparent_48%)]" />
 
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#e8eef7]/70 text-slate-700 shadow-sm ring-1 ring-[#c8d3e2] backdrop-blur-xl transition hover:bg-[#dce6f2] hover:text-slate-900 active:scale-95 dark:bg-[#202a39] dark:text-slate-300 dark:ring-[#303b4d] dark:hover:bg-[#273243]"
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 text-slate-700 shadow-sm ring-1 ring-white/40 backdrop-blur-xl transition hover:bg-white/35 hover:text-slate-950 active:scale-95"
             aria-label="Tutup alert"
           >
             <X size={19} strokeWidth={2.7} />
@@ -427,21 +309,21 @@ function FloatingAlert({
               <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
                 <div className="absolute inset-0 rounded-[1.5rem] bg-orange-300/45 animate-[alertPulse_1.6s_ease-in-out_infinite]" />
 
-                <div className="relative flex h-14 w-14 items-center justify-center rounded-[1.25rem] border border-orange-200/55 bg-[#f3e9dc]/60 text-orange-700 shadow-xl shadow-orange-200/15 backdrop-blur-xl animate-[alertIconPop_320ms_ease-out] dark:border-orange-300/20 dark:bg-[#3a2b20]/65 dark:text-orange-300">
+                <div className="relative flex h-14 w-14 items-center justify-center rounded-[1.25rem] border border-orange-100/50 bg-white/25 text-orange-600 shadow-xl shadow-orange-200/20 backdrop-blur-xl animate-[alertIconPop_320ms_ease-out]">
                   <AlertCircle size={30} strokeWidth={2.8} />
                 </div>
               </div>
 
               <div className="min-w-0 flex-1 pr-9">
-                <div className="inline-flex rounded-full bg-[#e8edf5]/65 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-orange-700 ring-1 ring-orange-200/45 backdrop-blur-xl dark:bg-[#2a3343]/80 dark:text-orange-300 dark:ring-orange-300/25">
+                <div className="inline-flex rounded-full bg-white/20 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-orange-700 ring-1 ring-orange-100/40 backdrop-blur-xl">
                   Perhatian
                 </div>
 
-                <h2 className="mt-3 text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">
+                <h2 className="mt-3 text-xl font-black tracking-tight text-slate-950">
                   {title}
                 </h2>
 
-                <p className="mt-2 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300">
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-700">
                   {message}
                 </p>
               </div>
@@ -450,7 +332,7 @@ function FloatingAlert({
             <button
               type="button"
               onClick={onClose}
-              className="mt-5 flex min-h-12 w-full items-center justify-center rounded-2xl border border-[#b7c6d8] bg-[#315f9c] px-5 text-sm font-black text-[#e9f1fc] shadow-xl shadow-blue-900/10 backdrop-blur-xl transition hover:bg-[#2c568d] active:scale-[0.98] dark:border-[#32527f] dark:bg-[#274b7b] dark:text-[#e7f0ff] dark:hover:bg-[#2a5389]"
+              className="mt-5 flex min-h-12 w-full items-center justify-center rounded-2xl border border-white/35 bg-[#123c8c]/75 px-5 text-sm font-black text-white shadow-xl shadow-blue-900/15 backdrop-blur-xl transition hover:bg-[#123c8c]/90 active:scale-[0.98]"
             >
               Mengerti
             </button>
@@ -463,12 +345,14 @@ function FloatingAlert({
 
 export default function LoginPage() {
   const router = useRouter();
-  const companyLogo = useCompanyLogo();
-  const companyName = useCompanyName();
-  const [allowLoginPage, setAllowLoginPage] = useState(false);
+  const logoSrc = useSiteLogo();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
+  const [introLeaving, setIntroLeaving] = useState(false);
+  const [introHintVisible, setIntroHintVisible] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
@@ -485,26 +369,8 @@ export default function LoginPage() {
     const searchParams = new URLSearchParams(window.location.search);
     const reason = searchParams.get("reason");
 
-    if (reason) {
-      setAllowLoginPage(true);
-      return;
-    }
-
-    const hasSeenWelcome = window.sessionStorage.getItem("welcomeSeen") === "1";
-
-    if (!hasSeenWelcome) {
-      router.replace("/");
-      return;
-    }
-
-    setAllowLoginPage(true);
-  }, [router]);
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const reason = searchParams.get("reason");
-
     if (reason === "inactive") {
+      setShowIntro(false);
       showAlert(
         "Akun dinonaktifkan",
         "Akun kamu sudah dinonaktifkan, silakan hubungi admin untuk mengaktifkan kembali.",
@@ -513,8 +379,28 @@ export default function LoginPage() {
     }
 
     if (reason === "expired") {
+      setShowIntro(false);
       showAlert("Sesi berakhir", "Silakan login kembali untuk melanjutkan.");
     }
+  }, []);
+
+  useEffect(() => {
+    const restoreDarkMode = document.documentElement.classList.contains("dark");
+    document.documentElement.classList.remove("dark");
+
+    const hintTimer = setTimeout(() => setIntroHintVisible(true), 900);
+    const autoCloseTimer = setTimeout(() => {
+      setIntroLeaving(true);
+      setTimeout(() => setShowIntro(false), 420);
+    }, 2400);
+
+    return () => {
+      clearTimeout(hintTimer);
+      clearTimeout(autoCloseTimer);
+      if (restoreDarkMode || localStorage.getItem("theme") === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -560,6 +446,13 @@ export default function LoginPage() {
     return () => window.clearInterval(timer);
   }, [loginRetryAt]);
 
+  function dismissIntro() {
+    if (introLeaving) return;
+
+    setIntroLeaving(true);
+    setTimeout(() => setShowIntro(false), 420);
+  }
+
   function showAlert(title: string, message: string) {
     setAlert({
       open: true,
@@ -595,15 +488,15 @@ export default function LoginPage() {
     if (!isValidEmailFormat(normalizedEmail)) {
       showAlert(
         "Format email salah",
-        "Masukkan email dengan format yang benar, contoh: nama@creativemu.id",
+        `Masukkan email dengan format yang benar, contoh: ${CREATIVEMU_EMAIL_EXAMPLE}`,
       );
       return;
     }
 
     if (!isCreativemuEmail(normalizedEmail)) {
       showAlert(
-        "Domain Email Salah",
-        "Email harus menggunakan domain resmi @creativemu.id.",
+        "Email tidak valid",
+        "Masuk hanya dapat menggunakan email resmi Creativemu.",
       );
       return;
     }
@@ -671,51 +564,114 @@ export default function LoginPage() {
       ? `Tunggu ${loginRetrySeconds} detik hingga kamu bisa mencoba kembali.`
       : alert.message;
 
-  if (!allowLoginPage) {
-    return null;
-  }
-
   return (
     <MobileShell variant="auth" withBottomPadding={false}>
       <LoginMotionStyles />
 
-      <section className="relative min-h-dvh w-full overflow-hidden bg-[#e6ecf3] dark:bg-[#111823]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.12),transparent_34%),radial-gradient(circle_at_top_right,rgba(18,60,140,0.14),transparent_38%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(240,136,62,0.08),transparent_38%),radial-gradient(circle_at_top_right,rgba(88,166,255,0.08),transparent_42%)]" />
+      {showIntro ? (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={dismissIntro}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              dismissIntro();
+            }
+          }}
+          className={`fixed inset-0 z-[999] flex cursor-pointer select-none flex-col items-center justify-center overflow-hidden px-6 transition-all duration-500 ${
+            introLeaving ? "scale-105 opacity-0 blur-md" : "opacity-100"
+          } bg-[#f6f8ff]`}
+          aria-label="Lanjut ke halaman login"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(18,60,140,0.18),transparent_38%)]" />
+
+          <div className="relative flex h-56 w-56 items-center justify-center md:h-72 md:w-72">
+            <div className="absolute inset-3 hidden rounded-[2rem] border border-[#123c8c]/10 bg-white/25 shadow-2xl shadow-slate-300/30 backdrop-blur-xl md:block" />
+            <div className="intro-scan-line absolute left-8 right-8 top-1/2 z-20 h-0.5 bg-gradient-to-r from-transparent via-[#ff8a00] to-transparent shadow-[0_0_14px_rgba(255,138,0,0.72)]" />
+
+            <div className="relative z-10 flex h-32 w-32 items-center justify-center p-0 md:h-40 md:w-40 md:overflow-hidden md:rounded-[2rem] md:border md:border-white/80 md:bg-white md:p-7 md:shadow-[0_24px_58px_rgba(18,60,140,0.14)]">
+              <Image
+                src={logoSrc}
+                alt="Creativemu Logo"
+                width={421}
+                height={390}
+                className="intro-logo-pulse h-full w-full object-contain"
+                priority
+              />
+            </div>
+          </div>
+
+          <div className="relative mt-9 text-center md:mt-12">
+            <h2 className="intro-text-in text-3xl font-black uppercase tracking-[0.18em] text-slate-950 md:text-5xl">
+              Creativemu
+            </h2>
+            <p
+              className="intro-text-in mt-3 text-xs font-black uppercase tracking-[0.28em] text-[#ff8a00] md:text-sm"
+              style={{ animationDelay: "160ms" }}
+            >
+              Sistem Presensi Wajah
+            </p>
+          </div>
+
+          <p
+            className={`relative mt-14 text-sm font-semibold text-slate-400 transition-opacity duration-300 md:mt-16 ${
+              introHintVisible ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            Tap di mana saja untuk melanjutkan
+          </p>
+        </div>
+      ) : null}
+
+      <section className="relative min-h-dvh w-full overflow-hidden bg-[#f6f8ff]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(18,60,140,0.18),transparent_36%)]" />
 
         <div className="relative z-10 grid min-h-dvh w-full grid-cols-1 lg:grid-cols-2">
           <div className="login-enter relative flex flex-col px-6 py-7 md:px-12 lg:justify-between lg:px-20 lg:py-14">
+            <Image
+              src={logoSrc}
+              alt="Logo Latar Creativemu"
+              width={1452}
+              height={390}
+              className="pointer-events-none absolute left-[80%] top-1/2 hidden w-[34rem] -translate-x-1/2 -translate-y-1/2 opacity-[0.045] mix-blend-multiply lg:block"
+              priority
+            />
+
+            <Image
+              src={logoSrc}
+              alt="Logo Latar Creativemu"
+              width={421}
+              height={390}
+              className="pointer-events-none absolute left-[78%] top-24 w-[18rem] -translate-x-1/2 opacity-[0.04] mix-blend-multiply lg:hidden"
+              priority
+            />
+
             <div className="relative z-10">
-              <div className="login-logo-pop flex items-center gap-4">
-                <div className="flex h-12 min-h-12 w-12 min-w-12 items-center justify-center overflow-hidden rounded-2xl bg-[#edf2f8] p-2 shadow-xl shadow-slate-300/45 md:h-14 md:w-14">
+              <div className="login-logo-pop flex items-center justify-center gap-4 lg:justify-start">
+                <div className="flex h-20 w-60 shrink-0 items-center justify-center p-0 transition-transform duration-300 hover:-translate-y-0.5 md:h-24 md:w-72 lg:h-[4.5rem] lg:w-[4.5rem] lg:overflow-hidden lg:rounded-2xl lg:border-2 lg:border-slate-300 lg:bg-white/95 lg:p-2 lg:shadow-2xl lg:shadow-slate-400/40 lg:backdrop-blur">
                   <Image
-                    src={companyLogo}
-                    alt={`${companyName} Logo`}
-                    width={56}
-                    height={56}
+                    src={logoSrc}
+                    alt="Creativemu Logo"
+                    width={72}
+                    height={19}
                     className="h-full w-full object-contain"
                     priority
                   />
                 </div>
-
-                <div>
-                  <h1 className="text-xl font-black tracking-tight text-slate-950 dark:text-slate-100 md:text-2xl">
-                    {companyName}
-                  </h1>
-                </div>
               </div>
 
-              <div className="relative mt-8 max-w-2xl md:mt-12 lg:mt-20">
+              <div className="mt-14 max-w-2xl md:mt-16 lg:mt-28">
                 <p
-                  className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#123c8c] dark:text-[#58a6ff] md:text-sm"
+                  className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#123c8c] md:text-sm"
                   style={{
                     animationDelay: "120ms",
                   }}
                 >
-                  Selamat Datang
+                  Selamat Datang Kembali
                 </p>
 
                 <h2
-                  className="login-text-reveal mt-4 text-4xl font-black leading-[1.05] tracking-tight text-slate-950 dark:text-slate-100 md:mt-5 md:text-6xl"
+                  className="login-text-reveal mt-4 text-[2rem] font-black leading-[1.05] tracking-tight text-slate-950 sm:text-4xl md:mt-5 md:text-6xl"
                   style={{
                     animationDelay: "180ms",
                   }}
@@ -726,7 +682,7 @@ export default function LoginPage() {
                 </h2>
 
                 <p
-                  className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#123c8c] dark:text-blue-300 md:text-2xl"
+                  className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#123c8c] md:text-2xl"
                   style={{
                     animationDelay: "240ms",
                   }}
@@ -749,11 +705,11 @@ export default function LoginPage() {
           <div className="flex items-start justify-center px-6 pb-8 pt-2 md:px-12 md:pb-12 lg:items-center lg:px-20 lg:py-14">
             <AppCard
               padding="lg"
-              className="login-card-enter w-full max-w-md border-[#c8d3e2] bg-[#e6edf6]/92 shadow-2xl shadow-slate-300/40 backdrop-blur-2xl"
+              className="login-card-enter w-full max-w-md border-white/70 bg-white/90 shadow-2xl shadow-slate-300/60 backdrop-blur-2xl"
             >
               <form suppressHydrationWarning noValidate onSubmit={handleSubmit}>
                 <div className="login-field-enter mb-7 md:mb-8">
-                  <h3 className="mt-2 text-3xl font-black tracking-tight text-slate-950 dark:text-slate-100">
+                  <h3 className="mt-2 text-3xl font-black tracking-tight text-slate-950">
                     Masuk
                   </h3>
                 </div>
@@ -772,10 +728,10 @@ export default function LoginPage() {
                       inputMode="email"
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
-                      placeholder="nama@creativemu.co.id"
+                      placeholder={CREATIVEMU_EMAIL_EXAMPLE}
                       autoComplete="email"
                       disabled={formIsBusy}
-                      className="border-[#c8d3e2] bg-[#e9eff7] text-slate-700 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-[#edf3fa] focus:ring-blue-100/40 dark:border-[#30363d] dark:bg-[#111823] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-[#58a6ff] dark:focus:bg-[#111823] dark:focus:ring-[#1f6feb]/25"
+                      className="border-blue-100 bg-[#f8fbff] text-slate-700 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-blue-100/50 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
                     />
                   </div>
 
@@ -785,17 +741,38 @@ export default function LoginPage() {
                       animationDelay: "130ms",
                     }}
                   >
-                    <AppInput
-                      suppressHydrationWarning
-                      label="Kata Sandi"
-                      type="password"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder="••••••••"
-                      autoComplete="current-password"
-                      disabled={formIsBusy}
-                      className="border-[#c8d3e2] bg-[#e9eff7] text-slate-700 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-[#edf3fa] focus:ring-blue-100/40 dark:border-[#30363d] dark:bg-[#111823] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-[#58a6ff] dark:focus:bg-[#111823] dark:focus:ring-[#1f6feb]/25"
-                    />
+                    <label className="block">
+                      <span className="text-sm font-black text-slate-700">
+                        Kata Sandi
+                      </span>
+
+                      <div className="relative mt-2">
+                        <input
+                          suppressHydrationWarning
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(event) => setPassword(event.target.value)}
+                          placeholder="••••••••"
+                          autoComplete="current-password"
+                          disabled={formIsBusy}
+                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          disabled={formIsBusy}
+                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c] disabled:cursor-not-allowed disabled:opacity-50"
+                          aria-label={
+                            showPassword
+                              ? "Sembunyikan password"
+                              : "Tampilkan password"
+                          }
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </label>
                   </div>
                 </div>
 

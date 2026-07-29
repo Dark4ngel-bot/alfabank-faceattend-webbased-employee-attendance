@@ -161,21 +161,7 @@ export async function GET(req: NextRequest) {
       cache: "no-store",
     });
 
-    const text = await response.text();
-    let data: NominatimResponse = {};
-
-    try {
-      data = text ? JSON.parse(text) : {};
-    } catch {
-      console.warn("NOMINATIM_NON_JSON_RESPONSE:", text.slice(0, 200));
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Layanan lokasi Nominatim mengembalikan respon tidak valid.",
-        },
-        { status: 502 },
-      );
-    }
+    const data = (await response.json()) as NominatimResponse;
 
     if (!response.ok || data.error) {
       return NextResponse.json(

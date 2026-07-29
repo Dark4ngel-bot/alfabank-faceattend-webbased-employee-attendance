@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createToken, verifyPassword } from "@/lib/auth";
+import { isCreativemuEmail } from "@/lib/creativemu-email";
 import { deactivateExpiredEmployee } from "@/lib/employment-period";
 
 const LOGIN_RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -10,15 +11,6 @@ type LoginAttempt = {
   attempt_count: number | bigint;
   reset_at: Date | string;
 };
-
-function isCreativemuEmail(email: string) {
-  const normalized = email.trim().toLowerCase();
-  return (
-    normalized.endsWith("@creativemu.id") ||
-    normalized.endsWith("@creativemu.co.id") ||
-    normalized.endsWith("@creativemu.com")
-  );
-}
 
 function getClientIp(req: Request) {
   const forwardedFor = req.headers.get("x-forwarded-for");
@@ -128,31 +120,6 @@ async function clearFailedLogins(keys: string[]) {
   await Promise.all(keys.map(clearFailedLogin));
 }
 
-async function safeGetRateLimitedRetryAfter(keys: string[]) {
-  try {
-    return await getRateLimitedRetryAfter(keys);
-  } catch (error) {
-    console.error("LOGIN_RATE_LIMIT_READ_ERROR:", error);
-    return null;
-  }
-}
-
-async function safeRecordFailedLogins(keys: string[]) {
-  try {
-    await recordFailedLogins(keys);
-  } catch (error) {
-    console.error("LOGIN_RATE_LIMIT_WRITE_ERROR:", error);
-  }
-}
-
-async function safeClearFailedLogins(keys: string[]) {
-  try {
-    await clearFailedLogins(keys);
-  } catch (error) {
-    console.error("LOGIN_RATE_LIMIT_CLEAR_ERROR:", error);
-  }
-}
-
 function rateLimitResponse(retryAfterSeconds: number) {
   return NextResponse.json(
     {
@@ -173,16 +140,14 @@ export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
 
-    const normalizedEmail = String(email || "")
-      .trim()
-      .toLowerCase();
+    const normalizedEmail = String(email || "").trim().toLowerCase();
     const normalizedPassword = String(password || "");
     const rateLimitKeys = getRateLimitKeys(req, normalizedEmail || "unknown");
 
     if (!normalizedEmail || !normalizedPassword) {
       return NextResponse.json(
         { success: false, message: "Email dan password wajib diisi" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -192,11 +157,11 @@ export async function POST(req: Request) {
           success: false,
           message: "Login hanya dapat menggunakan email resmi Creativemu.",
         },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
-    const retryAfterSeconds = await safeGetRateLimitedRetryAfter(rateLimitKeys);
+    const retryAfterSeconds = await getRateLimitedRetryAfter(rateLimitKeys);
 
     if (retryAfterSeconds) {
       return rateLimitResponse(retryAfterSeconds);
@@ -209,11 +174,11 @@ export async function POST(req: Request) {
     });
 
     if (!user) {
-      await safeRecordFailedLogins(rateLimitKeys);
+      await recordFailedLogins(rateLimitKeys);
 
       return NextResponse.json(
         { success: false, message: "Email atau password salah" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -223,32 +188,32 @@ export async function POST(req: Request) {
           success: false,
           message: "Masa kerja akun sudah berakhir. Akun otomatis nonaktif.",
         },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     if (user.status !== "active") {
       return NextResponse.json(
         { success: false, message: "Akun tidak aktif" },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
     const isValidPassword = await verifyPassword(
       normalizedPassword,
-      user.password_hash,
+      user.password_hash
     );
 
     if (!isValidPassword) {
-      await safeRecordFailedLogins(rateLimitKeys);
+      await recordFailedLogins(rateLimitKeys);
 
       return NextResponse.json(
         { success: false, message: "Email atau password salah" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
-    await safeClearFailedLogins(rateLimitKeys);
+    await clearFailedLogins(rateLimitKeys);
 
     const token = await createToken({
       id: user.id,
@@ -258,7 +223,7 @@ export async function POST(req: Request) {
 
     const role = String(user.role || "").toLowerCase();
     const redirectTo =
-      role === "admin" || role === "owner" ? "/admin/dashboard" : "/beranda";
+      role === "admin" || role === "owner" ? "/admin/dasbor" : "/beranda";
 
     const response = NextResponse.json({
       success: true,
@@ -285,18 +250,9 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("LOGIN_ERROR:", error);
 
-    const errorDetail =
-      error instanceof Error ? error.message : "Unknown server error";
-
     return NextResponse.json(
-      {
-        success: false,
-        message:
-          process.env.NODE_ENV === "production"
-            ? "Terjadi kesalahan server"
-            : `Terjadi kesalahan server: ${errorDetail}`,
-      },
-      { status: 500 },
+      { success: false, message: "Terjadi kesalahan server" },
+      { status: 500 }
     );
   }
 }

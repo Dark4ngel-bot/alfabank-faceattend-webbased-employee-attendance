@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   findNearestValidOffice,
+  getEffectiveGeofenceRadius,
   getDistanceInMeters,
   isGpsAccuracyAllowed,
   isValidGeofence,
@@ -52,6 +53,25 @@ describe("geo helpers", () => {
     ).toBeNull();
   });
 
+  it("allows a GPS accuracy buffer around the configured geofence", () => {
+    const match = findNearestValidOffice(
+      { lat: -6.20135, lng: 106.8167 },
+      [offices[1]],
+      75,
+    );
+
+    expect(match?.office.id).toBe("office-near");
+    expect(match?.isWithinRadius).toBe(true);
+    expect(Math.round(match?.effectiveRadius ?? 0)).toBe(175);
+  });
+
+  it("caps the GPS accuracy buffer for geofence matching", () => {
+    expect(getEffectiveGeofenceRadius(100, 900)).toBe(850);
+    expect(getEffectiveGeofenceRadius(100, 300)).toBe(400);
+    expect(getEffectiveGeofenceRadius(100, 50)).toBe(150);
+    expect(getEffectiveGeofenceRadius(100, null)).toBe(100);
+  });
+
   it("rejects impossible user coordinates before matching geofences", () => {
     expect(findNearestValidOffice({ lat: 120, lng: 106.85 }, offices)).toBeNull();
     expect(
@@ -96,9 +116,10 @@ describe("geo helpers", () => {
 
   it("accepts only finite GPS accuracy within the configured maximum", () => {
     expect(isGpsAccuracyAllowed(99.9)).toBe(true);
+    expect(isGpsAccuracyAllowed(1000)).toBe(true);
     expect(isGpsAccuracyAllowed(0)).toBe(false);
     expect(isGpsAccuracyAllowed(-1)).toBe(false);
-    expect(isGpsAccuracyAllowed(101)).toBe(false);
+    expect(isGpsAccuracyAllowed(1001)).toBe(false);
     expect(isGpsAccuracyAllowed(Number.POSITIVE_INFINITY)).toBe(false);
   });
 });

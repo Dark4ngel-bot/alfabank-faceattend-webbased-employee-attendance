@@ -9,9 +9,8 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const db = prisma as any;
-
 type LeaveStatus = "pending" | "approved" | "rejected";
+
 const allowedStatuses: LeaveStatus[] = ["pending", "approved", "rejected"];
 
 function jsonSuccess(data: Record<string, unknown>, status = 200) {
@@ -79,10 +78,6 @@ function getLeaveTypeLabel(type: string) {
   if (type === "annual") return "Cuti Tahunan";
   if (type === "permission") return "Izin";
   if (type === "sick") return "Sakit";
-  if (type === "overtime") return "Lembur";
-  if (type === "visit") return "Kunjungan";
-  if (type === "wfh") return "WFH";
-  if (type === "other") return "Lainnya";
 
   return "Lainnya";
 }
@@ -91,9 +86,6 @@ function getShortLeaveLabel(type: string) {
   if (type === "annual") return "Cuti";
   if (type === "permission") return "Izin";
   if (type === "sick") return "Sakit";
-  if (type === "overtime") return "Lembur";
-  if (type === "visit") return "Kunjungan";
-  if (type === "wfh") return "WFH";
 
   return "Pengajuan";
 }
@@ -126,13 +118,6 @@ function mapLeaveRequest(item: {
   end_date: Date;
   total_days: number;
   reason: string;
-  requested_work_mode: string | null;
-  location_unlock_requested: boolean;
-  location_unlock_approved: boolean;
-  visit_location_name: string | null;
-  visit_address: string | null;
-  visit_latitude: number | null;
-  visit_longitude: number | null;
   status: string;
   admin_note: string | null;
   created_at: Date;
@@ -210,14 +195,6 @@ function mapLeaveRequest(item: {
 
     totalDays: item.total_days,
     reason: item.reason,
-
-    requestedWorkMode: item.requested_work_mode,
-    locationUnlockRequested: item.location_unlock_requested,
-    locationUnlockApproved: item.location_unlock_approved,
-    visitLocationName: item.visit_location_name,
-    visitAddress: item.visit_address,
-    visitLatitude: item.visit_latitude,
-    visitLongitude: item.visit_longitude,
 
     status: item.status,
     statusLabel: getStatusLabel(item.status),
@@ -342,13 +319,6 @@ export async function GET(req: NextRequest) {
         end_date: true,
         total_days: true,
         reason: true,
-        requested_work_mode: true,
-        location_unlock_requested: true,
-        location_unlock_approved: true,
-        visit_location_name: true,
-        visit_address: true,
-        visit_latitude: true,
-        visit_longitude: true,
         status: true,
         admin_note: true,
         created_at: true,
@@ -402,7 +372,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const mappedRequests = leaveRequests.map(mapLeaveRequest as any) as any[];
+    const mappedRequests = leaveRequests.map(mapLeaveRequest);
 
     return jsonSuccess({
       message: "Data pengajuan cuti admin berhasil diambil.",
@@ -435,7 +405,6 @@ export async function PATCH(req: NextRequest) {
     const id = String(body.id || body.requestId || "").trim();
     const status = String(body.status || "").trim() as LeaveStatus;
     const adminNote = String(body.adminNote || body.admin_note || "").trim();
-    const locationUnlockApproved = Boolean(body.locationUnlockApproved);
 
     if (!id) {
       return jsonError("ID pengajuan wajib dikirim.");
@@ -488,7 +457,6 @@ export async function PATCH(req: NextRequest) {
       data: {
         status,
         admin_note: finalAdminNote,
-        location_unlock_approved: status === "approved" ? locationUnlockApproved : false,
       },
       select: {
         id: true,
@@ -498,13 +466,6 @@ export async function PATCH(req: NextRequest) {
         end_date: true,
         total_days: true,
         reason: true,
-        requested_work_mode: true,
-        location_unlock_requested: true,
-        location_unlock_approved: true,
-        visit_location_name: true,
-        visit_address: true,
-        visit_latitude: true,
-        visit_longitude: true,
         status: true,
         admin_note: true,
         created_at: true,
@@ -569,7 +530,7 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
-    const mappedRequest = mapLeaveRequest(leaveRequest as any);
+    const mappedRequest = mapLeaveRequest(leaveRequest);
 
     return jsonSuccess({
       message: "Status pengajuan berhasil diperbarui.",

@@ -49,6 +49,7 @@ type NotificationStats = {
   total: number;
   unread: number;
   pending: number;
+  actionable: number;
   sick: number;
   leave: number;
   permission: number;
@@ -67,6 +68,7 @@ const emptyStats: NotificationStats = {
   total: 0,
   unread: 0,
   pending: 0,
+  actionable: 0,
   sick: 0,
   leave: 0,
   permission: 0,
@@ -349,11 +351,13 @@ export default function AdminNotificationsPage() {
       label: "Total Notifikasi",
       value: stats.total,
       icon: Bell,
+      description: "Semua laporan masuk",
     },
     {
       label: "Belum Dibaca",
       value: stats.unread,
       icon: Clock3,
+      description: "Dari AdminNotification",
     },
     {
       label: "Cuti / Sakit / Izin",
@@ -365,6 +369,7 @@ export default function AdminNotificationsPage() {
       label: "WFH / Kunjungan",
       value: stats.wfh + stats.visit,
       icon: MapPin,
+      description: "Dari AdminNotification",
     },
   ];
 
@@ -380,7 +385,7 @@ export default function AdminNotificationsPage() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-blue-100">
                 <ShieldAlert size={15} />
-                Pusat Informasi
+                Notification Center
               </div>
 
               <h1 className="mt-5 text-3xl font-black tracking-tight md:text-4xl">
@@ -413,7 +418,9 @@ export default function AdminNotificationsPage() {
                       {isLoading ? "-" : item.value}
                     </h3>
 
-
+                    <p className="mt-1 text-xs font-semibold text-slate-400">
+                      {item.description}
+                    </p>
                   </div>
 
                   <div className="notification-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">

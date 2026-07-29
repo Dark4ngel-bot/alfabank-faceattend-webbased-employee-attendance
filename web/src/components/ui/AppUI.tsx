@@ -12,14 +12,12 @@ function cn(...classes: Array<string | false | null | undefined>) {
 
 const buttonVariantClass: Record<Variant, string> = {
   primary:
-    "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 hover:bg-[#0f347a] dark:bg-[#1f6feb] dark:hover:bg-[#388bfd]",
+    "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 hover:bg-[#0f347a]",
   secondary:
-    "border border-[#bfd0e4]/95 bg-[#ecf2f9]/82 text-[#123c8c] shadow-md shadow-slate-300/20 ring-1 ring-[#edf3fb]/70 backdrop-blur-md hover:bg-[#e2ebf6] dark:border-[#30363d] dark:bg-[#202936]/88 dark:text-[#c9d1d9] dark:ring-[#2a3445] dark:hover:bg-[#2a3445]",
-  danger:
-    "bg-rose-50 text-rose-600 ring-1 ring-rose-100 hover:bg-rose-100 dark:bg-rose-950/20 dark:text-rose-400 dark:ring-rose-900/30 dark:hover:bg-rose-950/30",
-  ghost:
-    "bg-transparent text-[#123c8c] hover:bg-blue-50 dark:text-[#58a6ff] dark:hover:bg-[#21262d]",
-  soft: "bg-[#e9f1fb]/85 text-[#123c8c] ring-1 ring-[#c8d6e8] shadow-sm shadow-slate-300/15 backdrop-blur-md hover:bg-[#dde8f6] dark:bg-[#202a38]/88 dark:text-[#58a6ff] dark:ring-[#30363d] dark:hover:bg-[#2b3648]",
+    "border border-blue-100 bg-white text-[#123c8c] shadow-sm hover:bg-blue-50",
+  danger: "bg-rose-50 text-rose-600 ring-1 ring-rose-100 hover:bg-rose-100",
+  ghost: "bg-transparent text-[#123c8c] hover:bg-blue-50",
+  soft: "bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100 hover:bg-blue-100",
 };
 
 const buttonSizeClass: Record<Size, string> = {
@@ -478,7 +476,7 @@ export function AppAnimatedActionButton({
         disabled={isDisabled}
         onClick={handleClick}
         className={cn(
-          "group relative inline-flex items-center justify-center gap-4 overflow-hidden rounded-[1.8rem] border border-[#c3d3e5]/95 bg-[#ecf2f9]/82 dark:border-[#30363d] dark:bg-[#202936]/88 px-6 py-5 text-[#123c8c] dark:text-[#58a6ff] shadow-2xl shadow-blue-950/12 ring-1 ring-[#edf3fb]/75 dark:ring-[#2a3445] backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-[#e2ebf6] dark:hover:bg-[#2b3648] hover:shadow-blue-950/18 active:scale-[0.98] disabled:cursor-wait disabled:opacity-80",
+          "group relative inline-flex items-center justify-center gap-4 overflow-hidden rounded-[1.8rem] bg-white px-6 py-5 text-[#123c8c] shadow-2xl shadow-blue-950/20 ring-1 ring-white/70 transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-blue-950/25 active:scale-[0.98] disabled:cursor-wait disabled:opacity-80",
           full && "w-full",
           fullOnMobile && "w-full md:w-auto",
           !full && !fullOnMobile && "w-auto",
@@ -528,43 +526,24 @@ export function AppAnimatedActionButton({
 type AppInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
   error?: string;
-  rightElement?: React.ReactNode;
 };
 
-export function AppInput({
-  label,
-  error,
-  rightElement,
-  className,
-  ...props
-}: AppInputProps) {
+export function AppInput({ label, error, className, ...props }: AppInputProps) {
   return (
-    <label className="group block">
+    <label className="block">
       {label ? (
-        <span className="inline-block text-sm font-black text-slate-700 transition-all duration-200 group-focus-within:text-[#123c8c] group-focus-within:translate-x-[3px] group-focus-within:scale-[1.02]">
-          {label}
-        </span>
+        <span className="text-sm font-black text-slate-700">{label}</span>
       ) : null}
 
-      <div className="relative mt-2">
-        <input
-          className={cn(
-            "min-h-12 w-full rounded-2xl border border-[#c4d2e2]/95 bg-[#edf3fa]/88 px-4 py-3 text-sm font-bold text-slate-700 outline-none ring-1 ring-[#f2f7fc]/85 backdrop-blur-sm transition duration-200 placeholder:text-slate-400 hover:-translate-y-[1px] hover:border-[#b7c6d8] hover:shadow-[0_6px_16px_rgba(18,60,140,0.06)] focus:-translate-y-[3px] focus:border-[#123c8c] focus:bg-[#f1f6fb] focus:shadow-[0_12px_24px_-6px_rgba(18,60,140,0.14)] focus:ring-4 focus:ring-blue-100/45 dark:border-[#2f3a4b] dark:bg-[#1b2432]/92 dark:text-slate-100 dark:ring-[#253244] dark:hover:border-[#3a4a60] dark:focus:border-[#58a6ff] dark:focus:bg-[#1f2a3a] dark:focus:ring-[#1f6feb]/22 disabled:cursor-not-allowed disabled:opacity-60",
-            rightElement ? "pr-12" : undefined,
-            error
-              ? "border-red-200 bg-red-50 focus:border-red-400 focus:ring-red-100"
-              : undefined,
-            className,
-          )}
-          {...props}
-        />
-
-        {rightElement ? (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-            {rightElement}
-          </div>
-        ) : null}
-      </div>
+      <input
+        className={cn(
+          "mt-2 min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60",
+          error &&
+            "border-red-200 bg-red-50 focus:border-red-400 focus:ring-red-100",
+          className,
+        )}
+        {...props}
+      />
 
       {error ? (
         <span className="mt-2 block text-xs font-bold text-red-600">
@@ -587,16 +566,14 @@ export function AppTextarea({
   ...props
 }: AppTextareaProps) {
   return (
-    <label className="group block">
+    <label className="block">
       {label ? (
-        <span className="inline-block text-sm font-black text-slate-700 transition-all duration-200 group-focus-within:text-[#123c8c] group-focus-within:translate-x-[3px] group-focus-within:scale-[1.02]">
-          {label}
-        </span>
+        <span className="text-sm font-black text-slate-700">{label}</span>
       ) : null}
 
       <textarea
         className={cn(
-          "mt-2 min-h-28 w-full resize-none rounded-2xl border border-[#c4d2e2]/95 bg-[#edf3fa]/88 px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none ring-1 ring-[#f2f7fc]/85 backdrop-blur-sm transition duration-200 placeholder:text-slate-400 hover:-translate-y-[1px] hover:border-[#b7c6d8] hover:shadow-[0_6px_16px_rgba(18,60,140,0.06)] focus:-translate-y-[3px] focus:border-[#123c8c] focus:bg-[#f1f6fb] focus:shadow-[0_12px_24px_-6px_rgba(18,60,140,0.14)] focus:ring-4 focus:ring-blue-100/45 dark:border-[#2f3a4b] dark:bg-[#1b2432]/92 dark:text-slate-100 dark:ring-[#253244] dark:hover:border-[#3a4a60] dark:focus:border-[#58a6ff] dark:focus:bg-[#1f2a3a] dark:focus:ring-[#1f6feb]/22 disabled:cursor-not-allowed disabled:opacity-60",
+          "mt-2 min-h-28 w-full resize-none rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60",
           error &&
             "border-red-200 bg-red-50 focus:border-red-400 focus:ring-red-100",
           className,
@@ -627,18 +604,16 @@ export function AppSelect({
   ...props
 }: AppSelectProps) {
   return (
-    <label className="group block">
+    <label className="block">
       {label ? (
-        <span className="inline-block text-sm font-black text-slate-700 transition-all duration-200 group-focus-within:text-[#123c8c] group-focus-within:translate-x-[3px] group-focus-within:scale-[1.02]">
-          {label}
-        </span>
+        <span className="text-sm font-black text-slate-700">{label}</span>
       ) : null}
 
       <select
         suppressHydrationWarning
         value={value ?? ""}
         className={cn(
-          "mt-2 min-h-12 w-full rounded-2xl border border-[#c4d2e2]/95 bg-[#edf3fa]/88 px-4 py-3 text-sm font-bold text-slate-700 outline-none ring-1 ring-[#f2f7fc]/85 backdrop-blur-sm transition duration-200 hover:-translate-y-[1px] hover:border-[#b7c6d8] hover:shadow-[0_6px_16px_rgba(18,60,140,0.06)] focus:-translate-y-[3px] focus:border-[#123c8c] focus:bg-[#f1f6fb] focus:shadow-[0_12px_24px_-6px_rgba(18,60,140,0.14)] focus:ring-4 focus:ring-blue-100/45 dark:border-[#2f3a4b] dark:bg-[#1b2432]/92 dark:text-slate-100 dark:ring-[#253244] dark:hover:border-[#3a4a60] dark:focus:border-[#58a6ff] dark:focus:bg-[#1f2a3a] dark:focus:ring-[#1f6feb]/22 disabled:cursor-not-allowed disabled:opacity-60",
+          "mt-2 min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60",
           error &&
             "border-red-200 bg-red-50 focus:border-red-400 focus:ring-red-100",
           className,
@@ -670,7 +645,7 @@ export function AppCard({
   return (
     <div
       className={cn(
-        "rounded-[2rem] border border-[#c3d3e5]/95 bg-[#ecf2f9]/82 shadow-xl shadow-slate-300/22 ring-1 ring-[#edf3fb]/75 backdrop-blur-md dark:border-[#30363d] dark:bg-[#1d2735]/88 dark:shadow-black/20 dark:ring-[#2a3445]",
+        "rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-200/60",
         padding === "sm" && "p-4",
         padding === "md" && "p-5",
         padding === "lg" && "p-6 md:p-8",
@@ -716,7 +691,7 @@ export function AppClickableCard({
         disabled={disabled}
         onClick={handleClick}
         className={cn(
-          "relative w-full overflow-hidden rounded-[2rem] border border-[#c3d3e5]/95 bg-[#ecf2f9]/82 text-left shadow-lg shadow-slate-300/20 ring-1 ring-[#edf3fb]/75 backdrop-blur-md transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-300/24 active:scale-[0.98] dark:border-[#30363d] dark:bg-[#1d2735]/88 dark:ring-[#2a3445] dark:hover:bg-[#222e3f] disabled:cursor-not-allowed disabled:opacity-60",
+          "relative w-full overflow-hidden rounded-[2rem] border border-blue-100 bg-white text-left shadow-lg shadow-slate-200/60 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60",
           padding === "sm" && "p-4",
           padding === "md" && "p-5",
           padding === "lg" && "p-6 md:p-8",
@@ -822,9 +797,9 @@ export function AppEmptyState({
   description,
 }: AppEmptyStateProps) {
   return (
-    <div className="rounded-[2rem] border border-dashed border-[#c8d6e8] bg-[#ecf2f9]/78 px-5 py-12 text-center shadow-lg shadow-slate-300/18 ring-1 ring-[#edf3fb]/70 backdrop-blur-sm dark:border-[#314055] dark:bg-[#1f2938]/85 dark:ring-[#2a3445]">
+    <div className="rounded-[2rem] border border-dashed border-blue-100 bg-[#f8fbff] px-5 py-12 text-center">
       {icon ? (
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e3ecf8]/88 text-[#123c8c] shadow-md shadow-slate-300/20 dark:bg-[#273245] dark:text-[#58a6ff]">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
           {icon}
         </div>
       ) : null}
@@ -848,7 +823,7 @@ export function AppLoadingState({
   text = "Memuat data...",
 }: AppLoadingStateProps) {
   return (
-    <div className="flex items-center justify-center gap-2 rounded-[2rem] border border-[#c3d3e5]/95 bg-[#ecf2f9]/80 px-5 py-12 text-sm font-bold text-slate-500 shadow-lg shadow-slate-300/18 ring-1 ring-[#edf3fb]/70 backdrop-blur-sm dark:border-[#30363d] dark:bg-[#1f2938]/85 dark:text-slate-300 dark:ring-[#2a3445]">
+    <div className="flex items-center justify-center gap-2 rounded-[2rem] border border-blue-100 bg-white px-5 py-12 text-sm font-bold text-slate-500">
       <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#123c8c] border-t-transparent" />
       {text}
     </div>
@@ -898,7 +873,7 @@ export function AppModalPanel({
 
       <div
         className={cn(
-          "app-modal-panel-enter max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-[#c3d3e5]/95 bg-[#ecf2f9]/85 p-5 shadow-2xl shadow-slate-950/18 ring-1 ring-[#edf3fb]/75 backdrop-blur-lg md:p-7 dark:border-[#30363d] dark:bg-[#1f2938]/92 dark:ring-[#2a3445]",
+          "app-modal-panel-enter max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7",
           className,
         )}
         {...props}
@@ -984,17 +959,17 @@ export function AppPageSkeleton({
           className={cn("app-skeleton-enter space-y-5", className)}
           {...props}
         >
-          <div className="h-44 animate-pulse rounded-[2rem] border border-[#ccd9e8] bg-[#ecf2f9]/82 shadow-lg shadow-slate-300/20" />
+          <div className="h-44 animate-pulse rounded-[2rem] bg-white shadow-lg shadow-slate-200/60" />
 
           <div className="grid gap-5 md:grid-cols-3">
-            <div className="h-28 animate-pulse rounded-3xl border border-[#ccd9e8] bg-[#ecf2f9]/82 shadow-lg shadow-slate-300/20" />
-            <div className="h-28 animate-pulse rounded-3xl border border-[#ccd9e8] bg-[#ecf2f9]/82 shadow-lg shadow-slate-300/20" />
-            <div className="h-28 animate-pulse rounded-3xl border border-[#ccd9e8] bg-[#ecf2f9]/82 shadow-lg shadow-slate-300/20" />
+            <div className="h-28 animate-pulse rounded-3xl bg-white shadow-lg shadow-slate-200/60" />
+            <div className="h-28 animate-pulse rounded-3xl bg-white shadow-lg shadow-slate-200/60" />
+            <div className="h-28 animate-pulse rounded-3xl bg-white shadow-lg shadow-slate-200/60" />
           </div>
 
           <div className="grid gap-5 lg:grid-cols-2">
-            <div className="h-96 animate-pulse rounded-[2rem] border border-[#ccd9e8] bg-[#ecf2f9]/82 shadow-lg shadow-slate-300/20" />
-            <div className="h-96 animate-pulse rounded-[2rem] border border-[#ccd9e8] bg-[#ecf2f9]/82 shadow-lg shadow-slate-300/20" />
+            <div className="h-96 animate-pulse rounded-[2rem] bg-white shadow-lg shadow-slate-200/60" />
+            <div className="h-96 animate-pulse rounded-[2rem] bg-white shadow-lg shadow-slate-200/60" />
           </div>
         </div>
       </>
@@ -1009,17 +984,17 @@ export function AppPageSkeleton({
         className={cn("app-skeleton-enter mt-6 space-y-6", className)}
         {...props}
       >
-        <section className="overflow-hidden rounded-[2.2rem] border border-[#c3d3e5]/95 bg-[#ecf2f9]/84 shadow-2xl shadow-slate-300/20 ring-1 ring-[#edf3fb]/70 backdrop-blur-sm">
+        <section className="overflow-hidden rounded-[2.2rem] border border-blue-100 bg-white shadow-2xl shadow-slate-300/30">
           <div className="grid lg:grid-cols-[0.82fr_1.18fr]">
             <div className="bg-[#123c8c] p-7 md:p-8">
-              <div className="h-28 w-28 animate-pulse rounded-[2rem] bg-[#dbe6f3]/35" />
+              <div className="h-28 w-28 animate-pulse rounded-[2rem] bg-white/20" />
 
-              <div className="mt-6 h-4 w-40 animate-pulse rounded-full bg-[#dbe6f3]/35" />
-              <div className="mt-4 h-10 w-64 max-w-full animate-pulse rounded-2xl bg-[#dbe6f3]/35" />
+              <div className="mt-6 h-4 w-40 animate-pulse rounded-full bg-white/20" />
+              <div className="mt-4 h-10 w-64 max-w-full animate-pulse rounded-2xl bg-white/20" />
 
               <div className="mt-5 flex gap-2">
-                <div className="h-8 w-20 animate-pulse rounded-full bg-[#dbe6f3]/35" />
-                <div className="h-8 w-24 animate-pulse rounded-full bg-[#dbe6f3]/35" />
+                <div className="h-8 w-20 animate-pulse rounded-full bg-white/20" />
+                <div className="h-8 w-24 animate-pulse rounded-full bg-white/20" />
               </div>
             </div>
 
@@ -1027,7 +1002,7 @@ export function AppPageSkeleton({
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="rounded-[1.6rem] border border-[#c7d6e8] bg-[#edf3fa]/88 p-5 shadow-lg shadow-slate-300/20"
+                  className="rounded-[1.6rem] border border-blue-100 bg-white p-5 shadow-lg shadow-slate-200/50"
                 >
                   <div className="flex items-start gap-4">
                     <div className="h-12 w-12 shrink-0 animate-pulse rounded-2xl bg-[#eaf1ff]" />
@@ -1044,7 +1019,7 @@ export function AppPageSkeleton({
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-[#c3d3e5]/95 bg-[#ecf2f9]/84 p-5 shadow-xl shadow-slate-300/20 ring-1 ring-[#edf3fb]/70 backdrop-blur-sm md:p-6">
+        <section className="rounded-[2rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-300/30 md:p-6">
           <div className="h-4 w-40 animate-pulse rounded-full bg-blue-100" />
           <div className="mt-3 h-7 w-72 max-w-full animate-pulse rounded-2xl bg-slate-100" />
 
@@ -1052,7 +1027,7 @@ export function AppPageSkeleton({
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="rounded-[1.6rem] border border-[#c7d6e8] bg-[#edf3fa]/88 p-5 shadow-lg shadow-slate-300/20"
+                className="rounded-[1.6rem] border border-blue-100 bg-white p-5 shadow-lg shadow-slate-200/50"
               >
                 <div className="h-12 w-12 animate-pulse rounded-2xl bg-[#eaf1ff]" />
                 <div className="mt-4 h-3 w-24 animate-pulse rounded-full bg-slate-100" />

@@ -96,44 +96,10 @@ function isPrismaForeignKeyError(error: unknown) {
 }
 
 async function validatePositionHierarchy(params: {
-  officeId: string;
-  departmentId: string;
   jabatanId: string;
 }) {
-  const { officeId, departmentId, jabatanId } = params;
-
-  const office = await prisma.officeLocation.findUnique({
-    where: {
-      id: officeId,
-    },
-    select: {
-      id: true,
-      status: true,
-    },
-  });
-
-  if (!office || office.status !== "active") {
-    throw new Error("Kantor tidak ditemukan atau tidak aktif.");
-  }
-
-  const department = await prisma.department.findUnique({
-    where: {
-      id: departmentId,
-    },
-    select: {
-      id: true,
-      office_id: true,
-      status: true,
-    },
-  });
-
-  if (!department || department.status !== "active") {
-    throw new Error("Divisi tidak ditemukan atau tidak aktif.");
-  }
-
-  if (department.office_id !== officeId) {
-    throw new Error("Divisi tidak sesuai dengan kantor yang dipilih.");
-  }
+  const { jabatanId } = params;
+  if (!jabatanId) return;
 
   const jabatan = await prisma.jabatan.findUnique({
     where: {
@@ -141,7 +107,6 @@ async function validatePositionHierarchy(params: {
     },
     select: {
       id: true,
-      department_id: true,
       status: true,
     },
   });
@@ -150,9 +115,6 @@ async function validatePositionHierarchy(params: {
     throw new Error("Jabatan tidak ditemukan atau tidak aktif.");
   }
 
-  if (jabatan.department_id !== departmentId) {
-    throw new Error("Jabatan tidak sesuai dengan divisi yang dipilih.");
-  }
 }
 
 export async function GET(req: NextRequest) {
@@ -235,14 +197,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const name = String(body.name || "").trim();
-    const officeId = String(body.office_id || "").trim();
-    const departmentId = String(body.department_id || "").trim();
     const jabatanId = String(body.jabatan_id || "").trim();
     const status = String(body.status || "active").trim();
 
-    if (!officeId) return jsonError("Kantor wajib dipilih.");
-    if (!departmentId) return jsonError("Divisi wajib dipilih.");
-    if (!jabatanId) return jsonError("Jabatan wajib dipilih.");
     if (!name) return jsonError("Nama posisi wajib diisi.");
 
     if (!["active", "inactive"].includes(status)) {
@@ -250,15 +207,12 @@ export async function POST(req: NextRequest) {
     }
 
     await validatePositionHierarchy({
-      officeId,
-      departmentId,
       jabatanId,
     });
 
     const existingPosition = await prisma.position.findFirst({
       where: {
         name,
-        jabatan_id: jabatanId,
       },
       select: {
         id: true,
@@ -266,13 +220,13 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingPosition) {
-      return jsonError("Nama posisi sudah digunakan pada jabatan ini.", 409);
+      return jsonError("Nama posisi sudah digunakan.", 409);
     }
 
     const position = await prisma.position.create({
       data: {
         name,
-        jabatan_id: jabatanId,
+        jabatan_id: jabatanId || null,
         status,
       },
       select: positionSelect,
@@ -292,7 +246,7 @@ export async function POST(req: NextRequest) {
 
     if (isPrismaForeignKeyError(error)) {
       return jsonError(
-        "Relasi kantor, divisi, atau jabatan tidak valid. Pilih ulang data posisi.",
+        "Data posisi tidak valid. Periksa ulang nama dan status posisi.",
         400,
       );
     }
@@ -326,15 +280,10 @@ export async function PATCH(req: NextRequest) {
 
     const id = String(body.id || "").trim();
     const name = String(body.name || "").trim();
-    const officeId = String(body.office_id || "").trim();
-    const departmentId = String(body.department_id || "").trim();
     const jabatanId = String(body.jabatan_id || "").trim();
     const status = String(body.status || "active").trim();
 
     if (!id) return jsonError("ID posisi wajib dikirim.");
-    if (!officeId) return jsonError("Kantor wajib dipilih.");
-    if (!departmentId) return jsonError("Divisi wajib dipilih.");
-    if (!jabatanId) return jsonError("Jabatan wajib dipilih.");
     if (!name) return jsonError("Nama posisi wajib diisi.");
 
     if (!["active", "inactive"].includes(status)) {
@@ -355,15 +304,12 @@ export async function PATCH(req: NextRequest) {
     }
 
     await validatePositionHierarchy({
-      officeId,
-      departmentId,
       jabatanId,
     });
 
     const duplicatePosition = await prisma.position.findFirst({
       where: {
         name,
-        jabatan_id: jabatanId,
         NOT: {
           id,
         },
@@ -374,7 +320,7 @@ export async function PATCH(req: NextRequest) {
     });
 
     if (duplicatePosition) {
-      return jsonError("Nama posisi sudah digunakan pada jabatan ini.", 409);
+      return jsonError("Nama posisi sudah digunakan.", 409);
     }
 
     const position = await prisma.position.update({
@@ -383,7 +329,7 @@ export async function PATCH(req: NextRequest) {
       },
       data: {
         name,
-        jabatan_id: jabatanId,
+        jabatan_id: jabatanId || null,
         status,
       },
       select: positionSelect,
@@ -403,7 +349,7 @@ export async function PATCH(req: NextRequest) {
 
     if (isPrismaForeignKeyError(error)) {
       return jsonError(
-        "Relasi kantor, divisi, atau jabatan tidak valid. Pilih ulang data posisi.",
+        "Data posisi tidak valid. Periksa ulang nama dan status posisi.",
         400,
       );
     }
@@ -480,7 +426,7 @@ export async function DELETE(req: NextRequest) {
 
     if (isPrismaForeignKeyError(error)) {
       return jsonError(
-        "Posisi tidak bisa dihapus karena masih memiliki relasi data lain. Ubah status menjadi Nonaktif.",
+        "Posisi tidak bisa dihapus karena masih digunakan data lain. Ubah status menjadi Nonaktif.",
         400,
       );
     }

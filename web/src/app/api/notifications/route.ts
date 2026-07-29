@@ -6,12 +6,7 @@ import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const EMPLOYEE_NOTIFICATION_TYPES = [
-  "leave_status",
-  "announcement",
-  "salary",
-  "reward",
-];
+const EMPLOYEE_NOTIFICATION_TYPES = ["leave_status", "announcement"];
 
 async function getCurrentUser(req: NextRequest) {
   const authUser = await requireAuth(req);
@@ -30,7 +25,7 @@ async function getCurrentUser(req: NextRequest) {
   });
 
   if (!user) {
-    return null;
+    throw new Error("User tidak ditemukan.");
   }
 
   return user;
@@ -47,8 +42,17 @@ function jsonError(message: string, status = 400) {
       },
       notifications: [],
     },
-    { status },
+    { status }
   );
+}
+
+function getCurrentMonthRange() {
+  const now = new Date();
+
+  const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0);
+
+  return { start, end };
 }
 
 function toIsoDate(value: Date | string | null | undefined) {
@@ -79,16 +83,12 @@ function formatDate(value: Date | string | null | undefined) {
 
 function getNotificationHref(type: string) {
   if (type === "announcement") return "/pengumuman";
-  if (type === "salary") return "/salary";
-  if (type === "reward") return "/salary";
 
   return "/cuti";
 }
 
 function getNotificationLabel(type: string) {
   if (type === "announcement") return "Pengumuman";
-  if (type === "salary") return "Slip Gaji & Payroll";
-  if (type === "reward") return "Reward & Poin";
 
   return "Cuti / Izin / Sakit";
 }
@@ -97,19 +97,21 @@ export async function GET(req: NextRequest) {
   try {
     const currentUser = await getCurrentUser(req);
 
-    if (!currentUser) {
-      return jsonError("Sesi tidak valid. Silakan login ulang.", 401);
-    }
-
     if (currentUser.status !== "active") {
       return jsonError("Akun tidak aktif.", 403);
     }
+
+    const { start, end } = getCurrentMonthRange();
 
     const notifications = await prisma.adminNotification.findMany({
       where: {
         user_id: currentUser.id,
         type: {
           in: EMPLOYEE_NOTIFICATION_TYPES,
+        },
+        created_at: {
+          gte: start,
+          lt: end,
         },
       },
       select: {
@@ -170,10 +172,6 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const currentUser = await getCurrentUser(req);
-
-    if (!currentUser) {
-      return jsonError("Sesi tidak valid. Silakan login ulang.", 401);
-    }
 
     if (currentUser.status !== "active") {
       return jsonError("Akun tidak aktif.", 403);

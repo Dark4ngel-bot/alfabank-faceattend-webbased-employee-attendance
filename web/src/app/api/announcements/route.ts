@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NextRequest, NextResponse } from "next/server";
 import { Buffer } from "node:buffer";
 import type { UploadApiResponse } from "cloudinary";
@@ -103,8 +102,6 @@ function formatAnnouncement(item: AnnouncementWithAuthor) {
     documentSize: item.document_size,
     target: item.target,
     status: item.status,
-    attachment_url: item.attachment_url || null,
-    attachmentUrl: item.attachment_url || null,
 
     author: item.author || null,
     authorName: item.author?.name || "-",
@@ -330,7 +327,6 @@ export async function GET(req: NextRequest) {
         document_size: true,
         target: true,
         status: true,
-        attachment_url: true,
         created_at: true,
         updated_at: true,
         author: {
@@ -376,7 +372,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: "Judul pengumuman wajib diisi.",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -386,7 +382,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: "Isi pengumuman wajib diisi.",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -400,7 +396,6 @@ export async function POST(req: NextRequest) {
         content,
         target,
         status,
-        attachment_url,
         author_id: admin.id,
       },
       select: {
@@ -414,7 +409,6 @@ export async function POST(req: NextRequest) {
         document_size: true,
         target: true,
         status: true,
-        attachment_url: true,
         created_at: true,
         updated_at: true,
         author: {
@@ -505,7 +499,7 @@ export async function PATCH(req: NextRequest) {
           success: false,
           error: "ID pengumuman wajib dikirim.",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -585,7 +579,6 @@ export async function PATCH(req: NextRequest) {
         document_size: true,
         target: true,
         status: true,
-        attachment_url: true,
         created_at: true,
         updated_at: true,
         author: {
@@ -635,7 +628,7 @@ export async function DELETE(req: NextRequest) {
           success: false,
           error: "ID pengumuman wajib dikirim.",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
