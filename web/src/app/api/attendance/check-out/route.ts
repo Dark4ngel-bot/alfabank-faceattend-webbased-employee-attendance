@@ -23,7 +23,7 @@ import {
 
 export const runtime = "nodejs";
 
-const MAX_GPS_ACCURACY_METERS = 100;
+const MAX_GPS_ACCURACY_METERS = 500;
 const MAX_PHOTO_SIZE = 4 * 1024 * 1024;
 
 const ALLOWED_PHOTO_MIME_TYPES = new Set([

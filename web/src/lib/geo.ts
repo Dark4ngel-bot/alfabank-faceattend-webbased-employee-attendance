@@ -11,7 +11,7 @@ export type OfficeGeofence = {
   radius_meters: number;
 };
 
-export const DEFAULT_GEOFENCE_ACCURACY_BUFFER_METERS = 100;
+export const DEFAULT_GEOFENCE_ACCURACY_BUFFER_METERS = 250;
 
 export function getDistanceInMeters(from: GeoPoint, to: GeoPoint) {
   const earthRadius = 6371000;
@@ -101,7 +101,7 @@ export function getEffectiveGeofenceRadius(
   return officeRadiusMeters + accuracyBuffer;
 }
 
-export function isGpsAccuracyAllowed(accuracy: number, maxAccuracy = 100) {
+export function isGpsAccuracyAllowed(accuracy: number, maxAccuracy = 500) {
   return (
     Number.isFinite(accuracy) &&
     accuracy > 0 &&

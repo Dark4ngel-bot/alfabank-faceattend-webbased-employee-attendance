@@ -2621,7 +2621,7 @@ export default function AttendancePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        const message = data.error || data.message || "Presensi gagal.";
+        const message = data.message || data.error || "Presensi gagal.";
 
         if (data.requiresLateReason && workMode !== "visit") {
           setIsLateReasonOpen(true);
