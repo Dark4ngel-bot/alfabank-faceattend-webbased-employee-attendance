@@ -1,5 +1,5 @@
 "use client";
-
+// Force HMR Cache Refresh
 import { ElementType, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -17,7 +17,9 @@ import {
   Loader2,
   Mail,
   MapPin,
+  MessageCircle,
   Network,
+  Pencil,
   Phone,
   ShieldCheck,
   UserCheck,
@@ -27,6 +29,7 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import { getRemainingContractText } from "@/lib/employment-period";
 
 type OfficeMiniRelation = {
   id: string;
@@ -504,7 +507,7 @@ export default function AdminEmployeeDetailPage() {
                         {employee.name}
                       </h1>
 
-                      <div className="mt-4 flex flex-wrap gap-2">
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
                         <span
                           className={`inline-flex rounded-full px-4 py-2 text-xs font-black ${
                             employee.status === "active"
@@ -514,6 +517,26 @@ export default function AdminEmployeeDetailPage() {
                         >
                           {formatStatus(employee.status)}
                         </span>
+
+                        {employee.phone && (
+                          <a
+                            href={`https://wa.me/${employee.phone.replace(/\D/g, "").replace(/^0/, "62")}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 text-xs font-black transition active:scale-[0.98] shadow-md shadow-emerald-900/20"
+                          >
+                            <MessageCircle size={14} />
+                            Hubungi WA
+                          </a>
+                        )}
+
+                        <Link
+                          href={`/admin/employees?edit=${employee.id}`}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 text-xs font-black transition active:scale-[0.98] shadow-sm"
+                        >
+                          <Pencil size={14} />
+                          Edit Karyawan
+                        </Link>
                       </div>
 
                       {profilePhoto ? (
@@ -728,8 +751,18 @@ export default function AdminEmployeeDetailPage() {
                   icon={CalendarDays}
                   label="Masa Kerja"
                   value={formatEmploymentPeriod(employee)}
-                  description="Akun otomatis nonaktif setelah tanggal akhir lewat"
+                  description="Periode tanggal awal dan akhir kerja"
                   delay={340}
+                />
+
+                <DetailCard
+                  icon={Clock3}
+                  label="Sisa Masa Kerja"
+                  value={getRemainingContractText(
+                    employee.employment_end_date || employee.contract_end_date || null,
+                  )}
+                  description="Akun otomatis nonaktif setelah masa kerja berakhir"
+                  delay={360}
                 />
 
                 <DetailCard

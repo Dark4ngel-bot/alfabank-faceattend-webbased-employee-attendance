@@ -1,5 +1,5 @@
 "use client";
-
+// Force HMR Cache Refresh
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -42,6 +42,7 @@ import {
   isValidPhoneNumber,
   normalizeDigits,
 } from "@/lib/identity-validation";
+import { getRemainingContractText } from "@/lib/employment-period";
 
 type ShiftWorkSchedule = {
   day_of_week: string;
@@ -1085,6 +1086,11 @@ export default function ProfilePage() {
         label: "Masa Kerja",
         value: formatEmploymentPeriod(user),
         icon: CalendarDays,
+      },
+      {
+        label: "Sisa Kontrak",
+        value: getRemainingContractText(user.employment_end_date),
+        icon: Clock3,
       },
       {
         label: "Role Akun",

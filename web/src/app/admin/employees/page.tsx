@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   AlertTriangle,
   BadgeCheck,
@@ -528,6 +528,7 @@ function EmployeeMotionStyles() {
 
 export default function AdminEmployeesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [departments, setDepartments] = useState<DepartmentOption[]>([]);
@@ -631,6 +632,16 @@ export default function AdminEmployeesPage() {
   useEffect(() => {
     void loadEmployees();
   }, [loadEmployees]);
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (editId && employees.length > 0) {
+      const target = employees.find((emp) => emp.id === editId);
+      if (target) {
+        openEditModal(target);
+      }
+    }
+  }, [searchParams, employees]);
 
   useEffect(() => {
     return () => {

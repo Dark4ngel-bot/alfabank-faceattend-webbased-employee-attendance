@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import {
   Building2,
   Camera,
@@ -12,6 +13,7 @@ import {
   MapPin,
   Pencil,
   Phone,
+  PhoneCall,
   Upload,
   User,
 } from "lucide-react";
@@ -51,6 +53,7 @@ export default function AdminProfilePage() {
   );
   const [admin, setAdmin] = useState<AdminProfile | null>(null);
   const [office, setOffice] = useState<CompanyOffice | null>(null);
+  const [activeWa, setActiveWa] = useState<string>("-");
 
   const [totalEmployees, setTotalEmployees] = useState(0);
   const [maxEmployeesLimit] = useState(50); // Demo limit
@@ -92,10 +95,11 @@ export default function AdminProfilePage() {
     try {
       setIsLoading(true);
 
-      const [meResponse, empResponse, officeResponse] = await Promise.all([
+      const [meResponse, empResponse, officeResponse, waResponse] = await Promise.all([
         fetch("/api/auth/me", { cache: "no-store" }),
         fetch("/api/employees", { cache: "no-store" }),
         fetch("/api/admin/offices", { cache: "no-store" }),
+        fetch("/api/admin/nomor-admin", { cache: "no-store" }),
       ]);
 
       const meData = await meResponse.json();
@@ -136,6 +140,11 @@ export default function AdminProfilePage() {
             window.dispatchEvent(new Event("company_profile_updated"));
           }
         }
+      }
+
+      const waData = await waResponse.json();
+      if (waData.success && waData.activeNumber?.whatsapp) {
+        setActiveWa(waData.activeNumber.whatsapp);
       }
     } catch (error) {
       console.error("LOAD_PROFILE_ERROR:", error);
@@ -487,7 +496,7 @@ export default function AdminProfilePage() {
                       <button
                         type="button"
                         onClick={() => setIsEditUserOpen(true)}
-                        className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white hover:bg-amber-600 transition active:scale-[0.98] shadow-sm"
+                        className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-xs font-black text-white hover:bg-amber-600 transition active:scale-[0.98] shadow-sm"
                       >
                         <Pencil size={14} />
                         Edit Profil
@@ -559,14 +568,23 @@ export default function AdminProfilePage() {
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => setIsEditCompanyOpen(true)}
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-bold text-white hover:bg-amber-600 transition active:scale-[0.98] shadow-sm"
-                      >
-                        <Pencil size={14} />
-                        Edit Kantor & Logo
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <button
+                          type="button"
+                          onClick={() => setIsEditCompanyOpen(true)}
+                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-xs font-black text-white hover:bg-amber-600 transition active:scale-[0.98] shadow-sm"
+                        >
+                          <Pencil size={14} />
+                          Edit Kantor & Logo
+                        </button>
+                        <Link
+                          href="/admin/nomor-admin"
+                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-2.5 text-xs font-black text-white hover:bg-[#0f3274] transition active:scale-[0.98] shadow-lg shadow-blue-900/20"
+                        >
+                          <PhoneCall size={14} />
+                          Kelola WA Admin
+                        </Link>
+                      </div>
                     </div>
 
                     <div className="grid gap-6 md:grid-cols-2">
@@ -589,6 +607,27 @@ export default function AdminProfilePage() {
                             className="text-[#123c8c] dark:text-blue-400"
                           />
                           <span>{office?.phone || "-"}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          WhatsApp Admin (Bantuan)
+                        </p>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+                            <PhoneCall
+                              size={15}
+                              className="text-emerald-600 dark:text-emerald-400"
+                            />
+                            <span>{activeWa}</span>
+                          </div>
+                          <Link
+                            href="/admin/nomor-admin"
+                            className="text-xs font-bold text-[#123c8c] hover:underline dark:text-blue-400"
+                          >
+                            Kelola
+                          </Link>
                         </div>
                       </div>
 
@@ -763,16 +802,16 @@ export default function AdminProfilePage() {
                   <button
                     type="button"
                     onClick={() => setIsEditUserOpen(false)}
-                    className="w-1/2 rounded-2xl bg-slate-100 py-3.5 text-sm font-black text-slate-600 hover:bg-slate-200 transition"
+                    className="w-1/2 rounded-2xl bg-slate-100 py-3.5 text-sm font-black text-slate-600 hover:bg-slate-200 transition active:scale-[0.98]"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="w-1/2 rounded-2xl bg-[#123c8c] py-3.5 text-sm font-black text-white hover:bg-[#0f3274] transition"
+                    className="w-1/2 rounded-2xl bg-[#123c8c] py-3.5 text-sm font-black text-white hover:bg-[#0f3274] transition active:scale-[0.98] shadow-lg shadow-blue-900/20 disabled:opacity-60"
                   >
-                    Simpan
+                    {isSaving ? <Loader2 className="mx-auto animate-spin" size={18} /> : "Simpan"}
                   </button>
                 </div>
               </form>
@@ -990,16 +1029,16 @@ export default function AdminProfilePage() {
                   <button
                     type="button"
                     onClick={() => setIsEditCompanyOpen(false)}
-                    className="w-1/2 rounded-2xl bg-slate-100 py-3.5 text-sm font-black text-slate-600 hover:bg-slate-200 transition"
+                    className="w-1/2 rounded-2xl bg-slate-100 py-3.5 text-sm font-black text-slate-600 hover:bg-slate-200 transition active:scale-[0.98]"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="w-1/2 rounded-2xl bg-[#123c8c] py-3.5 text-sm font-black text-white hover:bg-[#0f3274] transition"
+                    className="w-1/2 rounded-2xl bg-[#123c8c] py-3.5 text-sm font-black text-white hover:bg-[#0f3274] transition active:scale-[0.98] shadow-lg shadow-blue-900/20 disabled:opacity-60"
                   >
-                    Simpan
+                    {isSaving ? <Loader2 className="mx-auto animate-spin" size={18} /> : "Simpan"}
                   </button>
                 </div>
               </form>
