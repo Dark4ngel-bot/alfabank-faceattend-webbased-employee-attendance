@@ -656,7 +656,7 @@ export default function LoginPage() {
         <div className="relative z-10 grid min-h-dvh w-full grid-cols-1 lg:grid-cols-2">
           {/* Left Column Content */}
           <div className="login-enter relative flex flex-col justify-between px-6 pb-8 pt-28 md:px-12 lg:px-20 lg:pb-14 lg:pt-36">
-            <div className="relative z-10 my-auto max-w-2xl text-left">
+            <div className="relative z-10 my-auto max-w-2xl text-center lg:text-left">
               <p
                 className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#123c8c] md:text-sm"
                 style={{
@@ -688,7 +688,7 @@ export default function LoginPage() {
             </div>
 
             <div
-              className="login-field-enter relative z-10 text-left text-xs font-semibold text-slate-400 sm:text-sm"
+              className="login-field-enter relative z-10 hidden text-left text-xs font-semibold text-slate-400 sm:text-sm lg:block"
               style={{
                 animationDelay: "280ms",
               }}
@@ -802,7 +802,7 @@ export default function LoginPage() {
           </div>
 
           <div
-            className="login-field-enter px-6 pb-6 text-xs font-semibold text-slate-400 lg:hidden"
+            className="login-field-enter px-6 pb-6 text-center text-xs font-semibold text-slate-400 lg:hidden"
             style={{
               animationDelay: "300ms",
             }}

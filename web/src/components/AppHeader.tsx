@@ -465,14 +465,14 @@ export default function AppHeader({
               ) : null}
             </Link>
 
-            {/* Solo C Logo Icon Box on the far right next to Bell */}
-            <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-white p-2.5 shadow-sm ring-1 ring-blue-100/90 transition hover:bg-[#eaf1ff] active:scale-[0.96]">
+            {/* Full Creativemu Logo Badge Box on the far right next to Bell */}
+            <div className="relative flex h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-4 py-2.5 shadow-sm ring-1 ring-blue-100/90 transition hover:bg-[#eaf1ff] active:scale-[0.96]">
               <Image
-                src={DEFAULT_SITE_MARK_LOGO_SRC}
-                alt="Logo C Creativemu"
-                width={36}
-                height={36}
-                className="h-full w-full object-contain"
+                src={logoSrc}
+                alt="Logo Creativemu"
+                width={140}
+                height={35}
+                className="h-full w-auto object-contain object-center"
               />
             </div>
 
