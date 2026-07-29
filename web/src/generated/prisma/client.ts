@@ -148,3 +148,8 @@ export type Permission = Prisma.PermissionModel
  * 
  */
 export type RolePermission = Prisma.RolePermissionModel
+/**
+ * Model AdminContact
+ * 
+ */
+export type AdminContact = Prisma.AdminContactModel

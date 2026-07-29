@@ -39,7 +39,8 @@ export const ModelName = {
   Payroll: 'Payroll',
   PayrollItem: 'PayrollItem',
   Permission: 'Permission',
-  RolePermission: 'RolePermission'
+  RolePermission: 'RolePermission',
+  AdminContact: 'AdminContact'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -448,6 +449,22 @@ export const RolePermissionScalarFieldEnum = {
 export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnum)[keyof typeof RolePermissionScalarFieldEnum]
 
 
+export const AdminContactScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  role_title: 'role_title',
+  phone: 'phone',
+  whatsapp: 'whatsapp',
+  email: 'email',
+  note: 'note',
+  status: 'status',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type AdminContactScalarFieldEnum = (typeof AdminContactScalarFieldEnum)[keyof typeof AdminContactScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -723,4 +740,18 @@ export const RolePermissionOrderByRelevanceFieldEnum = {
 } as const
 
 export type RolePermissionOrderByRelevanceFieldEnum = (typeof RolePermissionOrderByRelevanceFieldEnum)[keyof typeof RolePermissionOrderByRelevanceFieldEnum]
+
+
+export const AdminContactOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  role_title: 'role_title',
+  phone: 'phone',
+  whatsapp: 'whatsapp',
+  email: 'email',
+  note: 'note',
+  status: 'status'
+} as const
+
+export type AdminContactOrderByRelevanceFieldEnum = (typeof AdminContactOrderByRelevanceFieldEnum)[keyof typeof AdminContactOrderByRelevanceFieldEnum]
 

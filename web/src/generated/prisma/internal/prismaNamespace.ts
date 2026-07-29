@@ -409,7 +409,8 @@ export const ModelName = {
   Payroll: 'Payroll',
   PayrollItem: 'PayrollItem',
   Permission: 'Permission',
-  RolePermission: 'RolePermission'
+  RolePermission: 'RolePermission',
+  AdminContact: 'AdminContact'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -425,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "loginRateLimit" | "department" | "jabatan" | "position" | "shift" | "workSchedule" | "officeLocation" | "adminNumber" | "employmentStatus" | "attendance" | "attendanceMonthlySummary" | "employeeVisit" | "wfhRequest" | "leaveRequest" | "announcement" | "adminNotification" | "payroll" | "payrollItem" | "permission" | "rolePermission"
+    modelProps: "user" | "loginRateLimit" | "department" | "jabatan" | "position" | "shift" | "workSchedule" | "officeLocation" | "adminNumber" | "employmentStatus" | "attendance" | "attendanceMonthlySummary" | "employeeVisit" | "wfhRequest" | "leaveRequest" | "announcement" | "adminNotification" | "payroll" | "payrollItem" | "permission" | "rolePermission" | "adminContact"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1815,6 +1816,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AdminContact: {
+      payload: Prisma.$AdminContactPayload<ExtArgs>
+      fields: Prisma.AdminContactFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AdminContactFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminContactPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AdminContactFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminContactPayload>
+        }
+        findFirst: {
+          args: Prisma.AdminContactFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminContactPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AdminContactFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminContactPayload>
+        }
+        findMany: {
+          args: Prisma.AdminContactFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminContactPayload>[]
+        }
+        create: {
+          args: Prisma.AdminContactCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminContactPayload>
+        }
+        createMany: {
+          args: Prisma.AdminContactCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.AdminContactDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminContactPayload>
+        }
+        update: {
+          args: Prisma.AdminContactUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminContactPayload>
+        }
+        deleteMany: {
+          args: Prisma.AdminContactDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AdminContactUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.AdminContactUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminContactPayload>
+        }
+        aggregate: {
+          args: Prisma.AdminContactAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAdminContact>
+        }
+        groupBy: {
+          args: Prisma.AdminContactGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminContactGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AdminContactCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminContactCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2245,6 +2312,22 @@ export const RolePermissionScalarFieldEnum = {
 export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnum)[keyof typeof RolePermissionScalarFieldEnum]
 
 
+export const AdminContactScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  role_title: 'role_title',
+  phone: 'phone',
+  whatsapp: 'whatsapp',
+  email: 'email',
+  note: 'note',
+  status: 'status',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type AdminContactScalarFieldEnum = (typeof AdminContactScalarFieldEnum)[keyof typeof AdminContactScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2522,6 +2605,20 @@ export const RolePermissionOrderByRelevanceFieldEnum = {
 export type RolePermissionOrderByRelevanceFieldEnum = (typeof RolePermissionOrderByRelevanceFieldEnum)[keyof typeof RolePermissionOrderByRelevanceFieldEnum]
 
 
+export const AdminContactOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  role_title: 'role_title',
+  phone: 'phone',
+  whatsapp: 'whatsapp',
+  email: 'email',
+  note: 'note',
+  status: 'status'
+} as const
+
+export type AdminContactOrderByRelevanceFieldEnum = (typeof AdminContactOrderByRelevanceFieldEnum)[keyof typeof AdminContactOrderByRelevanceFieldEnum]
+
+
 
 /**
  * Field references
@@ -2712,6 +2809,7 @@ export type GlobalOmitConfig = {
   payrollItem?: Prisma.PayrollItemOmit
   permission?: Prisma.PermissionOmit
   rolePermission?: Prisma.RolePermissionOmit
+  adminContact?: Prisma.AdminContactOmit
 }
 
 /* Types for Logging */

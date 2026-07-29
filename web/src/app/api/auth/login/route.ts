@@ -14,6 +14,7 @@ type LoginAttempt = {
 function isCreativemuEmail(email: string) {
   const normalized = email.trim().toLowerCase();
   return (
+    normalized.endsWith("@creativemu.id") ||
     normalized.endsWith("@creativemu.co.id") ||
     normalized.endsWith("@creativemu.com")
   );

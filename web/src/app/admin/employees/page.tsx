@@ -293,8 +293,9 @@ function isCreativemuEmail(email: string) {
   const normalizedEmail = email.toLowerCase();
 
   return (
-    normalizedEmail.endsWith("@creativemu.com") ||
-    normalizedEmail.endsWith("@creativemu.co.id")
+    normalizedEmail.endsWith("@creativemu.id") ||
+    normalizedEmail.endsWith("@creativemu.co.id") ||
+    normalizedEmail.endsWith("@creativemu.com")
   );
 }
 

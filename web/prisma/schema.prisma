@@ -672,4 +672,20 @@ enum CheckOutStatus {
   EARLY
 }
 
+model AdminContact {
+  id         String   @id @default(uuid()) @db.Char(36)
+  name       String   @db.VarChar(100)
+  role_title String?  @db.VarChar(100)
+  phone      String   @db.VarChar(30)
+  whatsapp   String?  @db.VarChar(30)
+  email      String?  @db.VarChar(100)
+  note       String?  @db.Text
+  status     String   @default("active") @db.VarChar(20)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@map("admin_contacts")
+}
+
 

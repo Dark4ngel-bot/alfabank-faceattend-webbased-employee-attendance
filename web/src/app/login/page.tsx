@@ -38,6 +38,7 @@ function isValidEmailFormat(email: string) {
 function isCreativemuEmail(email: string) {
   const normalized = email.trim().toLowerCase();
   return (
+    normalized.endsWith("@creativemu.id") ||
     normalized.endsWith("@creativemu.co.id") ||
     normalized.endsWith("@creativemu.com")
   );
@@ -594,15 +595,15 @@ export default function LoginPage() {
     if (!isValidEmailFormat(normalizedEmail)) {
       showAlert(
         "Format email salah",
-        "Masukkan email dengan format yang benar, contoh: nama@creativemu.com",
+        "Masukkan email dengan format yang benar, contoh: nama@creativemu.id",
       );
       return;
     }
 
     if (!isCreativemuEmail(normalizedEmail)) {
       showAlert(
-        "Email tidak valid",
-        "Masuk hanya dapat menggunakan email resmi Creativemu.",
+        "Domain Email Salah",
+        "Email harus menggunakan domain resmi @creativemu.id.",
       );
       return;
     }

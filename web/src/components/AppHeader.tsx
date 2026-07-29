@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  BadgeCheck,
   BarChart3,
   Bell,
   Building2,
@@ -115,9 +116,14 @@ const masterDataMenus = [
     icon: UserRoundCog,
   },
   {
-    href: "/admin/employment-status",
+    href: "/admin/employment-statuses",
     label: "Status Kepegawaian",
-    icon: UserRound,
+    icon: BadgeCheck,
+  },
+  {
+    href: "/admin/admin-contacts",
+    label: "Kontak Admin",
+    icon: PhoneCall,
   },
 ];
 
