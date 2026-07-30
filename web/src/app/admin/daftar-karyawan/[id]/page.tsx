@@ -358,6 +358,7 @@ export default function AdminEmployeeDetailPage() {
   const id = String(params.id || "");
 
   const [employee, setEmployee] = useState<Employee | null>(null);
+  const [isIdCardModalOpen, setIsIdCardModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -464,7 +465,7 @@ export default function AdminEmployeeDetailPage() {
                         {employee.name}
                       </h1>
 
-                      <div className="mt-4 flex flex-wrap gap-2">
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
                         <span
                           className={`inline-flex rounded-full px-4 py-2 text-xs font-black ${
                             employee.status === "active"
@@ -474,6 +475,15 @@ export default function AdminEmployeeDetailPage() {
                         >
                           {formatStatus(employee.status)}
                         </span>
+
+                        <button
+                          type="button"
+                          onClick={() => setIsIdCardModalOpen(true)}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-4 py-2 text-xs font-black text-white backdrop-blur-sm transition hover:bg-white hover:text-[#123c8c] active:scale-95"
+                        >
+                          <IdCard size={15} />
+                          Kartu Identitas Digital
+                        </button>
                       </div>
 
                       {profilePhoto ? (

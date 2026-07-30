@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -9,11 +9,18 @@ import {
   Building2,
   CalendarDays,
   CreditCard,
+  Download,
   IdCard,
   Loader2,
+  Lock,
   Mail,
+  MapPin,
   Network,
   Phone,
+  Printer,
+  QrCode,
+  RotateCw,
+  ShieldCheck,
 } from "lucide-react";
 
 import AppHeader from "@/components/AppHeader";
@@ -40,10 +47,11 @@ type KartuIdentitasUser = {
   bank_account_number?: string | null;
   employment_start_date?: string | null;
   employment_end_date?: string | null;
+  employment_status?: string | null;
   department?: UserRelation;
   position?: UserRelation;
   jabatan?: UserRelation;
-  unit?: UserRelation;
+  registered_office?: { name?: string; address?: string } | null;
 };
 
 function getInitials(name: string) {
@@ -102,7 +110,7 @@ function formatEmploymentPeriod(user: KartuIdentitasUser) {
   const endDate = formatDate(user.employment_end_date);
 
   if (startDate === "-" && endDate === "-") return "-";
-  if (startDate === "-") return `Sampai ${endDate}`;
+  if (startDate === "-") return `s/d ${endDate}`;
   if (endDate === "-") return `Mulai ${startDate}`;
 
   return `${startDate} - ${endDate}`;
@@ -124,7 +132,7 @@ function KartuIdentitasMotionStyles() {
       @keyframes kartuIdentitasEnter {
         0% {
           opacity: 0;
-          transform: translateY(14px);
+          transform: translateY(8px);
         }
 
         100% {
@@ -134,7 +142,7 @@ function KartuIdentitasMotionStyles() {
       }
 
       .kartu-identitas-enter {
-        animation: kartuIdentitasEnter 320ms ease-out both;
+        animation: kartuIdentitasEnter 260ms ease-out both;
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -151,9 +159,12 @@ function KartuIdentitasMotionStyles() {
 export default function KartuIdentitasPage() {
   const router = useRouter();
   const logoSrc = useSiteLogo();
+  const cardRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<KartuIdentitasUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [activeSide, setActiveSide] = useState<"front" | "back">("front");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -191,7 +202,8 @@ export default function KartuIdentitasPage() {
 
   const initials = user?.name ? getInitials(user.name) : "";
 
-  const identityRows = useMemo(() => {
+  // 1. FRONT SIDE (Public Office Data)
+  const frontOfficeDetails = useMemo(() => {
     if (!user) return [];
 
     return [
@@ -201,34 +213,9 @@ export default function KartuIdentitasPage() {
         icon: IdCard,
       },
       {
-        label: "Bank",
-        value: user.bank_name || "-",
-        icon: Building2,
-      },
-      {
-        label: "No Rekening",
-        value: user.bank_account_number || "-",
-        icon: CreditCard,
-      },
-      {
-        label: "NIK",
-        value: user.nik || "-",
-        icon: IdCard,
-      },
-      {
-        label: "Email",
-        value: user.email,
-        icon: Mail,
-      },
-      {
-        label: "Telepon",
-        value: user.phone || "-",
-        icon: Phone,
-      },
-      {
-        label: "Posisi",
-        value: user.position?.name || "-",
-        icon: BriefcaseBusiness,
+        label: "Status Kepegawaian",
+        value: user.employment_status || "Karyawan Tetap",
+        icon: BadgeCheck,
       },
       {
         label: "Divisi",
@@ -241,17 +228,263 @@ export default function KartuIdentitasPage() {
         icon: BriefcaseBusiness,
       },
       {
-        label: "Status",
+        label: "Posisi",
+        value: user.position?.name || "-",
+        icon: BriefcaseBusiness,
+      },
+      {
+        label: "Status Akun",
         value: formatStatus(user.status),
-        icon: BadgeCheck,
+        icon: ShieldCheck,
       },
       {
         label: "Masa Kerja",
         value: formatEmploymentPeriod(user),
         icon: CalendarDays,
       },
+      {
+        label: "Kantor Terdaftar",
+        value: user.registered_office?.name || "Kantor Pusat",
+        icon: MapPin,
+      },
     ];
   }, [user]);
+
+  // 2. BACK SIDE (Personal & Bank Data)
+  const backSensitiveDetails = useMemo(() => {
+    if (!user) return [];
+
+    return [
+      {
+        label: "NIK",
+        value: user.nik || "-",
+        icon: IdCard,
+      },
+      {
+        label: "Email",
+        value: user.email,
+        icon: Mail,
+      },
+      {
+        label: "Nomor Telepon",
+        value: user.phone || "-",
+        icon: Phone,
+      },
+      {
+        label: "Bank",
+        value: user.bank_name || "-",
+        icon: Building2,
+      },
+      {
+        label: "No Rekening",
+        value: user.bank_account_number || "-",
+        icon: CreditCard,
+      },
+      {
+        label: "Status Akun",
+        value: formatStatus(user.status),
+        icon: ShieldCheck,
+      },
+    ];
+  }, [user]);
+
+  async function handleDownloadPNG() {
+    if (!user) return;
+    try {
+      setIsDownloading(true);
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const width = 1200;
+      const height = 1350;
+      canvas.width = width;
+      canvas.height = height;
+
+      // Draw FRONT CARD (0 to 630)
+      ctx.fillStyle = "#123c8c";
+      ctx.fillRect(0, 0, 360, 630);
+      ctx.fillStyle = "#f8fbff";
+      ctx.fillRect(360, 0, width - 360, 630);
+
+      // Front Left Photo
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 22px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("PRESENSI", 180, 55);
+
+      const photoSize = 180;
+      const photoX = (360 - photoSize) / 2;
+      const photoY = 85;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = "rgba(0,0,0,0.2)";
+      ctx.shadowBlur = 16;
+      ctx.beginPath();
+      ctx.roundRect(photoX, photoY, photoSize, photoSize + 36, 20);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      if (user.profile_photo) {
+        try {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          await new Promise((res, rej) => {
+            img.onload = res;
+            img.onerror = rej;
+            img.src = user.profile_photo!;
+          });
+          ctx.save();
+          ctx.beginPath();
+          ctx.roundRect(photoX + 5, photoY + 5, photoSize - 10, photoSize + 26, 16);
+          ctx.clip();
+          ctx.drawImage(img, photoX + 5, photoY + 5, photoSize - 10, photoSize + 26);
+          ctx.restore();
+        } catch {
+          ctx.fillStyle = "#123c8c";
+          ctx.font = "900 56px sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(initials, 180, photoY + (photoSize + 36) / 2);
+        }
+      } else {
+        ctx.fillStyle = "#123c8c";
+        ctx.font = "900 56px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(initials, 180, photoY + (photoSize + 36) / 2);
+      }
+
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 30px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(user.name, 180, 375);
+
+      ctx.fillStyle = "rgba(255,255,255,0.2)";
+      ctx.beginPath();
+      ctx.roundRect(80, 405, 200, 40, 20);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 17px sans-serif";
+      ctx.fillText(formatRole(user.role).toUpperCase(), 180, 431);
+
+      // Front Right Grid
+      ctx.fillStyle = "#123c8c";
+      ctx.font = "bold 16px sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("KARTU KARYAWAN", 410, 50);
+
+      ctx.fillStyle = "#123456";
+      ctx.font = "900 32px sans-serif";
+      ctx.fillText("Identitas Pegawai (Tampak Depan)", 410, 92);
+
+      ctx.strokeStyle = "rgba(18, 60, 140, 0.15)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(410, 110);
+      ctx.lineTo(width - 40, 110);
+      ctx.stroke();
+
+      const col1X = 410;
+      const col2X = 800;
+      const startY = 160;
+
+      frontOfficeDetails.forEach((item, i) => {
+        const isCol2 = i % 2 === 1;
+        const curX = isCol2 ? col2X : col1X;
+        const curY = startY + Math.floor(i / 2) * 95;
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "bold 13px sans-serif";
+        ctx.fillText(item.label.toUpperCase(), curX, curY);
+
+        ctx.fillStyle = "#123456";
+        ctx.font = "900 19px sans-serif";
+        ctx.fillText(String(item.value), curX, curY + 26);
+      });
+
+      // Divider Line between Front and Back (630 to 720)
+      ctx.fillStyle = "#e2e8f0";
+      ctx.fillRect(0, 630, width, 90);
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "900 18px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("--- SISI BELAKANG (DETAIL PERSONAL & BANK) ---", width / 2, 683);
+
+      // Draw BACK CARD (720 to 1350)
+      ctx.fillStyle = "#123c8c";
+      ctx.fillRect(0, 720, 360, 630);
+      ctx.fillStyle = "#f8fbff";
+      ctx.fillRect(360, 720, width - 360, 630);
+
+      // Back Left QR
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 22px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("VERIFIKASI", 180, 775);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.roundRect(photoX, 805, photoSize, photoSize + 20, 20);
+      ctx.fill();
+
+      ctx.fillStyle = "#123c8c";
+      ctx.font = "900 24px sans-serif";
+      ctx.fillText("QR CODE", 180, 915);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "italic 15px sans-serif";
+      ctx.fillText("Presensi Digital", 180, 1100);
+
+      // Back Right Grid
+      ctx.fillStyle = "#123c8c";
+      ctx.font = "bold 16px sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("DETAIL PERSONAL", 410, 770);
+
+      ctx.fillStyle = "#123456";
+      ctx.font = "900 32px sans-serif";
+      ctx.fillText("Detail Personal & Bank", 410, 812);
+
+      ctx.strokeStyle = "rgba(18, 60, 140, 0.15)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(410, 830);
+      ctx.lineTo(width - 40, 830);
+      ctx.stroke();
+
+      let bStartY = 880;
+      backSensitiveDetails.forEach((item, i) => {
+        const isCol2 = i % 2 === 1;
+        const curX = isCol2 ? col2X : col1X;
+        const curY = bStartY + Math.floor(i / 2) * 105;
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "bold 13px sans-serif";
+        ctx.fillText(item.label.toUpperCase(), curX, curY);
+
+        ctx.fillStyle = "#123456";
+        ctx.font = "900 19px sans-serif";
+        ctx.fillText(String(item.value), curX, curY + 26);
+      });
+
+      // Download link
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.download = `Kartu_Identitas_${user.name.replace(/\s+/g, "_")}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("DOWNLOAD_ERROR:", err);
+      window.print();
+    } finally {
+      setIsDownloading(false);
+    }
+  }
 
   return (
     <MobileShell variant="employee" withBottomPadding={false}>
@@ -261,155 +494,226 @@ export default function KartuIdentitasPage() {
         <AppHeader title="Kartu Identitas" variant="employee" />
       </div>
 
-      <main className="min-h-dvh bg-white pb-28 text-slate-950 md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff]">
-        <section className="mx-auto max-w-5xl px-5 pt-5 md:px-10 md:pt-8">
-          <div className="flex items-center gap-4 border-b border-slate-100 pb-5 md:hidden">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#123456] transition hover:bg-[#f8fbff] active:scale-[0.96]"
-            >
-              <ArrowLeft size={25} strokeWidth={2.8} />
-            </button>
+      <main className="flex h-dvh max-h-dvh flex-col justify-between overflow-hidden bg-white pb-16 text-slate-950 md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff]">
+        <section className="flex flex-1 flex-col overflow-hidden px-3 pt-2 md:px-8 md:pt-4">
+          {/* Header Controls */}
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200 transition hover:bg-[#f8fbff] active:scale-[0.96]"
+              >
+                <ArrowLeft size={19} strokeWidth={2.8} />
+              </button>
 
-            <h1 className="text-xl font-black text-[#123456]">
-              Kartu Identitas
-            </h1>
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-[0.24em] text-[#123c8c] md:text-xs">
+                  Identitas
+                </p>
+                <h1 className="text-base font-black text-[#123456] md:text-2xl">
+                  Kartu Identitas
+                </h1>
+              </div>
+            </div>
+
+            {/* Side Switcher Toggle */}
+            <div className="flex items-center gap-1 rounded-2xl bg-slate-100 p-1">
+              <button
+                type="button"
+                onClick={() => setActiveSide("front")}
+                className={`rounded-xl px-3 py-1 text-[11px] font-black transition ${
+                  activeSide === "front"
+                    ? "bg-[#123c8c] text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Sisi Depan
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSide("back")}
+                className={`rounded-xl px-3 py-1 text-[11px] font-black transition ${
+                  activeSide === "back"
+                    ? "bg-[#123c8c] text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Sisi Belakang
+              </button>
+            </div>
+
+            {user && (
+                <button
+                  type="button"
+                  disabled={isDownloading}
+                  onClick={handleDownloadPNG}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#123c8c] px-3.5 py-1.5 text-[11px] font-black text-white shadow-md shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-95 disabled:opacity-50"
+                >
+                  <Download size={14} strokeWidth={2.8} />
+                  <span>Download Kartu (PNG)</span>
+                </button>
+            )}
           </div>
 
-          <div className="hidden items-center gap-4 md:flex">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200 transition hover:-translate-y-0.5 hover:bg-[#f8fbff] active:scale-[0.96]"
-            >
-              <ArrowLeft size={25} strokeWidth={2.8} />
-            </button>
+          {/* Main Card Area */}
+          <div className="flex flex-1 items-center justify-center py-1 overflow-hidden">
+            {loading ? (
+              <div className="flex items-center gap-3 rounded-3xl border border-blue-100 bg-[#f8fbff] p-4 text-xs font-bold text-slate-500">
+                <Loader2 size={18} className="animate-spin text-[#123c8c]" />
+                Mengambil kartu identitas...
+              </div>
+            ) : errorMessage || !user ? (
+              <div className="rounded-3xl border border-red-100 bg-red-50 px-6 py-6 text-center">
+                <p className="text-xs font-black text-red-700">
+                  {errorMessage || "Kartu identitas tidak ditemukan."}
+                </p>
+              </div>
+            ) : (
+              <div className="w-full max-w-[840px] flex flex-col items-center">
+                {/* Indicator & Flip button */}
+                <div className="mb-1.5 flex w-full justify-end px-1">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveSide((prev) => (prev === "front" ? "back" : "front"))
+                    }
+                    className="inline-flex items-center gap-1 text-[10px] font-black text-[#123c8c] transition hover:underline"
+                  >
+                    <RotateCw size={12} /> Flip Sisi Kartu
+                  </button>
+                </div>
 
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
-                Identitas
-              </p>
-              <h1 className="mt-1 text-3xl font-black text-[#123456]">
-                Kartu Identitas
-              </h1>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="kartu-identitas-enter mt-8 flex items-center gap-3 rounded-3xl border border-blue-100 bg-[#f8fbff] p-5 text-sm font-bold text-slate-500">
-              <Loader2 size={20} className="animate-spin text-[#123c8c]" />
-              Mengambil kartu identitas...
-            </div>
-          ) : errorMessage || !user ? (
-            <div className="kartu-identitas-enter mt-8 rounded-3xl border border-red-100 bg-red-50 px-6 py-8 text-center">
-              <p className="text-sm font-black text-red-700">
-                {errorMessage || "Kartu identitas tidak ditemukan."}
-              </p>
-            </div>
-          ) : (
-            <div className="kartu-identitas-enter -mx-5 mt-8 overflow-x-auto px-5 pb-3 md:mx-0 md:overflow-visible md:px-0">
-              <div className="relative mx-auto w-[680px] overflow-hidden rounded-[1.5rem] border border-[#123c8c]/20 bg-[#123c8c] shadow-2xl shadow-blue-950/20 md:w-full md:max-w-[980px]">
-                <div className="absolute right-0 top-0 h-24 w-44 rounded-bl-full bg-white/10" />
-                <div className="absolute bottom-0 left-0 h-28 w-56 rounded-tr-full bg-white/10" />
-                <img
-                  src={logoSrc}
-                  alt=""
-                  aria-hidden="true"
-                  className="pointer-events-none absolute right-4 top-1/2 h-28 w-28 -translate-y-1/2 object-contain opacity-[0.07] md:right-10 md:h-60 md:w-60"
-                />
-                <div className="grid min-h-[310px] grid-cols-[240px_1fr] md:min-h-[390px] md:grid-cols-[300px_1fr]">
-                  <div className="relative flex flex-col items-center justify-center border-r border-white/20 p-6 text-center text-white md:p-8">
-                    <p className="text-[10px] font-black uppercase tracking-[0.24em] text-blue-100 md:text-xs md:tracking-[0.28em]">
-                      PRESENSI
-                    </p>
-
-                    <div className="mt-4 flex h-36 w-30 items-center justify-center overflow-hidden rounded-2xl border-[4px] border-white bg-[#eaf1ff] text-3xl font-black text-[#123c8c] shadow-lg shadow-blue-950/25 md:mt-5 md:h-44 md:w-36 md:text-4xl">
-                      {user.profile_photo ? (
-                        <img
-                          src={user.profile_photo}
-                          alt={user.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        initials
-                      )}
-                    </div>
-
-                    <p className="mt-4 max-w-full break-words text-xl font-black leading-6 text-white md:mt-5 md:text-2xl md:leading-7">
-                      {user.name}
-                    </p>
-                    <p className="mt-2 rounded-full bg-white/15 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.12em] text-blue-50 ring-1 ring-white/20 md:text-xs md:tracking-[0.14em]">
-                      {formatRole(user.role)}
-                    </p>
-                  </div>
-
-                  <div className="relative min-w-0 bg-[#f8fbff]/95 p-6 md:p-8">
-                    <img
-                      src={logoSrc}
-                      alt=""
-                      aria-hidden="true"
-                      className="pointer-events-none absolute bottom-5 right-4 h-24 w-24 object-contain opacity-[0.06] md:bottom-10 md:right-10 md:h-52 md:w-52"
-                    />
-                    <div className="flex items-start justify-between gap-4 border-b border-[#123c8c]/15 pb-4 md:pb-5">
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#123c8c] md:text-xs md:tracking-[0.22em]">
-                          Kartu Karyawan
-                        </p>
-                        <h2 className="mt-1 text-3xl font-black leading-tight text-[#123456] md:text-4xl">
-                          Identitas Pegawai
-                        </h2>
-                      </div>
-
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#123c8c] text-white md:h-14 md:w-14">
-                        <IdCard
-                          size={24}
-                          strokeWidth={2.6}
-                          className="md:h-7 md:w-7"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="relative mt-4 grid grid-cols-2 gap-x-5 gap-y-3 md:mt-5 md:gap-x-6 md:gap-y-4">
-                      {identityRows.map((item) => (
-                        <div key={item.label} className="min-w-0">
-                          <div className="flex items-start gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#123c8c] text-white md:h-10 md:w-10">
-                              <item.icon
-                                size={16}
-                                strokeWidth={2.7}
-                                className="md:h-[18px] md:w-[18px]"
-                              />
-                            </div>
-
-                            <div className="min-w-0 border-b border-[#123c8c]/10 pb-2 md:pb-3">
-                              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400 md:text-xs md:tracking-[0.14em]">
-                                {item.label}
-                              </p>
-                              <p className="mt-1 break-words text-sm font-black leading-5 text-[#123456] md:text-base md:leading-6">
-                                {item.value}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="relative mt-4 flex items-center justify-between gap-2 rounded-2xl bg-[#123c8c] px-5 py-3 md:mt-5">
-                      <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-100">
-                        Creativemu
+                {/* Fixed Container Height (h-[270px] sm:h-[320px] md:h-[340px]) to guarantee ZERO height shift when flipping */}
+                <div
+                  ref={cardRef}
+                  className="kartu-identitas-enter w-full h-[270px] sm:h-[320px] md:h-[340px] overflow-hidden rounded-2xl border border-[#123c8c]/20 bg-[#123c8c] shadow-xl shadow-blue-950/20"
+                >
+                  <div className="grid h-full grid-cols-[110px_1fr] sm:grid-cols-[180px_1fr] md:grid-cols-[210px_1fr]">
+                    {/* LEFT BLUE SIDEBAR */}
+                    <div className="relative flex h-full flex-col items-center justify-center border-r border-white/20 p-3 text-center text-white md:p-5">
+                      <p className="text-[8px] font-black uppercase tracking-[0.2em] text-blue-100 md:text-xs">
+                        {activeSide === "front" ? "PRESENSI" : "VERIFIKASI"}
                       </p>
-                      <BadgeCheck
-                        size={20}
-                        strokeWidth={2.7}
-                        className="shrink-0 text-white md:h-[22px] md:w-[22px]"
-                      />
+
+                      {activeSide === "front" ? (
+                        <div className="mt-2 flex h-22 w-18 items-center justify-center overflow-hidden rounded-xl border-[2px] border-white bg-[#eaf1ff] text-2xl font-black text-[#123c8c] shadow-sm md:h-32 md:w-26 md:border-[3px] md:text-3xl">
+                          {user.profile_photo ? (
+                            <img
+                              src={user.profile_photo}
+                              alt={user.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            initials
+                          )}
+                        </div>
+                      ) : (
+                        <div className="mt-2 flex h-22 w-18 flex-col items-center justify-center rounded-xl border-[2px] border-white bg-white text-[#123c8c] shadow-sm md:h-32 md:w-26">
+                          <QrCode size={36} />
+                          <span className="mt-1 text-[7px] font-black uppercase tracking-wider">
+                            VERIFIED
+                          </span>
+                        </div>
+                      )}
+
+                      <p className="mt-2 max-w-full truncate text-xs font-black text-white md:mt-3 md:text-lg">
+                        {user.name}
+                      </p>
+                      <p className="mt-1 rounded-full bg-white/15 px-2.5 py-0.5 text-[8px] font-black uppercase tracking-[0.1em] text-blue-50 ring-1 ring-white/20 md:text-xs">
+                        {formatRole(user.role)}
+                      </p>
+                    </div>
+
+                    {/* RIGHT PANEL */}
+                    <div className="relative flex h-full flex-col justify-between min-w-0 bg-[#f8fbff]/95 p-3.5 md:p-5">
+                      {/* Panel Header */}
+                      <div className="flex shrink-0 items-center justify-between border-b border-[#123c8c]/15 pb-2">
+                        <div className="min-w-0">
+                          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[#123c8c] md:text-[9px]">
+                            {activeSide === "front"
+                              ? "Kartu Karyawan"
+                              : "Detail Personal"}
+                          </p>
+                          <h2 className="text-sm font-black leading-tight text-[#123456] md:text-xl">
+                            {activeSide === "front"
+                              ? "Identitas Pegawai"
+                              : "Detail Personal & Bank"}
+                          </h2>
+                        </div>
+
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#123c8c] text-white md:h-9 md:w-9">
+                          {activeSide === "front" ? (
+                            <IdCard size={15} strokeWidth={2.6} />
+                          ) : (
+                            <Lock size={15} strokeWidth={2.6} />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* FRONT SIDE CONTENT */}
+                      {activeSide === "front" ? (
+                        <div className="my-auto grid grid-cols-2 gap-x-3 gap-y-2 md:gap-x-5 md:gap-y-3">
+                          {frontOfficeDetails.map((item) => (
+                            <div key={item.label} className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#123c8c] text-white md:h-7 md:w-7">
+                                  <item.icon size={12} strokeWidth={2.7} />
+                                </div>
+
+                                <div className="min-w-0">
+                                  <p className="text-[7px] font-black uppercase tracking-[0.08em] text-slate-400 md:text-[8px]">
+                                    {item.label}
+                                  </p>
+                                  <p className="truncate text-[11px] font-black text-[#123456] md:text-xs">
+                                    {item.value}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        /* BACK SIDE CONTENT */
+                        <div className="my-auto grid grid-cols-2 gap-x-3 gap-y-2.5 md:gap-x-5 md:gap-y-3.5">
+                          {backSensitiveDetails.map((item) => (
+                            <div key={item.label} className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#123c8c] text-white md:h-7 md:w-7">
+                                  <item.icon size={12} strokeWidth={2.7} />
+                                </div>
+
+                                <div className="min-w-0">
+                                  <p className="text-[7px] font-black uppercase tracking-[0.08em] text-slate-400 md:text-[8px]">
+                                    {item.label}
+                                  </p>
+                                  <p className="truncate text-[11px] font-black text-[#123456] md:text-xs">
+                                    {item.value}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Footer Badge */}
+                      <div className="flex shrink-0 items-center justify-between rounded-lg bg-[#123c8c] px-2.5 py-1">
+                        <p className="text-[8px] font-black uppercase tracking-[0.16em] text-blue-100 md:text-[10px]">
+                          Creativemu
+                        </p>
+                        <BadgeCheck
+                          size={14}
+                          strokeWidth={2.7}
+                          className="shrink-0 text-white"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </section>
 
         <BottomNav />

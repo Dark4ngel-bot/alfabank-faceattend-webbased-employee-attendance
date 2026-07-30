@@ -638,7 +638,6 @@ export default function AdminLeaveReportPage() {
                           </div>
 
                           <span className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 text-sm font-black text-white shadow-lg shadow-blue-950/20 transition group-hover:bg-[#0f3274] md:min-w-44">
-	                            <Eye size={17} strokeWidth={2.6} />
 	                            Detail Karyawan
 	                          </span>
                         </div>
