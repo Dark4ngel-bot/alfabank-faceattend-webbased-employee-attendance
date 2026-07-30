@@ -707,7 +707,7 @@ export async function POST(req: NextRequest) {
         wfhQuotaMonthly - usedWfhThisMonth,
       );
 
-      if (remainingWfhQuota <= 0) {
+      if (wfhQuotaMonthly > 0 && remainingWfhQuota <= 0) {
         return NextResponse.json(
           {
             success: false,

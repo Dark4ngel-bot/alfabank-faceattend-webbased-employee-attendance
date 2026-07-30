@@ -212,6 +212,15 @@ function formatWfhQuota(value?: number | string | null) {
   return String(Number.isFinite(quota) ? Math.max(0, quota) : 0);
 }
 
+function formatWfhQuotaText(quotaMonthly?: number | string | null, quotaRemaining?: number | string | null) {
+  const monthly = Number(quotaMonthly || 0);
+  if (!monthly || monthly <= 0) {
+    return "Tanpa Batas (Bebas WFH)";
+  }
+  const remaining = Math.max(0, Number(quotaRemaining ?? monthly));
+  return `${remaining} hari tersisa dari ${monthly} hari/bulan`;
+}
+
 function formatDay(day: string) {
   return dayLabels[day] || day;
 }
@@ -1137,9 +1146,10 @@ export function ProfilPageContent({
           { label: "Masa Kerja", value: formatEmploymentPeriod(user), icon: CalendarDays },
           {
             label: "Kuota WFH Bulanan",
-            value: `${formatWfhQuota(user.wfh_quota_remaining_monthly)} tersisa dari ${formatWfhQuota(
+            value: formatWfhQuotaText(
               user.wfh_quota_monthly,
-            )}`,
+              user.wfh_quota_remaining_monthly,
+            ),
             icon: BriefcaseBusiness,
           },
         ],
@@ -1369,8 +1379,10 @@ export function ProfilPageContent({
                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Kuota WFH
                 </p>
-                <p className="mt-1 text-lg font-black text-[#123456]">
-                  {formatWfhQuota(user.wfh_quota_monthly)}
+                <p className="mt-1 text-base font-black text-[#123456]">
+                  {Number(user.wfh_quota_monthly || 0) > 0
+                    ? `${user.wfh_quota_monthly} Hari`
+                    : "Bebas WFH"}
                 </p>
               </div>
 
