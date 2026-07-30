@@ -39,6 +39,7 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import BankLogoBadge from "@/components/BankLogoBadge";
 import {
   AppAnimatedActionButton,
   AppFormReveal,
@@ -55,6 +56,7 @@ import {
   isCreativemuEmail,
   isValidEmailFormat,
 } from "@/lib/creativemu-email";
+import { BANK_OPTIONS, getBankOption } from "@/lib/bank-options";
 
 type OfficeMiniRelation = {
   id: string;
@@ -196,7 +198,7 @@ type Employee = {
   employment_end_date: string | null;
   birth_place: string | null;
   birth_date: string | null;
-  bank_name?: string | null;
+  bank_code: string | null;
   bank_account_number: string | null;
   nik: string | null;
   wfh_quota_monthly?: number | null;
@@ -207,8 +209,6 @@ type Employee = {
   photo_url?: string | null;
   avatar_url?: string | null;
 };
-
-import { AppBankSelect } from "@/components/AppBankSelect";
 
 type EmployeeForm = {
   employee_code: string;
@@ -228,7 +228,7 @@ type EmployeeForm = {
   employment_end_date: string;
   birth_place: string;
   birth_date: string;
-  bank_name: string;
+  bank_code: string;
   bank_account_number: string;
   nik: string;
   wfh_quota_monthly: string;
@@ -258,7 +258,7 @@ const initialForm: EmployeeForm = {
   employment_end_date: "",
   birth_place: "",
   birth_date: "",
-  bank_name: "",
+  bank_code: "",
   bank_account_number: "",
   nik: "",
   wfh_quota_monthly: "0",
@@ -728,6 +728,8 @@ export default function AdminEmployeesPage() {
         ${employee.employment_end_date || ""}
         ${employee.birth_place || ""}
         ${employee.birth_date || ""}
+        ${getBankOption(employee.bank_code)?.name || ""}
+        ${getBankOption(employee.bank_code)?.shortName || ""}
         ${employee.bank_account_number || ""}
         ${employee.nik || ""}
         ${employee.wfh_quota_monthly ?? ""}
@@ -779,7 +781,7 @@ export default function AdminEmployeesPage() {
       employment_end_date: formatDateInput(employee.employment_end_date),
       birth_place: employee.birth_place || "",
       birth_date: formatDateInput(employee.birth_date),
-      bank_name: employee.bank_name || "",
+      bank_code: employee.bank_code || "",
       bank_account_number: employee.bank_account_number || "",
       nik: employee.nik || "",
       wfh_quota_monthly: String(employee.wfh_quota_monthly ?? 0),
@@ -988,6 +990,7 @@ export default function AdminEmployeesPage() {
             : form.employment_end_date,
           birth_place: form.birth_place.trim(),
           birth_date: form.birth_date,
+          bank_code: form.bank_code,
           bank_account_number: form.bank_account_number,
           nik: form.nik,
           employee_code: form.employee_code.trim(),
@@ -1658,13 +1661,38 @@ export default function AdminEmployeesPage() {
                   </div>
                 </div>
 
-                <AppBankSelect
-                  label="Nama Bank"
-                  value={form.bank_name}
-                  onChange={(val) =>
-                    setForm((prev) => ({ ...prev, bank_name: val }))
-                  }
-                />
+                <div>
+                  <label className="mb-2 block text-sm font-black text-slate-700">
+                    Bank
+                  </label>
+                  <div className="app-field-smooth relative rounded-2xl">
+                    <CreditCard
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                    <select
+                      value={form.bank_code}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          bank_code: event.target.value,
+                        }))
+                      }
+                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-10 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    >
+                      <option value="">Pilih Bank</option>
+                      {BANK_OPTIONS.map((bank) => (
+                        <option key={bank.code} value={bank.code}>
+                          {bank.shortName} - {bank.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={18}
+                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                  </div>
+                </div>
 
                 <div>
                   <label className="mb-2 block text-sm font-black text-slate-700">
@@ -1690,6 +1718,15 @@ export default function AdminEmployeesPage() {
                       className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                     />
                   </div>
+                  {(form.bank_code || form.bank_account_number) && (
+                    <div className="mt-2 rounded-2xl border border-blue-100 bg-white px-3 py-2 text-sm font-black text-slate-700">
+                      <BankLogoBadge
+                        bankCode={form.bank_code}
+                        accountNumber={form.bank_account_number}
+                        compact
+                      />
+                    </div>
+                  )}
                 </div>
               </AppFormReveal>
 
