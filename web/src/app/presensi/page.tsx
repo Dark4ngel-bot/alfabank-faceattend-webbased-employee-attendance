@@ -5,6 +5,7 @@ import {
   AlertCircle,
   BriefcaseBusiness,
   Camera,
+  CameraOff,
   CheckCircle2,
   Clock3,
   ImageUp,
@@ -747,64 +748,83 @@ function PhotoFrameOverlay() {
     </div>
   );
 }
-
 function CameraEmptyState({
   cameraStarting,
   permissionDenied,
   laptopBlocked,
+  cameraOffByUser,
   deniedAttempts,
   onRetry,
+  onTurnOn,
 }: {
   cameraStarting: boolean;
   permissionDenied: boolean;
   laptopBlocked: boolean;
+  cameraOffByUser?: boolean;
   deniedAttempts: number;
   onRetry: () => void;
+  onTurnOn?: () => void;
 }) {
   return (
     <div className="attendance-row-enter absolute inset-0 flex items-center justify-center px-6 text-center text-white">
       <div>
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-white/10 backdrop-blur-xl md:h-24 md:w-24">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/10 backdrop-blur-xl md:h-20 md:w-20">
           {cameraStarting ? (
-            <Loader2 size={38} className="animate-spin" />
+            <Loader2 size={32} className="animate-spin" />
           ) : laptopBlocked ? (
-            <AlertCircle size={38} />
+            <AlertCircle size={32} />
+          ) : cameraOffByUser ? (
+            <CameraOff size={32} />
           ) : (
-            <Camera size={38} />
+            <Camera size={32} />
           )}
         </div>
 
-        <p className="mt-4 text-sm font-black text-white">
+        <p className="mt-3 text-sm font-black text-white">
           {laptopBlocked
             ? "Presensi khusus HP"
-            : permissionDenied
-              ? "Izin Kamera Ditolak"
-              : cameraStarting
-                ? "Menyalakan Kamera"
-                : "Pratinjau Kamera"}
+            : cameraOffByUser
+              ? "Kamera Dimatikan"
+              : permissionDenied
+                ? "Izin Kamera Ditolak"
+                : cameraStarting
+                  ? "Menyalakan Kamera"
+                  : "Pratinjau Kamera"}
         </p>
 
-        <p className="mt-1 text-xs font-semibold leading-5 text-slate-400">
+        <p className="mt-1 text-xs font-semibold leading-4 text-slate-400">
           {laptopBlocked
             ? "Check-in dan check-out hanya dapat dilakukan melalui HP."
-            : permissionDenied
-              ? deniedAttempts >= 3
-                ? "Izin kamera masih diblokir. Ikuti panduan di bawah."
-                : "Tekan tombol di bawah untuk mencoba meminta izin kamera lagi."
-              : cameraStarting
-                ? "Mohon tunggu sampai kamera memuat gambar."
-                : "Kamera sedang memuat otomatis."}
+            : cameraOffByUser
+              ? "Kamera dimatikan secara manual. Tekan tombol untuk menyalakan kembali."
+              : permissionDenied
+                ? deniedAttempts >= 3
+                  ? "Izin kamera masih diblokir. Ikuti panduan di bawah."
+                  : "Tekan tombol di bawah untuk mencoba meminta izin kamera lagi."
+                : cameraStarting
+                  ? "Mohon tunggu sampai kamera memuat gambar."
+                  : "Kamera sedang memuat otomatis."}
         </p>
 
-        {permissionDenied && !laptopBlocked ? (
+        {cameraOffByUser && onTurnOn ? (
+          <button
+            type="button"
+            onClick={onTurnOn}
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#123c8c] shadow-lg transition hover:bg-slate-100 active:scale-95"
+          >
+            <Camera size={15} />
+            Nyalakan Kamera
+          </button>
+        ) : null}
+
+        {permissionDenied && !laptopBlocked && !cameraOffByUser ? (
           <button
             type="button"
             onClick={onRetry}
-            disabled={cameraStarting}
-            className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-black text-[#123c8c] shadow-xl transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#123c8c] shadow-lg transition hover:bg-slate-100 active:scale-95"
           >
-            <RefreshCw size={16} className={cameraStarting ? "animate-spin" : ""} />
-            Aktifkan Kamera
+            <RefreshCw size={15} />
+            Coba Minta Izin Lagi
           </button>
         ) : null}
       </div>
@@ -1704,6 +1724,7 @@ export default function AttendancePage() {
   const [cameraStarting, setCameraStarting] = useState(false);
   const [cameraPermissionDenied, setCameraPermissionDenied] = useState(false);
   const [cameraDeniedAttempts, setCameraDeniedAttempts] = useState(0);
+  const [isCameraOffByUser, setIsCameraOffByUser] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeAction, setActiveAction] = useState<AttendanceAction | null>(
     null,
@@ -2270,6 +2291,29 @@ export default function AttendancePage() {
   }
 
   async function retryCameraPermission() {
+    setIsCameraOffByUser(false);
+    await startCamera();
+  }
+
+  async function handleToggleCamera() {
+    if (isCameraOffByUser) {
+      setIsCameraOffByUser(false);
+      await startCamera();
+    } else {
+      setIsCameraOffByUser(true);
+      releaseCamera(true, false);
+      setCameraReady(false);
+      safeSetStatus(
+        "Kamera Dimatikan",
+        "Kamera dimatikan secara manual. Tekan tombol kamera untuk menyalakan kembali.",
+      );
+    }
+  }
+
+  async function handleRefreshCamera() {
+    setIsCameraOffByUser(false);
+    releaseCamera(true, false);
+    setCameraReady(false);
     await startCamera();
   }
 
@@ -2869,11 +2913,44 @@ export default function AttendancePage() {
                   <div className="attendance-row-enter absolute left-4 top-4 z-30 rounded-full bg-slate-950/55 px-3 py-1.5 text-[11px] font-black text-white backdrop-blur-md md:left-5 md:top-5 md:text-xs">
                     {isLaptopBlocked
                       ? "Mobile Only"
-                      : cameraReady
-                        ? "Kamera Aktif"
-                        : cameraStarting
-                          ? "Starting..."
-                          : "Kamera Mati"}
+                      : isCameraOffByUser
+                        ? "Kamera Off"
+                        : cameraReady
+                          ? "Kamera Aktif"
+                          : cameraStarting
+                            ? "Starting..."
+                            : "Kamera Mati"}
+                  </div>
+
+                  <div className="absolute right-3 top-3 z-30 flex items-center gap-1.5 md:right-4 md:top-4">
+                    <button
+                      type="button"
+                      onClick={handleRefreshCamera}
+                      disabled={cameraStarting || loading}
+                      title="Muat Ulang Kamera"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/60 text-white backdrop-blur-md transition hover:bg-slate-900 active:scale-95 disabled:opacity-50"
+                      aria-label="Muat Ulang Kamera"
+                    >
+                      <RefreshCw
+                        size={14}
+                        className={cameraStarting ? "animate-spin text-white" : "text-white"}
+                      />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleToggleCamera}
+                      disabled={cameraStarting || loading}
+                      title={isCameraOffByUser ? "Nyalakan Kamera" : "Matikan Kamera"}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/60 text-white backdrop-blur-md transition hover:bg-slate-900 active:scale-95 disabled:opacity-50"
+                      aria-label={isCameraOffByUser ? "Nyalakan Kamera" : "Matikan Kamera"}
+                    >
+                      {isCameraOffByUser ? (
+                        <Camera size={14} className="text-[#ff8a00]" />
+                      ) : (
+                        <CameraOff size={14} className="text-white" />
+                      )}
+                    </button>
                   </div>
 
                   <div className="attendance-row-enter absolute bottom-4 left-4 z-30 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-black text-[#123c8c] backdrop-blur-md">
@@ -2885,8 +2962,10 @@ export default function AttendancePage() {
                       cameraStarting={cameraStarting}
                       permissionDenied={cameraPermissionDenied}
                       laptopBlocked={isLaptopBlocked}
+                      cameraOffByUser={isCameraOffByUser}
                       deniedAttempts={cameraDeniedAttempts}
                       onRetry={retryCameraPermission}
+                      onTurnOn={handleToggleCamera}
                     />
                   ) : null}
                 </div>
