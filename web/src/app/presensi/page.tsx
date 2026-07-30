@@ -1917,8 +1917,9 @@ export default function AttendancePage() {
         return;
       }
 
+      setSelectedWorkMode(value);
+
       if (value === "visit") {
-        setSelectedWorkMode("visit");
         setIsVisitModalOpen(true);
         setLateReason("");
 
@@ -1938,19 +1939,12 @@ export default function AttendancePage() {
         return;
       }
 
-      setSelectedWorkMode(mode);
       setIsVisitModalOpen(false);
       setVisitForm(emptyVisitForm);
 
-      showCustomAlert(
-        "Mode presensi terkunci",
-        `Kamu sudah check-in hari ini dengan mode ${modeLabel}. Kamu tidak bisa mengganti mode check-in setelah presensi masuk.`,
-        "warning",
-      );
-
       safeSetStatus(
-        "Mode Presensi Terkunci",
-        `Kamu sudah check-in hari ini dengan mode ${modeLabel}. Jika ada kunjungan di tengah pekerjaan, pilih mode Kunjungan lalu lakukan Check-out.`,
+        `Mode Check-out ${getWorkModeLabel(value)}`,
+        `Check-in sudah tercatat dengan mode ${modeLabel}. Tombol Masuk tetap terkunci, mode layar sekarang dipakai untuk Check-out.`,
       );
 
       return;
@@ -2638,13 +2632,15 @@ export default function AttendancePage() {
 
   async function handleAttendance(action: AttendanceAction, reason = "") {
     const checkedInMode = getAttendanceWorkMode(todayAttendance);
+    const selectedModeFromUi = workModeRef.current;
     const selectedWorkMode =
       action === "check-out" &&
       hasAttendanceCheckIn(todayAttendance) &&
       !hasAttendanceCheckOut(todayAttendance) &&
-      checkedInMode !== "office"
+      checkedInMode !== "office" &&
+      selectedModeFromUi === "office"
         ? checkedInMode
-        : workModeRef.current;
+        : selectedModeFromUi;
 
     if (isLaptopBlocked) {
       showLaptopBlockedAlert();
