@@ -149,8 +149,12 @@ async function getWfhQuotaUsage(userId: string, quotaValue: unknown) {
         gte: start,
         lt: end,
       },
-      OR: [{ work_mode: "wfh" }, { is_wfh: true }],
+      work_mode: "wfh",
+      check_out_work_mode: "wfh",
       check_in_time: {
+        not: null,
+      },
+      check_out_time: {
         not: null,
       },
     },

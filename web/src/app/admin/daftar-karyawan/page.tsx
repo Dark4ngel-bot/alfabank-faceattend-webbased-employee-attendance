@@ -1929,7 +1929,7 @@ export default function AdminEmployeesPage() {
                 <div>
                   <label className="mb-2 block text-sm font-black text-slate-700">
                     {editingEmployee
-                      ? "Konfirmasi Password Baru"
+                      ? "Konfirmasi Password"
                       : "Konfirmasi Password"}
                   </label>
                   <div className="app-field-smooth relative rounded-2xl">

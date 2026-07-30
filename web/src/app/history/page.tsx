@@ -90,16 +90,6 @@ function formatWorkDuration(minutes: number) {
   return `${remainingMinutes}m`;
 }
 
-function formatModePair(item: AttendanceRecord) {
-  const checkInMode = item.checkInWorkModeLabel || "Kantor";
-  const checkOutMode =
-    item.checkOut && item.checkOut !== "--:--"
-      ? item.checkOutWorkModeLabel || checkInMode
-      : "Belum checkout";
-
-  return `Masuk ${checkInMode} / Pulang ${checkOutMode}`;
-}
-
 function getStatusVariant(
   status: string,
 ): "green" | "yellow" | "red" | "gray" | "blue" {
@@ -490,10 +480,6 @@ function AttendanceRecordCard({
 
 	              <span className={note.className}>{note.text}</span>
 	            </div>
-
-	            <p className="mt-2 text-xs font-black uppercase tracking-[0.12em] text-slate-400">
-	              {formatModePair(item)}
-	            </p>
 	          </div>
 	        </div>
 

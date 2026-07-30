@@ -100,6 +100,8 @@ type TodayAttendance = {
   workMode?: WorkMode | string | null;
   work_mode?: WorkMode | string | null;
   workModeLabel?: string | null;
+  checkOutWorkMode?: WorkMode | string | null;
+  check_out_work_mode?: WorkMode | string | null;
 };
 
 type LeaveBlock = {
@@ -543,6 +545,13 @@ function getWorkModeDescription(workMode: WorkMode) {
   if (workMode === "office") return "Wajib berada dalam radius kantor.";
   if (workMode === "wfh") return "Bebas lokasi, GPS tetap disimpan.";
   return "Bebas lokasi, wajib isi data kunjungan.";
+}
+
+function getAllowedCheckOutModes(checkInWorkMode: WorkMode): WorkMode[] {
+  if (checkInWorkMode === "wfh") return ["wfh"];
+  if (checkInWorkMode === "visit") return ["visit", "office"];
+
+  return ["office", "visit"];
 }
 
 function getWfhQuotaRemaining(user: CurrentUser | null) {
@@ -1016,17 +1025,27 @@ function InfoTile({
 function WorkModeFilter({
   value,
   disabled,
+  allowedModes,
+  isVisitDataRequired,
   wfhQuotaRemaining,
   onChange,
   onOpenVisit,
 }: {
   value: WorkMode;
   disabled: boolean;
+  allowedModes?: WorkMode[];
+  isVisitDataRequired: boolean;
   wfhQuotaRemaining: number | null;
   onChange: (value: WorkMode) => void;
   onOpenVisit: () => void;
 }) {
   const isWfhQuotaEmpty = wfhQuotaRemaining !== null && wfhQuotaRemaining <= 0;
+  const isModeAllowed = (mode: WorkMode) =>
+    !allowedModes || allowedModes.includes(mode);
+  const shouldDisableOfficeOption = !isModeAllowed("office");
+  const shouldDisableWfhOption =
+    !isModeAllowed("wfh") || (isWfhQuotaEmpty && value !== "wfh");
+  const shouldDisableVisitOption = !isModeAllowed("visit");
 
   return (
     <div className="attendance-row-enter grid grid-cols-[1fr_auto] items-center gap-2 rounded-[1.2rem] border border-blue-100 bg-[#f8fbff] p-2 sm:p-3">
@@ -1036,14 +1055,18 @@ function WorkModeFilter({
         onChange={(event) => onChange(event.target.value as WorkMode)}
         disabled={disabled}
       >
-        <option value="office">Kantor</option>
-        <option value="wfh" disabled={isWfhQuotaEmpty}>
-          {isWfhQuotaEmpty ? "WFH - kuota habis" : "WFH"}
+        <option value="office" disabled={shouldDisableOfficeOption}>
+          Kantor
         </option>
-        <option value="visit">Kunjungan</option>
+        <option value="wfh" disabled={shouldDisableWfhOption}>
+          {shouldDisableWfhOption ? "WFH - kuota habis" : "WFH"}
+        </option>
+        <option value="visit" disabled={shouldDisableVisitOption}>
+          Kunjungan
+        </option>
       </AppSelect>
 
-      {value === "visit" ? (
+      {value === "visit" && isVisitDataRequired ? (
         <button
           type="button"
           onClick={onOpenVisit}
@@ -1777,6 +1800,12 @@ export default function AttendancePage() {
   const hasCheckedInToday = hasAttendanceCheckIn(todayAttendance);
   const hasCheckedOutToday = hasAttendanceCheckOut(todayAttendance);
   const lockedWorkMode = getAttendanceWorkMode(todayAttendance);
+  const allowedCheckOutModes =
+    hasCheckedInToday && !hasCheckedOutToday
+      ? getAllowedCheckOutModes(lockedWorkMode)
+      : undefined;
+  const isVisitDataRequired =
+    workMode === "visit" && (!hasCheckedInToday || lockedWorkMode === "office");
   const isLeaveBlocked = Boolean(leaveBlock?.active);
   const displayedWorkMinutes = getDisplayedWorkMinutes(todayAttendance);
   const displayedWorkDuration = formatDurationHoursMinutes(displayedWorkMinutes);
@@ -1894,6 +1923,7 @@ export default function AttendancePage() {
     if (hasCheckedInToday) {
       const mode = lockedWorkMode;
       const modeLabel = getWorkModeLabel(mode);
+      const allowedModes = getAllowedCheckOutModes(mode);
 
       if (hasCheckedOutToday) {
         setSelectedWorkMode(mode);
@@ -1914,8 +1944,32 @@ export default function AttendancePage() {
         return;
       }
 
-      if (value === "visit") {
-        setSelectedWorkMode("visit");
+      if (!allowedModes.includes(value)) {
+        setSelectedWorkMode(mode);
+        setIsVisitModalOpen(false);
+        setVisitForm(emptyVisitForm);
+
+        showCustomAlert(
+          "Mode check-out terkunci",
+          mode === "wfh"
+            ? "Kamu check-in WFH, jadi check-out wajib WFH."
+            : `Kamu check-in ${modeLabel}, jadi check-out hanya bisa ${allowedModes
+                .map(getWorkModeLabel)
+                .join(" atau ")}.`,
+          "warning",
+        );
+
+        safeSetStatus(
+          "Mode Check-out Terkunci",
+          `Check-in sudah tercatat dengan mode ${modeLabel}.`,
+        );
+
+        return;
+      }
+
+      setSelectedWorkMode(value);
+
+      if (value === "visit" && mode === "office") {
         setIsVisitModalOpen(true);
         setLateReason("");
 
@@ -1935,19 +1989,14 @@ export default function AttendancePage() {
         return;
       }
 
-      setSelectedWorkMode(mode);
       setIsVisitModalOpen(false);
-      setVisitForm(emptyVisitForm);
-
-      showCustomAlert(
-        "Mode presensi terkunci",
-        `Kamu sudah check-in hari ini dengan mode ${modeLabel}. Kamu tidak bisa mengganti mode check-in setelah presensi masuk.`,
-        "warning",
-      );
+      if (value !== "visit") {
+        setVisitForm(emptyVisitForm);
+      }
 
       safeSetStatus(
-        "Mode Presensi Terkunci",
-        `Kamu sudah check-in hari ini dengan mode ${modeLabel}. Jika ada kunjungan di tengah pekerjaan, pilih mode Kunjungan lalu lakukan Check-out.`,
+        `Mode Check-out ${getWorkModeLabel(value)}`,
+        `Check-in sudah tercatat dengan mode ${modeLabel}. Tombol Masuk tetap terkunci, mode layar sekarang dipakai untuk Check-out.`,
       );
 
       return;
@@ -1992,6 +2041,9 @@ export default function AttendancePage() {
 
   function validateVisitForm(mode = workModeRef.current) {
     if (mode !== "visit") return true;
+    if (hasCheckedInToday && !hasCheckedOutToday && lockedWorkMode === "visit") {
+      return true;
+    }
 
     if (
       !visitForm.visitTitle.trim() ||
@@ -2551,17 +2603,38 @@ export default function AttendancePage() {
   }
 
   async function requestCheckOut() {
-    const selectedWorkMode = workModeRef.current;
+    let selectedWorkMode = workModeRef.current;
 
     if (isLaptopBlocked) {
       showLaptopBlockedAlert();
       return;
     }
 
-    await loadTodayAttendance();
-
     if (leaveBlockRef.current?.active) {
       showLeaveBlockedAlert();
+      return;
+    }
+
+    const latestAttendance = await loadTodayAttendance();
+    selectedWorkMode = workModeRef.current;
+    const latestCheckedInMode = getAttendanceWorkMode(latestAttendance);
+    const latestAllowedModes = hasAttendanceCheckIn(latestAttendance)
+      ? getAllowedCheckOutModes(latestCheckedInMode)
+      : [];
+
+    if (!latestAllowedModes.includes(selectedWorkMode)) {
+      const fallbackMode = latestCheckedInMode;
+
+      setSelectedWorkMode(fallbackMode);
+      showCustomAlert(
+        "Mode check-out terkunci",
+        fallbackMode === "wfh"
+          ? "Kamu check-in WFH, jadi check-out wajib WFH."
+          : `Mode check-out yang dipilih tidak sesuai dengan check-in ${getWorkModeLabel(
+              fallbackMode,
+            )}.`,
+        "warning",
+      );
       return;
     }
 
@@ -2634,7 +2707,15 @@ export default function AttendancePage() {
   }
 
   async function handleAttendance(action: AttendanceAction, reason = "") {
-    const selectedWorkMode = workModeRef.current;
+    const checkedInMode = getAttendanceWorkMode(todayAttendance);
+    const selectedModeFromUi = workModeRef.current;
+    const selectedWorkMode =
+      action === "check-out" &&
+      hasAttendanceCheckIn(todayAttendance) &&
+      !hasAttendanceCheckOut(todayAttendance) &&
+      !getAllowedCheckOutModes(checkedInMode).includes(selectedModeFromUi)
+        ? checkedInMode
+        : selectedModeFromUi;
 
     if (isLaptopBlocked) {
       showLaptopBlockedAlert();
@@ -2914,8 +2995,15 @@ export default function AttendancePage() {
             <WorkModeFilter
               value={workMode}
               disabled={
-                loading || isTodayAttendanceLoading || hasCheckedOutToday
+                loading ||
+                isTodayAttendanceLoading ||
+                hasCheckedOutToday ||
+                (hasCheckedInToday &&
+                  !hasCheckedOutToday &&
+                  lockedWorkMode === "wfh")
               }
+              allowedModes={allowedCheckOutModes}
+              isVisitDataRequired={isVisitDataRequired}
               wfhQuotaRemaining={getWfhQuotaRemaining(currentUser)}
               onChange={handleWorkModeChange}
               onOpenVisit={() => {
@@ -2930,6 +3018,18 @@ export default function AttendancePage() {
                 }
 
                 if (hasCheckedInToday) {
+                  if (lockedWorkMode !== "office") {
+                    showCustomAlert(
+                      "Data kunjungan tidak perlu diisi ulang",
+                      lockedWorkMode === "visit"
+                        ? "Kamu sudah mengisi data kunjungan saat check-in. Tekan Check-out untuk menyelesaikan kunjungan."
+                        : "Kamu check-in WFH, jadi check-out wajib WFH.",
+                      "warning",
+                    );
+
+                    return;
+                  }
+
                   setSelectedWorkMode("visit");
                   setIsVisitModalOpen(true);
 
@@ -2961,9 +3061,11 @@ export default function AttendancePage() {
                   ? `Presensi hari ini sudah selesai dengan mode ${getWorkModeLabel(
                       lockedWorkMode,
                     )}. Mode attendance tidak bisa diubah lagi.`
-                  : `Check-in sudah masuk dengan mode ${getWorkModeLabel(
-                      lockedWorkMode,
-                    )}. Kamu tidak bisa check-in ulang. Jika ada kunjungan di tengah pekerjaan, pilih mode Kunjungan lalu tekan Check-out.`}
+                  : lockedWorkMode === "wfh"
+                    ? "Check-in sudah masuk dengan mode WFH. Check-out dikunci WFH supaya kuota tidak berubah karena pilihan mode lain."
+                    : lockedWorkMode === "office"
+                      ? "Check-in sudah masuk dengan mode Kantor. Check-out bisa Kantor atau Kunjungan."
+                      : "Check-in sudah masuk dengan mode Kunjungan. Check-out bisa Kunjungan atau Kantor, tanpa isi ulang data kunjungan."}
               </div>
             ) : null}
 
@@ -3081,7 +3183,7 @@ export default function AttendancePage() {
 
             <div className="attendance-row-enter mt-3 grid grid-cols-2 gap-3">
               <ActionButton
-                label="Check-in"
+                label={hasCheckedInToday ? "Sudah masuk" : "Check-in"}
                 subtitle="Masuk"
                 loading={checkInProcessing || isUserLoading}
                 disabled={
@@ -3089,20 +3191,27 @@ export default function AttendancePage() {
                   cameraStarting ||
                   isUserLoading ||
                   isLaptopBlocked ||
-                  isLeaveBlocked
+                  isLeaveBlocked ||
+                  hasCheckedInToday
                 }
-                primary
+                primary={!hasCheckedInToday}
                 icon={<LogIn size={22} />}
                 onClick={requestCheckIn}
               />
 
               <ActionButton
-                label="Check-out"
+                label={hasCheckedOutToday ? "Sudah keluar" : "Check-out"}
                 subtitle="Keluar"
                 loading={checkOutProcessing}
                 disabled={
-                  loading || cameraStarting || isLaptopBlocked || isLeaveBlocked
+                  loading ||
+                  cameraStarting ||
+                  isLaptopBlocked ||
+                  isLeaveBlocked ||
+                  !hasCheckedInToday ||
+                  hasCheckedOutToday
                 }
+                primary={hasCheckedInToday && !hasCheckedOutToday}
                 icon={<LogOut size={22} />}
                 onClick={requestCheckOut}
               />
