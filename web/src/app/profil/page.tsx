@@ -39,6 +39,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import { EmployeeIdCardModal } from "@/components/EmployeeIdCardModal";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
@@ -644,6 +645,7 @@ export function ProfilPageContent({
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  const [isIdCardModalOpen, setIsIdCardModalOpen] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [editProfileForm, setEditProfileForm] = useState<EditProfileForm>(
@@ -1286,14 +1288,25 @@ export function ProfilPageContent({
                 </p>
               ) : null}
 
-              <button
-                type="button"
-                onClick={openEditProfileModal}
-                className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
-              >
-                <Pencil size={17} strokeWidth={2.7} />
-                Edit Detail
-              </button>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsIdCardModalOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 via-[#123c8c] to-indigo-700 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/25 transition hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.98]"
+                >
+                  <IdCard size={18} strokeWidth={2.7} />
+                  Kartu Identitas Digital
+                </button>
+
+                <button
+                  type="button"
+                  onClick={openEditProfileModal}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-black text-[#123c8c] shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 active:scale-[0.98]"
+                >
+                  <Pencil size={17} strokeWidth={2.7} />
+                  Edit Detail
+                </button>
+              </div>
             </div>
 
             <div className="mt-8 space-y-6">
@@ -1944,6 +1957,14 @@ export function ProfilPageContent({
               </div>
             </div>
           </div>
+        ) : null}
+
+        {user ? (
+          <EmployeeIdCardModal
+            isOpen={isIdCardModalOpen}
+            onClose={() => setIsIdCardModalOpen(false)}
+            user={user}
+          />
         ) : null}
 
         <BottomNav />
