@@ -838,29 +838,28 @@ function CameraPermissionGuide({ guide }: { guide: BrowserGuide }) {
 function ActionButton({
   label,
   subtitle,
-  loading,
-  primary,
   icon,
-  onClick,
+  loading,
   disabled,
+  primary = false,
+  onClick,
 }: {
   label: string;
   subtitle: string;
-  loading: boolean;
-  primary?: boolean;
   icon: ReactNode;
-  onClick: () => void;
+  loading: boolean;
   disabled: boolean;
+  primary?: boolean;
+  onClick: () => void;
 }) {
   return (
     <AppButton
       type="button"
-      full
       onClick={onClick}
       disabled={disabled}
       variant={primary ? "primary" : "secondary"}
       className={cn(
-        "min-h-[4.5rem] rounded-[1.45rem] px-3 shadow-xl transition hover:-translate-y-0.5 active:scale-[0.98] md:min-h-[70px] md:rounded-2xl md:px-5",
+        "min-h-[3.25rem] py-2 rounded-2xl px-2.5 shadow-lg transition hover:-translate-y-0.5 active:scale-[0.98] sm:min-h-[4rem] md:min-h-[70px] md:rounded-2xl md:px-5",
         disabled
           ? "border border-slate-200 bg-slate-200 text-slate-400 shadow-none hover:translate-y-0"
           : primary
@@ -868,13 +867,13 @@ function ActionButton({
             : "border border-blue-200 bg-white text-[#123c8c] shadow-slate-200/70 md:bg-[#f8fbff]",
       )}
     >
-      <span className="flex w-full items-center justify-center gap-2 md:gap-3">
+      <span className="flex w-full items-center justify-center gap-1.5 sm:gap-2 md:gap-3">
         {loading ? (
-          <Loader2 size={22} className="animate-spin" />
+          <Loader2 size={20} className="animate-spin" />
         ) : (
           <span
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl",
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl sm:h-10 sm:w-10 sm:rounded-2xl",
               disabled
                 ? "bg-slate-300/70"
                 : primary
@@ -889,7 +888,7 @@ function ActionButton({
         <span className="text-left">
           <span
             className={cn(
-              "block text-[9px] font-black uppercase tracking-[0.18em] md:text-[11px] md:tracking-[0.22em]",
+              "block text-[8px] font-black uppercase tracking-[0.14em] sm:text-[9px] md:text-[11px] md:tracking-[0.22em]",
               disabled
                 ? "text-slate-400"
                 : primary
@@ -900,7 +899,7 @@ function ActionButton({
             {subtitle}
           </span>
 
-          <span className="block text-base font-black md:text-lg">
+          <span className="block text-sm font-black sm:text-base md:text-lg">
             {loading ? "Proses..." : label}
           </span>
         </span>
@@ -995,7 +994,7 @@ function WorkModeFilter({
   onOpenVisit: () => void;
 }) {
   return (
-    <div className="attendance-row-enter grid grid-cols-[1fr_auto] items-end gap-2 rounded-[1.6rem] border border-blue-100 bg-[#f8fbff] p-3">
+    <div className="attendance-row-enter grid grid-cols-[1fr_auto] items-center gap-2 rounded-[1.2rem] border border-blue-100 bg-[#f8fbff] p-2 sm:p-3">
       <AppSelect
         label="Mode Presensi"
         value={value}
@@ -1012,14 +1011,14 @@ function WorkModeFilter({
           type="button"
           onClick={onOpenVisit}
           disabled={disabled}
-          className="mb-0.5 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 ring-1 ring-orange-100 transition hover:bg-orange-100 active:scale-95 disabled:opacity-60"
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-600 ring-1 ring-orange-100 transition hover:bg-orange-100 active:scale-95 disabled:opacity-60 sm:h-12 sm:w-12 sm:rounded-2xl"
           aria-label="Isi data kunjungan"
         >
-          <BriefcaseBusiness size={21} strokeWidth={2.7} />
+          <BriefcaseBusiness size={19} strokeWidth={2.7} />
         </button>
       ) : null}
 
-      <p className="col-span-2 text-xs font-semibold leading-5 text-slate-500">
+      <p className="col-span-2 hidden text-xs font-semibold leading-5 text-slate-500 sm:block">
         {getWorkModeDescription(value)}
       </p>
     </div>
@@ -2821,9 +2820,9 @@ export default function AttendancePage() {
               </div>
             ) : null}
 
-            <div className="attendance-camera-enter mt-3 overflow-hidden bg-slate-950 shadow-[0_18px_42px_rgba(15,23,42,0.18)]">
+            <div className="attendance-camera-enter mt-2 overflow-hidden rounded-2xl bg-slate-950 shadow-[0_12px_30px_rgba(15,23,42,0.15)]">
               <div className="relative overflow-hidden bg-slate-950 shadow-inner">
-                <div className="relative h-[56dvh] min-h-[360px] max-h-[620px] md:h-auto md:aspect-[16/10] md:min-h-0 md:max-h-none lg:aspect-[16/10]">
+                <div className="relative h-[32dvh] min-h-[190px] max-h-[300px] sm:h-[40dvh] sm:min-h-[260px] sm:max-h-[420px] md:h-auto md:aspect-[16/10] md:min-h-0 md:max-h-none lg:aspect-[16/10]">
                   <video
                     ref={videoRef}
                     autoPlay
@@ -2856,7 +2855,7 @@ export default function AttendancePage() {
                       }
                     }}
                     className={cn(
-                      "h-full w-full object-cover transition",
+                      "h-full w-full object-cover transition [transform:none]",
                       cameraReady ? "opacity-100" : "opacity-0",
                     )}
                   />
