@@ -8,6 +8,10 @@ import { Search, ChevronDown, Check, Plus, Building2, X } from "lucide-react";
 const BANK_COLORS: Record<string, { bg: string; text: string }> = {
   BCA: { bg: "bg-blue-600", text: "text-white" },
   BLU: { bg: "bg-cyan-500", text: "text-white" },
+  WONDR: { bg: "bg-[#006666]", text: "text-orange-300" },
+  LIVIN: { bg: "bg-blue-900", text: "text-amber-300" },
+  BRIMO: { bg: "bg-blue-700", text: "text-white" },
+  MYBCA: { bg: "bg-blue-600", text: "text-white" },
   MANDIRI: { bg: "bg-blue-900", text: "text-amber-300" },
   BNI: { bg: "bg-[#006666]", text: "text-orange-300" },
   BRI: { bg: "bg-blue-700", text: "text-white" },
