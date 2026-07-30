@@ -445,11 +445,11 @@ function PhotoCard({
 
       {imageUrl ? (
         <div className="bg-[#f8fbff] p-4">
-          <div className="mx-auto max-w-[320px] overflow-hidden rounded-[1.3rem] bg-slate-950 shadow-lg shadow-slate-300/40">
+          <div className="mx-auto overflow-hidden rounded-[1.3rem] bg-slate-950 shadow-lg shadow-slate-300/40">
             <img
               src={imageUrl}
               alt={title}
-              className="block h-auto max-h-[480px] w-full object-cover"
+              className="block h-80 w-full object-contain md:h-96"
             />
           </div>
         </div>
@@ -956,6 +956,12 @@ export default function AdminAttendanceReportDetailPage() {
                       >
                         {report.statusLabel}
                       </span>
+
+                      {report.checkIn !== "-" && (report.checkOut === "-" || !report.checkOut) ? (
+                        <span className="rounded-full bg-amber-500/90 px-3 py-1 text-xs font-black text-white ring-1 ring-amber-400">
+                          Belum Checkout
+                        </span>
+                      ) : null}
 
                       <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white ring-1 ring-white/20">
                         Check-in: {formatModeLabel(report.workMode)}

@@ -44,11 +44,12 @@ type AttendanceReportResponse = {
   reports: AttendanceReport[];
 };
 
-type StatusFilter = "all" | "present" | "late" | "pending" | "cuti";
+type StatusFilter = "all" | "present" | "uncheckout" | "late" | "pending" | "cuti";
 
 const statusOptions: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "Semua Status" },
   { value: "present", label: "Hadir" },
+  { value: "uncheckout", label: "Belum Checkout" },
   { value: "late", label: "Terlambat" },
   { value: "pending", label: "Menunggu" },
   { value: "cuti", label: "Cuti" },
@@ -371,8 +372,12 @@ export default function AdminAttendanceReportPage() {
 
   const groupedReports = useMemo(() => {
     const groups = new Map<string, AttendanceReport[]>();
+    const filtered =
+      statusFilter === "uncheckout"
+        ? reports.filter((item) => item.checkIn !== "-" && item.checkOut === "-")
+        : reports;
 
-    reports.forEach((item) => {
+    filtered.forEach((item) => {
       const key = item.dateLabel || "Tanpa Tanggal";
 
       if (!groups.has(key)) {
@@ -386,19 +391,23 @@ export default function AdminAttendanceReportPage() {
       dateLabel,
       items,
     }));
-  }, [reports]);
+  }, [reports, statusFilter]);
 
   const stats = useMemo(() => {
     const total = reports.length;
     const totalDates = groupedReports.length;
     const withPhoto = reports.filter((item) => item.hasPhoto).length;
     const withLocation = reports.filter((item) => item.hasLocation).length;
+    const uncheckout = reports.filter(
+      (item) => item.checkIn !== "-" && item.checkOut === "-",
+    ).length;
 
     return {
       total,
       totalDates,
       withPhoto,
       withLocation,
+      uncheckout,
     };
   }, [reports, groupedReports.length]);
 
@@ -443,15 +452,17 @@ export default function AdminAttendanceReportPage() {
                 </div>
 
                 <div
-                  className="attendance-report-row-enter rounded-2xl border border-blue-100 bg-blue-50 p-4"
+                  className="attendance-report-row-enter cursor-pointer rounded-2xl border border-amber-200 bg-amber-50 p-4 transition hover:bg-amber-100/70"
+                  onClick={() => setStatusFilter("uncheckout")}
+                  title="Klik untuk memfilter data Belum Checkout"
                   style={{ animationDelay: "100ms" }}
                 >
-                  <p className="text-xs font-bold text-[#123c8c]">Tanggal</p>
-                  <h3 className="mt-3 text-3xl font-black text-[#123c8c]">
-                    {stats.totalDates}
+                  <p className="text-xs font-bold text-amber-800">Belum Checkout</p>
+                  <h3 className="mt-3 text-3xl font-black text-amber-800">
+                    {stats.uncheckout}
                   </h3>
-                  <p className="mt-1 text-xs font-semibold text-[#123c8c]/70">
-                    Hari terdata
+                  <p className="mt-1 text-xs font-semibold text-amber-700/80">
+                    Belum jam keluar
                   </p>
                 </div>
 
@@ -469,14 +480,14 @@ export default function AdminAttendanceReportPage() {
                 </div>
 
                 <div
-                  className="attendance-report-row-enter rounded-2xl border border-amber-100 bg-amber-50 p-4"
+                  className="attendance-report-row-enter rounded-2xl border border-blue-100 bg-blue-50 p-4"
                   style={{ animationDelay: "180ms" }}
                 >
-                  <p className="text-xs font-bold text-amber-700">Ada Lokasi</p>
-                  <h3 className="mt-3 text-3xl font-black text-amber-700">
+                  <p className="text-xs font-bold text-[#123c8c]">Ada Lokasi</p>
+                  <h3 className="mt-3 text-3xl font-black text-[#123c8c]">
                     {stats.withLocation}
                   </h3>
-                  <p className="mt-1 text-xs font-semibold text-amber-700/70">
+                  <p className="mt-1 text-xs font-semibold text-[#123c8c]/70">
                     Titik GPS
                   </p>
                 </div>
@@ -708,6 +719,12 @@ export default function AdminAttendanceReportPage() {
                                 >
                                   {item.statusLabel}
                                 </span>
+
+                                {item.checkIn !== "-" && item.checkOut === "-" ? (
+                                  <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-black text-amber-700 ring-1 ring-amber-200 md:px-3 md:text-[11px]">
+                                    Belum Checkout
+                                  </span>
+                                ) : null}
 
                                 <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-black text-[#123c8c] md:px-3 md:text-[11px]">
                                   {item.workModeLabel}

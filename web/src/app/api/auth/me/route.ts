@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
+import {
+  ensureWfhQuotaColumn,
+  isMissingWfhQuotaColumnError,
+} from "@/lib/wfh-quota-schema";
 
 function serializeOffice(
   office:
@@ -25,6 +29,23 @@ function serializeOffice(
     latitude: Number(office.latitude),
     longitude: Number(office.longitude),
     radius_meters: Number(office.radius_meters),
+  };
+}
+
+function getJakartaMonthRange(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(date);
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value || 0);
+  const year = getPart("year");
+  const month = getPart("month");
+
+  return {
+    start: new Date(Date.UTC(year, month - 1, 1)),
+    end: new Date(Date.UTC(year, month, 1)),
   };
 }
 
@@ -116,6 +137,40 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const { start, end } = getJakartaMonthRange();
+    const hasWfhQuotaColumn = await ensureWfhQuotaColumn();
+    let quotaRows: Array<{ wfh_quota_monthly: number | null }> = [];
+
+    if (hasWfhQuotaColumn) {
+      try {
+        quotaRows = await prisma.$queryRawUnsafe<
+          Array<{ wfh_quota_monthly: number | null }>
+        >(
+          "SELECT COALESCE(wfh_quota_monthly, 0) AS wfh_quota_monthly FROM users WHERE id = ? LIMIT 1",
+          user.id,
+        );
+      } catch (error) {
+        if (!isMissingWfhQuotaColumnError(error)) throw error;
+      }
+    }
+    const usedWfhThisMonth = await prisma.attendance.count({
+      where: {
+        user_id: user.id,
+        attendance_date: {
+          gte: start,
+          lt: end,
+        },
+        OR: [{ work_mode: "wfh" }, { is_wfh: true }],
+        check_in_time: {
+          not: null,
+        },
+      },
+    });
+    const wfhQuotaMonthly = Math.max(
+      0,
+      Number(quotaRows[0]?.wfh_quota_monthly || 0),
+    );
+
     return NextResponse.json({
       success: true,
       user: {
@@ -134,6 +189,12 @@ export async function GET(req: NextRequest) {
         bank_account_number: user.bank_account_number,
         nik: user.nik,
         profile_photo: user.profile_photo,
+        wfh_quota_monthly: wfhQuotaMonthly,
+        wfh_quota_used_monthly: usedWfhThisMonth,
+        wfh_quota_remaining_monthly: Math.max(
+          0,
+          wfhQuotaMonthly - usedWfhThisMonth,
+        ),
 
         jabatan: user.jabatan,
         department: user.department,

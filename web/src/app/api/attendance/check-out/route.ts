@@ -12,6 +12,7 @@ import {
   formatJakartaDate,
   getLeaveTypeLabel,
 } from "@/lib/leave-attendance-guard";
+import { getNearestLocationLabel } from "@/lib/location-label";
 import {
   findNearestValidOffice,
   getDistanceInMeters,
@@ -894,10 +895,8 @@ export async function POST(req: NextRequest) {
       normalizeScheduleTime(todaySchedule?.check_out_time) ||
       getShiftDefaultCheckOutTime(user.shift?.name);
 
-    const workMinutes = Math.max(
-      0,
-      Math.floor((now.getTime() - attendance.check_in_time.getTime()) / 60000),
-    );
+    const diffMs = now.getTime() - attendance.check_in_time.getTime();
+    const workMinutes = diffMs > 0 ? Math.ceil(diffMs / 60000) : 0;
 
     const earlyLeaveMinutes = calculateEarlyLeaveMinutes(
       now,
@@ -912,6 +911,10 @@ export async function POST(req: NextRequest) {
     let updatedAttendance;
 
     try {
+      const nearestLocationLabel = isFlexibleMode
+        ? await getNearestLocationLabel(latitude, longitude)
+        : "";
+
       updatedAttendance = await prisma.$transaction(async (tx) => {
         const savedAttendance = await tx.attendance.update({
         where: {
@@ -931,17 +934,23 @@ export async function POST(req: NextRequest) {
           check_out_within_radius: Boolean(matchedOffice?.isWithinRadius),
           check_out_office_id: matchedOffice?.office.id ?? null,
 
-          registered_office_id:
-            attendance.registered_office_id ?? user.registered_office_id,
+	          registered_office_id:
+	            attendance.registered_office_id ?? user.registered_office_id,
 
-          work_minutes: workMinutes,
-          early_leave_minutes: earlyLeaveMinutes,
-          check_out_status: checkOutStatus,
+	          work_minutes: workMinutes,
+	          early_leave_minutes: earlyLeaveMinutes,
+	          check_out_status: checkOutStatus,
           activity_note: isFlexibleMode
             ? `Check-out: ${getWorkModeLabel(workMode)}`
             : attendance.activity_note,
-        },
-      });
+	        },
+	      });
+
+        await tx.$executeRawUnsafe(
+          "UPDATE `Attendance` SET `check_out_work_mode` = ? WHERE `id` = ?",
+          workMode,
+          attendance.id,
+        );
 
       if (isVisitMode) {
         const updatedVisit = await tx.employeeVisit.updateMany({
@@ -990,7 +999,6 @@ export async function POST(req: NextRequest) {
       if (isFlexibleMode) {
         const modeLabel = getWorkModeLabel(workMode);
         const employeeName = user.name || "Karyawan";
-        const coordinateText = `${latitude}, ${longitude}`;
 
         await tx.adminNotification.create({
           data: {
@@ -1003,8 +1011,8 @@ export async function POST(req: NextRequest) {
                 : `Karyawan selesai ${modeLabel}`,
             message:
               workMode === "visit"
-                ? `${employeeName} melakukan check-out kunjungan. GPS check-out: ${coordinateText}.`
-                : `${employeeName} melakukan check-out mode ${modeLabel}. GPS check-out: ${coordinateText}.`,
+                ? `${employeeName} melakukan check-out kunjungan di ${visitAddress || nearestLocationLabel}.`
+                : `${employeeName} melakukan check-out mode ${modeLabel}. Lokasi: ${nearestLocationLabel}.`,
             status: "unread",
             is_read: false,
           },

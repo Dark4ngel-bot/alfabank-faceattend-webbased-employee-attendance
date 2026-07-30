@@ -138,6 +138,35 @@ function formatStatus(
   return statusMap[status || ""] || status || "Pending";
 }
 
+function normalizeWorkMode(value?: string | null) {
+  const normalized = String(value || "").trim().toLowerCase();
+
+  if (normalized === "wfh" || normalized === "wfc") return "wfh";
+  if (normalized === "visit" || normalized === "kunjungan") return "visit";
+
+  return "office";
+}
+
+function formatWorkMode(value?: string | null) {
+  const workMode = normalizeWorkMode(value);
+
+  if (workMode === "wfh") return "WFH";
+  if (workMode === "visit") return "Kunjungan";
+
+  return "Kantor";
+}
+
+async function getCheckOutWorkMode(attendanceId: string) {
+  const rows = await prisma.$queryRawUnsafe<
+    { check_out_work_mode: string | null }[]
+  >(
+    "SELECT `check_out_work_mode` FROM `Attendance` WHERE `id` = ? LIMIT 1",
+    attendanceId,
+  );
+
+  return rows[0]?.check_out_work_mode || null;
+}
+
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> },
@@ -157,6 +186,7 @@ export async function GET(
 
         check_in_time: true,
         check_out_time: true,
+        work_mode: true,
 
         check_in_photo: true,
         check_out_photo: true,
@@ -228,13 +258,17 @@ export async function GET(
       defaultCheckOutTime,
     );
 
+    const checkInWorkMode = normalizeWorkMode(attendance.work_mode);
+    const rawCheckOutWorkMode = await getCheckOutWorkMode(attendance.id);
+    const checkOutWorkMode = attendance.check_out_time
+      ? normalizeWorkMode(rawCheckOutWorkMode || attendance.work_mode)
+      : null;
     const workMinutes =
+      attendance.check_in_time &&
+      attendance.check_out_time &&
       attendance.work_minutes > 0
         ? attendance.work_minutes
-        : calculateWorkMinutes(
-            attendance.check_in_time,
-            attendance.check_out_time,
-          );
+        : calculateWorkMinutes(attendance.check_in_time, attendance.check_out_time);
 
     const earlyLeaveMinutes =
       attendance.early_leave_minutes > 0
@@ -249,6 +283,12 @@ export async function GET(
       date: formatDate(attendance.attendance_date),
       checkIn: formatTime(attendance.check_in_time),
       checkOut: formatTime(attendance.check_out_time),
+      checkInWorkMode,
+      checkOutWorkMode,
+      checkInWorkModeLabel: formatWorkMode(checkInWorkMode),
+      checkOutWorkModeLabel: checkOutWorkMode
+        ? formatWorkMode(checkOutWorkMode)
+        : "-",
 
       status: formatStatus(
         attendance.status,

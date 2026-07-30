@@ -20,11 +20,14 @@ type EmployeeAttendanceSummary = {
   totalPresensi: number;
   hadir: number;
   terlambat: number;
+  totalWorkMinutes: number;
   menunggu: number;
   izin: number;
   sakit: number;
   cuti: number;
   lainnya: number;
+  wfh?: number;
+  kunjungan?: number;
   gajiPokok: number;
   potonganPerHari: number;
   estimasiPotonganTidakMasuk: number;
@@ -117,6 +120,32 @@ function formatEmploymentPeriod(employee?: EmployeeRecap | null) {
   if (endDate) return `Sampai ${endDate}`;
 
   return "-";
+}
+
+function formatWorkDuration(minutes: number) {
+  if (!minutes || minutes <= 0) return "0 menit";
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (hours > 0 && remainingMinutes > 0) {
+    return `${hours}j ${remainingMinutes}m`;
+  }
+
+  if (hours > 0) return `${hours}j`;
+
+  return `${remainingMinutes}m`;
+}
+
+function getDisplayErrorMessage(
+  message: string | undefined,
+  fallback: string,
+) {
+  const text = String(message || "").trim();
+
+  if (!text) return fallback;
+
+  return text;
 }
 
 function getInitialDate(searchParams: URLSearchParams, key: string) {
@@ -345,7 +374,9 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
 
       if (!response.ok || !data.success) {
         setEmployee(null);
-        setErrorMessage(data.message || "Gagal mengambil rekap karyawan.");
+        setErrorMessage(
+          getDisplayErrorMessage(data.message, "Gagal mengambil rekap karyawan."),
+        );
         return;
       }
 
@@ -387,11 +418,14 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
         totalPresensi: 0,
         hadir: 0,
         terlambat: 0,
+        totalWorkMinutes: 0,
         menunggu: 0,
         izin: 0,
         sakit: 0,
         cuti: 0,
         lainnya: 0,
+        wfh: 0,
+        kunjungan: 0,
         gajiPokok: 0,
         potonganPerHari: 0,
         estimasiPotonganTidakMasuk: 0,
@@ -416,6 +450,9 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
       ["Total Presensi", summary.totalPresensi],
       ["Hadir", summary.hadir],
       ["Terlambat (Menit)", summary.terlambat],
+      ["WFH", summary.wfh || 0],
+      ["Kunjungan", summary.kunjungan || 0],
+      ["Total Kerja", formatWorkDuration(summary.totalWorkMinutes)],
       ["Menunggu", summary.menunggu],
       ["Izin", summary.izin],
       ["Sakit", summary.sakit],
@@ -470,6 +507,21 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
       label: "Terlambat (Menit)",
       value: summary.terlambat,
       className: "border-amber-100 bg-amber-50 text-amber-700",
+    },
+    {
+      label: "WFH",
+      value: summary.wfh || 0,
+      className: "border-sky-100 bg-sky-50 text-sky-700",
+    },
+    {
+      label: "Kunjungan",
+      value: summary.kunjungan || 0,
+      className: "border-teal-100 bg-teal-50 text-teal-700",
+    },
+    {
+      label: "Total Kerja",
+      value: formatWorkDuration(summary.totalWorkMinutes),
+      className: "border-blue-100 bg-blue-50 text-[#123c8c]",
     },
     {
       label: "Sakit",
@@ -548,7 +600,8 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                       Rekap karyawan
                     </p>
                     <h2 className="mt-2 text-4xl font-black tracking-tight md:text-5xl">
-                      {employee?.name || "Memuat..."}
+                      {employee?.name ||
+                        (isLoading ? "Memuat..." : "Data tidak tersedia")}
                     </h2>
                     <p className="mt-3 text-base font-semibold text-blue-100">
                       {formatDateRange(startDate, endDate)}
@@ -645,7 +698,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
           ) : (
             <>
               <div
-                className="recap-detail-enter grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+                className="recap-detail-enter grid gap-5 sm:grid-cols-2 lg:grid-cols-7"
                 style={{ animationDelay: "120ms" }}
               >
                 {attendanceItems.map((item) => (

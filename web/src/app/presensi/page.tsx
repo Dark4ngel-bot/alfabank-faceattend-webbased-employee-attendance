@@ -5,6 +5,7 @@ import {
   AlertCircle,
   BriefcaseBusiness,
   Camera,
+  CameraOff,
   CheckCircle2,
   Clock3,
   ImageUp,
@@ -75,6 +76,9 @@ type CurrentUser = {
     tolerance_minutes?: number | null;
     toleranceMinutes?: number | null;
   } | null;
+  wfh_quota_monthly?: number | null;
+  wfh_quota_used_monthly?: number | null;
+  wfh_quota_remaining_monthly?: number | null;
 };
 
 type AuthMeResponse = {
@@ -541,6 +545,14 @@ function getWorkModeDescription(workMode: WorkMode) {
   return "Bebas lokasi, wajib isi data kunjungan.";
 }
 
+function getWfhQuotaRemaining(user: CurrentUser | null) {
+  if (!user) return null;
+
+  const remaining = Number(user.wfh_quota_remaining_monthly ?? 0);
+
+  return Number.isFinite(remaining) ? Math.max(0, remaining) : 0;
+}
+
 function AttendanceMotionStyles() {
   return (
     <style>{`
@@ -747,64 +759,83 @@ function PhotoFrameOverlay() {
     </div>
   );
 }
-
 function CameraEmptyState({
   cameraStarting,
   permissionDenied,
   laptopBlocked,
+  cameraOffByUser,
   deniedAttempts,
   onRetry,
+  onTurnOn,
 }: {
   cameraStarting: boolean;
   permissionDenied: boolean;
   laptopBlocked: boolean;
+  cameraOffByUser?: boolean;
   deniedAttempts: number;
   onRetry: () => void;
+  onTurnOn?: () => void;
 }) {
   return (
     <div className="attendance-row-enter absolute inset-0 flex items-center justify-center px-6 text-center text-white">
       <div>
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-white/10 backdrop-blur-xl md:h-24 md:w-24">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/10 backdrop-blur-xl md:h-20 md:w-20">
           {cameraStarting ? (
-            <Loader2 size={38} className="animate-spin" />
+            <Loader2 size={32} className="animate-spin" />
           ) : laptopBlocked ? (
-            <AlertCircle size={38} />
+            <AlertCircle size={32} />
+          ) : cameraOffByUser ? (
+            <CameraOff size={32} />
           ) : (
-            <Camera size={38} />
+            <Camera size={32} />
           )}
         </div>
 
-        <p className="mt-4 text-sm font-black text-white">
+        <p className="mt-3 text-sm font-black text-white">
           {laptopBlocked
             ? "Presensi khusus HP"
-            : permissionDenied
-              ? "Izin Kamera Ditolak"
-              : cameraStarting
-                ? "Menyalakan Kamera"
-                : "Pratinjau Kamera"}
+            : cameraOffByUser
+              ? "Kamera Dimatikan"
+              : permissionDenied
+                ? "Izin Kamera Ditolak"
+                : cameraStarting
+                  ? "Menyalakan Kamera"
+                  : "Pratinjau Kamera"}
         </p>
 
-        <p className="mt-1 text-xs font-semibold leading-5 text-slate-400">
+        <p className="mt-1 text-xs font-semibold leading-4 text-slate-400">
           {laptopBlocked
             ? "Check-in dan check-out hanya dapat dilakukan melalui HP."
-            : permissionDenied
-              ? deniedAttempts >= 3
-                ? "Izin kamera masih diblokir. Ikuti panduan di bawah."
-                : "Tekan tombol di bawah untuk mencoba meminta izin kamera lagi."
-              : cameraStarting
-                ? "Mohon tunggu sampai kamera memuat gambar."
-                : "Kamera sedang memuat otomatis."}
+            : cameraOffByUser
+              ? "Kamera dimatikan secara manual. Tekan tombol untuk menyalakan kembali."
+              : permissionDenied
+                ? deniedAttempts >= 3
+                  ? "Izin kamera masih diblokir. Ikuti panduan di bawah."
+                  : "Tekan tombol di bawah untuk mencoba meminta izin kamera lagi."
+                : cameraStarting
+                  ? "Mohon tunggu sampai kamera memuat gambar."
+                  : "Kamera sedang memuat otomatis."}
         </p>
 
-        {permissionDenied && !laptopBlocked ? (
+        {cameraOffByUser && onTurnOn ? (
+          <button
+            type="button"
+            onClick={onTurnOn}
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#123c8c] shadow-lg transition hover:bg-slate-100 active:scale-95"
+          >
+            <Camera size={15} />
+            Nyalakan Kamera
+          </button>
+        ) : null}
+
+        {permissionDenied && !laptopBlocked && !cameraOffByUser ? (
           <button
             type="button"
             onClick={onRetry}
-            disabled={cameraStarting}
-            className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-black text-[#123c8c] shadow-xl transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#123c8c] shadow-lg transition hover:bg-slate-100 active:scale-95"
           >
-            <RefreshCw size={16} className={cameraStarting ? "animate-spin" : ""} />
-            Aktifkan Kamera
+            <RefreshCw size={15} />
+            Coba Minta Izin Lagi
           </button>
         ) : null}
       </div>
@@ -838,29 +869,28 @@ function CameraPermissionGuide({ guide }: { guide: BrowserGuide }) {
 function ActionButton({
   label,
   subtitle,
-  loading,
-  primary,
   icon,
-  onClick,
+  loading,
   disabled,
+  primary = false,
+  onClick,
 }: {
   label: string;
   subtitle: string;
-  loading: boolean;
-  primary?: boolean;
   icon: ReactNode;
-  onClick: () => void;
+  loading: boolean;
   disabled: boolean;
+  primary?: boolean;
+  onClick: () => void;
 }) {
   return (
     <AppButton
       type="button"
-      full
       onClick={onClick}
       disabled={disabled}
       variant={primary ? "primary" : "secondary"}
       className={cn(
-        "min-h-[4.5rem] rounded-[1.45rem] px-3 shadow-xl transition hover:-translate-y-0.5 active:scale-[0.98] md:min-h-[70px] md:rounded-2xl md:px-5",
+        "min-h-[3.25rem] py-2 rounded-2xl px-2.5 shadow-lg transition hover:-translate-y-0.5 active:scale-[0.98] sm:min-h-[4rem] md:min-h-[70px] md:rounded-2xl md:px-5",
         disabled
           ? "border border-slate-200 bg-slate-200 text-slate-400 shadow-none hover:translate-y-0"
           : primary
@@ -868,13 +898,13 @@ function ActionButton({
             : "border border-blue-200 bg-white text-[#123c8c] shadow-slate-200/70 md:bg-[#f8fbff]",
       )}
     >
-      <span className="flex w-full items-center justify-center gap-2 md:gap-3">
+      <span className="flex w-full items-center justify-center gap-1.5 sm:gap-2 md:gap-3">
         {loading ? (
-          <Loader2 size={22} className="animate-spin" />
+          <Loader2 size={20} className="animate-spin" />
         ) : (
           <span
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl",
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl sm:h-10 sm:w-10 sm:rounded-2xl",
               disabled
                 ? "bg-slate-300/70"
                 : primary
@@ -889,7 +919,7 @@ function ActionButton({
         <span className="text-left">
           <span
             className={cn(
-              "block text-[9px] font-black uppercase tracking-[0.18em] md:text-[11px] md:tracking-[0.22em]",
+              "block text-[8px] font-black uppercase tracking-[0.14em] sm:text-[9px] md:text-[11px] md:tracking-[0.22em]",
               disabled
                 ? "text-slate-400"
                 : primary
@@ -900,7 +930,7 @@ function ActionButton({
             {subtitle}
           </span>
 
-          <span className="block text-base font-black md:text-lg">
+          <span className="block text-sm font-black sm:text-base md:text-lg">
             {loading ? "Proses..." : label}
           </span>
         </span>
@@ -986,16 +1016,20 @@ function InfoTile({
 function WorkModeFilter({
   value,
   disabled,
+  wfhQuotaRemaining,
   onChange,
   onOpenVisit,
 }: {
   value: WorkMode;
   disabled: boolean;
+  wfhQuotaRemaining: number | null;
   onChange: (value: WorkMode) => void;
   onOpenVisit: () => void;
 }) {
+  const isWfhQuotaEmpty = wfhQuotaRemaining !== null && wfhQuotaRemaining <= 0;
+
   return (
-    <div className="attendance-row-enter grid grid-cols-[1fr_auto] items-end gap-2 rounded-[1.6rem] border border-blue-100 bg-[#f8fbff] p-3">
+    <div className="attendance-row-enter grid grid-cols-[1fr_auto] items-center gap-2 rounded-[1.2rem] border border-blue-100 bg-[#f8fbff] p-2 sm:p-3">
       <AppSelect
         label="Mode Presensi"
         value={value}
@@ -1003,7 +1037,9 @@ function WorkModeFilter({
         disabled={disabled}
       >
         <option value="office">Kantor</option>
-        <option value="wfh">WFH</option>
+        <option value="wfh" disabled={isWfhQuotaEmpty}>
+          {isWfhQuotaEmpty ? "WFH - kuota habis" : "WFH"}
+        </option>
         <option value="visit">Kunjungan</option>
       </AppSelect>
 
@@ -1012,15 +1048,17 @@ function WorkModeFilter({
           type="button"
           onClick={onOpenVisit}
           disabled={disabled}
-          className="mb-0.5 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 ring-1 ring-orange-100 transition hover:bg-orange-100 active:scale-95 disabled:opacity-60"
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-600 ring-1 ring-orange-100 transition hover:bg-orange-100 active:scale-95 disabled:opacity-60 sm:h-12 sm:w-12 sm:rounded-2xl"
           aria-label="Isi data kunjungan"
         >
-          <BriefcaseBusiness size={21} strokeWidth={2.7} />
+          <BriefcaseBusiness size={19} strokeWidth={2.7} />
         </button>
       ) : null}
 
-      <p className="col-span-2 text-xs font-semibold leading-5 text-slate-500">
-        {getWorkModeDescription(value)}
+      <p className="col-span-2 hidden text-xs font-semibold leading-5 text-slate-500 sm:block">
+        {value === "wfh" && wfhQuotaRemaining !== null
+          ? `${getWorkModeDescription(value)} Sisa kuota bulan ini ${wfhQuotaRemaining}.`
+          : getWorkModeDescription(value)}
       </p>
     </div>
   );
@@ -1698,6 +1736,7 @@ export default function AttendancePage() {
   const [isLaptopBlocked, setIsLaptopBlocked] = useState(false);
 
   const [workMode, setWorkMode] = useState<WorkMode>("office");
+  const workModeRef = useRef<WorkMode>("office");
   const [visitForm, setVisitForm] = useState<VisitForm>(emptyVisitForm);
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
 
@@ -1705,6 +1744,7 @@ export default function AttendancePage() {
   const [cameraStarting, setCameraStarting] = useState(false);
   const [cameraPermissionDenied, setCameraPermissionDenied] = useState(false);
   const [cameraDeniedAttempts, setCameraDeniedAttempts] = useState(0);
+  const [isCameraOffByUser, setIsCameraOffByUser] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeAction, setActiveAction] = useState<AttendanceAction | null>(
     null,
@@ -1835,6 +1875,11 @@ export default function AttendancePage() {
     safeSetStatus("Presensi Dinonaktifkan", message);
   }
 
+  function setSelectedWorkMode(mode: WorkMode) {
+    workModeRef.current = mode;
+    setWorkMode(mode);
+  }
+
   function updateVisitForm<K extends keyof VisitForm>(
     key: K,
     value: VisitForm[K],
@@ -1851,7 +1896,7 @@ export default function AttendancePage() {
       const modeLabel = getWorkModeLabel(mode);
 
       if (hasCheckedOutToday) {
-        setWorkMode(mode);
+        setSelectedWorkMode(mode);
         setIsVisitModalOpen(false);
         setVisitForm(emptyVisitForm);
 
@@ -1870,7 +1915,7 @@ export default function AttendancePage() {
       }
 
       if (value === "visit") {
-        setWorkMode("visit");
+        setSelectedWorkMode("visit");
         setIsVisitModalOpen(true);
         setLateReason("");
 
@@ -1890,7 +1935,7 @@ export default function AttendancePage() {
         return;
       }
 
-      setWorkMode(mode);
+      setSelectedWorkMode(mode);
       setIsVisitModalOpen(false);
       setVisitForm(emptyVisitForm);
 
@@ -1908,7 +1953,28 @@ export default function AttendancePage() {
       return;
     }
 
-    setWorkMode(value);
+    const remainingWfhQuota = getWfhQuotaRemaining(currentUser);
+
+    if (value === "wfh" && remainingWfhQuota !== null && remainingWfhQuota <= 0) {
+      setSelectedWorkMode("office");
+      setIsVisitModalOpen(false);
+      setVisitForm(emptyVisitForm);
+
+      showCustomAlert(
+        "Kuota WFH habis",
+        "Kuota WFH bulan ini sudah habis. Pilih mode Kantor atau hubungi admin.",
+        "warning",
+      );
+
+      safeSetStatus(
+        "WFH Tidak Tersedia",
+        "Kuota WFH bulan ini sudah habis.",
+      );
+
+      return;
+    }
+
+    setSelectedWorkMode(value);
 
     if (value === "visit") {
       setLateReason("");
@@ -1924,8 +1990,8 @@ export default function AttendancePage() {
     );
   }
 
-  function validateVisitForm() {
-    if (workMode !== "visit") return true;
+  function validateVisitForm(mode = workModeRef.current) {
+    if (mode !== "visit") return true;
 
     if (
       !visitForm.visitTitle.trim() ||
@@ -2048,7 +2114,7 @@ export default function AttendancePage() {
         if (hasAttendanceCheckIn(attendance)) {
           const mode = getAttendanceWorkMode(attendance);
 
-          setWorkMode(mode);
+          setSelectedWorkMode(mode);
 
           safeSetStatus(
             "Mode Presensi Terkunci",
@@ -2271,6 +2337,29 @@ export default function AttendancePage() {
   }
 
   async function retryCameraPermission() {
+    setIsCameraOffByUser(false);
+    await startCamera();
+  }
+
+  async function handleToggleCamera() {
+    if (isCameraOffByUser) {
+      setIsCameraOffByUser(false);
+      await startCamera();
+    } else {
+      setIsCameraOffByUser(true);
+      releaseCamera(true, false);
+      setCameraReady(false);
+      safeSetStatus(
+        "Kamera Dimatikan",
+        "Kamera dimatikan secara manual. Tekan tombol kamera untuk menyalakan kembali.",
+      );
+    }
+  }
+
+  async function handleRefreshCamera() {
+    setIsCameraOffByUser(false);
+    releaseCamera(true, false);
+    setCameraReady(false);
     await startCamera();
   }
 
@@ -2338,6 +2427,8 @@ export default function AttendancePage() {
   }
 
   async function requestCheckIn() {
+    const selectedWorkMode = workModeRef.current;
+
     if (isLaptopBlocked) {
       showLaptopBlockedAlert();
       return;
@@ -2373,9 +2464,28 @@ export default function AttendancePage() {
       return;
     }
 
-    if (!validateVisitForm()) return;
+    if (!validateVisitForm(selectedWorkMode)) return;
 
-    if (workMode === "visit") {
+    const remainingWfhQuota = getWfhQuotaRemaining(currentUser);
+
+    if (
+      selectedWorkMode === "wfh" &&
+      remainingWfhQuota !== null &&
+      remainingWfhQuota <= 0
+    ) {
+      showCustomAlert(
+        "Kuota WFH habis",
+        "Kuota WFH bulan ini sudah habis. Pilih mode Kantor atau hubungi admin.",
+        "warning",
+      );
+      safeSetStatus(
+        "Check-in WFH Ditolak",
+        "Kuota WFH bulan ini sudah habis.",
+      );
+      return;
+    }
+
+    if (selectedWorkMode === "visit") {
       setLateReason("");
       setIsLateReasonOpen(false);
 
@@ -2441,6 +2551,8 @@ export default function AttendancePage() {
   }
 
   async function requestCheckOut() {
+    const selectedWorkMode = workModeRef.current;
+
     if (isLaptopBlocked) {
       showLaptopBlockedAlert();
       return;
@@ -2453,7 +2565,9 @@ export default function AttendancePage() {
       return;
     }
 
-    if (workMode === "visit" && !validateVisitForm()) return;
+    if (selectedWorkMode === "visit" && !validateVisitForm(selectedWorkMode)) {
+      return;
+    }
 
     const user = currentUser || (await loadCurrentUser());
 
@@ -2520,6 +2634,8 @@ export default function AttendancePage() {
   }
 
   async function handleAttendance(action: AttendanceAction, reason = "") {
+    const selectedWorkMode = workModeRef.current;
+
     if (isLaptopBlocked) {
       showLaptopBlockedAlert();
       return;
@@ -2530,7 +2646,29 @@ export default function AttendancePage() {
       return;
     }
 
-    if (workMode === "visit" && !validateVisitForm()) return;
+    if (selectedWorkMode === "visit" && !validateVisitForm(selectedWorkMode)) {
+      return;
+    }
+
+    const remainingWfhQuota = getWfhQuotaRemaining(currentUser);
+
+    if (
+      action === "check-in" &&
+      selectedWorkMode === "wfh" &&
+      remainingWfhQuota !== null &&
+      remainingWfhQuota <= 0
+    ) {
+      showCustomAlert(
+        "Kuota WFH habis",
+        "Kuota WFH bulan ini sudah habis. Pilih mode Kantor atau hubungi admin.",
+        "warning",
+      );
+      safeSetStatus(
+        "Check-in WFH Ditolak",
+        "Kuota WFH bulan ini sudah habis.",
+      );
+      return;
+    }
 
     try {
       setLoading(true);
@@ -2567,12 +2705,12 @@ export default function AttendancePage() {
       formData.append(`${prefix}Longitude`, String(longitude));
       formData.append(`${prefix}Accuracy`, String(accuracy));
 
-      formData.append("workMode", workMode);
-      formData.append("work_mode", workMode);
-      formData.append("activityNote", getWorkModeLabel(workMode));
+      formData.append("workMode", selectedWorkMode);
+      formData.append("work_mode", selectedWorkMode);
+      formData.append("activityNote", getWorkModeLabel(selectedWorkMode));
       formData.append("attendanceAction", action);
 
-      if (workMode === "visit") {
+      if (selectedWorkMode === "visit") {
         formData.append("skipLateValidation", "true");
         formData.append("ignoreLateValidation", "true");
         formData.append("isVisitAttendance", "true");
@@ -2581,10 +2719,16 @@ export default function AttendancePage() {
       }
 
       if (action === "check-out") {
-        formData.append("checkOutWorkMode", workMode);
-        formData.append("check_out_work_mode", workMode);
-        formData.append("checkOutActivityNote", getWorkModeLabel(workMode));
-        formData.append("check_out_activity_note", getWorkModeLabel(workMode));
+        formData.append("checkOutWorkMode", selectedWorkMode);
+        formData.append("check_out_work_mode", selectedWorkMode);
+        formData.append(
+          "checkOutActivityNote",
+          getWorkModeLabel(selectedWorkMode),
+        );
+        formData.append(
+          "check_out_activity_note",
+          getWorkModeLabel(selectedWorkMode),
+        );
       }
 
       if (action === "check-in" && reason.trim()) {
@@ -2592,7 +2736,7 @@ export default function AttendancePage() {
         formData.append("late_reason", reason.trim());
       }
 
-      if (workMode === "visit") {
+      if (selectedWorkMode === "visit") {
         const visitTitle = visitForm.visitTitle.trim();
         const visitClientName = visitForm.visitClientName.trim();
         const visitAddress = visitForm.visitAddress.trim();
@@ -2623,7 +2767,7 @@ export default function AttendancePage() {
       if (!response.ok) {
         const message = data.message || data.error || "Presensi gagal.";
 
-        if (data.requiresLateReason && workMode !== "visit") {
+        if (data.requiresLateReason && selectedWorkMode !== "visit") {
           setIsLateReasonOpen(true);
           safeSetStatus("Check-in Terlambat", message);
           return;
@@ -2642,7 +2786,8 @@ export default function AttendancePage() {
       const officeName = data.office?.name;
       const distance = data.office?.distance;
       const radius = data.office?.radius;
-      const modeLabel = data.workModeLabel || getWorkModeLabel(workMode);
+      const modeLabel =
+        data.workModeLabel || getWorkModeLabel(selectedWorkMode);
 
       safeSetStatus(
         "Presensi Berhasil",
@@ -2658,7 +2803,7 @@ export default function AttendancePage() {
       setLateReason("");
       setIsLateReasonOpen(false);
 
-      if (workMode === "visit") {
+      if (selectedWorkMode === "visit") {
         setVisitForm(emptyVisitForm);
       }
 
@@ -2771,6 +2916,7 @@ export default function AttendancePage() {
               disabled={
                 loading || isTodayAttendanceLoading || hasCheckedOutToday
               }
+              wfhQuotaRemaining={getWfhQuotaRemaining(currentUser)}
               onChange={handleWorkModeChange}
               onOpenVisit={() => {
                 if (hasCheckedOutToday) {
@@ -2784,7 +2930,7 @@ export default function AttendancePage() {
                 }
 
                 if (hasCheckedInToday) {
-                  setWorkMode("visit");
+                  setSelectedWorkMode("visit");
                   setIsVisitModalOpen(true);
 
                   showCustomAlert(
@@ -2821,9 +2967,9 @@ export default function AttendancePage() {
               </div>
             ) : null}
 
-            <div className="attendance-camera-enter mt-3 overflow-hidden bg-slate-950 shadow-[0_18px_42px_rgba(15,23,42,0.18)]">
+            <div className="attendance-camera-enter mt-2 overflow-hidden rounded-2xl bg-slate-950 shadow-[0_12px_30px_rgba(15,23,42,0.15)]">
               <div className="relative overflow-hidden bg-slate-950 shadow-inner">
-                <div className="relative h-[56dvh] min-h-[360px] max-h-[620px] md:h-auto md:aspect-[16/10] md:min-h-0 md:max-h-none lg:aspect-[16/10]">
+                <div className="relative h-[42dvh] min-h-[250px] max-h-[380px] sm:h-[45dvh] sm:min-h-[280px] sm:max-h-[440px] md:h-auto md:aspect-[16/10] md:min-h-0 md:max-h-none lg:aspect-[16/10]">
                   <video
                     ref={videoRef}
                     autoPlay
@@ -2856,7 +3002,7 @@ export default function AttendancePage() {
                       }
                     }}
                     className={cn(
-                      "h-full w-full object-cover transition",
+                      "h-full w-full object-cover transition scale-x-[-1]",
                       cameraReady ? "opacity-100" : "opacity-0",
                     )}
                   />
@@ -2870,11 +3016,44 @@ export default function AttendancePage() {
                   <div className="attendance-row-enter absolute left-4 top-4 z-30 rounded-full bg-slate-950/55 px-3 py-1.5 text-[11px] font-black text-white backdrop-blur-md md:left-5 md:top-5 md:text-xs">
                     {isLaptopBlocked
                       ? "Mobile Only"
-                      : cameraReady
-                        ? "Kamera Aktif"
-                        : cameraStarting
-                          ? "Starting..."
-                          : "Kamera Mati"}
+                      : isCameraOffByUser
+                        ? "Kamera Off"
+                        : cameraReady
+                          ? "Kamera Aktif"
+                          : cameraStarting
+                            ? "Starting..."
+                            : "Kamera Mati"}
+                  </div>
+
+                  <div className="absolute right-3 top-3 z-30 flex items-center gap-1.5 md:right-4 md:top-4">
+                    <button
+                      type="button"
+                      onClick={handleRefreshCamera}
+                      disabled={cameraStarting || loading}
+                      title="Muat Ulang Kamera"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/60 text-white backdrop-blur-md transition hover:bg-slate-900 active:scale-95 disabled:opacity-50"
+                      aria-label="Muat Ulang Kamera"
+                    >
+                      <RefreshCw
+                        size={14}
+                        className={cameraStarting ? "animate-spin text-white" : "text-white"}
+                      />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleToggleCamera}
+                      disabled={cameraStarting || loading}
+                      title={isCameraOffByUser ? "Nyalakan Kamera" : "Matikan Kamera"}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/60 text-white backdrop-blur-md transition hover:bg-slate-900 active:scale-95 disabled:opacity-50"
+                      aria-label={isCameraOffByUser ? "Nyalakan Kamera" : "Matikan Kamera"}
+                    >
+                      {isCameraOffByUser ? (
+                        <Camera size={14} className="text-[#ff8a00]" />
+                      ) : (
+                        <CameraOff size={14} className="text-white" />
+                      )}
+                    </button>
                   </div>
 
                   <div className="attendance-row-enter absolute bottom-4 left-4 z-30 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-black text-[#123c8c] backdrop-blur-md">
@@ -2886,8 +3065,10 @@ export default function AttendancePage() {
                       cameraStarting={cameraStarting}
                       permissionDenied={cameraPermissionDenied}
                       laptopBlocked={isLaptopBlocked}
+                      cameraOffByUser={isCameraOffByUser}
                       deniedAttempts={cameraDeniedAttempts}
                       onRetry={retryCameraPermission}
+                      onTurnOn={handleToggleCamera}
                     />
                   ) : null}
                 </div>

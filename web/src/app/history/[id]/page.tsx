@@ -72,6 +72,8 @@ type AttendanceDetail = {
   date: string;
   checkIn: string;
   checkOut: string;
+  checkInWorkModeLabel?: string;
+  checkOutWorkModeLabel?: string;
   status: string;
   lateMinutes: number;
   earlyLeaveMinutes: number;
@@ -429,11 +431,11 @@ function PhotoCard({
 
       <div className="mt-4">
         {isAvailable ? (
-          <div className="overflow-hidden rounded-2xl bg-slate-100">
+          <div className="overflow-hidden rounded-2xl bg-slate-950 shadow-md">
             <img
               src={imageUrl}
               alt={subtitle}
-              className="history-detail-image-enter h-60 w-full object-cover transition duration-300 hover:scale-[1.02] md:h-72"
+              className="history-detail-image-enter h-80 w-full object-contain transition duration-300 hover:scale-[1.02] md:h-96"
             />
           </div>
         ) : (
@@ -690,26 +692,26 @@ export default function HistoryDetailPage() {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div
-                    className="history-detail-row-enter rounded-3xl bg-white/10 p-5 ring-1 ring-white/15"
-                    style={{ animationDelay: "160ms" }}
-                  >
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-100">
-                      Check-in
-                    </p>
+	                  <div
+	                    className="history-detail-row-enter rounded-3xl bg-white/10 p-5 ring-1 ring-white/15"
+	                    style={{ animationDelay: "160ms" }}
+	                  >
+	                    <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-100">
+	                      Check-in {attendance.checkInWorkModeLabel || "Kantor"}
+	                    </p>
 
                     <p className="mt-2 text-3xl font-black">
                       {attendance.checkIn}
                     </p>
                   </div>
 
-                  <div
-                    className="history-detail-row-enter rounded-3xl bg-white/10 p-5 ring-1 ring-white/15"
-                    style={{ animationDelay: "200ms" }}
-                  >
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-100">
-                      Check-out
-                    </p>
+	                  <div
+	                    className="history-detail-row-enter rounded-3xl bg-white/10 p-5 ring-1 ring-white/15"
+	                    style={{ animationDelay: "200ms" }}
+	                  >
+	                    <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-100">
+	                      Check-out {attendance.checkOutWorkModeLabel || "-"}
+	                    </p>
 
                     <p className="mt-2 text-3xl font-black">
                       {attendance.checkOut}
@@ -720,11 +722,15 @@ export default function HistoryDetailPage() {
             </div>
 
             <div className="grid gap-5 md:grid-cols-3">
-              <MetricCard
-                label="Waktu Kerja"
-                value={formatMinutes(attendance.workMinutes)}
-                description="Total durasi kerja tercatat"
-                icon={Timer}
+	              <MetricCard
+	                label="Waktu Kerja"
+	                value={formatMinutes(attendance.workMinutes)}
+	                description={
+	                  attendance.checkOut === "--:--"
+	                    ? "Belum dihitung karena belum checkout"
+	                    : "Total durasi kerja tercatat"
+	                }
+	                icon={Timer}
                 delay="60ms"
               />
 
