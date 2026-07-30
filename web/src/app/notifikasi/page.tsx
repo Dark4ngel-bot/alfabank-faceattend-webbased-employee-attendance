@@ -11,6 +11,7 @@ import {
   Megaphone,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
+import { AppLoadingState } from "@/components/ui/AppUI";
 
 type NotificationItem = {
   id: string;
@@ -265,12 +266,7 @@ export default function EmployeeNotificationPage() {
 
           <div className="mt-6">
             {isLoading ? (
-              <div className="flex min-h-48 flex-col items-center justify-center rounded-[2rem] bg-slate-50 text-slate-500">
-                <Loader2 size={32} className="animate-spin" />
-                <p className="mt-3 text-sm font-black">
-                  Mengambil notifikasi...
-                </p>
-              </div>
+              <AppLoadingState text="Mengambil notifikasi..." />
             ) : notifications.length === 0 ? (
               <div className="flex min-h-56 flex-col items-center justify-center rounded-[2rem] bg-slate-50 px-5 text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white text-slate-400 shadow-sm ring-1 ring-slate-100">

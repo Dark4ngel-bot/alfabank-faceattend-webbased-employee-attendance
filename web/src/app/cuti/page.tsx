@@ -15,6 +15,7 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import { AppLoadingState } from "@/components/ui/AppUI";
 
 type LeaveRequest = {
   id: string;
@@ -524,10 +525,7 @@ export default function LeaveRequestPage() {
           </div>
 
           {isLoading ? (
-            <div className="flex items-center gap-3 rounded-[2rem] border border-blue-100 bg-white p-5 text-sm font-black text-slate-500 shadow-lg shadow-slate-200/60">
-              <Loader2 size={18} className="animate-spin text-[#123c8c]" />
-              Memuat pengajuan cuti...
-            </div>
+            <AppLoadingState text="Memuat pengajuan cuti..." />
           ) : requests.length === 0 ? (
             <div className="rounded-[2rem] border border-blue-100 bg-white p-5 text-sm font-black text-slate-500 shadow-lg shadow-slate-200/60">
               Belum ada pengajuan cuti.

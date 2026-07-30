@@ -94,7 +94,7 @@ const employeeSelect = {
   employment_end_date: true,
   birth_place: true,
   birth_date: true,
-  bank_name: true,
+  bank_code: true,
   bank_account_number: true,
   nik: true,
   profile_photo: true,
@@ -380,7 +380,7 @@ async function attachWfhQuotaToEmployees<
 
   return employees.map((employee) => ({
     ...employee,
-    bank_code: (employee as any).bank_name || (employee as any).bank_code || null,
+    bank_code: typeof employee.bank_code === "string" ? employee.bank_code : null,
     wfh_quota_monthly: quotaByUserId.get(employee.id) || 0,
   }));
 }
@@ -477,6 +477,11 @@ export async function GET(req: NextRequest) {
     }
 
     const employmentStatuses = await prisma.employmentStatus.findMany({
+      where: {
+        NOT: {
+          name: "Utama",
+        },
+      },
       orderBy: {
         name: "asc",
       },
@@ -622,11 +627,13 @@ export async function POST(req: NextRequest) {
       shiftId,
     });
 
-    const normalizedEmploymentEndDate =
-      shift.name.trim().toLowerCase() === "utama" ? null : employmentEndDate;
+    const isPrimaryShift = shift.name.trim().toLowerCase() === "utama";
+    const normalizedEmploymentEndDate = isPrimaryShift
+      ? null
+      : employmentEndDate;
     const normalizedEmploymentStatus =
-      shift.name.trim().toLowerCase() === "utama"
-        ? "Utama"
+      employmentStatus?.trim().toLowerCase() === "utama"
+        ? null
         : employmentStatus;
 
     assertDigitRange(phone || null, IDENTITY_VALIDATION.phone);
@@ -664,7 +671,7 @@ export async function POST(req: NextRequest) {
         employment_end_date: normalizedEmploymentEndDate,
         birth_place: birthPlace,
         birth_date: birthDate,
-        bank_name: bankCode || null,
+        bank_code: bankCode || null,
         bank_account_number: bankAccountNumber,
         nik,
         registered_office_id: registeredOfficeId,
@@ -836,11 +843,13 @@ export async function PATCH(req: NextRequest) {
       shiftId,
     });
 
-    const normalizedEmploymentEndDate =
-      shift.name.trim().toLowerCase() === "utama" ? null : employmentEndDate;
+    const isPrimaryShift = shift.name.trim().toLowerCase() === "utama";
+    const normalizedEmploymentEndDate = isPrimaryShift
+      ? null
+      : employmentEndDate;
     const normalizedEmploymentStatus =
-      shift.name.trim().toLowerCase() === "utama"
-        ? "Utama"
+      employmentStatus?.trim().toLowerCase() === "utama"
+        ? null
         : employmentStatus;
 
     assertDigitRange(phone || null, IDENTITY_VALIDATION.phone);

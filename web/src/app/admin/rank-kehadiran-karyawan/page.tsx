@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   CalendarDays,
   ChevronDown,
   Clock3,
-  Loader2,
   Search,
   Trophy,
   UserRound,
@@ -13,6 +13,7 @@ import {
 
 import AppHeader from "@/components/AppHeader";
 import MobileShell from "@/components/MobileShell";
+import { AppLoadingState } from "@/components/ui/AppUI";
 
 type SortKey =
   | "name"
@@ -32,6 +33,7 @@ type EmployeeAttendanceSummary = {
   izin: number;
   sakit: number;
   cuti: number;
+  totalWorkMinutes: number;
 };
 
 type RankedEmployee = {
@@ -54,8 +56,9 @@ type RecapResponse = {
 
 type RankedEmployeeRow = RankedEmployee & {
   rankScore: number;
+  netWorkMinutes: number;
   izinSakit: number;
-  lateCount: number;
+  lateMinutes: number;
   remainingContractDays: number | null;
   remainingContractLabel: string;
   positionStatusLabel: string;
@@ -64,7 +67,7 @@ type RankedEmployeeRow = RankedEmployee & {
 const sortLabels: Record<SortKey, string> = {
   name: "Nama Karyawan",
   hadir: "Hadir",
-  terlambat: "Telat",
+  terlambat: "Telat (Menit)",
   izinSakit: "Izin/Sakit",
   cuti: "Cuti",
   sisaKontrak: "Sisa Kontrak",
@@ -144,6 +147,28 @@ function getContractBadgeClass(days: number | null) {
   return "bg-amber-50 text-amber-600 ring-amber-100";
 }
 
+function getNetWorkMinutes(summary: EmployeeAttendanceSummary) {
+  return Math.max(
+    Number(summary.totalWorkMinutes || 0) - Number(summary.terlambat || 0),
+    0,
+  );
+}
+
+function formatMinutes(minutes: number) {
+  if (minutes <= 0) return "0m";
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (hours > 0 && remainingMinutes > 0) {
+    return `${hours}j ${remainingMinutes}m`;
+  }
+
+  if (hours > 0) return `${hours}j`;
+
+  return `${remainingMinutes}m`;
+}
+
 function RankMotionStyles() {
   return (
     <style>{`
@@ -175,6 +200,7 @@ function RankMotionStyles() {
 }
 
 export default function AdminAttendanceRankPage() {
+  const router = useRouter();
   const [employees, setEmployees] = useState<RankedEmployee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -237,21 +263,18 @@ export default function AdminAttendanceRankPage() {
     const rows = employees
       .map((employee) => {
         const izinSakit = employee.summary.izin + employee.summary.sakit;
-        const lateCount =
-          employee.summary.terlambatHari ?? employee.summary.terlambat;
+        const lateMinutes = Number(employee.summary.terlambat || 0);
+        const netWorkMinutes = getNetWorkMinutes(employee.summary);
         const remainingContractDays = getRemainingContractDays(
           employee.employmentEndDate,
         );
 
         return {
           ...employee,
-          rankScore:
-            employee.summary.hadir * 10 -
-            lateCount * 2 -
-            izinSakit * 3 -
-            employee.summary.cuti,
+          rankScore: netWorkMinutes,
+          netWorkMinutes,
           izinSakit,
-          lateCount,
+          lateMinutes,
           remainingContractDays,
           remainingContractLabel: getRemainingContractLabel(
             remainingContractDays,
@@ -285,7 +308,19 @@ export default function AdminAttendanceRankPage() {
         return firstHasAttendance ? -1 : 1;
       }
 
-      const lateDifference = (first.lateCount - second.lateCount) * direction;
+      const netWorkDifference =
+        (first.netWorkMinutes - second.netWorkMinutes) * direction;
+
+      if (netWorkDifference !== 0) return netWorkDifference;
+
+      const totalWorkDifference =
+        (Number(first.summary.totalWorkMinutes || 0) -
+          Number(second.summary.totalWorkMinutes || 0)) *
+        direction;
+
+      if (totalWorkDifference !== 0) return totalWorkDifference;
+
+      const lateDifference = first.lateMinutes - second.lateMinutes;
 
       if (lateDifference !== 0) return lateDifference;
 
@@ -298,6 +333,20 @@ export default function AdminAttendanceRankPage() {
 
     return rows;
   }, [employees, searchKeyword, sortDirection]);
+
+  const openEmployeeDetail = useCallback(
+    (employeeId: string) => {
+      const queryParams = new URLSearchParams({
+        startDate,
+        endDate,
+      });
+
+      router.push(
+        `/admin/rekap-kehadiran-karyawan/${employeeId}?${queryParams.toString()}`,
+      );
+    },
+    [endDate, router, startDate],
+  );
 
   const topEmployee = rankedEmployees[0] || null;
   const averagePresent =
@@ -414,7 +463,7 @@ export default function AdminAttendanceRankPage() {
 
             <label className="block">
               <span className="mb-2 block text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">
-                Urutan Telat
+                Urutan Kerja Bersih
               </span>
               <div className="relative">
                 <select
@@ -424,8 +473,8 @@ export default function AdminAttendanceRankPage() {
                   }
                   className="h-12 w-full appearance-none rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-4 pr-11 text-sm font-black text-[#123456] outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                 >
-                  <option value="desc">Menurun</option>
-                  <option value="asc">Menaik</option>
+                  <option value="desc">Menaik</option>
+                  <option value="asc">Menurun</option>
                 </select>
                 <ChevronDown
                   size={18}
@@ -447,26 +496,22 @@ export default function AdminAttendanceRankPage() {
             style={{ animationDelay: "120ms" }}
           >
             {isLoading ? (
-              <div className="flex min-h-72 flex-col items-center justify-center gap-3 p-8 text-center">
-                <Loader2
-                  className="h-8 w-8 animate-spin text-[#123c8c]"
-                  strokeWidth={2.7}
-                />
-                <p className="text-sm font-bold text-slate-400">
-                  Memuat rank kehadiran karyawan...
-                </p>
+              <div className="p-5">
+                <AppLoadingState text="Memuat rank kehadiran karyawan..." />
               </div>
             ) : rankedEmployees.length ? (
               <div className="overflow-x-auto">
-                <table className="min-w-[980px] w-full border-collapse text-left">
+                <table className="min-w-[1100px] w-full border-collapse text-left">
                   <thead>
                     <tr className="bg-[#eef5ff] text-xs font-black uppercase tracking-[0.08em] text-slate-500">
                       <th className="w-20 px-5 py-4">Rank</th>
                       <th className="px-5 py-4">{sortLabels.name}</th>
                       <th className="px-5 py-4">{sortLabels.hadir}</th>
+                      <th className="px-5 py-4">Total Kerja</th>
                       <th className="px-5 py-4 text-[#123c8c]">
                         {sortLabels.terlambat}
                       </th>
+                      <th className="px-5 py-4">Kerja Bersih</th>
                       <th className="px-5 py-4">{sortLabels.izinSakit}</th>
                       <th className="px-5 py-4">{sortLabels.cuti}</th>
                       <th className="px-5 py-4">{sortLabels.sisaKontrak}</th>
@@ -482,7 +527,8 @@ export default function AdminAttendanceRankPage() {
                       return (
                         <tr
                           key={employee.id}
-                          className="transition hover:bg-[#f8fbff]"
+                          onClick={() => openEmployeeDetail(employee.id)}
+                          className="cursor-pointer transition hover:bg-[#f8fbff]"
                         >
                           <td className="px-5 py-4">
                             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#eef5ff] text-sm font-black text-[#123c8c] ring-1 ring-blue-100">
@@ -518,8 +564,16 @@ export default function AdminAttendanceRankPage() {
                           <td className="px-5 py-4 text-sm font-black text-emerald-600">
                             {employee.summary.hadir}
                           </td>
+                          <td className="px-5 py-4 text-sm font-black text-[#123c8c]">
+                            {formatMinutes(
+                              Number(employee.summary.totalWorkMinutes || 0),
+                            )}
+                          </td>
                           <td className="px-5 py-4 text-sm font-black text-orange-600">
-                            {employee.lateCount}
+                            {employee.lateMinutes}
+                          </td>
+                          <td className="px-5 py-4 text-sm font-black text-emerald-700">
+                            {formatMinutes(employee.netWorkMinutes)}
                           </td>
                           <td className="px-5 py-4 text-sm font-black text-orange-500">
                             {employee.izinSakit}

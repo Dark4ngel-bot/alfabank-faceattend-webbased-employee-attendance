@@ -13,6 +13,11 @@ import {
 
 import AppHeader from "@/components/AppHeader";
 import MobileShell from "@/components/MobileShell";
+import {
+  AppFormReveal,
+  AppLoadingState,
+  AppPageTransition,
+} from "@/components/ui/AppUI";
 
 type AdminContactNumber = {
   id: string;
@@ -224,248 +229,251 @@ export default function AdminContactNumbersPage() {
       <AppHeader title="Nomor Admin" variant="admin" />
 
       <main className="min-h-[calc(100dvh-88px)] bg-[#f6f8ff] px-4 pb-24 pt-6 md:px-8 lg:px-16">
-        <div className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[0.9fr_1.4fr]">
-          <section className="rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ecfff5] text-[#00a884] ring-1 ring-[#baf7dc]">
-                <PhoneCall size={23} strokeWidth={2.7} />
+        <AppPageTransition className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[0.9fr_1.4fr]">
+          <AppFormReveal delay={60} className="h-full">
+            <section className="h-full rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ecfff5] text-[#00a884] ring-1 ring-[#baf7dc]">
+                  <PhoneCall size={23} strokeWidth={2.7} />
+                </div>
+
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                    Nomor Aktif
+                  </p>
+                  <h2 className="text-xl font-black tracking-tight text-slate-950">
+                    {activeNumber
+                      ? formatPhoneNumber(activeNumber.phone_number)
+                      : "Belum ada nomor aktif"}
+                  </h2>
+                </div>
               </div>
 
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
-                  Nomor Aktif
-                </p>
-                <h2 className="text-xl font-black tracking-tight text-slate-950">
-                  {activeNumber
-                    ? formatPhoneNumber(activeNumber.phone_number)
-                    : "Belum ada nomor aktif"}
-                </h2>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <label className="block">
-                <span className="text-sm font-black text-slate-700">Label</span>
-                <input
-                  value={label}
-                  onChange={(event) => setLabel(event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                  placeholder="Admin Creativemu"
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-black text-slate-700">
-                  Nomor WhatsApp
-                </span>
-                <input
-                  value={phoneNumber}
-                  onChange={(event) => setPhoneNumber(event.target.value)}
-                  inputMode="tel"
-                  className="mt-2 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                  placeholder="081234567890"
-                />
-              </label>
-
-              <label className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
-                <span className="min-w-0">
-                  <span className="block text-sm font-black text-slate-800">
-                    Aktifkan ke header kanan atas
+              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                <label className="block">
+                  <span className="text-sm font-black text-slate-700">
+                    Label
                   </span>
-                  <span className="mt-1 block text-xs font-bold text-slate-500">
-                    Nomor aktif dipakai tombol WhatsApp.
+                  <input
+                    value={label}
+                    onChange={(event) => setLabel(event.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    placeholder="Admin Creativemu"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-black text-slate-700">
+                    Nomor WhatsApp
                   </span>
-                </span>
+                  <input
+                    value={phoneNumber}
+                    onChange={(event) => setPhoneNumber(event.target.value)}
+                    inputMode="tel"
+                    className="mt-2 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    placeholder="081234567890"
+                  />
+                </label>
 
-                <input
-                  type="checkbox"
-                  checked={activateNewNumber || numbers.length === 0}
-                  disabled={numbers.length === 0}
-                  onChange={(event) =>
-                    setActivateNewNumber(event.target.checked)
-                  }
-                  className="h-5 w-5 shrink-0 accent-emerald-600"
-                />
-              </label>
+                <label className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
+                  <span className="min-w-0">
+                    <span className="block text-sm font-black text-slate-800">
+                      Aktifkan ke header kanan atas
+                    </span>
+                    <span className="mt-1 block text-xs font-bold text-slate-500">
+                      Nomor aktif dipakai tombol WhatsApp.
+                    </span>
+                  </span>
 
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Plus size={18} strokeWidth={2.7} />
-                )}
-                Tambah Nomor
-              </button>
-            </form>
-          </section>
+                  <input
+                    type="checkbox"
+                    checked={activateNewNumber || numbers.length === 0}
+                    disabled={numbers.length === 0}
+                    onChange={(event) =>
+                      setActivateNewNumber(event.target.checked)
+                    }
+                    className="h-5 w-5 shrink-0 accent-emerald-600"
+                  />
+                </label>
 
-          <section className="rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
-                  Daftar Nomor
-                </p>
-                <h2 className="text-xl font-black tracking-tight text-slate-950">
-                  Nomor Admin
-                </h2>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus size={18} strokeWidth={2.7} />
+                  )}
+                  Tambah Nomor
+                </button>
+              </form>
+            </section>
+          </AppFormReveal>
+
+          <AppFormReveal delay={140} className="h-full">
+            <section className="h-full rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                    Daftar Nomor
+                  </p>
+                  <h2 className="text-xl font-black tracking-tight text-slate-950">
+                    Nomor Admin
+                  </h2>
+                </div>
               </div>
 
-              {isLoading ? (
-                <span className="inline-flex items-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-500">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Memuat
-                </span>
-              ) : null}
-            </div>
-
-            {errorMessage ? (
-              <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 ring-1 ring-rose-100">
-                {errorMessage}
-              </div>
-            ) : null}
-
-            {feedbackMessage ? (
-              <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 ring-1 ring-emerald-100">
-                {feedbackMessage}
-              </div>
-            ) : null}
-
-            <div className="mt-5 space-y-3">
-              {!isLoading && numbers.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-blue-200 bg-[#f8fbff] px-4 py-8 text-center text-sm font-bold text-slate-500">
-                  Belum ada nomor admin.
+              {errorMessage ? (
+                <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 ring-1 ring-rose-100">
+                  {errorMessage}
                 </div>
               ) : null}
 
-              {numbers.map((number) => {
-                const isEditing = editingId === number.id;
+              {feedbackMessage ? (
+                <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 ring-1 ring-emerald-100">
+                  {feedbackMessage}
+                </div>
+              ) : null}
 
-                return (
-                  <div
-                    key={number.id}
-                    className={`rounded-2xl border p-4 transition ${
-                      number.is_active
-                        ? "border-emerald-200 bg-emerald-50/70"
-                        : "border-blue-100 bg-[#f8fbff]"
-                    }`}
-                  >
-                    {isEditing ? (
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <input
-                          value={editingLabel}
-                          onChange={(event) =>
-                            setEditingLabel(event.target.value)
-                          }
-                          className="rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
-                        />
-                        <input
-                          value={editingPhoneNumber}
-                          onChange={(event) =>
-                            setEditingPhoneNumber(event.target.value)
-                          }
-                          inputMode="tel"
-                          className="rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[#00a884] ring-1 ring-emerald-100">
-                          <PhoneCall size={20} strokeWidth={2.7} />
-                        </div>
+              <div className="mt-5 space-y-3">
+                {isLoading ? (
+                  <AppLoadingState text="Memuat nomor admin..." />
+                ) : null}
 
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="truncate text-base font-black text-slate-950">
-                              {number.label}
-                            </p>
-                            {number.is_active ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-black text-white">
-                                <CheckCircle2 size={13} strokeWidth={2.8} />
-                                Aktif
-                              </span>
-                            ) : null}
-                          </div>
-                          <p className="mt-1 text-sm font-bold text-slate-500">
-                            {formatPhoneNumber(number.phone_number)}
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                {!isLoading && numbers.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-blue-200 bg-[#f8fbff] px-4 py-8 text-center text-sm font-bold text-slate-500">
+                    Belum ada nomor admin.
+                  </div>
+                ) : null}
 
-                    <div className="mt-4 flex flex-wrap gap-2">
+                {numbers.map((number) => {
+                  const isEditing = editingId === number.id;
+
+                  return (
+                    <div
+                      key={number.id}
+                      className={`rounded-2xl border p-4 transition ${
+                        number.is_active
+                          ? "border-emerald-200 bg-emerald-50/70"
+                          : "border-blue-100 bg-[#f8fbff]"
+                      }`}
+                    >
                       {isEditing ? (
-                        <>
-                          <button
-                            type="button"
-                            disabled={isSaving}
-                            onClick={() =>
-                              updateNumber(number.id, {
-                                label: editingLabel,
-                                phone_number: editingPhoneNumber,
-                              })
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <input
+                            value={editingLabel}
+                            onChange={(event) =>
+                              setEditingLabel(event.target.value)
                             }
-                            className="inline-flex items-center gap-2 rounded-xl bg-[#123c8c] px-3 py-2 text-xs font-black text-white transition active:scale-[0.97] disabled:opacity-60"
-                          >
-                            <Save size={15} strokeWidth={2.7} />
-                            Simpan
-                          </button>
-                          <button
-                            type="button"
-                            onClick={cancelEdit}
-                            className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-600 transition active:scale-[0.97]"
-                          >
-                            Batal
-                          </button>
-                        </>
+                            className="rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
+                          />
+                          <input
+                            value={editingPhoneNumber}
+                            onChange={(event) =>
+                              setEditingPhoneNumber(event.target.value)
+                            }
+                            inputMode="tel"
+                            className="rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
+                          />
+                        </div>
                       ) : (
-                        <>
-                          {!number.is_active ? (
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[#00a884] ring-1 ring-emerald-100">
+                            <PhoneCall size={20} strokeWidth={2.7} />
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="truncate text-base font-black text-slate-950">
+                                {number.label}
+                              </p>
+                              {number.is_active ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-black text-white">
+                                  <CheckCircle2 size={13} strokeWidth={2.8} />
+                                  Aktif
+                                </span>
+                              ) : null}
+                            </div>
+                            <p className="mt-1 text-sm font-bold text-slate-500">
+                              {formatPhoneNumber(number.phone_number)}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {isEditing ? (
+                          <>
                             <button
                               type="button"
                               disabled={isSaving}
                               onClick={() =>
                                 updateNumber(number.id, {
-                                  is_active: true,
+                                  label: editingLabel,
+                                  phone_number: editingPhoneNumber,
                                 })
                               }
-                              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white transition active:scale-[0.97] disabled:opacity-60"
+                              className="inline-flex items-center gap-2 rounded-xl bg-[#123c8c] px-3 py-2 text-xs font-black text-white transition active:scale-[0.97] disabled:opacity-60"
                             >
-                              <CheckCircle2 size={15} strokeWidth={2.7} />
-                              Jadikan Aktif
+                              <Save size={15} strokeWidth={2.7} />
+                              Simpan
                             </button>
-                          ) : null}
+                            <button
+                              type="button"
+                              onClick={cancelEdit}
+                              className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-600 transition active:scale-[0.97]"
+                            >
+                              Batal
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            {!number.is_active ? (
+                              <button
+                                type="button"
+                                disabled={isSaving}
+                                onClick={() =>
+                                  updateNumber(number.id, {
+                                    is_active: true,
+                                  })
+                                }
+                                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white transition active:scale-[0.97] disabled:opacity-60"
+                              >
+                                <CheckCircle2 size={15} strokeWidth={2.7} />
+                                Jadikan Aktif
+                              </button>
+                            ) : null}
 
-                          <button
-                            type="button"
-                            onClick={() => startEdit(number)}
-                            className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-[#123c8c] ring-1 ring-blue-100 transition active:scale-[0.97]"
-                          >
-                            <Pencil size={15} strokeWidth={2.7} />
-                            Edit
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() => startEdit(number)}
+                              className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-[#123c8c] ring-1 ring-blue-100 transition active:scale-[0.97]"
+                            >
+                              <Pencil size={15} strokeWidth={2.7} />
+                              Edit
+                            </button>
 
-                          <button
-                            type="button"
-                            disabled={isSaving}
-                            onClick={() => deleteNumber(number.id)}
-                            className="inline-flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-xs font-black text-rose-600 ring-1 ring-rose-100 transition active:scale-[0.97] disabled:opacity-60"
-                          >
-                            <Trash2 size={15} strokeWidth={2.7} />
-                            Hapus
-                          </button>
-                        </>
-                      )}
+                            <button
+                              type="button"
+                              disabled={isSaving}
+                              onClick={() => deleteNumber(number.id)}
+                              className="inline-flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-xs font-black text-rose-600 ring-1 ring-rose-100 transition active:scale-[0.97] disabled:opacity-60"
+                            >
+                              <Trash2 size={15} strokeWidth={2.7} />
+                              Hapus
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        </div>
+                  );
+                })}
+              </div>
+            </section>
+          </AppFormReveal>
+        </AppPageTransition>
       </main>
     </MobileShell>
   );

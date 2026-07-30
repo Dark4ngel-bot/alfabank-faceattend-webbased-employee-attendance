@@ -367,13 +367,6 @@ async function handleUpdateProfile(userId: string, body: JsonBody) {
     "tempatLahir",
     "tempat_lahir",
   ]);
-  const bankName = findOptionalText(body, [
-    "bankName",
-    "bank_name",
-    "namaBank",
-    "nama_bank",
-    "bank",
-  ]);
   const bankAccountNumber = findOptionalText(body, [
     "bankAccountNumber",
     "bank_account_number",
@@ -470,8 +463,6 @@ async function handleUpdateProfile(userId: string, body: JsonBody) {
 
   addUpdate("birth_place", birthPlace);
   addUpdate("tempat_lahir", birthPlace);
-
-  addUpdate("bank_name", bankName);
 
   addUpdate("bank_account_number", bankAccountNumber);
   addUpdate("no_rekening", bankAccountNumber);

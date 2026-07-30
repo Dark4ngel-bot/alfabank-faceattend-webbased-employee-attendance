@@ -2165,14 +2165,27 @@ export default function AttendancePage() {
 
         if (hasAttendanceCheckIn(attendance)) {
           const mode = getAttendanceWorkMode(attendance);
+          const currentMode = workModeRef.current;
+          const allowedModes = hasAttendanceCheckOut(attendance)
+            ? [mode]
+            : getAllowedCheckOutModes(mode);
+          const nextMode = allowedModes.includes(currentMode)
+            ? currentMode
+            : mode;
 
-          setSelectedWorkMode(mode);
+          setSelectedWorkMode(nextMode);
 
           safeSetStatus(
-            "Mode Presensi Terkunci",
-            `Kamu sudah check-in hari ini dengan mode ${getWorkModeLabel(
-              mode,
-            )}. Mode tidak bisa diubah sampai check-out.`,
+            hasAttendanceCheckOut(attendance)
+              ? "Presensi Selesai"
+              : `Mode Check-out ${getWorkModeLabel(nextMode)}`,
+            hasAttendanceCheckOut(attendance)
+              ? `Presensi hari ini sudah selesai dengan mode ${getWorkModeLabel(
+                  mode,
+                )}.`
+              : `Check-in sudah tercatat dengan mode ${getWorkModeLabel(
+                  mode,
+                )}. Mode layar sekarang dipakai untuk Check-out.`,
           );
         }
       }

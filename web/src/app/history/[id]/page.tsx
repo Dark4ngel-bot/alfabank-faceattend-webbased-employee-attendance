@@ -76,8 +76,17 @@ type AttendanceDetail = {
   checkOutWorkModeLabel?: string;
   status: string;
   lateMinutes: number;
+  lateReason?: string | null;
   earlyLeaveMinutes: number;
   workMinutes: number;
+  visitTitle?: string | null;
+  visitClientName?: string | null;
+  visitAddress?: string | null;
+  visitNote?: string | null;
+  checkOutVisitTitle?: string | null;
+  checkOutVisitClientName?: string | null;
+  checkOutVisitAddress?: string | null;
+  checkOutVisitNote?: string | null;
   hasCheckInPhoto: boolean;
   hasCheckOutPhoto: boolean;
   checkInLocation: LocationValue;
@@ -121,6 +130,37 @@ function getStatusStyle(status: string) {
   }
 
   return "bg-emerald-50 text-emerald-700 ring-emerald-100";
+}
+
+function hasText(value?: string | null) {
+  return Boolean(String(value || "").trim());
+}
+
+function getVisitTitle(attendance: AttendanceDetail) {
+  return attendance.checkOutVisitTitle || attendance.visitTitle || null;
+}
+
+function getVisitClientName(attendance: AttendanceDetail) {
+  return attendance.checkOutVisitClientName || attendance.visitClientName || null;
+}
+
+function getVisitAddress(attendance: AttendanceDetail) {
+  return attendance.checkOutVisitAddress || attendance.visitAddress || null;
+}
+
+function getVisitNote(attendance: AttendanceDetail) {
+  return attendance.checkOutVisitNote || attendance.visitNote || null;
+}
+
+function shouldShowVisitNote(attendance: AttendanceDetail) {
+  return (
+    String(attendance.checkOutWorkModeLabel || "").toLowerCase() ===
+      "kunjungan" ||
+    hasText(getVisitTitle(attendance)) ||
+    hasText(getVisitClientName(attendance)) ||
+    hasText(getVisitAddress(attendance)) ||
+    hasText(getVisitNote(attendance))
+  );
 }
 
 function cleanText(value: unknown) {
@@ -722,9 +762,9 @@ export default function HistoryDetailPage() {
             </div>
 
             <div className="grid gap-5 md:grid-cols-3">
-	              <MetricCard
-	                label="Waktu Kerja"
-	                value={formatMinutes(attendance.workMinutes)}
+              <MetricCard
+                label="Waktu Kerja"
+                value={formatMinutes(attendance.workMinutes)}
 	                description={
 	                  attendance.checkOut === "--:--"
 	                    ? "Belum dihitung karena belum checkout"
@@ -750,6 +790,91 @@ export default function HistoryDetailPage() {
                 delay="140ms"
               />
             </div>
+
+            {(hasText(attendance.lateReason) ||
+              shouldShowVisitNote(attendance)) ? (
+              <section className="history-detail-row-enter rounded-[1.75rem] bg-white p-5 shadow-lg shadow-slate-200/50">
+                <div className="flex flex-col gap-1 border-b border-slate-100 pb-4">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
+                    Keterangan Karyawan
+                  </p>
+                  <h3 className="text-xl font-black text-slate-950">
+                    Catatan Presensi
+                  </h3>
+                </div>
+
+                <div className="mt-5 grid gap-3">
+                  {hasText(attendance.lateReason) ? (
+                    <div className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-amber-700 ring-1 ring-amber-100">
+                          <Clock3 size={21} strokeWidth={2.7} />
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-700">
+                            Keterangan Terlambat
+                          </p>
+                          <p className="mt-2 text-sm font-bold leading-6 text-slate-700">
+                            {attendance.lateReason}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {shouldShowVisitNote(attendance) ? (
+                    <div className="rounded-2xl border border-orange-100 bg-orange-50/70 p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-orange-600 ring-1 ring-orange-100">
+                          <MapPin size={21} strokeWidth={2.7} />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-orange-600">
+                              Keterangan Kunjungan
+                            </p>
+                            <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black text-orange-700 ring-1 ring-orange-100">
+                              Kunjungan saat check-out
+                            </span>
+                          </div>
+
+                          <p className="mt-2 text-sm font-black leading-6 text-slate-900">
+                            {getVisitTitle(attendance) ||
+                              "Tujuan kunjungan belum diisi"}
+                          </p>
+
+                          <div className="mt-3 grid gap-2 text-xs font-bold leading-5 text-slate-600 md:grid-cols-2">
+                            <div className="rounded-xl bg-white px-3 py-2 ring-1 ring-orange-100">
+                              <span className="text-orange-600">
+                                PIC / Client:{" "}
+                              </span>
+                              {getVisitClientName(attendance) || "Belum diisi"}
+                            </div>
+                            <div className="rounded-xl bg-white px-3 py-2 ring-1 ring-orange-100">
+                              <span className="text-orange-600">
+                                Alamat:{" "}
+                              </span>
+                              {getVisitAddress(attendance) || "Belum diisi"}
+                            </div>
+                          </div>
+
+                          {hasText(getVisitNote(attendance)) ? (
+                            <div className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-bold leading-5 text-slate-600 ring-1 ring-orange-100">
+                              <span className="text-orange-600">
+                                Catatan:{" "}
+                              </span>
+                              {getVisitNote(attendance)}
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </section>
+            ) : null}
 
             <section className="history-detail-row-enter rounded-[1.75rem] bg-white p-5 shadow-lg shadow-slate-200/50">
               <div className="flex flex-col gap-1 border-b border-slate-100 pb-4">

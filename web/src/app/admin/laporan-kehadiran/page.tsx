@@ -9,12 +9,12 @@ import {
   Eye,
   FileDown,
   ImageIcon,
-  Loader2,
   Search,
   UserRound,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MobileShell from "@/components/MobileShell";
+import { AppLoadingState } from "@/components/ui/AppUI";
 
 type AttendanceReport = {
   id: string;
@@ -605,9 +605,8 @@ export default function AdminAttendanceReportPage() {
 
             <div className="mt-6">
               {isLoading ? (
-                <div className="attendance-report-row-enter flex items-center justify-center gap-2 rounded-3xl border border-blue-100 bg-[#f8fbff] px-5 py-12 text-sm font-bold text-slate-500">
-                  <Loader2 size={18} className="animate-spin text-[#123c8c]" />
-                  Memuat rekap kehadiran...
+                <div className="attendance-report-row-enter">
+                  <AppLoadingState text="Memuat rekap kehadiran..." />
                 </div>
               ) : groupedReports.length === 0 ? (
                 <div className="attendance-report-row-enter rounded-3xl border border-dashed border-blue-100 bg-[#f8fbff] px-5 py-12 text-center">

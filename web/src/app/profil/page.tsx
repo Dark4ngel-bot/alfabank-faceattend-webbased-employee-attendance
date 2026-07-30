@@ -44,7 +44,6 @@ import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
 import BankLogoBadge from "@/components/BankLogoBadge";
 import { AppBankSelect } from "@/components/AppBankSelect";
-import { BANK_OPTIONS } from "@/lib/bank-options";
 import {
   IDENTITY_VALIDATION,
   isValidBankAccountNumber,
@@ -1118,32 +1117,76 @@ export function ProfilPageContent({
         icon: UserRound,
         items: [
           { label: "Nama Lengkap", value: user.name, icon: UserRound },
-          { label: "No Induk Karyawan", value: user.employee_code || "-", icon: IdCard },
+          {
+            label: "No Induk Karyawan",
+            value: user.employee_code || "-",
+            icon: IdCard,
+          },
           { label: "Email", value: user.email, icon: Mail },
           { label: "Nomor Telepon", value: user.phone || "-", icon: Phone },
-          { label: "Role Akun", value: formatRole(user.role), icon: ShieldCheck },
-          { label: "Status Akun", value: formatStatus(user.status), icon: BadgeCheck },
+          {
+            label: "Role Akun",
+            value: formatRole(user.role),
+            icon: ShieldCheck,
+          },
+          {
+            label: "Status Akun",
+            value: formatStatus(user.status),
+            icon: BadgeCheck,
+          },
         ],
       },
       {
         title: "Pekerjaan & Penempatan",
         icon: Building2,
         items: [
-          { label: "Kantor Terdaftar", value: user.registered_office?.name || "-", icon: MapPin },
-          { label: "Divisi", value: user.department?.name || "-", icon: Network },
-          { label: "Jabatan", value: user.jabatan?.name || "-", icon: Building2 },
-          { label: "Posisi", value: user.position?.name || "-", icon: BriefcaseBusiness },
-          { label: "Shift", value: user.shift?.name || "-", icon: CalendarDays },
+          {
+            label: "Kantor Terdaftar",
+            value: user.registered_office?.name || "-",
+            icon: MapPin,
+          },
+          {
+            label: "Divisi",
+            value: user.department?.name || "-",
+            icon: Network,
+          },
+          {
+            label: "Jabatan",
+            value: user.jabatan?.name || "-",
+            icon: Building2,
+          },
+          {
+            label: "Posisi",
+            value: user.position?.name || "-",
+            icon: BriefcaseBusiness,
+          },
+          {
+            label: "Shift",
+            value: user.shift?.name || "-",
+            icon: CalendarDays,
+          },
           { label: "Jam Kerja", value: workSchedule || "-", icon: Clock3 },
-          { label: "Alamat Kantor", value: user.registered_office?.address || "-", icon: MapPin },
+          {
+            label: "Alamat Kantor",
+            value: user.registered_office?.address || "-",
+            icon: MapPin,
+          },
         ],
       },
       {
         title: "Status Kepegawaian & Presensi",
         icon: BriefcaseBusiness,
         items: [
-          { label: "Status Kepegawaian", value: user.employment_status || "-", icon: BadgeCheck },
-          { label: "Masa Kerja", value: formatEmploymentPeriod(user), icon: CalendarDays },
+          {
+            label: "Status Kepegawaian",
+            value: user.employment_status || "-",
+            icon: BadgeCheck,
+          },
+          {
+            label: "Masa Kerja",
+            value: formatEmploymentPeriod(user),
+            icon: CalendarDays,
+          },
           {
             label: "Kuota WFH Bulanan",
             value: formatWfhQuotaText(
@@ -1158,8 +1201,16 @@ export function ProfilPageContent({
         title: "Kelahiran, Identitas & Bank Payroll",
         icon: CreditCard,
         items: [
-          { label: "Tempat Lahir", value: user.birth_place || "-", icon: MapPin },
-          { label: "Tanggal Lahir", value: formatDate(user.birth_date), icon: CalendarDays },
+          {
+            label: "Tempat Lahir",
+            value: user.birth_place || "-",
+            icon: MapPin,
+          },
+          {
+            label: "Tanggal Lahir",
+            value: formatDate(user.birth_date),
+            icon: CalendarDays,
+          },
           { label: "NIK (16 Digit)", value: user.nik || "-", icon: IdCard },
           {
             label: "Nama Bank Payroll",
@@ -1168,7 +1219,10 @@ export function ProfilPageContent({
               <div className="flex items-center gap-2">
                 <span className="font-bold text-slate-800">{bankName}</span>
                 {user.bank_code || user.bank_name ? (
-                  <BankLogoBadge bankCode={user.bank_name || user.bank_code} compact />
+                  <BankLogoBadge
+                    bankCode={user.bank_name || user.bank_code}
+                    compact
+                  />
                 ) : null}
               </div>
             ),
@@ -1519,10 +1573,6 @@ export function ProfilPageContent({
                   <h2 className="mt-2 text-2xl font-black text-slate-950">
                     Ubah Detail Personal
                   </h2>
-
-                  <p className="mt-1 text-sm leading-6 text-slate-500">
-                    Hanya nama lengkap dan nomor telepon yang dapat diedit.
-                  </p>
                 </div>
 
                 <button
@@ -1537,7 +1587,10 @@ export function ProfilPageContent({
               <form
                 onSubmit={handleUpdateProfile}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter" && (event.target as HTMLElement).tagName === "INPUT") {
+                  if (
+                    event.key === "Enter" &&
+                    (event.target as HTMLElement).tagName === "INPUT"
+                  ) {
                     event.preventDefault();
                   }
                 }}
@@ -1588,7 +1641,8 @@ export function ProfilPageContent({
                           handlePhoneInputChange(event.target.value)
                         }
                         onPaste={(event) => {
-                          const pastedText = event.clipboardData.getData("text");
+                          const pastedText =
+                            event.clipboardData.getData("text");
                           if (/\D/.test(pastedText) || pastedText.length > 13) {
                             showProfileAlert(
                               "Nomor telepon tidak valid",
@@ -1701,7 +1755,10 @@ export function ProfilPageContent({
                       label="Nama Bank"
                       value={editProfileForm.bank_code}
                       onChange={(val) =>
-                        setEditProfileForm((prev) => ({ ...prev, bank_code: val }))
+                        setEditProfileForm((prev) => ({
+                          ...prev,
+                          bank_code: val,
+                        }))
                       }
                     />
 
@@ -1731,15 +1788,6 @@ export function ProfilPageContent({
                       </div>
                     </div>
                   </div>
-                </div>
-
-                <div
-                  className="profile-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 text-xs font-semibold leading-6 text-slate-500"
-                  style={{ animationDelay: "240ms" }}
-                >
-                  Email, status akun, status kepegawaian, masa kerja, role,
-                  kantor, divisi, jabatan, posisi, dan shift terdaftar hanya
-                  dapat diubah oleh admin.
                 </div>
 
                 <div

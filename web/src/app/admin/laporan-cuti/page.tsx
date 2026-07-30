@@ -8,13 +8,13 @@ import {
   Clock3,
   FileText,
   Eye,
-  Loader2,
   Search,
   UserRound,
   XCircle,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MobileShell from "@/components/MobileShell";
+import { AppLoadingState } from "@/components/ui/AppUI";
 
 type AdminLeaveRequest = {
   id: string;
@@ -564,9 +564,8 @@ export default function AdminLeaveReportPage() {
 
             <div className="mt-6">
               {isLoading ? (
-                <div className="leave-report-row-enter flex items-center justify-center gap-2 rounded-3xl border border-blue-100 bg-[#f8fbff] px-5 py-12 text-sm font-bold text-slate-500">
-                  <Loader2 size={18} className="animate-spin text-[#123c8c]" />
-                  Memuat laporan cuti...
+                <div className="leave-report-row-enter">
+                  <AppLoadingState text="Memuat laporan cuti..." />
                 </div>
 	              ) : filteredEmployees.length === 0 ? (
 	                <div className="leave-report-row-enter rounded-3xl border border-dashed border-blue-100 bg-[#f8fbff] px-5 py-12 text-center">
