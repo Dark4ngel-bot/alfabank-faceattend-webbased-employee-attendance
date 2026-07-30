@@ -127,7 +127,7 @@ async function ensureDefaultWorkSchedules() {
     },
   });
 
-  const operations = [];
+  const operations: any[] = [];
 
   for (const shift of shifts) {
     const defaultTime = getDefaultTimeByShift(shift.name);
@@ -244,7 +244,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const operations = [];
+    const operations: any[] = [];
 
     for (const scheduleGroup of schedules) {
       const shiftId = String(scheduleGroup.shift_id || "");

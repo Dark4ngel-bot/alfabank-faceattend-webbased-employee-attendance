@@ -247,11 +247,11 @@ export async function GET(req: NextRequest) {
 
     const stats = {
       total: mappedRequests.length,
-      pending: mappedRequests.filter((item) => item.status === "pending")
+      pending: mappedRequests.filter((item: any) => item.status === "pending")
         .length,
-      approved: mappedRequests.filter((item) => item.status === "approved")
+      approved: mappedRequests.filter((item: any) => item.status === "approved")
         .length,
-      rejected: mappedRequests.filter((item) => item.status === "rejected")
+      rejected: mappedRequests.filter((item: any) => item.status === "rejected")
         .length,
     };
 

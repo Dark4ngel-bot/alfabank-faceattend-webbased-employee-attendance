@@ -150,7 +150,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const result = attendances.map((attendance) => ({
+    const result = attendances.map((attendance: any) => ({
       id: attendance.id,
 
       attendanceDate: attendance.attendance_date.toISOString(),
@@ -163,13 +163,13 @@ export async function GET(req: NextRequest) {
 
       checkInPhoto: resolvePhoto(
         attendance.check_in_photo_url,
-        attendance.check_in_photo,
-        attendance.check_in_photo_mime,
+        (attendance as any).check_in_photo,
+        (attendance as any).check_in_photo_mime,
       ),
       checkOutPhoto: resolvePhoto(
         attendance.check_out_photo_url,
-        attendance.check_out_photo,
-        attendance.check_out_photo_mime,
+        (attendance as any).check_out_photo,
+        (attendance as any).check_out_photo_mime,
       ),
 
       registeredOffice: attendance.registered_office
