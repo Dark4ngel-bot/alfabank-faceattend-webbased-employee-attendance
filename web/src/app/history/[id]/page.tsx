@@ -429,11 +429,11 @@ function PhotoCard({
 
       <div className="mt-4">
         {isAvailable ? (
-          <div className="overflow-hidden rounded-2xl bg-slate-100">
+          <div className="overflow-hidden rounded-2xl bg-slate-950 shadow-md">
             <img
               src={imageUrl}
               alt={subtitle}
-              className="history-detail-image-enter h-60 w-full object-cover transition duration-300 hover:scale-[1.02] md:h-72"
+              className="history-detail-image-enter h-80 w-full object-contain transition duration-300 hover:scale-[1.02] md:h-96"
             />
           </div>
         ) : (
