@@ -513,6 +513,9 @@ export default function AdminEmployeesPage() {
 
   const [keyword, setKeyword] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeModalTab, setActiveModalTab] = useState<
+    "account" | "structure" | "employment" | "payroll"
+  >("account");
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -750,6 +753,7 @@ export default function AdminEmployeesPage() {
     setForm(initialForm);
     setShowTemporaryPassword(false);
     setShowConfirmTemporaryPassword(false);
+    setActiveModalTab("account");
     setIsModalOpen(true);
   }
 
@@ -757,6 +761,7 @@ export default function AdminEmployeesPage() {
     setEditingEmployee(employee);
     setShowTemporaryPassword(false);
     setShowConfirmTemporaryPassword(false);
+    setActiveModalTab("account");
     setForm({
       employee_code: employee.employee_code || "",
       name: employee.name,
@@ -818,24 +823,34 @@ export default function AdminEmployeesPage() {
     const passwordForSave = temporaryPassword;
     const confirmPasswordForSave = confirmTemporaryPassword;
 
+    if (!form.name.trim() || !email) {
+      setActiveModalTab("account");
+      showEmployeeAlert(
+        "Data Akun Belum Lengkap",
+        "Nama lengkap dan email wajib diisi.",
+        "warning",
+      );
+      return;
+    }
+
     if (
-      !form.name.trim() ||
-      !email ||
       !form.registered_office_id ||
       !form.department_id ||
       !form.jabatan_id ||
       !form.position_id ||
       !form.shift_id
     ) {
+      setActiveModalTab("structure");
       showEmployeeAlert(
-        "Data belum lengkap",
-        "Nama, email, role, kantor, divisi, jabatan, posisi, dan shift wajib diisi.",
+        "Struktur Organisasi Belum Lengkap",
+        "Kantor, divisi, jabatan, posisi, dan shift kerja wajib dipilih.",
         "warning",
       );
       return;
     }
 
     if (!isValidEmailFormat(email)) {
+      setActiveModalTab("account");
       showEmployeeAlert(
         "Format email tidak valid",
         `Masukkan email yang benar, contohnya ${CREATIVEMU_EMAIL_EXAMPLE}.`,
@@ -845,6 +860,7 @@ export default function AdminEmployeesPage() {
     }
 
     if (!isCreativemuEmail(email)) {
+      setActiveModalTab("account");
       showEmployeeAlert(
         "Email harus Creativemu",
         "Email akun wajib menggunakan domain resmi Creativemu.",
@@ -1451,20 +1467,18 @@ export default function AdminEmployeesPage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-[#eaf1ff] px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#123c8c]">
-                  <Plus size={15} strokeWidth={3} />
-                  {editingEmployee ? "Ubah Karyawan" : "Daftar Karyawan"}
+                  <UserRound size={15} strokeWidth={3} />
+                  {editingEmployee ? "Perbarui Karyawan" : "Tambah Karyawan"}
                 </div>
 
                 <h2 className="mt-4 text-2xl font-black text-slate-950">
                   {editingEmployee
-                    ? "Update Data Karyawan"
+                    ? "Perbarui Data Karyawan"
                     : "Tambah Karyawan Baru"}
                 </h2>
 
                 <p className="mt-1 text-sm leading-6 text-slate-500">
-                  {editingEmployee
-                    ? "Ubah data karyawan dengan kantor, divisi, jabatan, posisi, shift, dan status."
-                    : "Pilih kantor, divisi, jabatan, posisi, dan shift secara bebas."}
+                  Isi & perbarui data karyawan melalui 4 tab terstruktur di bawah.
                 </p>
               </div>
 
@@ -1477,652 +1491,688 @@ export default function AdminEmployeesPage() {
               </button>
             </div>
 
+            {/* TAB BAR NAVIGATION */}
+            <div className="mt-5 border-b border-slate-100 pb-3">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                <button
+                  type="button"
+                  onClick={() => setActiveModalTab("account")}
+                  className={`flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-black transition ${
+                    activeModalTab === "account"
+                      ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
+                      : "bg-[#f6f8ff] text-slate-600 hover:bg-blue-50"
+                  }`}
+                >
+                  <UserRound size={15} />
+                  1. Akun & Password
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveModalTab("structure")}
+                  className={`flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-black transition ${
+                    activeModalTab === "structure"
+                      ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
+                      : "bg-[#f6f8ff] text-slate-600 hover:bg-blue-50"
+                  }`}
+                >
+                  <Building2 size={15} />
+                  2. Struktur & Shift
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveModalTab("employment")}
+                  className={`flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-black transition ${
+                    activeModalTab === "employment"
+                      ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
+                      : "bg-[#f6f8ff] text-slate-600 hover:bg-blue-50"
+                  }`}
+                >
+                  <BadgeCheck size={15} />
+                  3. Status & Masa Kerja
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveModalTab("payroll")}
+                  className={`flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-black transition ${
+                    activeModalTab === "payroll"
+                      ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
+                      : "bg-[#f6f8ff] text-slate-600 hover:bg-blue-50"
+                  }`}
+                >
+                  <CreditCard size={15} />
+                  4. Identitas & Bank
+                </button>
+              </div>
+            </div>
+
             <form
               onSubmit={handleSubmit}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && (event.target as HTMLElement).tagName === "INPUT") {
+                  event.preventDefault();
+                }
+              }}
               noValidate
-              className="mt-6 grid gap-4"
+              className="mt-5 grid gap-4"
             >
-              <AppFormReveal delay={20}>
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Full Name
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <UserRound
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      value={form.name}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          name: event.target.value,
-                        }))
-                      }
-                      placeholder="Nama karyawan"
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
+              {/* TAB 1: AKUN & PASSWORD */}
+              {activeModalTab === "account" && (
+                <div className="grid gap-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Nama Lengkap
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <UserRound
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          value={form.name}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              name: event.target.value,
+                            }))
+                          }
+                          placeholder="Nama karyawan"
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Email
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <Mail
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          type="text"
+                          inputMode="email"
+                          autoComplete="email"
+                          value={form.email}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              email: event.target.value,
+                            }))
+                          }
+                          placeholder={CREATIVEMU_EMAIL_EXAMPLE}
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        No Induk Karyawan
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <IdCard
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          value={form.employee_code}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              employee_code: event.target.value,
+                            }))
+                          }
+                          maxLength={30}
+                          placeholder="Contoh: CR-001"
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Role Akun
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <ShieldCheck
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <select
+                          value={form.role}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              role: event.target.value as "admin" | "employee",
+                            }))
+                          }
+                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        >
+                          <option value="employee">Employee</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        {editingEmployee ? "Password Baru (Opsional)" : "Password Sementara"}
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <KeyRound
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          type={showTemporaryPassword ? "text" : "password"}
+                          value={form.temporaryPassword}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              temporaryPassword: event.target.value,
+                            }))
+                          }
+                          placeholder={
+                            editingEmployee
+                              ? "Biarkan kosong jika tidak diubah"
+                              : "Password sementara"
+                          }
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowTemporaryPassword((prev) => !prev)
+                          }
+                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+                        >
+                          {showTemporaryPassword ? (
+                            <EyeOff size={18} />
+                          ) : (
+                            <Eye size={18} />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        {editingEmployee ? "Konfirmasi Password Baru" : "Konfirmasi Password"}
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <KeyRound
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          type={
+                            showConfirmTemporaryPassword ? "text" : "password"
+                          }
+                          value={form.confirmTemporaryPassword}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              confirmTemporaryPassword: event.target.value,
+                            }))
+                          }
+                          placeholder={
+                            editingEmployee
+                              ? "Ulangi password baru"
+                              : "Ulangi password"
+                          }
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowConfirmTemporaryPassword((prev) => !prev)
+                          }
+                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+                        >
+                          {showConfirmTemporaryPassword ? (
+                            <EyeOff size={18} />
+                          ) : (
+                            <Eye size={18} />
+                          )}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </AppFormReveal>
+              )}
 
-              <AppFormReveal delay={40}>
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Email
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <Mail
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      type="text"
-                      inputMode="email"
-                      autoComplete="email"
-                      value={form.email}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          email: event.target.value,
-                        }))
-                      }
-                      placeholder={CREATIVEMU_EMAIL_EXAMPLE}
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
+              {/* TAB 2: STRUKTUR & SHIFT */}
+              {activeModalTab === "structure" && (
+                <div className="grid gap-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Kantor Terdaftar
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <MapPin
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <select
+                          value={form.registered_office_id}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              registered_office_id: event.target.value,
+                            }))
+                          }
+                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        >
+                          <option value="">Pilih Kantor</option>
+                          {activeOffices.map((office) => (
+                            <option key={office.id} value={office.id}>
+                              {office.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Divisi
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <Network
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <select
+                          value={form.department_id}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              department_id: event.target.value,
+                            }))
+                          }
+                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        >
+                          <option value="">Pilih Divisi</option>
+                          {filteredDepartments.map((department) => (
+                            <option key={department.id} value={department.id}>
+                              {department.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Jabatan
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <Building2
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <select
+                          value={form.jabatan_id}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              jabatan_id: event.target.value,
+                            }))
+                          }
+                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        >
+                          <option value="">Pilih Jabatan</option>
+                          {filteredJabatans.map((jabatan) => (
+                            <option key={jabatan.id} value={jabatan.id}>
+                              {jabatan.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Posisi
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <BriefcaseBusiness
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <select
+                          value={form.position_id}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              position_id: event.target.value,
+                            }))
+                          }
+                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        >
+                          <option value="">Pilih Posisi</option>
+                          {filteredPositions.map((position) => (
+                            <option key={position.id} value={position.id}>
+                              {position.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Shift Kerja
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <Clock3
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <select
+                          value={form.shift_id}
+                          onChange={(event) =>
+                            setForm((prev) => {
+                              const nextShift = activeShifts.find(
+                                (shift) => shift.id === event.target.value,
+                              );
+                              const isNextMainShift =
+                                nextShift?.name.trim().toLowerCase() === "utama";
+
+                              return {
+                                ...prev,
+                                shift_id: event.target.value,
+                                employment_status: isNextMainShift
+                                  ? "Utama"
+                                  : prev.employment_status,
+                                employment_end_date: isNextMainShift
+                                  ? ""
+                                  : prev.employment_end_date,
+                              };
+                            })
+                          }
+                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        >
+                          <option value="">Pilih Shift</option>
+                          {activeShifts.map((shift) => (
+                            <option key={shift.id} value={shift.id}>
+                              {shift.name} - Toleransi {shift.tolerance_minutes} m
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Kuota WFH / Bulan (Hari)
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <BriefcaseBusiness
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          value={form.wfh_quota_monthly}
+                          onChange={(event) =>
+                            handleNumericFormChange(
+                              "wfh_quota_monthly",
+                              event.target.value,
+                            )
+                          }
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={3}
+                          placeholder="0"
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </AppFormReveal>
+              )}
 
-              <AppFormReveal delay={42}>
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    No Induk Karyawan
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <IdCard
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      value={form.employee_code}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          employee_code: event.target.value,
-                        }))
-                      }
-                      maxLength={30}
-                      placeholder="Contoh: CR-001"
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
+              {/* TAB 3: STATUS & MASA KERJA */}
+              {activeModalTab === "employment" && (
+                <div className="grid gap-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Status Akun
+                      </label>
+                      <div className="app-field-smooth rounded-2xl">
+                        <select
+                          value={form.status}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              status: event.target.value as "active" | "inactive",
+                            }))
+                          }
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        >
+                          <option value="active">Aktif</option>
+                          <option value="inactive">Nonaktif</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Status Kepegawaian
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <select
+                          value={
+                            isMainShiftSelected ? "Utama" : form.employment_status
+                          }
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              employment_status: event.target.value,
+                            }))
+                          }
+                          disabled={isMainShiftSelected}
+                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500"
+                        >
+                          <option value="">Pilih Status Kepegawaian</option>
+                          {activeEmploymentStatuses.map((status) => (
+                            <option key={status.id} value={status.name}>
+                              {status.name}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown
+                          size={18}
+                          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Mulai Masa Kerja
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <CalendarDays
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          type="date"
+                          value={form.employment_start_date}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              employment_start_date: event.target.value,
+                            }))
+                          }
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Akhir Masa Kerja
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <CalendarDays
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          type="date"
+                          value={
+                            isMainShiftSelected ? "" : form.employment_end_date
+                          }
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              employment_end_date: event.target.value,
+                            }))
+                          }
+                          disabled={isMainShiftSelected}
+                          min={form.employment_start_date || undefined}
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </AppFormReveal>
+              )}
 
-              <AppFormReveal delay={45}>
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Role Akun
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <ShieldCheck
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <select
-                      value={form.role}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          role: event.target.value as "admin" | "employee",
-                        }))
+              {/* TAB 4: IDENTITAS & BANK */}
+              {activeModalTab === "payroll" && (
+                <div className="grid gap-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Tempat Lahir
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <MapPin
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          value={form.birth_place}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              birth_place: event.target.value,
+                            }))
+                          }
+                          placeholder="Contoh: Jakarta"
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Tanggal Lahir
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <CalendarDays
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          type="date"
+                          value={form.birth_date}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              birth_date: event.target.value,
+                            }))
+                          }
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-black text-slate-700">
+                      NIK (16 Digit)
+                    </label>
+                    <div className="app-field-smooth relative rounded-2xl">
+                      <IdCard
+                        size={18}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                      />
+                      <input
+                        value={form.nik}
+                        onChange={(event) =>
+                          handleNumericFormChange("nik", event.target.value)
+                        }
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={16}
+                        placeholder="Masukkan NIK"
+                        className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <AppBankSelect
+                      label="Nama Bank"
+                      value={form.bank_name}
+                      onChange={(val) =>
+                        setForm((prev) => ({ ...prev, bank_name: val }))
                       }
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    >
-                      <option value="employee">Employee</option>
-                      <option value="admin">Admin</option>
-                    </select>
+                    />
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        No Rekening
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <CreditCard
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          value={form.bank_account_number}
+                          onChange={(event) =>
+                            handleNumericFormChange(
+                              "bank_account_number",
+                              event.target.value,
+                            )
+                          }
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={16}
+                          placeholder="Masukkan no rekening"
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </AppFormReveal>
+              )}
 
-              <AppFormReveal delay={50} className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Tempat Lahir
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <MapPin
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      value={form.birth_place}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          birth_place: event.target.value,
-                        }))
-                      }
-                      placeholder="Contoh: Jakarta"
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Tanggal Lahir
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <CalendarDays
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      type="date"
-                      value={form.birth_date}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          birth_date: event.target.value,
-                        }))
-                      }
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    NIK
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <IdCard
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      value={form.nik}
-                      onChange={(event) =>
-                        handleNumericFormChange("nik", event.target.value)
-                      }
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={16}
-                      placeholder="Masukkan NIK"
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-
-                <AppBankSelect
-                  label="Nama Bank"
-                  value={form.bank_name}
-                  onChange={(val) =>
-                    setForm((prev) => ({ ...prev, bank_name: val }))
-                  }
-                />
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    No Rekening
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <CreditCard
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      value={form.bank_account_number}
-                      onChange={(event) =>
-                        handleNumericFormChange(
-                          "bank_account_number",
-                          event.target.value,
-                        )
-                      }
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={16}
-                      placeholder="Masukkan no rekening"
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-              </AppFormReveal>
-
-              <AppFormReveal delay={60} className="grid gap-4 md:grid-cols-5">
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Kantor
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <MapPin
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <select
-                      value={form.registered_office_id}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          registered_office_id: event.target.value,
-                        }))
-                      }
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    >
-                      <option value="">Pilih Kantor</option>
-                      {activeOffices.map((office) => (
-                        <option key={office.id} value={office.id}>
-                          {office.name} - {office.address || "Tanpa alamat"}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Divisi
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <Network
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <select
-                      value={form.department_id}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          department_id: event.target.value,
-                        }))
-                      }
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    >
-                      <option value="">Pilih Divisi</option>
-                      {filteredDepartments.map((department) => (
-                        <option key={department.id} value={department.id}>
-                          {department.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Jabatan
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <Building2
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <select
-                      value={form.jabatan_id}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          jabatan_id: event.target.value,
-                        }))
-                      }
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    >
-                      <option value="">Pilih Jabatan</option>
-                      {filteredJabatans.map((jabatan) => (
-                        <option key={jabatan.id} value={jabatan.id}>
-                          {jabatan.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Posisi
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <BriefcaseBusiness
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <select
-                      value={form.position_id}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          position_id: event.target.value,
-                        }))
-                      }
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    >
-                      <option value="">Pilih Posisi</option>
-                      {filteredPositions.map((position) => (
-                        <option key={position.id} value={position.id}>
-                          {position.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Shift
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <Clock3
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <select
-                      value={form.shift_id}
-                      onChange={(event) =>
-                        setForm((prev) => {
-                          const nextShift = activeShifts.find(
-                            (shift) => shift.id === event.target.value,
-                          );
-                          const isNextMainShift =
-                            nextShift?.name.trim().toLowerCase() === "utama";
-
-                          return {
-                            ...prev,
-                            shift_id: event.target.value,
-                            employment_status: isNextMainShift
-                              ? "Utama"
-                              : prev.employment_status,
-                            employment_end_date: isNextMainShift
-                              ? ""
-                              : prev.employment_end_date,
-                          };
-                        })
-                      }
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    >
-                      <option value="">Pilih Shift</option>
-                      {activeShifts.map((shift) => (
-                        <option key={shift.id} value={shift.id}>
-                          {shift.name} - Toleransi {shift.tolerance_minutes}{" "}
-                          menit
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </AppFormReveal>
-
-              {filteredDepartments.length === 0 ? (
-                <AppFormReveal delay={80}>
-                  <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
-                    <p className="text-sm font-black text-amber-700">
-                      Divisi aktif belum tersedia
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-amber-700/80">
-                      Tambahkan Divisi aktif terlebih dahulu.
-                    </p>
-                  </div>
-                </AppFormReveal>
-              ) : null}
-
-              {filteredJabatans.length === 0 ? (
-                <AppFormReveal delay={80}>
-                  <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
-                    <p className="text-sm font-black text-amber-700">
-                      Jabatan aktif belum tersedia
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-amber-700/80">
-                      Tambahkan Jabatan aktif terlebih dahulu.
-                    </p>
-                  </div>
-                </AppFormReveal>
-              ) : null}
-
-              {filteredPositions.length === 0 ? (
-                <AppFormReveal delay={80}>
-                  <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
-                    <p className="text-sm font-black text-amber-700">
-                      Posisi aktif belum tersedia
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-amber-700/80">
-                      Tambahkan Posisi aktif terlebih dahulu.
-                    </p>
-                  </div>
-                </AppFormReveal>
-              ) : null}
-
-              <AppFormReveal delay={100} className="grid gap-4 md:grid-cols-4">
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    {editingEmployee ? "Password Baru" : "Password"}
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <KeyRound
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      type={showTemporaryPassword ? "text" : "password"}
-                      value={form.temporaryPassword}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          temporaryPassword: event.target.value,
-                        }))
-                      }
-                      placeholder={
-                        editingEmployee
-                          ? "Isi password baru"
-                          : "Minimal 8 karakter"
-                      }
-                      autoComplete={editingEmployee ? "off" : "new-password"}
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowTemporaryPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
-                      aria-label={
-                        showTemporaryPassword
-                          ? "Sembunyikan password"
-                          : "Tampilkan password"
-                      }
-                    >
-                      {showTemporaryPassword ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    {editingEmployee
-                      ? "Konfirmasi Password"
-                      : "Konfirmasi Password"}
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <KeyRound
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      type={showConfirmTemporaryPassword ? "text" : "password"}
-                      value={form.confirmTemporaryPassword}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          confirmTemporaryPassword: event.target.value,
-                        }))
-                      }
-                      placeholder={
-                        editingEmployee
-                          ? "Ulangi password baru"
-                          : "Ulangi password"
-                      }
-                      autoComplete={editingEmployee ? "off" : "new-password"}
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowConfirmTemporaryPassword((prev) => !prev)
-                      }
-                      className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
-                      aria-label={
-                        showConfirmTemporaryPassword
-                          ? "Sembunyikan password"
-                          : "Tampilkan password"
-                      }
-                    >
-                      {showConfirmTemporaryPassword ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Status
-                  </label>
-                  <div className="app-field-smooth rounded-2xl">
-                    <select
-                      value={form.status}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          status: event.target.value as "active" | "inactive",
-                        }))
-                      }
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    >
-                      <option value="active">Aktif</option>
-                      <option value="inactive">Nonaktif</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Kuota WFH / Bulan
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <BriefcaseBusiness
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      value={form.wfh_quota_monthly}
-                      onChange={(event) =>
-                        handleNumericFormChange(
-                          "wfh_quota_monthly",
-                          event.target.value,
-                        )
-                      }
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={3}
-                      placeholder="0"
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Status Kepegawaian
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <select
-                      value={
-                        isMainShiftSelected ? "Utama" : form.employment_status
-                      }
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          employment_status: event.target.value,
-                        }))
-                      }
-                      disabled={isMainShiftSelected}
-                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500"
-                    >
-                      <option value="">Pilih Status Kepegawaian</option>
-                      {activeEmploymentStatuses.map((status) => (
-                        <option key={status.id} value={status.name}>
-                          {status.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown
-                      size={18}
-                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Mulai Masa Kerja
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <CalendarDays
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      type="date"
-                      value={form.employment_start_date}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          employment_start_date: event.target.value,
-                        }))
-                      }
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Akhir Masa Kerja
-                  </label>
-                  <div className="app-field-smooth relative rounded-2xl">
-                    <CalendarDays
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      type="date"
-                      value={
-                        isMainShiftSelected ? "" : form.employment_end_date
-                      }
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          employment_end_date: event.target.value,
-                        }))
-                      }
-                      disabled={isMainShiftSelected}
-                      min={form.employment_start_date || undefined}
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
-                    />
-                  </div>
-                </div>
-              </AppFormReveal>
-
-              <AppFormReveal
-                delay={120}
-                className="mt-2 flex flex-col-reverse gap-3 md:flex-row md:justify-end"
-              >
+              {/* FOOTER ACTIONS */}
+              <div className="mt-4 flex flex-col-reverse gap-3 border-t border-slate-100 pt-4 md:flex-row md:justify-between md:items-center">
                 <button
                   type="button"
                   onClick={closeRegisterModal}
@@ -2134,15 +2184,15 @@ export default function AdminEmployeesPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-2xl bg-[#123c8c] px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSaving
                     ? "Saving..."
                     : editingEmployee
                       ? "Perbarui Karyawan"
-                      : "Simpan Karyawan"}
+                      : "Tambah Karyawan"}
                 </button>
-              </AppFormReveal>
+              </div>
             </form>
           </AppModalPanel>
         </AppModalMotion>

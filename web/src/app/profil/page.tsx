@@ -1592,217 +1592,201 @@ export function ProfilPageContent({
                 </button>
               </div>
 
-              <form onSubmit={handleUpdateProfile} className="mt-6 space-y-4">
-                <div className="profile-row-enter">
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Nama Lengkap
-                  </label>
-
-                  <div className="relative">
-                    <UserRound
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-
-                    <input
-                      value={editProfileForm.name}
-                      onChange={(event) =>
-                        setEditProfileForm((prev) => ({
-                          ...prev,
-                          name: event.target.value,
-                        }))
-                      }
-                      placeholder="Masukkan nama lengkap"
-                      className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
+              <form
+                onSubmit={handleUpdateProfile}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && (event.target as HTMLElement).tagName === "INPUT") {
+                    event.preventDefault();
+                  }
+                }}
+                className="mt-6 space-y-5"
+              >
+                {/* GRUP 1: INFORMASI UTAMA */}
+                <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 space-y-4">
+                  <div className="text-xs font-black uppercase tracking-wider text-[#123c8c] flex items-center gap-2">
+                    <UserRound size={15} />
+                    Informasi Utama & Kontak
                   </div>
-                </div>
-
-                <div
-                  className="profile-row-enter"
-                  style={{ animationDelay: "40ms" }}
-                >
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Nomor Telepon
-                  </label>
-
-                  <div className="relative">
-                    <Phone
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-
-                    <input
-                      value={editProfileForm.phone}
-                      onChange={(event) =>
-                        handlePhoneInputChange(event.target.value)
-                      }
-                      onPaste={(event) => {
-                        const pastedText = event.clipboardData.getData("text");
-
-                        if (/\D/.test(pastedText) || pastedText.length > 13) {
-                          showProfileAlert(
-                            "Nomor telepon tidak valid",
-                            "Nomor telepon hanya boleh menggunakan angka tanpa spasi atau simbol, 10 sampai 13 digit.",
-                            "warning",
-                          );
-                        }
-                      }}
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={13}
-                      placeholder="Contoh: 081234567890"
-                      className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-
-                <div
-                  className="profile-row-enter"
-                  style={{ animationDelay: "80ms" }}
-                >
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Tempat Lahir
-                  </label>
-
-                  <div className="relative">
-                    <MapPin
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-
-                    <input
-                      value={editProfileForm.birth_place}
-                      onChange={(event) =>
-                        setEditProfileForm((prev) => ({
-                          ...prev,
-                          birth_place: event.target.value,
-                        }))
-                      }
-                      placeholder="Contoh: Jakarta"
-                      className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-
-                <div
-                  className="profile-row-enter"
-                  style={{ animationDelay: "120ms" }}
-                >
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    Tanggal Lahir
-                  </label>
-
-                  <div className="relative">
-                    <CalendarDays
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-
-                    <input
-                      type="date"
-                      value={editProfileForm.birth_date}
-                      onChange={(event) =>
-                        setEditProfileForm((prev) => ({
-                          ...prev,
-                          birth_date: event.target.value,
-                        }))
-                      }
-                      className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-
-                <div
-                  className="profile-row-enter"
-                  style={{ animationDelay: "160ms" }}
-                >
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    NIK
-                  </label>
-
-                  <div className="relative">
-                    <IdCard
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-
-                    <input
-                      value={editProfileForm.nik}
-                      onChange={(event) =>
-                        handleNumericProfileInputChange(
-                          "nik",
-                          event.target.value,
-                        )
-                      }
-                      onPaste={(event) => {
-                        const pastedText = event.clipboardData.getData("text");
-
-                        if (/\D/.test(pastedText) || pastedText.length > 16) {
-                          showProfileAlert(
-                            "NIK tidak valid",
-                            "NIK harus berupa angka dan berjumlah tepat 16 digit.",
-                            "warning",
-                          );
-                        }
-                      }}
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={16}
-                      placeholder="Masukkan NIK"
-                      className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
-                  </div>
-                </div>
-
-                <div
-                  className="profile-row-enter grid gap-4 md:grid-cols-2"
-                  style={{ animationDelay: "200ms" }}
-                >
-                  <AppBankSelect
-                    label="Nama Bank"
-                    value={editProfileForm.bank_name}
-                    onChange={(val) =>
-                      setEditProfileForm((prev) => ({ ...prev, bank_name: val }))
-                    }
-                  />
 
                   <div>
-                    <label className="mb-2 block text-sm font-black text-slate-700">
-                      No Rekening
+                    <label className="mb-2 block text-xs font-black text-slate-700">
+                      Nama Lengkap
                     </label>
-
                     <div className="relative">
-                      <CreditCard
+                      <UserRound
                         size={18}
                         className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                       />
-
                       <input
-                        value={editProfileForm.bank_account_number}
+                        value={editProfileForm.name}
                         onChange={(event) =>
-                          handleNumericProfileInputChange(
-                            "bank_account_number",
-                            event.target.value,
-                          )
+                          setEditProfileForm((prev) => ({
+                            ...prev,
+                            name: event.target.value,
+                          }))
+                        }
+                        placeholder="Masukkan nama lengkap"
+                        className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-xs font-black text-slate-700">
+                      Nomor Telepon
+                    </label>
+                    <div className="relative">
+                      <Phone
+                        size={18}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                      />
+                      <input
+                        value={editProfileForm.phone}
+                        onChange={(event) =>
+                          handlePhoneInputChange(event.target.value)
                         }
                         onPaste={(event) => {
                           const pastedText = event.clipboardData.getData("text");
-
-                          if (/\D/.test(pastedText) || pastedText.length > 16) {
+                          if (/\D/.test(pastedText) || pastedText.length > 13) {
                             showProfileAlert(
-                              "No rekening tidak valid",
-                              "No rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
+                              "Nomor telepon tidak valid",
+                              "Nomor telepon hanya boleh menggunakan angka tanpa spasi atau simbol, 10 sampai 13 digit.",
                               "warning",
                             );
                           }
                         }}
                         inputMode="numeric"
                         pattern="[0-9]*"
-                        maxLength={16}
-                        placeholder="Masukkan no rekening"
-                        className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        maxLength={13}
+                        placeholder="Contoh: 081234567890"
+                        className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* GRUP 2: KELAHIRAN & IDENTITAS */}
+                <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 space-y-4">
+                  <div className="text-xs font-black uppercase tracking-wider text-[#123c8c] flex items-center gap-2">
+                    <IdCard size={15} />
+                    Kelahiran & NIK
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-xs font-black text-slate-700">
+                        Tempat Lahir
+                      </label>
+                      <div className="relative">
+                        <MapPin
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          value={editProfileForm.birth_place}
+                          onChange={(event) =>
+                            setEditProfileForm((prev) => ({
+                              ...prev,
+                              birth_place: event.target.value,
+                            }))
+                          }
+                          placeholder="Contoh: Jakarta"
+                          className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-xs font-black text-slate-700">
+                        Tanggal Lahir
+                      </label>
+                      <div className="relative">
+                        <CalendarDays
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          type="date"
+                          value={editProfileForm.birth_date}
+                          onChange={(event) =>
+                            setEditProfileForm((prev) => ({
+                              ...prev,
+                              birth_date: event.target.value,
+                            }))
+                          }
+                          className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-xs font-black text-slate-700">
+                      NIK (16 Digit)
+                    </label>
+                    <div className="relative">
+                      <IdCard
+                        size={18}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                      />
+                      <input
+                        value={editProfileForm.nik}
+                        onChange={(event) =>
+                          handleNumericProfileInputChange(
+                            "nik",
+                            event.target.value,
+                          )
+                        }
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={16}
+                        placeholder="Masukkan NIK"
+                        className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* GRUP 3: REKENING & BANK */}
+                <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 space-y-4">
+                  <div className="text-xs font-black uppercase tracking-wider text-[#123c8c] flex items-center gap-2">
+                    <CreditCard size={15} />
+                    Rekening Payroll & Bank
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <AppBankSelect
+                      label="Nama Bank"
+                      value={editProfileForm.bank_name}
+                      onChange={(val) =>
+                        setEditProfileForm((prev) => ({ ...prev, bank_name: val }))
+                      }
+                    />
+
+                    <div>
+                      <label className="mb-2 block text-xs font-black text-slate-700">
+                        No Rekening
+                      </label>
+                      <div className="relative">
+                        <CreditCard
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          value={editProfileForm.bank_account_number}
+                          onChange={(event) =>
+                            handleNumericProfileInputChange(
+                              "bank_account_number",
+                              event.target.value,
+                            )
+                          }
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={16}
+                          placeholder="Masukkan no rekening"
+                          className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
