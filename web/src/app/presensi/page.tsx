@@ -2822,7 +2822,7 @@ export default function AttendancePage() {
 
             <div className="attendance-camera-enter mt-2 overflow-hidden rounded-2xl bg-slate-950 shadow-[0_12px_30px_rgba(15,23,42,0.15)]">
               <div className="relative overflow-hidden bg-slate-950 shadow-inner">
-                <div className="relative h-[32dvh] min-h-[190px] max-h-[300px] sm:h-[40dvh] sm:min-h-[260px] sm:max-h-[420px] md:h-auto md:aspect-[16/10] md:min-h-0 md:max-h-none lg:aspect-[16/10]">
+                <div className="relative h-[42dvh] min-h-[250px] max-h-[380px] sm:h-[45dvh] sm:min-h-[280px] sm:max-h-[440px] md:h-auto md:aspect-[16/10] md:min-h-0 md:max-h-none lg:aspect-[16/10]">
                   <video
                     ref={videoRef}
                     autoPlay
@@ -2855,7 +2855,7 @@ export default function AttendancePage() {
                       }
                     }}
                     className={cn(
-                      "h-full w-full object-cover transition [transform:none]",
+                      "h-full w-full object-cover transition scale-x-[-1]",
                       cameraReady ? "opacity-100" : "opacity-0",
                     )}
                   />
