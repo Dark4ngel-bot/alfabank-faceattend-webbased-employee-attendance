@@ -3081,7 +3081,7 @@ export default function AttendancePage() {
 
             <div className="attendance-row-enter mt-3 grid grid-cols-2 gap-3">
               <ActionButton
-                label="Check-in"
+                label={hasCheckedInToday ? "Sudah masuk" : "Check-in"}
                 subtitle="Masuk"
                 loading={checkInProcessing || isUserLoading}
                 disabled={
@@ -3089,20 +3089,27 @@ export default function AttendancePage() {
                   cameraStarting ||
                   isUserLoading ||
                   isLaptopBlocked ||
-                  isLeaveBlocked
+                  isLeaveBlocked ||
+                  hasCheckedInToday
                 }
-                primary
+                primary={!hasCheckedInToday}
                 icon={<LogIn size={22} />}
                 onClick={requestCheckIn}
               />
 
               <ActionButton
-                label="Check-out"
+                label={hasCheckedOutToday ? "Sudah keluar" : "Check-out"}
                 subtitle="Keluar"
                 loading={checkOutProcessing}
                 disabled={
-                  loading || cameraStarting || isLaptopBlocked || isLeaveBlocked
+                  loading ||
+                  cameraStarting ||
+                  isLaptopBlocked ||
+                  isLeaveBlocked ||
+                  !hasCheckedInToday ||
+                  hasCheckedOutToday
                 }
+                primary={hasCheckedInToday && !hasCheckedOutToday}
                 icon={<LogOut size={22} />}
                 onClick={requestCheckOut}
               />
