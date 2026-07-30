@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 
 import { useSiteLogo } from "@/hooks/useSiteLogo";
-import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
 
 type AppHeaderProps = {
   title: string;
@@ -466,7 +465,7 @@ export default function AppHeader({
             </Link>
 
             {/* Full Creativemu Logo Badge Box on the far right next to Bell */}
-            <div className="relative flex h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-4 py-2.5 shadow-sm ring-1 ring-blue-100/90 transition hover:bg-[#eaf1ff] active:scale-[0.96]">
+            <div className="relative hidden h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-4 py-2.5 shadow-sm ring-1 ring-blue-100/90 transition hover:bg-[#eaf1ff] active:scale-[0.96] sm:flex">
               <Image
                 src={logoSrc}
                 alt="Logo Creativemu"

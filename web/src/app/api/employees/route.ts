@@ -12,6 +12,10 @@ import {
   IDENTITY_VALIDATION,
   assertDigitRange,
 } from "@/lib/identity-validation";
+import {
+  ensureWfhQuotaColumn,
+  isMissingWfhQuotaColumnError,
+} from "@/lib/wfh-quota-schema";
 
 export const runtime = "nodejs";
 
@@ -172,6 +176,20 @@ function normalizeAccountRole(value: unknown): AccountRole {
   throw new Error("Role akun tidak valid.");
 }
 
+function normalizeNonNegativeInteger(value: unknown, label: string) {
+  const text = String(value ?? "").trim();
+
+  if (!text) return 0;
+
+  const numberValue = Number(text);
+
+  if (!Number.isInteger(numberValue) || numberValue < 0) {
+    throw new Error(`${label} harus berupa angka 0 atau lebih.`);
+  }
+
+  return numberValue;
+}
+
 function ensureValidEmploymentPeriod(
   startDate: Date | null,
   endDate: Date | null,
@@ -329,6 +347,56 @@ async function validateEmployeeHierarchy(params: {
   };
 }
 
+async function getWfhQuotaByUserId(userIds: string[]) {
+  if (userIds.length === 0) return new Map<string, number>();
+  if (!(await ensureWfhQuotaColumn())) return new Map<string, number>();
+
+  const placeholders = userIds.map(() => "?").join(", ");
+  let rows: Array<{ id: string; wfh_quota_monthly: number | null }> = [];
+
+  try {
+    rows = await prisma.$queryRawUnsafe<
+      Array<{ id: string; wfh_quota_monthly: number | null }>
+    >(
+      `SELECT id, COALESCE(wfh_quota_monthly, 0) AS wfh_quota_monthly FROM users WHERE id IN (${placeholders})`,
+      ...userIds
+    );
+  } catch (error) {
+    if (!isMissingWfhQuotaColumnError(error)) throw error;
+  }
+
+  return new Map(
+    rows.map((row) => [row.id, Math.max(0, Number(row.wfh_quota_monthly || 0))])
+  );
+}
+
+async function attachWfhQuotaToEmployees<
+  T extends { id: string; [key: string]: unknown },
+>(employees: T[]) {
+  const quotaByUserId = await getWfhQuotaByUserId(
+    employees.map((employee) => employee.id)
+  );
+
+  return employees.map((employee) => ({
+    ...employee,
+    wfh_quota_monthly: quotaByUserId.get(employee.id) || 0,
+  }));
+}
+
+async function updateEmployeeWfhQuota(userId: string, quota: number) {
+  if (!(await ensureWfhQuotaColumn())) return;
+
+  try {
+    await prisma.$executeRawUnsafe(
+      "UPDATE users SET wfh_quota_monthly = ? WHERE id = ?",
+      quota,
+      userId
+    );
+  } catch (error) {
+    if (!isMissingWfhQuotaColumnError(error)) throw error;
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const currentUser = await getCurrentUser(req);
@@ -412,9 +480,11 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    const employeesWithWfhQuota = await attachWfhQuotaToEmployees(employees);
+
     return NextResponse.json({
       success: true,
-      employees,
+      employees: employeesWithWfhQuota,
       offices,
       officeLocations: offices,
       departments,
@@ -504,6 +574,10 @@ export async function POST(req: NextRequest) {
       String(body.base_salary).trim() !== ""
         ? Number(body.base_salary)
         : null;
+    const wfhQuotaMonthly = normalizeNonNegativeInteger(
+      body.wfh_quota_monthly ?? body.wfhQuotaMonthly ?? body.wfh_quota,
+      "Kuota WFH"
+    );
 
     if (!name) return jsonError("Nama karyawan wajib diisi.");
     if (!email) return jsonError("Email karyawan wajib diisi.");
@@ -604,11 +678,13 @@ export async function POST(req: NextRequest) {
       },
       select: employeeSelect,
     });
+    await updateEmployeeWfhQuota(employee.id, wfhQuotaMonthly);
+    const [employeeWithWfhQuota] = await attachWfhQuotaToEmployees([employee]);
 
     return NextResponse.json({
       success: true,
       message: role === "admin" ? "Admin berhasil ditambahkan." : "Karyawan berhasil ditambahkan.",
-      employee,
+      employee: employeeWithWfhQuota,
     });
   } catch (error) {
     console.error("POST /api/employees error:", error);
@@ -624,7 +700,8 @@ export async function POST(req: NextRequest) {
         error.message.includes("digit") ||
         error.message.includes("Role akun") ||
         error.message.includes("Tanggal") ||
-        error.message.includes("masa kerja"))
+        error.message.includes("masa kerja") ||
+        error.message.includes("Kuota WFH"))
     ) {
       return jsonError(error.message, 400);
     }
@@ -708,6 +785,10 @@ export async function PATCH(req: NextRequest) {
       String(body.base_salary).trim() !== ""
         ? Number(body.base_salary)
         : null;
+    const wfhQuotaMonthly = normalizeNonNegativeInteger(
+      body.wfh_quota_monthly ?? body.wfhQuotaMonthly ?? body.wfh_quota,
+      "Kuota WFH"
+    );
 
     if (!id) return jsonError("ID karyawan wajib dikirim.");
     if (!name) return jsonError("Nama karyawan wajib diisi.");
@@ -742,6 +823,10 @@ export async function PATCH(req: NextRequest) {
 
     if (!["active", "inactive"].includes(status)) {
       return jsonError("Status karyawan tidak valid.");
+    }
+
+    if (password && password.length < 8) {
+      return jsonError("Password baru minimal 8 karakter.");
     }
 
     const existingEmployee = await prisma.user.findUnique({
@@ -861,11 +946,13 @@ export async function PATCH(req: NextRequest) {
       data: updateData,
       select: employeeSelect,
     });
+    await updateEmployeeWfhQuota(employee.id, wfhQuotaMonthly);
+    const [employeeWithWfhQuota] = await attachWfhQuotaToEmployees([employee]);
 
     return NextResponse.json({
       success: true,
       message: "Akun berhasil diperbarui.",
-      employee,
+      employee: employeeWithWfhQuota,
     });
   } catch (error) {
     console.error("PATCH /api/employees error:", error);
@@ -881,7 +968,8 @@ export async function PATCH(req: NextRequest) {
         error.message.includes("digit") ||
         error.message.includes("Role akun") ||
         error.message.includes("Tanggal") ||
-        error.message.includes("masa kerja"))
+        error.message.includes("masa kerja") ||
+        error.message.includes("Kuota WFH"))
     ) {
       return jsonError(error.message, 400);
     }

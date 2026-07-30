@@ -69,6 +69,9 @@ type ProfileUser = {
   bank_account_number: string | null;
   nik: string | null;
   profile_photo: string | null;
+  wfh_quota_monthly?: number | null;
+  wfh_quota_used_monthly?: number | null;
+  wfh_quota_remaining_monthly?: number | null;
   jabatan?: {
     id: string;
     name: string;
@@ -192,6 +195,12 @@ function formatEmploymentPeriod(user: ProfileUser) {
   if (endDate === "-") return `Mulai ${startDate}`;
 
   return `${startDate} - ${endDate}`;
+}
+
+function formatWfhQuota(value?: number | string | null) {
+  const quota = Number(value || 0);
+
+  return String(Number.isFinite(quota) ? Math.max(0, quota) : 0);
 }
 
 function formatDay(day: string) {
@@ -1163,6 +1172,13 @@ export function ProfilPageContent({
         icon: BadgeCheck,
       },
       {
+        label: "Kuota WFH Bulanan",
+        value: `${formatWfhQuota(user.wfh_quota_remaining_monthly)} tersisa dari ${formatWfhQuota(
+          user.wfh_quota_monthly,
+        )}`,
+        icon: BriefcaseBusiness,
+      },
+      {
         label: "Masa Kerja",
         value: formatEmploymentPeriod(user),
         icon: CalendarDays,
@@ -1414,6 +1430,38 @@ export function ProfilPageContent({
                 className="shrink-0 text-[#123c8c]"
               />
             </button>
+
+            <div
+              className="profile-row-enter mt-5 grid grid-cols-3 overflow-hidden rounded-[1.8rem] border border-blue-100 bg-white shadow-xl shadow-slate-200/50"
+              style={{ animationDelay: "85ms" }}
+            >
+              <div className="border-r border-blue-50 px-4 py-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                  Kuota WFH
+                </p>
+                <p className="mt-1 text-lg font-black text-[#123456]">
+                  {formatWfhQuota(user.wfh_quota_monthly)}
+                </p>
+              </div>
+
+              <div className="border-r border-blue-50 px-4 py-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                  Terpakai
+                </p>
+                <p className="mt-1 text-lg font-black text-[#123456]">
+                  {formatWfhQuota(user.wfh_quota_used_monthly)}
+                </p>
+              </div>
+
+              <div className="px-4 py-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                  Sisa
+                </p>
+                <p className="mt-1 text-lg font-black text-[#123c8c]">
+                  {formatWfhQuota(user.wfh_quota_remaining_monthly)}
+                </p>
+              </div>
+            </div>
 
             <div
               className="profile-row-enter mt-12 md:mt-10"

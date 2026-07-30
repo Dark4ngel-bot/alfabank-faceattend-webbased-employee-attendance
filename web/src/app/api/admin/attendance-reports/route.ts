@@ -264,7 +264,7 @@ function calculateDuration(
 
   if (diffMs <= 0) return "-";
 
-  const totalMinutes = Math.floor(diffMs / 60000);
+  const totalMinutes = Math.ceil(diffMs / 60000);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
 

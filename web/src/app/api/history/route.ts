@@ -40,6 +40,38 @@ function toIsoString(date: Date | null) {
   return date ? date.toISOString() : null;
 }
 
+function normalizeWorkMode(value?: string | null) {
+  const normalized = String(value || "").trim().toLowerCase();
+
+  if (normalized === "wfh" || normalized === "wfc") return "wfh";
+  if (normalized === "visit" || normalized === "kunjungan") return "visit";
+
+  return "office";
+}
+
+function formatWorkMode(value?: string | null) {
+  const workMode = normalizeWorkMode(value);
+
+  if (workMode === "wfh") return "WFH";
+  if (workMode === "visit") return "Kunjungan";
+
+  return "Kantor";
+}
+
+async function getCheckOutWorkModeByAttendanceId(attendanceIds: string[]) {
+  if (attendanceIds.length === 0) return new Map<string, string | null>();
+
+  const placeholders = attendanceIds.map(() => "?").join(",");
+  const rows = await prisma.$queryRawUnsafe<
+    { id: string; check_out_work_mode: string | null }[]
+  >(
+    `SELECT \`id\`, \`check_out_work_mode\` FROM \`Attendance\` WHERE \`id\` IN (${placeholders})`,
+    ...attendanceIds,
+  );
+
+  return new Map(rows.map((row) => [row.id, row.check_out_work_mode]));
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { id: userId } = await requireAuth(req);
@@ -81,6 +113,7 @@ export async function GET(req: NextRequest) {
 
         check_in_time: true,
         check_out_time: true,
+        work_mode: true,
 
         check_in_photo: true,
         check_out_photo: true,
@@ -149,28 +182,47 @@ export async function GET(req: NextRequest) {
         note: true,
       },
     });
+    const checkOutWorkModeByAttendanceId =
+      await getCheckOutWorkModeByAttendanceId(
+        attendances.map((attendance) => attendance.id),
+      );
 
-    const result = attendances.map((attendance: any) => ({
-      id: attendance.id,
+    const result = attendances.map((attendance) => {
+      const checkInWorkMode = normalizeWorkMode(attendance.work_mode);
+      const checkOutWorkMode = attendance.check_out_time
+        ? normalizeWorkMode(
+            checkOutWorkModeByAttendanceId.get(attendance.id) ||
+              attendance.work_mode,
+          )
+        : null;
+
+      return {
+        id: attendance.id,
 
       attendanceDate: attendance.attendance_date.toISOString(),
 
       scheduledCheckIn: toIsoString(attendance.scheduled_check_in),
       scheduledCheckOut: toIsoString(attendance.scheduled_check_out),
 
-      checkInTime: toIsoString(attendance.check_in_time),
-      checkOutTime: toIsoString(attendance.check_out_time),
+        checkInTime: toIsoString(attendance.check_in_time),
+        checkOutTime: toIsoString(attendance.check_out_time),
+        checkInWorkMode,
+        checkOutWorkMode,
+        checkInWorkModeLabel: formatWorkMode(checkInWorkMode),
+        checkOutWorkModeLabel: checkOutWorkMode
+          ? formatWorkMode(checkOutWorkMode)
+          : "-",
 
-      checkInPhoto: resolvePhoto(
-        attendance.check_in_photo_url,
-        (attendance as any).check_in_photo,
-        (attendance as any).check_in_photo_mime,
-      ),
-      checkOutPhoto: resolvePhoto(
-        attendance.check_out_photo_url,
-        (attendance as any).check_out_photo,
-        (attendance as any).check_out_photo_mime,
-      ),
+        checkInPhoto: resolvePhoto(
+          attendance.check_in_photo_url,
+          attendance.check_in_photo,
+          attendance.check_in_photo_mime,
+        ),
+        checkOutPhoto: resolvePhoto(
+          attendance.check_out_photo_url,
+          attendance.check_out_photo,
+          attendance.check_out_photo_mime,
+        ),
 
       registeredOffice: attendance.registered_office
         ? {
@@ -223,7 +275,7 @@ export async function GET(req: NextRequest) {
 
       lateMinutes: attendance.late_minutes,
       earlyLeaveMinutes: attendance.early_leave_minutes,
-      workMinutes: attendance.work_minutes,
+        workMinutes: attendance.check_out_time ? attendance.work_minutes : 0,
 
       status: getAttendanceStatus(
         attendance.check_in_time,
@@ -233,8 +285,9 @@ export async function GET(req: NextRequest) {
       checkInStatus: attendance.check_in_status,
       checkOutStatus: attendance.check_out_status,
 
-      note: attendance.note,
-    }));
+	      note: attendance.note,
+	      };
+	    });
 
     return NextResponse.json({
       success: true,

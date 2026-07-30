@@ -1,29 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOwner } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
+import { getJakartaDateOnly } from "@/lib/leave-attendance-guard";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
-
-function getTodayRangeWIB() {
-  const now = new Date();
-
-  const wibDate = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Jakarta",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
-
-  const start = new Date(`${wibDate}T00:00:00.000+07:00`);
-  const end = new Date(`${wibDate}T23:59:59.999+07:00`);
-
-  const [year, month, day] = wibDate.split("-").map(Number);
-  const dateOnlyUtc = new Date(Date.UTC(year, month - 1, day));
-
-  return { start, end, dateOnlyUtc };
-}
-
 function toIsoDate(value: Date | string | null | undefined) {
   if (!value) return null;
 
@@ -82,7 +63,7 @@ export async function GET(req: NextRequest) {
   try {
     await requireOwner(req);
 
-    const { start, end, dateOnlyUtc } = getTodayRangeWIB();
+    const today = getJakartaDateOnly();
 
     const employees = await prisma.user.findMany({
       where: {
@@ -116,23 +97,7 @@ export async function GET(req: NextRequest) {
 
     const todayAttendances = await prisma.attendance.findMany({
       where: {
-        OR: [
-          {
-            attendance_date: dateOnlyUtc,
-          },
-          {
-            check_in_time: {
-              gte: start,
-              lte: end,
-            },
-          },
-          {
-            check_out_time: {
-              gte: start,
-              lte: end,
-            },
-          },
-        ],
+        attendance_date: today,
       },
       select: {
         id: true,

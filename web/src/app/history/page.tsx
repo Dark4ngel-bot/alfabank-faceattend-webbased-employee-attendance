@@ -28,6 +28,8 @@ type AttendanceRecord = {
   date: string;
   checkIn: string;
   checkOut: string;
+  checkInWorkModeLabel?: string;
+  checkOutWorkModeLabel?: string;
   status: string;
   lateMinutes: number;
   earlyLeaveMinutes: number;
@@ -455,7 +457,7 @@ function AttendanceRecordCard({
               {item.status}
             </AppBadge>
 
-            <div className="mt-4 grid gap-2 text-sm font-bold text-slate-500 sm:grid-cols-3">
+	            <div className="mt-4 grid gap-2 text-sm font-bold text-slate-500 sm:grid-cols-3">
               <div className="flex items-center gap-2">
                 <Clock3
                   size={17}
@@ -476,10 +478,10 @@ function AttendanceRecordCard({
                 <span>{formatWorkDuration(item.workMinutes)}</span>
               </div>
 
-              <span className={note.className}>{note.text}</span>
-            </div>
-          </div>
-        </div>
+	              <span className={note.className}>{note.text}</span>
+	            </div>
+	          </div>
+	        </div>
 
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#f8fbff] text-slate-400 transition group-hover:text-[#123c8c]">
           <ChevronRight size={20} strokeWidth={2.6} />

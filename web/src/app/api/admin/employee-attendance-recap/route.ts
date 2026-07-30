@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireOwner } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
+import { ensureWfhQuotaColumn } from "@/lib/wfh-quota-schema";
 
 export const runtime = "nodejs";
 
@@ -141,6 +142,9 @@ function createEmptySummary() {
     sakit: 0,
     cuti: 0,
     lainnya: 0,
+    wfh: 0,
+    kunjungan: 0,
+    totalWorkMinutes: 0,
     gajiPokok: 0,
     potonganPerHari: 0,
     estimasiPotonganTidakMasuk: 0,
@@ -169,12 +173,47 @@ function normalizeWorkMode(value?: string | null) {
   return "office";
 }
 
+function calculateWorkMinutes(
+  checkInTime?: Date | null,
+  checkOutTime?: Date | null,
+) {
+  if (!checkInTime || !checkOutTime) return 0;
+
+  const diffMs = checkOutTime.getTime() - checkInTime.getTime();
+
+  if (diffMs <= 0) return 0;
+
+  return Math.ceil(diffMs / 60000);
+}
+
+async function getCheckOutWorkModeByAttendanceId(attendanceIds: string[]) {
+  if (attendanceIds.length === 0) return new Map<string, string | null>();
+
+  const placeholders = attendanceIds.map(() => "?").join(",");
+  const rows = await prisma.$queryRawUnsafe<
+    { id: string; check_out_work_mode: string | null }[]
+  >(
+    `SELECT \`id\`, \`check_out_work_mode\` FROM \`Attendance\` WHERE \`id\` IN (${placeholders})`,
+    ...attendanceIds,
+  );
+
+  return new Map(rows.map((row) => [row.id, row.check_out_work_mode]));
+}
+
 function getAttendanceCategory(attendance: {
   status?: string | null;
   check_in_status?: string | null;
   late_minutes?: number | null;
   work_mode?: string | null;
+  check_out_work_mode?: string | null;
 }): DailyAttendanceCategory {
+  const workMode = normalizeWorkMode(attendance.work_mode);
+  const checkOutWorkMode = normalizeWorkMode(attendance.check_out_work_mode);
+
+  if (checkOutWorkMode === "kunjungan") return "kunjungan";
+  if (workMode === "wfh") return "wfh";
+  if (workMode === "kunjungan") return "kunjungan";
+
   if (
     attendance.check_in_status === "LATE" ||
     Number(attendance.late_minutes || 0) > 0 ||
@@ -182,11 +221,6 @@ function getAttendanceCategory(attendance: {
   ) {
     return "terlambat";
   }
-
-  const workMode = normalizeWorkMode(attendance.work_mode);
-
-  if (workMode === "wfh") return "wfh";
-  if (workMode === "kunjungan") return "kunjungan";
 
   return "hadir";
 }
@@ -200,6 +234,7 @@ function getLeaveCategory(leaveType: LeaveType): DailyAttendanceCategory {
 export async function GET(req: NextRequest) {
   try {
     await requireOwner(req);
+    await ensureWfhQuotaColumn();
 
     const { searchParams } = new URL(req.url);
     const employeeId = String(searchParams.get("employeeId") || "").trim();
@@ -307,15 +342,22 @@ export async function GET(req: NextRequest) {
         },
       },
       select: {
+        id: true,
         user_id: true,
         attendance_date: true,
         status: true,
         check_in_status: true,
         late_minutes: true,
         check_in_time: true,
+        check_out_time: true,
+        work_minutes: true,
         work_mode: true,
       },
     });
+    const checkOutWorkModeByAttendanceId =
+      await getCheckOutWorkModeByAttendanceId(
+        attendances.map((attendance) => attendance.id),
+      );
 
     for (const attendance of attendances) {
       const summary = employeeSummaries.get(attendance.user_id);
@@ -339,12 +381,31 @@ export async function GET(req: NextRequest) {
       }
 
       if (hasCheckedIn) {
+        const attendanceCategory = getAttendanceCategory({
+          ...attendance,
+          check_out_work_mode: checkOutWorkModeByAttendanceId.get(
+            attendance.id,
+          ),
+        });
+
         summary.hadir += 1;
+        if (attendanceCategory === "wfh") summary.wfh += 1;
+        if (attendanceCategory === "kunjungan") summary.kunjungan += 1;
+        summary.totalWorkMinutes +=
+          attendance.check_in_time && attendance.check_out_time
+            ? Math.max(
+                Number(attendance.work_minutes || 0),
+                calculateWorkMinutes(
+                  attendance.check_in_time,
+                  attendance.check_out_time,
+                ),
+              )
+            : 0;
         const dateKey = toDateKey(attendance.attendance_date);
 
         employeeDailyRecords.get(attendance.user_id)?.set(dateKey, {
           date: dateKey,
-          category: getAttendanceCategory(attendance),
+          category: attendanceCategory,
         });
       } else {
         summary.menunggu += 1;

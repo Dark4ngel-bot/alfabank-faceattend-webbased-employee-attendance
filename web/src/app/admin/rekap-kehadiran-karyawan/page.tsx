@@ -56,11 +56,14 @@ type EmployeeAttendanceSummary = {
   totalPresensi: number;
   hadir: number;
   terlambat: number;
+  totalWorkMinutes: number;
   menunggu: number;
   izin: number;
   sakit: number;
   cuti: number;
   lainnya: number;
+  wfh?: number;
+  kunjungan?: number;
 };
 
 type EmployeeRecap = {
@@ -139,6 +142,32 @@ function formatDateRange(startDate: string, endDate: string) {
   });
 
   return `${formatter.format(start)} - ${formatter.format(end)}`;
+}
+
+function formatWorkDuration(minutes: number) {
+  if (!minutes || minutes <= 0) return "0 menit";
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (hours > 0 && remainingMinutes > 0) {
+    return `${hours}j ${remainingMinutes}m`;
+  }
+
+  if (hours > 0) return `${hours}j`;
+
+  return `${remainingMinutes}m`;
+}
+
+function getDisplayErrorMessage(
+  message: string | undefined,
+  fallback: string,
+) {
+  const text = String(message || "").trim();
+
+  if (!text) return fallback;
+
+  return text;
 }
 
 function AttendanceRecapMotionStyles() {
@@ -223,7 +252,9 @@ export default function AdminEmployeeAttendanceRecapPage() {
 
       if (!response.ok || !data.success) {
         setEmployees([]);
-        setErrorMessage(data.message || "Gagal mengambil data karyawan.");
+        setErrorMessage(
+          getDisplayErrorMessage(data.message, "Gagal mengambil data karyawan."),
+        );
         return;
       }
 
@@ -298,7 +329,10 @@ export default function AdminEmployeeAttendanceRecapPage() {
       if (!response.ok || !data.success) {
         setRecaps([]);
         setRecapErrorMessage(
-          data.message || "Gagal mengambil rekap kehadiran karyawan.",
+          getDisplayErrorMessage(
+            data.message,
+            "Gagal mengambil rekap kehadiran karyawan.",
+          ),
         );
         return;
       }
@@ -386,11 +420,14 @@ export default function AdminEmployeeAttendanceRecapPage() {
       totalPresensi: 0,
       hadir: 0,
       terlambat: 0,
+      totalWorkMinutes: 0,
       menunggu: 0,
       izin: 0,
       sakit: 0,
       cuti: 0,
       lainnya: 0,
+      wfh: 0,
+      kunjungan: 0,
     } satisfies EmployeeAttendanceSummary);
 
   const summaryItems = [
@@ -403,6 +440,21 @@ export default function AdminEmployeeAttendanceRecapPage() {
       label: "Terlambat (Menit)",
       value: selectedSummary.terlambat,
       className: "border-amber-100 bg-amber-50 text-amber-700",
+    },
+    {
+      label: "WFH",
+      value: selectedSummary.wfh || 0,
+      className: "border-sky-100 bg-sky-50 text-sky-700",
+    },
+    {
+      label: "Kunjungan",
+      value: selectedSummary.kunjungan || 0,
+      className: "border-teal-100 bg-teal-50 text-teal-700",
+    },
+    {
+      label: "Total Kerja",
+      value: formatWorkDuration(selectedSummary.totalWorkMinutes),
+      className: "border-blue-100 bg-blue-50 text-[#123c8c]",
     },
     {
       label: "Sakit",
@@ -573,7 +625,7 @@ export default function AdminEmployeeAttendanceRecapPage() {
                 ) : null}
               </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+              <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-7">
                 {summaryItems.map((item) => (
                   <div
                     key={item.label}

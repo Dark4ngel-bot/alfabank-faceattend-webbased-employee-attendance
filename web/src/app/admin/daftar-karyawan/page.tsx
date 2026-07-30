@@ -16,6 +16,7 @@ import {
   Building2,
   CalendarDays,
   CheckCircle2,
+  ChevronDown,
   Clock3,
   CreditCard,
   Edit,
@@ -198,6 +199,7 @@ type Employee = {
   bank_name?: string | null;
   bank_account_number: string | null;
   nik: string | null;
+  wfh_quota_monthly?: number | null;
   created_at: string;
 
   profile_photo?: string | null;
@@ -229,6 +231,7 @@ type EmployeeForm = {
   bank_name: string;
   bank_account_number: string;
   nik: string;
+  wfh_quota_monthly: string;
 };
 
 type EmployeeAlert = {
@@ -258,6 +261,7 @@ const initialForm: EmployeeForm = {
   bank_name: "",
   bank_account_number: "",
   nik: "",
+  wfh_quota_monthly: "0",
 };
 
 const EMPLOYEE_REQUEST_TIMEOUT_MS = 15_000;
@@ -315,6 +319,12 @@ function normalizeProfilePhotoUrl(photo?: string | null) {
 
 function normalizeNumericInput(value: string) {
   return normalizeDigits(value);
+}
+
+function formatWfhQuota(value?: number | string | null) {
+  const quota = Number(value || 0);
+
+  return String(Number.isFinite(quota) ? Math.max(0, quota) : 0);
 }
 
 function getEmployeeProfilePhoto(employee: Employee) {
@@ -496,7 +506,9 @@ export default function AdminEmployeesPage() {
   const [jabatans, setJabatans] = useState<JabatanOption[]>([]);
   const [positions, setPositions] = useState<PositionOption[]>([]);
   const [shifts, setShifts] = useState<ShiftOption[]>([]);
-  const [employmentStatuses, setEmploymentStatuses] = useState<EmploymentStatusOption[]>([]);
+  const [employmentStatuses, setEmploymentStatuses] = useState<
+    EmploymentStatusOption[]
+  >([]);
   const [offices, setOffices] = useState<OfficeOption[]>([]);
 
   const [keyword, setKeyword] = useState("");
@@ -680,7 +692,11 @@ export default function AdminEmployeesPage() {
       if (found) {
         list.push(found);
       } else {
-        list.push({ id: `legacy-${currentVal}`, name: currentVal, status: "legacy" });
+        list.push({
+          id: `legacy-${currentVal}`,
+          name: currentVal,
+          status: "legacy",
+        });
       }
     }
     return list;
@@ -714,6 +730,7 @@ export default function AdminEmployeesPage() {
         ${employee.birth_date || ""}
         ${employee.bank_account_number || ""}
         ${employee.nik || ""}
+        ${employee.wfh_quota_monthly ?? ""}
       `.toLowerCase();
 
       return text.includes(keyword.toLowerCase());
@@ -765,6 +782,7 @@ export default function AdminEmployeesPage() {
       bank_name: employee.bank_name || "",
       bank_account_number: employee.bank_account_number || "",
       nik: employee.nik || "",
+      wfh_quota_monthly: String(employee.wfh_quota_monthly ?? 0),
     });
     setIsModalOpen(true);
   }
@@ -778,10 +796,11 @@ export default function AdminEmployeesPage() {
   }
 
   function handleNumericFormChange(
-    field: "bank_account_number" | "nik",
+    field: "bank_account_number" | "nik" | "wfh_quota_monthly",
     value: string,
   ) {
-    const normalizedValue = normalizeNumericInput(value).slice(0, 16);
+    const maxLength = field === "wfh_quota_monthly" ? 3 : 16;
+    const normalizedValue = normalizeNumericInput(value).slice(0, maxLength);
 
     setForm((prev) => ({
       ...prev,
@@ -796,6 +815,8 @@ export default function AdminEmployeesPage() {
     const email = form.email.trim().toLowerCase();
     const temporaryPassword = form.temporaryPassword.trim();
     const confirmTemporaryPassword = form.confirmTemporaryPassword.trim();
+    const passwordForSave = temporaryPassword;
+    const confirmPasswordForSave = confirmTemporaryPassword;
 
     if (
       !form.name.trim() ||
@@ -841,7 +862,7 @@ export default function AdminEmployeesPage() {
       return;
     }
 
-    if (!isEditing && temporaryPassword.length < 8) {
+    if (passwordForSave && passwordForSave.length < 8) {
       showEmployeeAlert(
         "Password terlalu pendek",
         "Password minimal 8 karakter agar akun employee lebih aman.",
@@ -850,10 +871,41 @@ export default function AdminEmployeesPage() {
       return;
     }
 
-    if (!isEditing && temporaryPassword !== confirmTemporaryPassword) {
+    if (
+      isEditing &&
+      (passwordForSave || confirmPasswordForSave) &&
+      !passwordForSave
+    ) {
+      showEmployeeAlert(
+        "Password belum diisi",
+        "Isi password baru sebelum konfirmasi.",
+        "warning",
+      );
+      return;
+    }
+
+    if (
+      isEditing &&
+      (passwordForSave || confirmPasswordForSave) &&
+      !confirmPasswordForSave
+    ) {
+      showEmployeeAlert(
+        "Konfirmasi belum diisi",
+        "Ulangi password baru sebelum menyimpan.",
+        "warning",
+      );
+      return;
+    }
+
+    if (
+      (!isEditing || temporaryPassword || confirmTemporaryPassword) &&
+      passwordForSave !== confirmPasswordForSave
+    ) {
       showEmployeeAlert(
         "Konfirmasi password tidak sama",
-        "Password dan konfirmasi password harus sama sebelum employee dibuat.",
+        isEditing
+          ? "Password baru dan konfirmasi harus sama."
+          : "Password dan konfirmasi harus sama sebelum employee dibuat.",
         "warning",
       );
       return;
@@ -875,6 +927,21 @@ export default function AdminEmployeesPage() {
       showEmployeeAlert(
         "No rekening tidak valid",
         "No rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
+        "warning",
+      );
+      return;
+    }
+
+    const wfhQuotaMonthly = Number(form.wfh_quota_monthly || 0);
+
+    if (
+      !Number.isInteger(wfhQuotaMonthly) ||
+      wfhQuotaMonthly < 0 ||
+      wfhQuotaMonthly > 999
+    ) {
+      showEmployeeAlert(
+        "Kuota WFH tidak valid",
+        "Kuota WFH harus angka 0 sampai 999.",
         "warning",
       );
       return;
@@ -907,9 +974,7 @@ export default function AdminEmployeesPage() {
           name: form.name.trim(),
           email,
           role: form.role,
-          temporaryPassword: isEditing
-            ? form.temporaryPassword
-            : temporaryPassword,
+          temporaryPassword: isEditing ? passwordForSave : temporaryPassword,
           registered_office_id: form.registered_office_id,
           department_id: form.department_id,
           jabatan_id: form.jabatan_id,
@@ -926,6 +991,7 @@ export default function AdminEmployeesPage() {
           bank_account_number: form.bank_account_number,
           nik: form.nik,
           employee_code: form.employee_code.trim(),
+          wfh_quota_monthly: wfhQuotaMonthly,
         }),
       });
 
@@ -993,9 +1059,7 @@ export default function AdminEmployeesPage() {
         return;
       }
 
-      setEmployees((prev) =>
-        prev.filter((item) => item.id !== employee.id),
-      );
+      setEmployees((prev) => prev.filter((item) => item.id !== employee.id));
       void loadEmployees();
 
       showEmployeeAlert(
@@ -1075,9 +1139,7 @@ export default function AdminEmployeesPage() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-bold text-slate-500">
-                  Akun Aktif
-                </p>
+                <p className="text-sm font-bold text-slate-500">Akun Aktif</p>
                 <h3 className="mt-2 text-3xl font-black text-slate-950">
                   {activeEmployees}
                 </h3>
@@ -1137,17 +1199,17 @@ export default function AdminEmployeesPage() {
                   className="employee-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                 />
               </div>
-
             </div>
           </div>
 
           <div className="mt-5 overflow-hidden rounded-3xl border border-blue-100 bg-white">
-            <div className="md:min-w-[920px]">
-              <div className="hidden grid-cols-[1.25fr_minmax(210px,1.15fr)_1fr_0.8fr_0.7fr_0.85fr] items-center bg-[#f6f8ff] px-5 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
+            <div className="md:min-w-[1040px]">
+              <div className="hidden grid-cols-[1.25fr_minmax(210px,1.15fr)_1fr_0.75fr_0.65fr_0.7fr_0.85fr] items-center bg-[#f6f8ff] px-5 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
                 <p>Karyawan</p>
                 <p>Email</p>
                 <p>Kantor</p>
                 <p>Shift</p>
+                <p>WFH</p>
                 <p>Status</p>
                 <p className="text-center">Aksi</p>
               </div>
@@ -1176,7 +1238,7 @@ export default function AdminEmployeesPage() {
                           router.push(`/admin/daftar-karyawan/${employee.id}`);
                         }
                       }}
-                      className="employee-row-enter cursor-pointer px-4 py-4 transition duration-200 hover:bg-[#f8fbff] active:bg-[#eef4ff] md:grid md:min-h-[78px] md:grid-cols-[1.25fr_minmax(210px,1.15fr)_1fr_0.8fr_0.7fr_0.85fr] md:items-center md:gap-3 md:px-5"
+                      className="employee-row-enter cursor-pointer px-4 py-4 transition duration-200 hover:bg-[#f8fbff] active:bg-[#eef4ff] md:grid md:min-h-[78px] md:grid-cols-[1.25fr_minmax(210px,1.15fr)_1fr_0.75fr_0.65fr_0.7fr_0.85fr] md:items-center md:gap-3 md:px-5"
                       style={{
                         animationDelay: `${index * 45}ms`,
                       }}
@@ -1199,10 +1261,12 @@ export default function AdminEmployeesPage() {
                                 </p>
                                 <span
                                   className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                                    String(employee.role || "").toLowerCase() ===
-                                      "admin" ||
-                                    String(employee.role || "").toLowerCase() ===
-                                      "owner"
+                                    String(
+                                      employee.role || "",
+                                    ).toLowerCase() === "admin" ||
+                                    String(
+                                      employee.role || "",
+                                    ).toLowerCase() === "owner"
                                       ? "bg-blue-50 text-[#123c8c]"
                                       : "bg-slate-100 text-slate-500"
                                   }`}
@@ -1240,6 +1304,15 @@ export default function AdminEmployeesPage() {
                             </p>
                             <p className="mt-1 truncate text-xs font-black text-slate-700">
                               {getRelationName(employee.shift)}
+                            </p>
+                          </div>
+
+                          <div className="rounded-2xl bg-[#f6f8ff] px-3 py-2">
+                            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                              Kuota WFH
+                            </p>
+                            <p className="mt-1 truncate text-xs font-black text-slate-700">
+                              {formatWfhQuota(employee.wfh_quota_monthly)}
                             </p>
                           </div>
                         </div>
@@ -1309,6 +1382,10 @@ export default function AdminEmployeesPage() {
 
                       <p className="hidden min-w-0 truncate text-sm font-semibold text-slate-600 md:block">
                         {getRelationName(employee.shift)}
+                      </p>
+
+                      <p className="hidden min-w-0 truncate text-sm font-black text-[#123c8c] md:block">
+                        {formatWfhQuota(employee.wfh_quota_monthly)}
                       </p>
 
                       <div className="hidden md:flex md:justify-start">
@@ -1818,93 +1895,99 @@ export default function AdminEmployeesPage() {
               ) : null}
 
               <AppFormReveal delay={100} className="grid gap-4 md:grid-cols-4">
-                {!editingEmployee ? (
-                  <div>
-                    <label className="mb-2 block text-sm font-black text-slate-700">
-                      Password
-                    </label>
-                    <div className="app-field-smooth relative rounded-2xl">
-                      <KeyRound
-                        size={18}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                      />
-                      <input
-                        type={showTemporaryPassword ? "text" : "password"}
-                        value={form.temporaryPassword}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            temporaryPassword: event.target.value,
-                          }))
-                        }
-                        placeholder="Minimal 8 karakter"
-                        className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowTemporaryPassword((prev) => !prev)}
-                        className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
-                        aria-label={
-                          showTemporaryPassword
-                            ? "Sembunyikan password"
-                            : "Tampilkan password"
-                        }
-                      >
-                        {showTemporaryPassword ? (
-                          <EyeOff size={18} />
-                        ) : (
-                          <Eye size={18} />
-                        )}
-                      </button>
-                    </div>
+                <div>
+                  <label className="mb-2 block text-sm font-black text-slate-700">
+                    {editingEmployee ? "Password Baru" : "Password"}
+                  </label>
+                  <div className="app-field-smooth relative rounded-2xl">
+                    <KeyRound
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                    <input
+                      type={showTemporaryPassword ? "text" : "password"}
+                      value={form.temporaryPassword}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          temporaryPassword: event.target.value,
+                        }))
+                      }
+                      placeholder={
+                        editingEmployee
+                          ? "Isi password baru"
+                          : "Minimal 8 karakter"
+                      }
+                      autoComplete={editingEmployee ? "off" : "new-password"}
+                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowTemporaryPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+                      aria-label={
+                        showTemporaryPassword
+                          ? "Sembunyikan password"
+                          : "Tampilkan password"
+                      }
+                    >
+                      {showTemporaryPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
+                    </button>
                   </div>
-                ) : null}
+                </div>
 
-                {!editingEmployee ? (
-                  <div>
-                    <label className="mb-2 block text-sm font-black text-slate-700">
-                      Konfirmasi Password
-                    </label>
-                    <div className="app-field-smooth relative rounded-2xl">
-                      <KeyRound
-                        size={18}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                      />
-                      <input
-                        type={
-                          showConfirmTemporaryPassword ? "text" : "password"
-                        }
-                        value={form.confirmTemporaryPassword}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            confirmTemporaryPassword: event.target.value,
-                          }))
-                        }
-                        placeholder="Ulangi password"
-                        className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                      />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setShowConfirmTemporaryPassword((prev) => !prev)
-                        }
-                        className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
-                        aria-label={
-                          showConfirmTemporaryPassword
-                            ? "Sembunyikan password"
-                            : "Tampilkan password"
-                        }
-                      >
-                        {showConfirmTemporaryPassword ? (
-                          <EyeOff size={18} />
-                        ) : (
-                          <Eye size={18} />
-                        )}
-                      </button>
-                    </div>
+                <div>
+                  <label className="mb-2 block text-sm font-black text-slate-700">
+                    {editingEmployee
+                      ? "Konfirmasi Password"
+                      : "Konfirmasi Password"}
+                  </label>
+                  <div className="app-field-smooth relative rounded-2xl">
+                    <KeyRound
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                    <input
+                      type={showConfirmTemporaryPassword ? "text" : "password"}
+                      value={form.confirmTemporaryPassword}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          confirmTemporaryPassword: event.target.value,
+                        }))
+                      }
+                      placeholder={
+                        editingEmployee
+                          ? "Ulangi password baru"
+                          : "Ulangi password"
+                      }
+                      autoComplete={editingEmployee ? "off" : "new-password"}
+                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmTemporaryPassword((prev) => !prev)
+                      }
+                      className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+                      aria-label={
+                        showConfirmTemporaryPassword
+                          ? "Sembunyikan password"
+                          : "Tampilkan password"
+                      }
+                    >
+                      {showConfirmTemporaryPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
+                    </button>
                   </div>
-                ) : null}
+                </div>
 
                 <div>
                   <label className="mb-2 block text-sm font-black text-slate-700">
@@ -1929,13 +2012,35 @@ export default function AdminEmployeesPage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-black text-slate-700">
-                    Status Kepegawaian
+                    Kuota WFH / Bulan
                   </label>
                   <div className="app-field-smooth relative rounded-2xl">
-                    <BadgeCheck
+                    <BriefcaseBusiness
                       size={18}
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                     />
+                    <input
+                      value={form.wfh_quota_monthly}
+                      onChange={(event) =>
+                        handleNumericFormChange(
+                          "wfh_quota_monthly",
+                          event.target.value,
+                        )
+                      }
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={3}
+                      placeholder="0"
+                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="mb-2 block text-sm font-black text-slate-700">
+                    Status Kepegawaian
+                  </label>
+                  <div className="app-field-smooth relative rounded-2xl">
                     <select
                       value={
                         isMainShiftSelected ? "Utama" : form.employment_status
@@ -1947,7 +2052,7 @@ export default function AdminEmployeesPage() {
                         }))
                       }
                       disabled={isMainShiftSelected}
-                      className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500"
+                      className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500"
                     >
                       <option value="">Pilih Status Kepegawaian</option>
                       {activeEmploymentStatuses.map((status) => (
@@ -1956,6 +2061,10 @@ export default function AdminEmployeesPage() {
                         </option>
                       ))}
                     </select>
+                    <ChevronDown
+                      size={18}
+                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
+                    />
                   </div>
                 </div>
 

@@ -764,7 +764,11 @@ export default function LoginPage() {
                               : "Tampilkan password"
                           }
                         >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          {showPassword ? (
+                            <EyeOff size={18} />
+                          ) : (
+                            <Eye size={18} />
+                          )}
                         </button>
                       </div>
                     </label>

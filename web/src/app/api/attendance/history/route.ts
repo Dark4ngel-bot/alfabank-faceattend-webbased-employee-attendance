@@ -40,6 +40,38 @@ function formatStatus(status?: string | null, lateMinutes = 0) {
   return statusMap[status || ""] || status || "Pending";
 }
 
+function normalizeWorkMode(value?: string | null) {
+  const normalized = String(value || "").trim().toLowerCase();
+
+  if (normalized === "wfh" || normalized === "wfc") return "wfh";
+  if (normalized === "visit" || normalized === "kunjungan") return "visit";
+
+  return "office";
+}
+
+function formatWorkMode(value?: string | null) {
+  const workMode = normalizeWorkMode(value);
+
+  if (workMode === "wfh") return "WFH";
+  if (workMode === "visit") return "Kunjungan";
+
+  return "Kantor";
+}
+
+async function getCheckOutWorkModeByAttendanceId(attendanceIds: string[]) {
+  if (attendanceIds.length === 0) return new Map<string, string | null>();
+
+  const placeholders = attendanceIds.map(() => "?").join(",");
+  const rows = await prisma.$queryRawUnsafe<
+    { id: string; check_out_work_mode: string | null }[]
+  >(
+    `SELECT \`id\`, \`check_out_work_mode\` FROM \`Attendance\` WHERE \`id\` IN (${placeholders})`,
+    ...attendanceIds,
+  );
+
+  return new Map(rows.map((row) => [row.id, row.check_out_work_mode]));
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { id: userId } = await requireAuth(req);
@@ -81,20 +113,40 @@ export async function GET(req: NextRequest) {
         status: true,
         late_minutes: true,
         early_leave_minutes: true,
-        work_minutes: true,
-      },
-    });
+	        work_minutes: true,
+	        work_mode: true,
+	      },
+	    });
+    const checkOutWorkModeByAttendanceId =
+      await getCheckOutWorkModeByAttendanceId(
+        attendances.map((attendance) => attendance.id),
+      );
 
-    const records = attendances.map((item) => ({
-      id: item.id,
-      date: formatDateKey(item.attendance_date),
-      checkIn: formatTime(item.check_in_time),
-      checkOut: formatTime(item.check_out_time),
-      status: formatStatus(item.status, item.late_minutes),
-      lateMinutes: item.late_minutes,
-      earlyLeaveMinutes: item.early_leave_minutes,
-      workMinutes: item.work_minutes,
-    }));
+    const records = attendances.map((item) => {
+      const checkInWorkMode = normalizeWorkMode(item.work_mode);
+      const checkOutWorkMode = item.check_out_time
+        ? normalizeWorkMode(
+            checkOutWorkModeByAttendanceId.get(item.id) || item.work_mode,
+          )
+        : null;
+
+      return {
+        id: item.id,
+        date: formatDateKey(item.attendance_date),
+        checkIn: formatTime(item.check_in_time),
+        checkOut: formatTime(item.check_out_time),
+        checkInWorkMode,
+        checkOutWorkMode,
+        checkInWorkModeLabel: formatWorkMode(checkInWorkMode),
+        checkOutWorkModeLabel: checkOutWorkMode
+          ? formatWorkMode(checkOutWorkMode)
+          : "-",
+        status: formatStatus(item.status, item.late_minutes),
+        lateMinutes: item.late_minutes,
+        earlyLeaveMinutes: item.early_leave_minutes,
+        workMinutes: item.check_out_time ? item.work_minutes : 0,
+      };
+    });
 
     return NextResponse.json({
       message: "Riwayat presensi berhasil diambil.",

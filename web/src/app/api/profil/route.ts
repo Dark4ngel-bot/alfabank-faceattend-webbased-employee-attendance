@@ -122,6 +122,67 @@ async function getSafeUser(userId: string) {
   return user;
 }
 
+function getJakartaMonthRange(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(date);
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value || 0);
+  const year = getPart("year");
+  const month = getPart("month");
+
+  return {
+    start: new Date(Date.UTC(year, month - 1, 1)),
+    end: new Date(Date.UTC(year, month, 1)),
+  };
+}
+
+async function getWfhQuotaUsage(userId: string, quotaValue: unknown) {
+  const { start, end } = getJakartaMonthRange();
+  const quota = Math.max(0, Number(quotaValue || 0));
+  const used = await prisma.attendance.count({
+    where: {
+      user_id: userId,
+      attendance_date: {
+        gte: start,
+        lt: end,
+      },
+      work_mode: "wfh",
+      check_out_work_mode: "wfh",
+      check_in_time: {
+        not: null,
+      },
+      check_out_time: {
+        not: null,
+      },
+    },
+  });
+
+  return {
+    quota,
+    used,
+    remaining: Math.max(0, quota - used),
+  };
+}
+
+async function withWfhQuotaUsage(
+  userId: string,
+  user: Record<string, unknown> | null,
+) {
+  if (!user) return user;
+
+  const wfhQuota = await getWfhQuotaUsage(userId, user.wfh_quota_monthly);
+
+  return {
+    ...user,
+    wfh_quota_monthly: wfhQuota.quota,
+    wfh_quota_used_monthly: wfhQuota.used,
+    wfh_quota_remaining_monthly: wfhQuota.remaining,
+  };
+}
+
 async function handleChangePassword(userId: string, body: JsonBody) {
   const oldPassword = findText(body, [
     "oldPassword",
@@ -425,7 +486,7 @@ async function handleUpdateProfile(userId: string, body: JsonBody) {
     return NextResponse.json({
       success: true,
       message: "Tidak ada data profil yang diubah.",
-      user,
+      user: await withWfhQuotaUsage(userId, user),
     });
   }
 
@@ -453,7 +514,7 @@ async function handleUpdateProfile(userId: string, body: JsonBody) {
   return NextResponse.json({
     success: true,
     message: "Profil berhasil diperbarui.",
-    user,
+    user: await withWfhQuotaUsage(userId, user),
   });
 }
 
@@ -474,7 +535,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      user,
+      user: await withWfhQuotaUsage(userId, user),
     });
   } catch (error) {
     console.error("GET_PROFILE_ERROR:", error);
