@@ -696,14 +696,33 @@ export async function POST(req: NextRequest) {
 
     const checkInWorkMode = normalizeWorkMode(attendance.work_mode);
     const requestedCheckOutMode = checkOutWorkMode || checkInWorkMode;
-    const workMode =
-      checkInWorkMode === "office" ? requestedCheckOutMode : checkInWorkMode;
+    let workMode: WorkMode;
+
+    if (checkInWorkMode === "wfh") {
+      workMode = "wfh";
+    } else if (requestedCheckOutMode === "wfh") {
+      return NextResponse.json(
+        {
+          error:
+            "Mode check-out tidak sesuai. WFH hanya bisa digunakan jika check-in WFH.",
+        },
+        { status: 400 },
+      );
+    } else {
+      workMode = requestedCheckOutMode;
+    }
+
     const isOfficeMode = workMode === "office";
     const isWfhMode = workMode === "wfh";
     const isVisitMode = workMode === "visit";
     const isFlexibleMode = isWfhMode || isVisitMode;
+    const isCheckOutVisitDataRequired =
+      isVisitMode && checkInWorkMode !== "visit";
 
-    if (isVisitMode && (!visitTitle || !visitAddress || !visitNote)) {
+    if (
+      isCheckOutVisitDataRequired &&
+      (!visitTitle || !visitAddress || !visitNote)
+    ) {
       return NextResponse.json(
         {
           error:
@@ -919,34 +938,34 @@ export async function POST(req: NextRequest) {
 
       updatedAttendance = await prisma.$transaction(async (tx) => {
         const savedAttendance = await tx.attendance.update({
-        where: {
-          id: attendance.id,
-        },
-        data: {
-          check_out_time: now,
-          check_out_photo: storedPhoto.data,
-          check_out_photo_mime: photoMime,
-          check_out_photo_url: storedPhoto.secureUrl,
-          check_out_photo_public_id: storedPhoto.publicId,
+          where: {
+            id: attendance.id,
+          },
+          data: {
+            check_out_time: now,
+            check_out_photo: storedPhoto.data,
+            check_out_photo_mime: photoMime,
+            check_out_photo_url: storedPhoto.secureUrl,
+            check_out_photo_public_id: storedPhoto.publicId,
 
-          check_out_latitude: latitude,
-          check_out_longitude: longitude,
-          check_out_accuracy: accuracy,
-          check_out_distance: matchedOffice?.distance ?? null,
-          check_out_within_radius: Boolean(matchedOffice?.isWithinRadius),
-          check_out_office_id: matchedOffice?.office.id ?? null,
+            check_out_latitude: latitude,
+            check_out_longitude: longitude,
+            check_out_accuracy: accuracy,
+            check_out_distance: matchedOffice?.distance ?? null,
+            check_out_within_radius: Boolean(matchedOffice?.isWithinRadius),
+            check_out_office_id: matchedOffice?.office.id ?? null,
 
-	          registered_office_id:
-	            attendance.registered_office_id ?? user.registered_office_id,
+            registered_office_id:
+              attendance.registered_office_id ?? user.registered_office_id,
 
-	          work_minutes: workMinutes,
-	          early_leave_minutes: earlyLeaveMinutes,
-	          check_out_status: checkOutStatus,
-          activity_note: isFlexibleMode
-            ? `Check-out: ${getWorkModeLabel(workMode)}`
-            : attendance.activity_note,
-	        },
-	      });
+            work_minutes: workMinutes,
+            early_leave_minutes: earlyLeaveMinutes,
+            check_out_status: checkOutStatus,
+            activity_note: isFlexibleMode
+              ? `Check-out: ${getWorkModeLabel(workMode)}`
+              : attendance.activity_note,
+          },
+        });
 
         await tx.$executeRawUnsafe(
           "UPDATE `Attendance` SET `check_out_work_mode` = ? WHERE `id` = ?",
@@ -954,72 +973,78 @@ export async function POST(req: NextRequest) {
           attendance.id,
         );
 
-      if (isVisitMode) {
-        const updatedVisit = await tx.employeeVisit.updateMany({
-          where: {
-            attendance_id: attendance.id,
-            user_id: userId,
-            status: {
-              not: "cancelled",
-            },
-          },
-          data: {
-            title: visitTitle,
-            client_name: visitClientName || null,
-            address: visitAddress,
-            latitude,
-            longitude,
-            accuracy,
-            start_time: now,
-            end_time: now,
-            note: visitNote,
-            status: "completed",
-          },
-        });
-
-        if (updatedVisit.count === 0) {
-          await tx.employeeVisit.create({
-            data: {
+        if (isVisitMode) {
+          const isCompletingCheckInVisit = checkInWorkMode === "visit";
+          const updatedVisit = await tx.employeeVisit.updateMany({
+            where: {
+              attendance_id: attendance.id,
               user_id: userId,
+              status: {
+                not: "cancelled",
+              },
+            },
+            data: isCompletingCheckInVisit
+              ? {
+                  end_time: now,
+                  status: "completed",
+                }
+              : {
+                  title: visitTitle,
+                  client_name: visitClientName || null,
+                  address: visitAddress,
+                  latitude,
+                  longitude,
+                  accuracy,
+                  start_time: now,
+                  end_time: now,
+                  note: visitNote,
+                  status: "completed",
+                },
+          });
+
+          if (updatedVisit.count === 0) {
+            await tx.employeeVisit.create({
+              data: {
+                user_id: userId,
+                attendance_id: savedAttendance.id,
+                visit_date: today,
+                title: visitTitle || "Kunjungan",
+                client_name: visitClientName || null,
+                address: visitAddress || nearestLocationLabel,
+                latitude,
+                longitude,
+                accuracy,
+                start_time: now,
+                end_time: now,
+                note: visitNote || "Check-out kunjungan",
+                status: "completed",
+              },
+            });
+          }
+        }
+
+        if (isFlexibleMode) {
+          const modeLabel = getWorkModeLabel(workMode);
+          const employeeName = user.name || "Karyawan";
+
+          await tx.adminNotification.create({
+            data: {
               attendance_id: savedAttendance.id,
-              visit_date: today,
-              title: visitTitle,
-              client_name: visitClientName || null,
-              address: visitAddress,
-              latitude,
-              longitude,
-              accuracy,
-              start_time: now,
-              end_time: now,
-              note: visitNote,
-              status: "completed",
+              user_id: userId,
+              type: workMode,
+              title:
+                workMode === "visit"
+                  ? "Karyawan selesai kunjungan"
+                  : `Karyawan selesai ${modeLabel}`,
+              message:
+                workMode === "visit"
+                  ? `${employeeName} melakukan check-out kunjungan di ${visitAddress || nearestLocationLabel}.`
+                  : `${employeeName} melakukan check-out mode ${modeLabel}. Lokasi: ${nearestLocationLabel}.`,
+              status: "unread",
+              is_read: false,
             },
           });
         }
-      }
-
-      if (isFlexibleMode) {
-        const modeLabel = getWorkModeLabel(workMode);
-        const employeeName = user.name || "Karyawan";
-
-        await tx.adminNotification.create({
-          data: {
-            attendance_id: savedAttendance.id,
-            user_id: userId,
-            type: workMode,
-            title:
-              workMode === "visit"
-                ? "Karyawan selesai kunjungan"
-                : `Karyawan selesai ${modeLabel}`,
-            message:
-              workMode === "visit"
-                ? `${employeeName} melakukan check-out kunjungan di ${visitAddress || nearestLocationLabel}.`
-                : `${employeeName} melakukan check-out mode ${modeLabel}. Lokasi: ${nearestLocationLabel}.`,
-            status: "unread",
-            is_read: false,
-          },
-        });
-      }
 
         return savedAttendance;
       });
