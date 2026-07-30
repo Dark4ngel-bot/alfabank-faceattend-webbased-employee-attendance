@@ -74,6 +74,7 @@ type ProfileUser = {
   birth_place: string | null;
   birth_date: string | null;
   bank_code: string | null;
+  bank_name?: string | null;
   bank_account_number: string | null;
   nik: string | null;
   profile_photo: string | null;
@@ -556,9 +557,9 @@ function DetailItem({
 
         <div className="min-w-0">
           <p className="text-sm font-bold text-slate-400">{label}</p>
-          <p className="mt-2 break-words text-lg font-black leading-7 text-[#123456]">
+          <div className="mt-2 break-words text-lg font-black leading-7 text-[#123456]">
             {content || value || "-"}
-          </p>
+          </div>
         </div>
       </div>
     </div>
@@ -1097,117 +1098,84 @@ export function ProfilPageContent({
 
   const headerRightLabel = user?.shift?.name || undefined;
 
-  const detailItems = useMemo(() => {
+  const detailSections = useMemo(() => {
     if (!user) return [];
+
+    const bankName = user.bank_name || user.bank_code || "-";
 
     return [
       {
-        label: "Nama Lengkap",
-        value: user.name,
+        title: "Informasi Utama & Kontak",
         icon: UserRound,
+        items: [
+          { label: "Nama Lengkap", value: user.name, icon: UserRound },
+          { label: "No Induk Karyawan", value: user.employee_code || "-", icon: IdCard },
+          { label: "Email", value: user.email, icon: Mail },
+          { label: "Nomor Telepon", value: user.phone || "-", icon: Phone },
+          { label: "Role Akun", value: formatRole(user.role), icon: ShieldCheck },
+          { label: "Status Akun", value: formatStatus(user.status), icon: BadgeCheck },
+        ],
       },
       {
-        label: "Email",
-        value: user.email,
-        icon: Mail,
-      },
-      {
-        label: "Nomor Telepon",
-        value: user.phone || "-",
-        icon: Phone,
-      },
-      {
-        label: "Status Akun",
-        value: formatStatus(user.status),
-        icon: BadgeCheck,
-      },
-      {
-        label: "Status Kepegawaian",
-        value: user.employment_status || "-",
-        icon: BadgeCheck,
-      },
-      {
-        label: "Kuota WFH Bulanan",
-        value: `${formatWfhQuota(user.wfh_quota_remaining_monthly)} tersisa dari ${formatWfhQuota(
-          user.wfh_quota_monthly,
-        )}`,
-        icon: BriefcaseBusiness,
-      },
-      {
-        label: "Masa Kerja",
-        value: formatEmploymentPeriod(user),
-        icon: CalendarDays,
-      },
-      {
-        label: "Role Akun",
-        value: formatRole(user.role),
-        icon: ShieldCheck,
-      },
-      {
-        label: "Tempat Lahir",
-        value: user.birth_place || "-",
-        icon: MapPin,
-      },
-      {
-        label: "Tanggal Lahir",
-        value: formatDate(user.birth_date),
-        icon: CalendarDays,
-      },
-      {
-        label: "No Induk Karyawan",
-        value: user.employee_code || "-",
-        icon: IdCard,
-      },
-      {
-        label: "NIK",
-        value: user.nik || "-",
-        icon: IdCard,
-      },
-      {
-        label: "No Rekening",
-        value: user.bank_account_number || "-",
-        content: (
-          <BankLogoBadge
-            bankCode={user.bank_code}
-            accountNumber={user.bank_account_number}
-          />
-        ),
-        icon: CreditCard,
-      },
-      {
-        label: "Kantor Terdaftar",
-        value: user.registered_office?.name || "-",
-        icon: MapPin,
-      },
-      {
-        label: "Divisi",
-        value: user.department?.name || "-",
-        icon: Network,
-      },
-      {
-        label: "Jabatan",
-        value: user.jabatan?.name || "-",
+        title: "Pekerjaan & Penempatan",
         icon: Building2,
+        items: [
+          { label: "Kantor Terdaftar", value: user.registered_office?.name || "-", icon: MapPin },
+          { label: "Divisi", value: user.department?.name || "-", icon: Network },
+          { label: "Jabatan", value: user.jabatan?.name || "-", icon: Building2 },
+          { label: "Posisi", value: user.position?.name || "-", icon: BriefcaseBusiness },
+          { label: "Shift", value: user.shift?.name || "-", icon: CalendarDays },
+          { label: "Jam Kerja", value: workSchedule || "-", icon: Clock3 },
+          { label: "Alamat Kantor", value: user.registered_office?.address || "-", icon: MapPin },
+        ],
       },
       {
-        label: "Posisi",
-        value: user.position?.name || "-",
+        title: "Status Kepegawaian & Presensi",
         icon: BriefcaseBusiness,
+        items: [
+          { label: "Status Kepegawaian", value: user.employment_status || "-", icon: BadgeCheck },
+          { label: "Masa Kerja", value: formatEmploymentPeriod(user), icon: CalendarDays },
+          {
+            label: "Kuota WFH Bulanan",
+            value: `${formatWfhQuota(user.wfh_quota_remaining_monthly)} tersisa dari ${formatWfhQuota(
+              user.wfh_quota_monthly,
+            )}`,
+            icon: BriefcaseBusiness,
+          },
+        ],
       },
       {
-        label: "Shift",
-        value: user.shift?.name || "-",
-        icon: CalendarDays,
-      },
-      {
-        label: "Jam Kerja",
-        value: workSchedule || "-",
-        icon: Clock3,
-      },
-      {
-        label: "Alamat Kantor",
-        value: user.registered_office?.address || "-",
-        icon: MapPin,
+        title: "Kelahiran, Identitas & Bank Payroll",
+        icon: CreditCard,
+        items: [
+          { label: "Tempat Lahir", value: user.birth_place || "-", icon: MapPin },
+          { label: "Tanggal Lahir", value: formatDate(user.birth_date), icon: CalendarDays },
+          { label: "NIK (16 Digit)", value: user.nik || "-", icon: IdCard },
+          {
+            label: "Nama Bank Payroll",
+            value: bankName,
+            content: (
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-800">{bankName}</span>
+                {user.bank_code || user.bank_name ? (
+                  <BankLogoBadge bankCode={user.bank_name || user.bank_code} compact />
+                ) : null}
+              </div>
+            ),
+            icon: Building2,
+          },
+          {
+            label: "No Rekening",
+            value: user.bank_account_number || "-",
+            content: (
+              <BankLogoBadge
+                bankCode={user.bank_name || user.bank_code}
+                accountNumber={user.bank_account_number}
+              />
+            ),
+            icon: CreditCard,
+          },
+        ],
       },
     ];
   }, [user, workSchedule]);
@@ -1318,17 +1286,34 @@ export function ProfilPageContent({
               </button>
             </div>
 
-            <div className="mt-10 grid gap-4 md:grid-cols-2">
-              {detailItems.map((item, index) => (
-                <DetailItem
-                  key={item.label}
-                  label={item.label}
-                  value={item.value}
-                  content={item.content}
-                  icon={item.icon}
-                  delay={`${index * 45}ms`}
-                />
-              ))}
+            <div className="mt-8 space-y-6">
+              {detailSections.map((section) => {
+                const SectionIcon = section.icon;
+                return (
+                  <div
+                    key={section.title}
+                    className="rounded-3xl border border-blue-100/80 bg-white/90 p-5 shadow-lg shadow-blue-950/5 backdrop-blur-md md:p-6"
+                  >
+                    <div className="mb-4 flex items-center gap-2.5 text-xs font-black uppercase tracking-wider text-[#123c8c]">
+                      <SectionIcon size={16} strokeWidth={2.5} />
+                      {section.title}
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {section.items.map((item, index) => (
+                        <DetailItem
+                          key={item.label}
+                          label={item.label}
+                          value={item.value}
+                          content={item.content}
+                          icon={item.icon}
+                          delay={`${index * 40}ms`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
         ) : (

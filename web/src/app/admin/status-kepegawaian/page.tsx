@@ -276,9 +276,9 @@ export default function EmploymentStatusPage() {
             <div className="flex flex-col gap-3 sm:flex-row md:items-center">
               <AppButton
                 onClick={openAddModal}
-                className="w-full sm:w-auto"
+                leftIcon={<Plus size={18} />}
+                className="w-full sm:w-auto shrink-0 whitespace-nowrap"
               >
-                <Plus size={18} className="mr-2" />
                 Tambah Status
               </AppButton>
             </div>

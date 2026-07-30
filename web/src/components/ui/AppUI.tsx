@@ -315,7 +315,7 @@ export function AppButton({
         disabled={isDisabled}
         onClick={handleClick}
         className={cn(
-          "relative inline-flex items-center justify-center gap-2 overflow-hidden font-black transition duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60",
+          "relative inline-flex flex-row items-center justify-center gap-2 whitespace-nowrap overflow-hidden font-black transition duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60",
           buttonVariantClass[variant],
           buttonSizeClass[size],
           full && "w-full",
@@ -347,7 +347,7 @@ export function AppButton({
           </span>
         ) : null}
 
-        <span className="relative z-10">
+        <span className="relative z-10 inline-flex flex-row items-center justify-center gap-2 whitespace-nowrap">
           {loading ? loadingText : children}
         </span>
 

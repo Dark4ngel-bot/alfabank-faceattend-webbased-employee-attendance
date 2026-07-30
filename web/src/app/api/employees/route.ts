@@ -693,26 +693,8 @@ export async function POST(req: NextRequest) {
       return jsonError(getUniqueEmployeeMessage(error), 409);
     }
 
-    if (
-      error instanceof Error &&
-      (error.message.includes("hanya dapat diisi angka") ||
-        error.message.includes("harus berupa angka") ||
-        error.message.includes("digit") ||
-        error.message.includes("Role akun") ||
-        error.message.includes("Tanggal") ||
-        error.message.includes("masa kerja") ||
-        error.message.includes("Kuota WFH"))
-    ) {
-      return jsonError(error.message, 400);
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: getApiErrorMessage(error, "Gagal menambahkan karyawan."),
-      },
-      { status: getApiErrorStatus(error) }
-    );
+    const message = error instanceof Error ? error.message : "Gagal menambahkan karyawan.";
+    return jsonError(message, 400);
   }
 }
 
@@ -895,7 +877,7 @@ export async function PATCH(req: NextRequest) {
       employment_end_date: Date | null;
       birth_place: string | null;
       birth_date: Date | null;
-      bank_code: string | null;
+      bank_name: string | null;
       bank_account_number: string | null;
       nik: string | null;
       registered_office_id: string;
@@ -920,7 +902,7 @@ export async function PATCH(req: NextRequest) {
       employment_end_date: normalizedEmploymentEndDate,
       birth_place: birthPlace,
       birth_date: birthDate,
-      bank_code: bankCode,
+      bank_name: bankCode || null,
       bank_account_number: bankAccountNumber,
       nik,
       registered_office_id: registeredOfficeId,
@@ -959,26 +941,8 @@ export async function PATCH(req: NextRequest) {
       return jsonError(getUniqueEmployeeMessage(error), 409);
     }
 
-    if (
-      error instanceof Error &&
-      (error.message.includes("hanya dapat diisi angka") ||
-        error.message.includes("harus berupa angka") ||
-        error.message.includes("digit") ||
-        error.message.includes("Role akun") ||
-        error.message.includes("Tanggal") ||
-        error.message.includes("masa kerja") ||
-        error.message.includes("Kuota WFH"))
-    ) {
-      return jsonError(error.message, 400);
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: getApiErrorMessage(error, "Gagal memperbarui karyawan."),
-      },
-      { status: getApiErrorStatus(error) }
-    );
+    const message = error instanceof Error ? error.message : "Gagal memperbarui karyawan.";
+    return jsonError(message, 400);
   }
 }
 
