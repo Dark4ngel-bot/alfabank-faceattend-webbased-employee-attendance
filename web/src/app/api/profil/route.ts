@@ -8,6 +8,7 @@ import {
   IDENTITY_VALIDATION,
   validateDigitRange,
 } from "@/lib/identity-validation";
+import { normalizeBankCode } from "@/lib/bank-options";
 
 export const runtime = "nodejs";
 
@@ -380,6 +381,7 @@ async function handleUpdateProfile(userId: string, body: JsonBody) {
     "no_rekening",
     "rekening",
   ]);
+  const bankCode = normalizeBankCode(body.bank_code || body.bankCode);
   const nik = findOptionalText(body, ["nik"]);
 
   if (name !== undefined && !name) {
@@ -473,6 +475,7 @@ async function handleUpdateProfile(userId: string, body: JsonBody) {
 
   addUpdate("bank_account_number", bankAccountNumber);
   addUpdate("no_rekening", bankAccountNumber);
+  addUpdate("bank_code", bankCode ?? undefined);
 
   addUpdate("nik", nik);
 

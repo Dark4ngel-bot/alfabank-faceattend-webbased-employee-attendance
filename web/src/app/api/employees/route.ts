@@ -16,6 +16,7 @@ import {
   ensureWfhQuotaColumn,
   isMissingWfhQuotaColumnError,
 } from "@/lib/wfh-quota-schema";
+import { normalizeBankCode } from "@/lib/bank-options";
 
 export const runtime = "nodejs";
 
@@ -379,6 +380,7 @@ async function attachWfhQuotaToEmployees<
 
   return employees.map((employee) => ({
     ...employee,
+    bank_code: (employee as any).bank_name || (employee as any).bank_code || null,
     wfh_quota_monthly: quotaByUserId.get(employee.id) || 0,
   }));
 }
@@ -546,9 +548,7 @@ export async function POST(req: NextRequest) {
     );
     const birthPlace = normalizeOptionalText(body.birth_place);
     const birthDate = normalizeOptionalDate(body.birth_date, "Tanggal lahir");
-    const bankName = normalizeOptionalText(
-      body.bank_name || body.bankName || body.nama_bank,
-    );
+    const bankCode = normalizeBankCode(body.bank_code || body.bankCode);
     const bankAccountNumber = normalizeOptionalText(
       body.bank_account_number || body.no_rekening
     );
@@ -664,7 +664,7 @@ export async function POST(req: NextRequest) {
         employment_end_date: normalizedEmploymentEndDate,
         birth_place: birthPlace,
         birth_date: birthDate,
-        bank_name: bankName,
+        bank_name: bankCode || null,
         bank_account_number: bankAccountNumber,
         nik,
         registered_office_id: registeredOfficeId,
@@ -757,9 +757,7 @@ export async function PATCH(req: NextRequest) {
     );
     const birthPlace = normalizeOptionalText(body.birth_place);
     const birthDate = normalizeOptionalDate(body.birth_date, "Tanggal lahir");
-    const bankName = normalizeOptionalText(
-      body.bank_name || body.bankName || body.nama_bank,
-    );
+    const bankCode = normalizeBankCode(body.bank_code || body.bankCode);
     const bankAccountNumber = normalizeOptionalText(
       body.bank_account_number || body.no_rekening
     );
@@ -897,7 +895,7 @@ export async function PATCH(req: NextRequest) {
       employment_end_date: Date | null;
       birth_place: string | null;
       birth_date: Date | null;
-      bank_name: string | null;
+      bank_code: string | null;
       bank_account_number: string | null;
       nik: string | null;
       registered_office_id: string;
@@ -922,7 +920,7 @@ export async function PATCH(req: NextRequest) {
       employment_end_date: normalizedEmploymentEndDate,
       birth_place: birthPlace,
       birth_date: birthDate,
-      bank_name: bankName,
+      bank_code: bankCode,
       bank_account_number: bankAccountNumber,
       nik,
       registered_office_id: registeredOfficeId,

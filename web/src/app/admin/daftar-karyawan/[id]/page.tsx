@@ -1,6 +1,6 @@
 "use client";
 
-import { ElementType, useEffect, useMemo, useState } from "react";
+import { ElementType, ReactNode, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -24,6 +24,7 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import BankLogoBadge from "@/components/BankLogoBadge";
 
 type OfficeMiniRelation = {
   id: string;
@@ -87,7 +88,7 @@ type Employee = {
   employment_end_date: string | null;
   birth_place: string | null;
   birth_date: string | null;
-  bank_name?: string | null;
+  bank_code: string | null;
   bank_account_number: string | null;
   nik: string | null;
   wfh_quota_monthly?: number | null;
@@ -292,12 +293,14 @@ function DetailCard({
   icon: Icon,
   label,
   value,
+  content,
   description,
   delay = 0,
 }: {
   icon: ElementType;
   label: string;
   value: string;
+  content?: ReactNode;
   description?: string;
   delay?: number;
 }) {
@@ -319,7 +322,7 @@ function DetailCard({
           </p>
 
           <p className="mt-2 break-words text-base font-black text-slate-950">
-            {value || "-"}
+            {content || value || "-"}
           </p>
 
           {description ? (
@@ -520,17 +523,15 @@ export default function AdminEmployeeDetailPage() {
                   />
 
                   <DetailCard
-                    icon={Building2}
-                    label="Bank Rekening"
-                    value={employee.bank_name || "-"}
-                    description="Bank tujuan payroll karyawan"
-                    delay={230}
-                  />
-
-                  <DetailCard
                     icon={CreditCard}
                     label="No Rekening"
                     value={employee.bank_account_number || "-"}
+                    content={
+                      <BankLogoBadge
+                        bankCode={employee.bank_code}
+                        accountNumber={employee.bank_account_number}
+                      />
+                    }
                     description="Nomor rekening payroll karyawan"
                     delay={240}
                   />

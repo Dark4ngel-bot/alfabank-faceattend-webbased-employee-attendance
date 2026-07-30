@@ -191,6 +191,8 @@ export async function GET(req: NextRequest) {
         employment_end_date: user.employment_end_date,
         birth_place: user.birth_place,
         birth_date: user.birth_date,
+        bank_name: user.bank_name,
+        bank_code: user.bank_name,
         bank_account_number: user.bank_account_number,
         nik: user.nik,
         profile_photo: user.profile_photo,
