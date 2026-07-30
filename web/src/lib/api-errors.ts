@@ -19,6 +19,16 @@ export function getApiErrorStatus(error: unknown) {
   return 500;
 }
 
+function getErrorText(error: unknown) {
+  if (error instanceof Error) return error.message;
+
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
 export function getApiErrorMessage(
   error: unknown,
   fallback = "Terjadi kesalahan server.",
@@ -29,7 +39,11 @@ export function getApiErrorMessage(
   if (status === 403) return "Akses ditolak.";
 
   if (error instanceof Error) {
-    const message = error.message.toLowerCase();
+    const message = getErrorText(error).toLowerCase();
+
+    if (message.includes("wfh_quota_monthly")) {
+      return fallback;
+    }
 
     if (message.includes("konfigurasi cloudinary belum lengkap")) {
       return "Konfigurasi upload foto di hosting belum lengkap. Pastikan CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, dan CLOUDINARY_API_SECRET sudah diset.";
@@ -42,7 +56,7 @@ export function getApiErrorMessage(
       message.includes("prisma") ||
       message.includes("foreign key")
     ) {
-      return "Struktur database hosting belum sesuai versi aplikasi. Jalankan migration terbaru lalu coba presensi lagi.";
+      return "Struktur database hosting belum sesuai versi aplikasi. Jalankan migration terbaru lalu coba lagi.";
     }
   }
 

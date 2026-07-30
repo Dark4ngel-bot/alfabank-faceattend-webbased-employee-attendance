@@ -28,6 +28,8 @@ type AttendanceRecord = {
   date: string;
   checkIn: string;
   checkOut: string;
+  checkInWorkModeLabel?: string;
+  checkOutWorkModeLabel?: string;
   status: string;
   lateMinutes: number;
   earlyLeaveMinutes: number;
@@ -86,6 +88,16 @@ function formatWorkDuration(minutes: number) {
   if (hours > 0) return `${hours}j`;
 
   return `${remainingMinutes}m`;
+}
+
+function formatModePair(item: AttendanceRecord) {
+  const checkInMode = item.checkInWorkModeLabel || "Kantor";
+  const checkOutMode =
+    item.checkOut && item.checkOut !== "--:--"
+      ? item.checkOutWorkModeLabel || checkInMode
+      : "Belum checkout";
+
+  return `Masuk ${checkInMode} / Pulang ${checkOutMode}`;
 }
 
 function getStatusVariant(
@@ -455,7 +467,7 @@ function AttendanceRecordCard({
               {item.status}
             </AppBadge>
 
-            <div className="mt-4 grid gap-2 text-sm font-bold text-slate-500 sm:grid-cols-3">
+	            <div className="mt-4 grid gap-2 text-sm font-bold text-slate-500 sm:grid-cols-3">
               <div className="flex items-center gap-2">
                 <Clock3
                   size={17}
@@ -476,10 +488,14 @@ function AttendanceRecordCard({
                 <span>{formatWorkDuration(item.workMinutes)}</span>
               </div>
 
-              <span className={note.className}>{note.text}</span>
-            </div>
-          </div>
-        </div>
+	              <span className={note.className}>{note.text}</span>
+	            </div>
+
+	            <p className="mt-2 text-xs font-black uppercase tracking-[0.12em] text-slate-400">
+	              {formatModePair(item)}
+	            </p>
+	          </div>
+	        </div>
 
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#f8fbff] text-slate-400 transition group-hover:text-[#123c8c]">
           <ChevronRight size={20} strokeWidth={2.6} />

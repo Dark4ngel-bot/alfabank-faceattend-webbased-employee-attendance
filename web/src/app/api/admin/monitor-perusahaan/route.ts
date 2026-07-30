@@ -113,13 +113,17 @@ function isWfhRecord(record: {
 function isVisitRecord(record: {
   is_visit?: boolean | null;
   work_mode?: string | null;
+  check_out_work_mode?: string | null;
   visits?: unknown[] | null;
 }) {
   const mode = normalizeWorkMode(record.work_mode);
+  const checkOutMode = normalizeWorkMode(record.check_out_work_mode);
 
   return (
     Boolean(record.is_visit) ||
     Boolean(record.visits?.length) ||
+    checkOutMode === "visit" ||
+    checkOutMode === "kunjungan" ||
     mode === "visit" ||
     mode === "kunjungan"
   );
@@ -131,12 +135,42 @@ function isOfficeRecord(record: {
   is_wfc?: boolean | null;
   is_visit?: boolean | null;
   work_mode?: string | null;
+  check_out_work_mode?: string | null;
   visits?: unknown[] | null;
 }) {
   return (
     Boolean(record.check_in_time) &&
     !isWfhRecord(record) &&
     !isVisitRecord(record)
+  );
+}
+
+function isAttendanceRecord(record: {
+  check_in_time?: Date | null;
+  work_mode?: string | null;
+}) {
+  const mode = normalizeWorkMode(record.work_mode);
+
+  return Boolean(record.check_in_time) && mode !== "cuti";
+}
+
+function isLateOfficeRecord(record: {
+  check_in_time?: Date | null;
+  is_wfh?: boolean | null;
+  is_wfc?: boolean | null;
+  is_visit?: boolean | null;
+  work_mode?: string | null;
+  check_out_work_mode?: string | null;
+  visits?: unknown[] | null;
+  check_in_status?: string | null;
+  status?: string | null;
+  late_minutes?: number | null;
+}) {
+  return (
+    isOfficeRecord(record) &&
+    (record.check_in_status === "LATE" ||
+      record.status === "LATE" ||
+      Number(record.late_minutes || 0) > 0)
   );
 }
 
@@ -264,6 +298,7 @@ export async function GET(req: NextRequest) {
         status: true,
         check_in_status: true,
         work_mode: true,
+        check_out_work_mode: true,
         is_wfh: true,
         is_wfc: true,
         is_visit: true,
@@ -347,16 +382,11 @@ export async function GET(req: NextRequest) {
     );
 
     const todayPresent = isSelectedCurrentMonth
-      ? todayRecords.filter((record) => isOfficeRecord(record)).length
+      ? todayRecords.filter((record) => isAttendanceRecord(record)).length
       : 0;
 
     const todayLate = isSelectedCurrentMonth
-      ? todayRecords.filter(
-          (record) =>
-            record.check_in_status === "LATE" ||
-            record.status === "LATE" ||
-            Number(record.late_minutes || 0) > 0,
-        ).length
+      ? todayRecords.filter((record) => isLateOfficeRecord(record)).length
       : 0;
 
     const todayWfh = isSelectedCurrentMonth
@@ -448,14 +478,11 @@ export async function GET(req: NextRequest) {
         return aTime - bTime;
       });
 
-      const present = records.filter((record) => isOfficeRecord(record)).length;
-
-      const late = records.filter(
-        (record) =>
-          record.check_in_status === "LATE" ||
-          record.status === "LATE" ||
-          Number(record.late_minutes || 0) > 0,
+      const present = records.filter((record) =>
+        isAttendanceRecord(record),
       ).length;
+
+      const late = records.filter((record) => isLateOfficeRecord(record)).length;
 
       const wfh = records.filter(
         (record) => isWfhRecord(record),
@@ -509,15 +536,10 @@ export async function GET(req: NextRequest) {
             .filter((record) => isOfficeRecord(record))
             .map((record) => mapChartEmployee(record.user)),
           present: records
-            .filter((record) => isOfficeRecord(record))
+            .filter((record) => isAttendanceRecord(record))
             .map((record) => mapChartEmployee(record.user)),
           late: records
-            .filter(
-              (record) =>
-                record.check_in_status === "LATE" ||
-                record.status === "LATE" ||
-                Number(record.late_minutes || 0) > 0,
-            )
+            .filter((record) => isLateOfficeRecord(record))
             .map((record) => mapChartEmployee(record.user)),
           wfh: records
             .filter((record) => isWfhRecord(record))
@@ -554,9 +576,9 @@ export async function GET(req: NextRequest) {
     const lateReasons = todayRecords
       .filter(
         (record) =>
-          record.is_over_tolerance ||
-          record.late_reason ||
-          Number(record.late_minutes || 0) > 0,
+          isLateOfficeRecord(record) ||
+          (isOfficeRecord(record) &&
+            (record.is_over_tolerance || record.late_reason)),
       )
       .map((record) => ({
         id: record.id,

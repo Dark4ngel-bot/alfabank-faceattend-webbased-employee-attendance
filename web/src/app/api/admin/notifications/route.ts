@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/api-auth";
+import { getNearestLocationLabel } from "@/lib/location-label";
 
 export const runtime = "nodejs";
 
@@ -131,6 +132,27 @@ function getAdminNotificationStatus(status: string, isRead: boolean) {
   return "unread";
 }
 
+function hasCoordinateMessage(message: string) {
+  return (
+    /\bGPS\b/i.test(message) &&
+    /-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?/.test(message)
+  );
+}
+
+function normalizeLocationMessage(message: string, locationLabel: string) {
+  if (!message || !hasCoordinateMessage(message)) {
+    return message || "-";
+  }
+
+  return message
+    .replace(
+      /\s*GPS(?: check-out)?:\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\.?/gi,
+      ` Lokasi: ${locationLabel}.`,
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function getNotificationHref(type: NotificationType, attendanceId?: string | null) {
   if (type === "sick" || type === "leave" || type === "permission") {
     return "/admin/laporan-cuti";
@@ -233,6 +255,14 @@ export async function GET(req: NextRequest) {
             email: true,
           },
         },
+        attendance: {
+          select: {
+            check_in_latitude: true,
+            check_in_longitude: true,
+            check_out_latitude: true,
+            check_out_longitude: true,
+          },
+        },
       },
       orderBy: {
         created_at: "desc",
@@ -267,8 +297,9 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    const adminNotificationItems = adminNotifications
-      .map((item) => {
+    const adminNotificationItems = (
+      await Promise.all(
+        adminNotifications.map(async (item) => {
         const type = normalizeAdminNotificationType(
           item.type || "",
           item.title || "",
@@ -278,6 +309,17 @@ export async function GET(req: NextRequest) {
         if (!type) return null;
 
         const status = getAdminNotificationStatus(item.status || "unread", Boolean(item.is_read));
+        const rawMessage = item.message || "-";
+        const isCheckOutMessage = /check-out|selesai|pulang/i.test(rawMessage);
+        const latitude = isCheckOutMessage
+          ? item.attendance?.check_out_latitude
+          : item.attendance?.check_in_latitude;
+        const longitude = isCheckOutMessage
+          ? item.attendance?.check_out_longitude
+          : item.attendance?.check_in_longitude;
+        const locationLabel = hasCoordinateMessage(rawMessage)
+          ? await getNearestLocationLabel(latitude ?? null, longitude ?? null)
+          : "";
 
         return {
           id: `admin-${item.id}`,
@@ -289,7 +331,7 @@ export async function GET(req: NextRequest) {
             (type === "visit"
               ? "Karyawan Melakukan Kunjungan"
               : "Karyawan Melakukan WFH"),
-          message: item.message || "-",
+          message: normalizeLocationMessage(rawMessage, locationLabel),
           employeeName: item.user?.name || "Karyawan",
           employeeEmail: item.user?.email || "-",
           status,
@@ -300,7 +342,9 @@ export async function GET(req: NextRequest) {
           dateText: formatDate(item.created_at),
           href: getNotificationHref(type, item.attendance_id),
         };
-      })
+        }),
+      )
+    )
       .filter(Boolean);
 
     const notifications = sortByCreatedAt([

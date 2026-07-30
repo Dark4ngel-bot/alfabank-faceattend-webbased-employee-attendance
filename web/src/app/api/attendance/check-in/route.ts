@@ -8,10 +8,15 @@ import { requireAuth } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import {
+  ensureWfhQuotaColumn,
+  isMissingWfhQuotaColumnError,
+} from "@/lib/wfh-quota-schema";
+import {
   findActiveLeaveForDate,
   formatJakartaDate,
   getLeaveTypeLabel,
 } from "@/lib/leave-attendance-guard";
+import { getNearestLocationLabel } from "@/lib/location-label";
 import {
   findNearestValidOffice,
   getDistanceInMeters,
@@ -84,6 +89,23 @@ function getTodayDateOnly() {
   return new Date(
     Date.UTC(getPart("year"), getPart("month") - 1, getPart("day")),
   );
+}
+
+function getJakartaMonthRange(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(date);
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value || 0);
+  const year = getPart("year");
+  const month = getPart("month");
+
+  return {
+    start: new Date(Date.UTC(year, month - 1, 1)),
+    end: new Date(Date.UTC(year, month, 1)),
+  };
 }
 
 function toJakartaDate(date = new Date()) {
@@ -639,6 +661,67 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const now = new Date();
+    const today = getTodayDateOnly();
+
+    if (isWfhMode) {
+      const hasWfhQuotaColumn = await ensureWfhQuotaColumn();
+      let quotaRows: Array<{ wfh_quota_monthly: number | null }> = [];
+
+      if (hasWfhQuotaColumn) {
+        try {
+          quotaRows = await prisma.$queryRawUnsafe<
+            Array<{ wfh_quota_monthly: number | null }>
+          >(
+            "SELECT COALESCE(wfh_quota_monthly, 0) AS wfh_quota_monthly FROM users WHERE id = ? LIMIT 1",
+            userId,
+          );
+        } catch (error) {
+          if (!isMissingWfhQuotaColumnError(error)) throw error;
+        }
+      }
+      const wfhQuotaMonthly = Math.max(
+        0,
+        Number(quotaRows[0]?.wfh_quota_monthly || 0),
+      );
+      const { start, end } = getJakartaMonthRange(now);
+      const usedWfhThisMonth = await prisma.attendance.count({
+        where: {
+          user_id: userId,
+          attendance_date: {
+            gte: start,
+            lt: end,
+          },
+          OR: [{ work_mode: "wfh" }, { is_wfh: true }],
+          check_in_time: {
+            not: null,
+          },
+        },
+      });
+      const remainingWfhQuota = Math.max(
+        0,
+        wfhQuotaMonthly - usedWfhThisMonth,
+      );
+
+      if (remainingWfhQuota <= 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Kuota WFH bulan ini sudah habis. Silakan pilih mode Kantor atau hubungi admin.",
+            message:
+              "Kuota WFH bulan ini sudah habis. Silakan pilih mode Kantor atau hubungi admin.",
+            wfhQuota: {
+              quota: wfhQuotaMonthly,
+              used: usedWfhThisMonth,
+              remaining: 0,
+            },
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     let matchedOffice: {
       office: OfficeGeofence;
       distance: number;
@@ -802,9 +885,6 @@ export async function POST(req: NextRequest) {
         );
       }
     }
-    const now = new Date();
-    const today = getTodayDateOnly();
-
     const activeLeave = await findActiveLeaveForDate({
       userId,
       date: today,
@@ -919,6 +999,10 @@ export async function POST(req: NextRequest) {
     let attendance;
 
     try {
+      const nearestLocationLabel = isFlexibleMode
+        ? await getNearestLocationLabel(latitude, longitude)
+        : "";
+
       attendance = await prisma.$transaction(async (tx) => {
         const savedAttendance = existingAttendance
         ? await tx.attendance.update({
@@ -961,7 +1045,6 @@ export async function POST(req: NextRequest) {
       if (isFlexibleMode) {
         const modeLabel = getWorkModeLabel(workMode);
         const employeeName = user.name || "Karyawan";
-        const coordinateText = `${latitude}, ${longitude}`;
 
         await tx.adminNotification.create({
           data: {
@@ -974,8 +1057,8 @@ export async function POST(req: NextRequest) {
                 : `Karyawan ${modeLabel}`,
             message:
               workMode === "visit"
-                ? `${employeeName} check-in kunjungan di ${visitTitle}. Alamat: ${visitAddress}. Keperluan: ${visitNote}. GPS: ${coordinateText}.`
-                : `${employeeName} check-in dengan mode ${modeLabel}. GPS: ${coordinateText}.`,
+                ? `${employeeName} check-in kunjungan di ${visitTitle}. Alamat: ${visitAddress || nearestLocationLabel}. Keperluan: ${visitNote}.`
+                : `${employeeName} check-in dengan mode ${modeLabel}. Lokasi: ${nearestLocationLabel}.`,
             status: "unread",
             is_read: false,
           },

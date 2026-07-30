@@ -89,6 +89,7 @@ type Employee = {
   birth_date: string | null;
   bank_account_number: string | null;
   nik: string | null;
+  wfh_quota_monthly?: number | null;
   created_at: string;
 
   profile_photo?: string | null;
@@ -189,6 +190,12 @@ function formatEmploymentPeriod(employee: Employee) {
   if (endDate === "-") return `Mulai ${startDate}`;
 
   return `${startDate} - ${endDate}`;
+}
+
+function formatWfhQuota(value?: number | string | null) {
+  const quota = Number(value || 0);
+
+  return String(Number.isFinite(quota) ? Math.max(0, quota) : 0);
 }
 
 function EmployeeDetailMotionStyles() {
@@ -599,6 +606,14 @@ export default function AdminEmployeeDetailPage() {
                   value={employee.employment_status || "-"}
                   description="Data status kepegawaian dari profil karyawan"
                   delay={320}
+                />
+
+                <DetailCard
+                  icon={BriefcaseBusiness}
+                  label="Kuota WFH"
+                  value={formatWfhQuota(employee.wfh_quota_monthly)}
+                  description="Kuota otomatis dihitung ulang setiap awal bulan."
+                  delay={330}
                 />
 
                 <DetailCard

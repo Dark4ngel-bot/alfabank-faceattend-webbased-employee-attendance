@@ -76,6 +76,9 @@ type CurrentUser = {
     tolerance_minutes?: number | null;
     toleranceMinutes?: number | null;
   } | null;
+  wfh_quota_monthly?: number | null;
+  wfh_quota_used_monthly?: number | null;
+  wfh_quota_remaining_monthly?: number | null;
 };
 
 type AuthMeResponse = {
@@ -542,6 +545,14 @@ function getWorkModeDescription(workMode: WorkMode) {
   return "Bebas lokasi, wajib isi data kunjungan.";
 }
 
+function getWfhQuotaRemaining(user: CurrentUser | null) {
+  if (!user) return null;
+
+  const remaining = Number(user.wfh_quota_remaining_monthly ?? 0);
+
+  return Number.isFinite(remaining) ? Math.max(0, remaining) : 0;
+}
+
 function AttendanceMotionStyles() {
   return (
     <style>{`
@@ -1005,14 +1016,18 @@ function InfoTile({
 function WorkModeFilter({
   value,
   disabled,
+  wfhQuotaRemaining,
   onChange,
   onOpenVisit,
 }: {
   value: WorkMode;
   disabled: boolean;
+  wfhQuotaRemaining: number | null;
   onChange: (value: WorkMode) => void;
   onOpenVisit: () => void;
 }) {
+  const isWfhQuotaEmpty = wfhQuotaRemaining !== null && wfhQuotaRemaining <= 0;
+
   return (
     <div className="attendance-row-enter grid grid-cols-[1fr_auto] items-center gap-2 rounded-[1.2rem] border border-blue-100 bg-[#f8fbff] p-2 sm:p-3">
       <AppSelect
@@ -1022,7 +1037,9 @@ function WorkModeFilter({
         disabled={disabled}
       >
         <option value="office">Kantor</option>
-        <option value="wfh">WFH</option>
+        <option value="wfh" disabled={isWfhQuotaEmpty}>
+          {isWfhQuotaEmpty ? "WFH - kuota habis" : "WFH"}
+        </option>
         <option value="visit">Kunjungan</option>
       </AppSelect>
 
@@ -1039,7 +1056,9 @@ function WorkModeFilter({
       ) : null}
 
       <p className="col-span-2 hidden text-xs font-semibold leading-5 text-slate-500 sm:block">
-        {getWorkModeDescription(value)}
+        {value === "wfh" && wfhQuotaRemaining !== null
+          ? `${getWorkModeDescription(value)} Sisa kuota bulan ini ${wfhQuotaRemaining}.`
+          : getWorkModeDescription(value)}
       </p>
     </div>
   );
@@ -1717,6 +1736,7 @@ export default function AttendancePage() {
   const [isLaptopBlocked, setIsLaptopBlocked] = useState(false);
 
   const [workMode, setWorkMode] = useState<WorkMode>("office");
+  const workModeRef = useRef<WorkMode>("office");
   const [visitForm, setVisitForm] = useState<VisitForm>(emptyVisitForm);
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
 
@@ -1855,6 +1875,11 @@ export default function AttendancePage() {
     safeSetStatus("Presensi Dinonaktifkan", message);
   }
 
+  function setSelectedWorkMode(mode: WorkMode) {
+    workModeRef.current = mode;
+    setWorkMode(mode);
+  }
+
   function updateVisitForm<K extends keyof VisitForm>(
     key: K,
     value: VisitForm[K],
@@ -1871,7 +1896,7 @@ export default function AttendancePage() {
       const modeLabel = getWorkModeLabel(mode);
 
       if (hasCheckedOutToday) {
-        setWorkMode(mode);
+        setSelectedWorkMode(mode);
         setIsVisitModalOpen(false);
         setVisitForm(emptyVisitForm);
 
@@ -1890,7 +1915,7 @@ export default function AttendancePage() {
       }
 
       if (value === "visit") {
-        setWorkMode("visit");
+        setSelectedWorkMode("visit");
         setIsVisitModalOpen(true);
         setLateReason("");
 
@@ -1910,7 +1935,7 @@ export default function AttendancePage() {
         return;
       }
 
-      setWorkMode(mode);
+      setSelectedWorkMode(mode);
       setIsVisitModalOpen(false);
       setVisitForm(emptyVisitForm);
 
@@ -1928,7 +1953,28 @@ export default function AttendancePage() {
       return;
     }
 
-    setWorkMode(value);
+    const remainingWfhQuota = getWfhQuotaRemaining(currentUser);
+
+    if (value === "wfh" && remainingWfhQuota !== null && remainingWfhQuota <= 0) {
+      setSelectedWorkMode("office");
+      setIsVisitModalOpen(false);
+      setVisitForm(emptyVisitForm);
+
+      showCustomAlert(
+        "Kuota WFH habis",
+        "Kuota WFH bulan ini sudah habis. Pilih mode Kantor atau hubungi admin.",
+        "warning",
+      );
+
+      safeSetStatus(
+        "WFH Tidak Tersedia",
+        "Kuota WFH bulan ini sudah habis.",
+      );
+
+      return;
+    }
+
+    setSelectedWorkMode(value);
 
     if (value === "visit") {
       setLateReason("");
@@ -1944,8 +1990,8 @@ export default function AttendancePage() {
     );
   }
 
-  function validateVisitForm() {
-    if (workMode !== "visit") return true;
+  function validateVisitForm(mode = workModeRef.current) {
+    if (mode !== "visit") return true;
 
     if (
       !visitForm.visitTitle.trim() ||
@@ -2068,7 +2114,7 @@ export default function AttendancePage() {
         if (hasAttendanceCheckIn(attendance)) {
           const mode = getAttendanceWorkMode(attendance);
 
-          setWorkMode(mode);
+          setSelectedWorkMode(mode);
 
           safeSetStatus(
             "Mode Presensi Terkunci",
@@ -2381,6 +2427,8 @@ export default function AttendancePage() {
   }
 
   async function requestCheckIn() {
+    const selectedWorkMode = workModeRef.current;
+
     if (isLaptopBlocked) {
       showLaptopBlockedAlert();
       return;
@@ -2416,9 +2464,28 @@ export default function AttendancePage() {
       return;
     }
 
-    if (!validateVisitForm()) return;
+    if (!validateVisitForm(selectedWorkMode)) return;
 
-    if (workMode === "visit") {
+    const remainingWfhQuota = getWfhQuotaRemaining(currentUser);
+
+    if (
+      selectedWorkMode === "wfh" &&
+      remainingWfhQuota !== null &&
+      remainingWfhQuota <= 0
+    ) {
+      showCustomAlert(
+        "Kuota WFH habis",
+        "Kuota WFH bulan ini sudah habis. Pilih mode Kantor atau hubungi admin.",
+        "warning",
+      );
+      safeSetStatus(
+        "Check-in WFH Ditolak",
+        "Kuota WFH bulan ini sudah habis.",
+      );
+      return;
+    }
+
+    if (selectedWorkMode === "visit") {
       setLateReason("");
       setIsLateReasonOpen(false);
 
@@ -2484,6 +2551,8 @@ export default function AttendancePage() {
   }
 
   async function requestCheckOut() {
+    const selectedWorkMode = workModeRef.current;
+
     if (isLaptopBlocked) {
       showLaptopBlockedAlert();
       return;
@@ -2496,7 +2565,9 @@ export default function AttendancePage() {
       return;
     }
 
-    if (workMode === "visit" && !validateVisitForm()) return;
+    if (selectedWorkMode === "visit" && !validateVisitForm(selectedWorkMode)) {
+      return;
+    }
 
     const user = currentUser || (await loadCurrentUser());
 
@@ -2563,6 +2634,8 @@ export default function AttendancePage() {
   }
 
   async function handleAttendance(action: AttendanceAction, reason = "") {
+    const selectedWorkMode = workModeRef.current;
+
     if (isLaptopBlocked) {
       showLaptopBlockedAlert();
       return;
@@ -2573,7 +2646,29 @@ export default function AttendancePage() {
       return;
     }
 
-    if (workMode === "visit" && !validateVisitForm()) return;
+    if (selectedWorkMode === "visit" && !validateVisitForm(selectedWorkMode)) {
+      return;
+    }
+
+    const remainingWfhQuota = getWfhQuotaRemaining(currentUser);
+
+    if (
+      action === "check-in" &&
+      selectedWorkMode === "wfh" &&
+      remainingWfhQuota !== null &&
+      remainingWfhQuota <= 0
+    ) {
+      showCustomAlert(
+        "Kuota WFH habis",
+        "Kuota WFH bulan ini sudah habis. Pilih mode Kantor atau hubungi admin.",
+        "warning",
+      );
+      safeSetStatus(
+        "Check-in WFH Ditolak",
+        "Kuota WFH bulan ini sudah habis.",
+      );
+      return;
+    }
 
     try {
       setLoading(true);
@@ -2610,12 +2705,12 @@ export default function AttendancePage() {
       formData.append(`${prefix}Longitude`, String(longitude));
       formData.append(`${prefix}Accuracy`, String(accuracy));
 
-      formData.append("workMode", workMode);
-      formData.append("work_mode", workMode);
-      formData.append("activityNote", getWorkModeLabel(workMode));
+      formData.append("workMode", selectedWorkMode);
+      formData.append("work_mode", selectedWorkMode);
+      formData.append("activityNote", getWorkModeLabel(selectedWorkMode));
       formData.append("attendanceAction", action);
 
-      if (workMode === "visit") {
+      if (selectedWorkMode === "visit") {
         formData.append("skipLateValidation", "true");
         formData.append("ignoreLateValidation", "true");
         formData.append("isVisitAttendance", "true");
@@ -2624,10 +2719,16 @@ export default function AttendancePage() {
       }
 
       if (action === "check-out") {
-        formData.append("checkOutWorkMode", workMode);
-        formData.append("check_out_work_mode", workMode);
-        formData.append("checkOutActivityNote", getWorkModeLabel(workMode));
-        formData.append("check_out_activity_note", getWorkModeLabel(workMode));
+        formData.append("checkOutWorkMode", selectedWorkMode);
+        formData.append("check_out_work_mode", selectedWorkMode);
+        formData.append(
+          "checkOutActivityNote",
+          getWorkModeLabel(selectedWorkMode),
+        );
+        formData.append(
+          "check_out_activity_note",
+          getWorkModeLabel(selectedWorkMode),
+        );
       }
 
       if (action === "check-in" && reason.trim()) {
@@ -2635,7 +2736,7 @@ export default function AttendancePage() {
         formData.append("late_reason", reason.trim());
       }
 
-      if (workMode === "visit") {
+      if (selectedWorkMode === "visit") {
         const visitTitle = visitForm.visitTitle.trim();
         const visitClientName = visitForm.visitClientName.trim();
         const visitAddress = visitForm.visitAddress.trim();
@@ -2666,7 +2767,7 @@ export default function AttendancePage() {
       if (!response.ok) {
         const message = data.message || data.error || "Presensi gagal.";
 
-        if (data.requiresLateReason && workMode !== "visit") {
+        if (data.requiresLateReason && selectedWorkMode !== "visit") {
           setIsLateReasonOpen(true);
           safeSetStatus("Check-in Terlambat", message);
           return;
@@ -2685,7 +2786,8 @@ export default function AttendancePage() {
       const officeName = data.office?.name;
       const distance = data.office?.distance;
       const radius = data.office?.radius;
-      const modeLabel = data.workModeLabel || getWorkModeLabel(workMode);
+      const modeLabel =
+        data.workModeLabel || getWorkModeLabel(selectedWorkMode);
 
       safeSetStatus(
         "Presensi Berhasil",
@@ -2701,7 +2803,7 @@ export default function AttendancePage() {
       setLateReason("");
       setIsLateReasonOpen(false);
 
-      if (workMode === "visit") {
+      if (selectedWorkMode === "visit") {
         setVisitForm(emptyVisitForm);
       }
 
@@ -2814,6 +2916,7 @@ export default function AttendancePage() {
               disabled={
                 loading || isTodayAttendanceLoading || hasCheckedOutToday
               }
+              wfhQuotaRemaining={getWfhQuotaRemaining(currentUser)}
               onChange={handleWorkModeChange}
               onOpenVisit={() => {
                 if (hasCheckedOutToday) {
@@ -2827,7 +2930,7 @@ export default function AttendancePage() {
                 }
 
                 if (hasCheckedInToday) {
-                  setWorkMode("visit");
+                  setSelectedWorkMode("visit");
                   setIsVisitModalOpen(true);
 
                   showCustomAlert(
