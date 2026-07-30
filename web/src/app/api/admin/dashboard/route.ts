@@ -4,6 +4,7 @@ import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { getJakartaDateOnly } from "@/lib/leave-attendance-guard";
 import { prisma } from "@/lib/prisma";
 
+export const runtime = "nodejs";
 function toIsoDate(value: Date | string | null | undefined) {
   if (!value) return null;
 
@@ -159,7 +160,7 @@ export async function GET(req: NextRequest) {
         department: employee.department?.name || null,
         checkInTime: toIsoDate(attendance?.check_in_time),
         checkOutTime: toIsoDate(attendance?.check_out_time),
-        status: attendance?.status || "ABSENT",
+        status: attendance?.check_in_time ? (attendance?.status || "PRESENT") : "ABSENT",
         lateMinutes: Number(attendance?.late_minutes || 0),
         workMinutes,
       };

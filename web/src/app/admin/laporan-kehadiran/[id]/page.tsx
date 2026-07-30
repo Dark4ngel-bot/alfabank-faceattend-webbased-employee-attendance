@@ -445,11 +445,11 @@ function PhotoCard({
 
       {imageUrl ? (
         <div className="bg-[#f8fbff] p-4">
-          <div className="mx-auto max-w-[320px] overflow-hidden rounded-[1.3rem] bg-slate-950 shadow-lg shadow-slate-300/40">
+          <div className="mx-auto overflow-hidden rounded-[1.3rem] bg-slate-950 shadow-lg shadow-slate-300/40">
             <img
               src={imageUrl}
               alt={title}
-              className="block h-auto max-h-[480px] w-full object-cover"
+              className="block h-80 w-full object-contain md:h-96"
             />
           </div>
         </div>
