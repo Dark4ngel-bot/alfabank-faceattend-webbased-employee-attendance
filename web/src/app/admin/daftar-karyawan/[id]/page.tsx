@@ -87,6 +87,7 @@ type Employee = {
   employment_end_date: string | null;
   birth_place: string | null;
   birth_date: string | null;
+  bank_name?: string | null;
   bank_account_number: string | null;
   nik: string | null;
   created_at: string;
@@ -509,6 +510,14 @@ export default function AdminEmployeeDetailPage() {
                     value={employee.nik || "-"}
                     description="Nomor Induk Kependudukan"
                     delay={220}
+                  />
+
+                  <DetailCard
+                    icon={Building2}
+                    label="Bank Rekening"
+                    value={employee.bank_name || "-"}
+                    description="Bank tujuan payroll karyawan"
+                    delay={230}
                   />
 
                   <DetailCard

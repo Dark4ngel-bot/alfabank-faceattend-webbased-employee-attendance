@@ -6,7 +6,9 @@ import {
   ArrowLeft,
   BadgeCheck,
   BriefcaseBusiness,
+  Building2,
   CalendarDays,
+  CreditCard,
   IdCard,
   Loader2,
   Mail,
@@ -34,6 +36,8 @@ type KartuIdentitasUser = {
   status: string;
   profile_photo: string | null;
   nik?: string | null;
+  bank_name?: string | null;
+  bank_account_number?: string | null;
   employment_start_date?: string | null;
   employment_end_date?: string | null;
   department?: UserRelation;
@@ -195,6 +199,16 @@ export default function KartuIdentitasPage() {
         label: "No Induk Karyawan",
         value: user.employee_code || "-",
         icon: IdCard,
+      },
+      {
+        label: "Bank",
+        value: user.bank_name || "-",
+        icon: Building2,
+      },
+      {
+        label: "No Rekening",
+        value: user.bank_account_number || "-",
+        icon: CreditCard,
       },
       {
         label: "NIK",

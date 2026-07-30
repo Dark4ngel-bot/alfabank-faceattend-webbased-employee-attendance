@@ -43,6 +43,8 @@ import {
   normalizeDigits,
 } from "@/lib/identity-validation";
 
+import { AppBankSelect } from "@/components/AppBankSelect";
+
 type ShiftWorkSchedule = {
   day_of_week: string;
   is_work_day: boolean;
@@ -63,6 +65,7 @@ type ProfileUser = {
   employment_end_date: string | null;
   birth_place: string | null;
   birth_date: string | null;
+  bank_name: string | null;
   bank_account_number: string | null;
   nik: string | null;
   profile_photo: string | null;
@@ -105,6 +108,7 @@ type EditProfileForm = {
   phone: string;
   birth_place: string;
   birth_date: string;
+  bank_name: string;
   bank_account_number: string;
   nik: string;
 };
@@ -128,6 +132,7 @@ const initialEditProfileForm: EditProfileForm = {
   phone: "",
   birth_place: "",
   birth_date: "",
+  bank_name: "",
   bank_account_number: "",
   nik: "",
 };
@@ -425,33 +430,88 @@ function ProfileMotionStyles() {
 }
 
 type ProfileAvatarProps = {
-  user: ProfileUser;
+  user: ProfileUser | null;
   initials: string;
   size?: "sm" | "md" | "lg";
+  isUploading?: boolean;
+  onUploadPhoto?: (file: File) => void;
 };
 
-function ProfileAvatar({ user, initials, size = "md" }: ProfileAvatarProps) {
+function ProfileAvatar({
+  user,
+  initials,
+  size = "md",
+  isUploading = false,
+  onUploadPhoto,
+}: ProfileAvatarProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   const sizeClass = {
     sm: "h-16 w-16 text-xl",
     md: "h-24 w-24 text-3xl",
     lg: "h-32 w-32 text-4xl",
   }[size];
 
+  const badgeSizeClass = {
+    sm: "h-7 w-7 bottom-0 right-0 p-1.5",
+    md: "h-9 w-9 bottom-0 right-0 p-2",
+    lg: "h-11 w-11 bottom-1 right-1 p-2.5",
+  }[size];
+
+  const iconSize = size === "sm" ? 13 : size === "md" ? 17 : 19;
+
   return (
-    <div
-      className={`profile-avatar-pop flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#eaf1ff] font-black text-[#123c8c] ring-4 ring-blue-100 ${sizeClass}`}
-    >
-      {user.profile_photo ? (
-        <>
+    <div className="relative inline-block">
+      <div
+        className={`profile-avatar-pop flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#eaf1ff] font-black text-[#123c8c] ring-4 ring-blue-100 ${sizeClass}`}
+      >
+        {isUploading ? (
+          <div className="flex items-center justify-center">
+            <Loader2 size={24} className="animate-spin text-[#123c8c]" />
+          </div>
+        ) : user?.profile_photo ? (
           <img
             src={user.profile_photo}
             alt={user.name}
             className="h-full w-full object-cover"
           />
+        ) : (
+          initials
+        )}
+      </div>
+
+      {onUploadPhoto ? (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) {
+                onUploadPhoto(file);
+              }
+              event.target.value = "";
+            }}
+          />
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            title="Ganti Foto Profil"
+            className={`absolute flex items-center justify-center rounded-full bg-[#123c8c] text-white shadow-lg transition hover:bg-[#0f3274] active:scale-95 disabled:opacity-50 ${badgeSizeClass}`}
+            aria-label="Ganti Foto Profil"
+          >
+            {isUploading ? (
+              <Loader2 size={iconSize} className="animate-spin" />
+            ) : (
+              <Upload size={iconSize} />
+            )}
+          </button>
         </>
-      ) : (
-        initials
-      )}
+      ) : null}
     </div>
   );
 }
@@ -729,6 +789,7 @@ export function ProfilPageContent({
       phone: user.phone || "",
       birth_place: user.birth_place || "",
       birth_date: formatDateInput(user.birth_date),
+      bank_name: user.bank_name || "",
       bank_account_number: user.bank_account_number || "",
       nik: user.nik || "",
     });
@@ -746,6 +807,7 @@ export function ProfilPageContent({
 
     const name = editProfileForm.name.trim();
     const phone = editProfileForm.phone.trim();
+    const bankName = editProfileForm.bank_name.trim();
     const bankAccountNumber = editProfileForm.bank_account_number.trim();
     const nik = editProfileForm.nik.trim();
 
@@ -807,6 +869,7 @@ export function ProfilPageContent({
           phone,
           birth_place: editProfileForm.birth_place.trim(),
           birth_date: editProfileForm.birth_date,
+          bank_name: bankName,
           bank_account_number: bankAccountNumber,
           nik,
         }),
@@ -832,6 +895,7 @@ export function ProfilPageContent({
               birth_place:
                 data.user?.birth_place ?? editProfileForm.birth_place.trim(),
               birth_date: data.user?.birth_date ?? editProfileForm.birth_date,
+              bank_name: data.user?.bank_name ?? bankName,
               bank_account_number:
                 data.user?.bank_account_number ?? bankAccountNumber,
               nik: data.user?.nik ?? nik,
@@ -1129,6 +1193,11 @@ export function ProfilPageContent({
         icon: IdCard,
       },
       {
+        label: "Bank Rekening",
+        value: user.bank_name || "-",
+        icon: Building2,
+      },
+      {
         label: "No Rekening",
         value: user.bank_account_number || "-",
         icon: CreditCard,
@@ -1255,7 +1324,13 @@ export function ProfilPageContent({
               className="profile-row-enter mt-10 flex flex-col items-center md:mt-8"
               style={{ animationDelay: "60ms" }}
             >
-              <ProfileAvatar user={user} initials={initials} size="md" />
+              <ProfileAvatar
+                user={user}
+                initials={initials}
+                size="md"
+                isUploading={isUploadingPhoto}
+                onUploadPhoto={handleUploadProfilePhoto}
+              />
 
               <h2 className="mt-5 text-center text-2xl font-black text-[#123456] md:text-3xl">
                 {user.name}
@@ -1315,7 +1390,13 @@ export function ProfilPageContent({
               className="profile-row-enter mt-6 flex w-full items-center gap-5 rounded-[2rem] bg-white text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-200/50 active:scale-[0.99] md:border md:border-blue-100 md:p-6 md:shadow-xl md:shadow-slate-200/50"
               style={{ animationDelay: "60ms" }}
             >
-              <ProfileAvatar user={user} initials={initials} size="sm" />
+              <ProfileAvatar
+                user={user}
+                initials={initials}
+                size="sm"
+                isUploading={isUploadingPhoto}
+                onUploadPhoto={handleUploadProfilePhoto}
+              />
 
               <div className="min-w-0 flex-1">
                 <h2 className="truncate text-xl font-black text-[#123456] md:text-3xl">
@@ -1627,44 +1708,54 @@ export function ProfilPageContent({
                 </div>
 
                 <div
-                  className="profile-row-enter"
+                  className="profile-row-enter grid gap-4 md:grid-cols-2"
                   style={{ animationDelay: "200ms" }}
                 >
-                  <label className="mb-2 block text-sm font-black text-slate-700">
-                    No Rekening
-                  </label>
+                  <AppBankSelect
+                    label="Nama Bank"
+                    value={editProfileForm.bank_name}
+                    onChange={(val) =>
+                      setEditProfileForm((prev) => ({ ...prev, bank_name: val }))
+                    }
+                  />
 
-                  <div className="relative">
-                    <CreditCard
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
+                  <div>
+                    <label className="mb-2 block text-sm font-black text-slate-700">
+                      No Rekening
+                    </label>
 
-                    <input
-                      value={editProfileForm.bank_account_number}
-                      onChange={(event) =>
-                        handleNumericProfileInputChange(
-                          "bank_account_number",
-                          event.target.value,
-                        )
-                      }
-                      onPaste={(event) => {
-                        const pastedText = event.clipboardData.getData("text");
+                    <div className="relative">
+                      <CreditCard
+                        size={18}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                      />
 
-                        if (/\D/.test(pastedText) || pastedText.length > 16) {
-                          showProfileAlert(
-                            "No rekening tidak valid",
-                            "No rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
-                            "warning",
-                          );
+                      <input
+                        value={editProfileForm.bank_account_number}
+                        onChange={(event) =>
+                          handleNumericProfileInputChange(
+                            "bank_account_number",
+                            event.target.value,
+                          )
                         }
-                      }}
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={16}
-                      placeholder="Masukkan no rekening"
-                      className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    />
+                        onPaste={(event) => {
+                          const pastedText = event.clipboardData.getData("text");
+
+                          if (/\D/.test(pastedText) || pastedText.length > 16) {
+                            showProfileAlert(
+                              "No rekening tidak valid",
+                              "No rekening harus berupa angka dengan panjang 10 sampai 16 digit.",
+                              "warning",
+                            );
+                          }
+                        }}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={16}
+                        placeholder="Masukkan no rekening"
+                        className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                      />
+                    </div>
                   </div>
                 </div>
 

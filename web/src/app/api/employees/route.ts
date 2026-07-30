@@ -89,6 +89,7 @@ const employeeSelect = {
   employment_end_date: true,
   birth_place: true,
   birth_date: true,
+  bank_name: true,
   bank_account_number: true,
   nik: true,
   profile_photo: true,
@@ -475,6 +476,9 @@ export async function POST(req: NextRequest) {
     );
     const birthPlace = normalizeOptionalText(body.birth_place);
     const birthDate = normalizeOptionalDate(body.birth_date, "Tanggal lahir");
+    const bankName = normalizeOptionalText(
+      body.bank_name || body.bankName || body.nama_bank,
+    );
     const bankAccountNumber = normalizeOptionalText(
       body.bank_account_number || body.no_rekening
     );
@@ -586,6 +590,7 @@ export async function POST(req: NextRequest) {
         employment_end_date: normalizedEmploymentEndDate,
         birth_place: birthPlace,
         birth_date: birthDate,
+        bank_name: bankName,
         bank_account_number: bankAccountNumber,
         nik,
         registered_office_id: registeredOfficeId,
@@ -675,6 +680,9 @@ export async function PATCH(req: NextRequest) {
     );
     const birthPlace = normalizeOptionalText(body.birth_place);
     const birthDate = normalizeOptionalDate(body.birth_date, "Tanggal lahir");
+    const bankName = normalizeOptionalText(
+      body.bank_name || body.bankName || body.nama_bank,
+    );
     const bankAccountNumber = normalizeOptionalText(
       body.bank_account_number || body.no_rekening
     );
@@ -804,6 +812,7 @@ export async function PATCH(req: NextRequest) {
       employment_end_date: Date | null;
       birth_place: string | null;
       birth_date: Date | null;
+      bank_name: string | null;
       bank_account_number: string | null;
       nik: string | null;
       registered_office_id: string;
@@ -828,6 +837,7 @@ export async function PATCH(req: NextRequest) {
       employment_end_date: normalizedEmploymentEndDate,
       birth_place: birthPlace,
       birth_date: birthDate,
+      bank_name: bankName,
       bank_account_number: bankAccountNumber,
       nik,
       registered_office_id: registeredOfficeId,

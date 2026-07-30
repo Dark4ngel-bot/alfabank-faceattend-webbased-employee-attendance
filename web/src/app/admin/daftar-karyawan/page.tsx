@@ -195,6 +195,7 @@ type Employee = {
   employment_end_date: string | null;
   birth_place: string | null;
   birth_date: string | null;
+  bank_name?: string | null;
   bank_account_number: string | null;
   nik: string | null;
   created_at: string;
@@ -204,6 +205,8 @@ type Employee = {
   photo_url?: string | null;
   avatar_url?: string | null;
 };
+
+import { AppBankSelect } from "@/components/AppBankSelect";
 
 type EmployeeForm = {
   employee_code: string;
@@ -223,6 +226,7 @@ type EmployeeForm = {
   employment_end_date: string;
   birth_place: string;
   birth_date: string;
+  bank_name: string;
   bank_account_number: string;
   nik: string;
 };
@@ -251,6 +255,7 @@ const initialForm: EmployeeForm = {
   employment_end_date: "",
   birth_place: "",
   birth_date: "",
+  bank_name: "",
   bank_account_number: "",
   nik: "",
 };
@@ -757,6 +762,7 @@ export default function AdminEmployeesPage() {
       employment_end_date: formatDateInput(employee.employment_end_date),
       birth_place: employee.birth_place || "",
       birth_date: formatDateInput(employee.birth_date),
+      bank_name: employee.bank_name || "",
       bank_account_number: employee.bank_account_number || "",
       nik: employee.nik || "",
     });
@@ -1574,6 +1580,14 @@ export default function AdminEmployeesPage() {
                     />
                   </div>
                 </div>
+
+                <AppBankSelect
+                  label="Nama Bank"
+                  value={form.bank_name}
+                  onChange={(val) =>
+                    setForm((prev) => ({ ...prev, bank_name: val }))
+                  }
+                />
 
                 <div>
                   <label className="mb-2 block text-sm font-black text-slate-700">

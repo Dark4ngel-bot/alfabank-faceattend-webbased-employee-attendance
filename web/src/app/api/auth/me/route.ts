@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
         employment_end_date: true,
         birth_place: true,
         birth_date: true,
+        bank_name: true,
         bank_account_number: true,
         nik: true,
         profile_photo: true,

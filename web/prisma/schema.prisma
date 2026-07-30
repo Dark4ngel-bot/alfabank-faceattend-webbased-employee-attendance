@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -30,6 +29,7 @@ model User {
   employment_end_date   DateTime? @db.Date
   birth_place           String?   @db.VarChar(100)
   birth_date            DateTime? @db.Date
+  bank_name             String?   @db.VarChar(100)
   bank_account_number   String?   @db.VarChar(50)
   nik                   String?   @db.VarChar(30)
 

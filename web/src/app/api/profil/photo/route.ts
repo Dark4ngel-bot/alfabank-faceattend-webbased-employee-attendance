@@ -1,4 +1,6 @@
 import { Buffer } from "node:buffer";
+import fs from "node:fs";
+import path from "node:path";
 
 import type { UploadApiResponse } from "cloudinary";
 import { NextRequest, NextResponse } from "next/server";
@@ -10,7 +12,7 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MAX_PHOTO_SIZE = 4 * 1024 * 1024;
+const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
 
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
@@ -78,9 +80,7 @@ async function fileToBuffer(file: File): Promise<ParsedPhotoBody> {
   };
 }
 
-async function parsePhotoBody(
-  req: NextRequest,
-): Promise<ParsedPhotoBody> {
+async function parsePhotoBody(req: NextRequest): Promise<ParsedPhotoBody> {
   const contentType = req.headers.get("content-type") || "";
 
   if (contentType.includes("multipart/form-data")) {
@@ -145,6 +145,34 @@ async function parsePhotoBody(
   return dataUrlToBuffer(photoDataUrl.trim());
 }
 
+function saveLocalProfilePhoto(
+  buffer: Buffer,
+  userId: string,
+  mime: string,
+): { url: string; publicId: string | null } {
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "profiles");
+
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const ext = mime.includes("png")
+    ? "png"
+    : mime.includes("webp")
+      ? "webp"
+      : "jpg";
+
+  const filename = `user-${userId}-${Date.now()}.${ext}`;
+  const filePath = path.join(uploadDir, filename);
+
+  fs.writeFileSync(filePath, buffer);
+
+  return {
+    url: `/uploads/profiles/${filename}`,
+    publicId: null,
+  };
+}
+
 async function uploadProfilePhoto(
   buffer: Buffer,
   userId: string,
@@ -176,24 +204,6 @@ async function uploadProfilePhoto(
 
     uploadStream.end(buffer);
   });
-}
-
-async function deleteCloudinaryPhoto(publicId: string | null) {
-  if (!publicId) return;
-
-  try {
-    const cloudinary = getCloudinary();
-
-    await cloudinary.uploader.destroy(publicId, {
-      resource_type: "image",
-      invalidate: true,
-    });
-  } catch (error) {
-    console.warn(
-      "DELETE_OLD_PROFILE_PHOTO_WARNING:",
-      error,
-    );
-  }
 }
 
 async function getSafeUser(userId: string) {
@@ -274,8 +284,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  let newPublicId: string | null = null;
-
   try {
     const userId = await getUserIdFromRequest(req);
 
@@ -305,76 +313,81 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (!ALLOWED_MIME_TYPES.has(mime)) {
-      throw new ApiError(
-        400,
-        "Format foto harus JPG, PNG, atau WEBP.",
-      );
+      throw new ApiError(400, "Format foto harus JPG, PNG, atau WEBP.");
     }
 
     if (buffer.length > MAX_PHOTO_SIZE) {
-      throw new ApiError(400, "Ukuran foto maksimal 4MB.");
+      throw new ApiError(400, "Ukuran foto maksimal 5MB.");
     }
 
-    const uploadResult = await uploadProfilePhoto(buffer, userId);
-    newPublicId = uploadResult.public_id;
+    let photoUrl: string;
+    let photoPublicId: string | null = null;
 
-    let updatedUser;
+    const hasCloudinary = Boolean(
+      process.env.CLOUDINARY_CLOUD_NAME &&
+        process.env.CLOUDINARY_API_KEY &&
+        process.env.CLOUDINARY_API_SECRET,
+    );
 
-    try {
-      updatedUser = await prisma.user.update({
-        where: {
-          id: userId,
-        },
-        data: {
-          profile_photo: uploadResult.secure_url,
-          profile_photo_public_id: uploadResult.public_id,
-        },
-        select: {
-          id: true,
-          employee_code: true,
-          name: true,
-          email: true,
-          role: true,
-          employee_type: true,
-          phone: true,
-          status: true,
-          profile_photo: true,
-          profile_photo_public_id: true,
-          jabatan_id: true,
-          department_id: true,
-          position_id: true,
-          shift_id: true,
-          registered_office_id: true,
-          npwp_number: true,
-          ptkp_status: true,
-          base_salary: true,
-          created_at: true,
-          updated_at: true,
-        },
-      });
-    } catch (databaseError) {
-      await deleteCloudinaryPhoto(newPublicId);
-      newPublicId = null;
-
-      throw databaseError;
+    if (hasCloudinary) {
+      try {
+        const uploadResult = await uploadProfilePhoto(buffer, userId);
+        photoUrl = uploadResult.secure_url;
+        photoPublicId = uploadResult.public_id;
+      } catch (cloudinaryError) {
+        console.warn(
+          "Cloudinary upload failed, falling back to local storage:",
+          cloudinaryError,
+        );
+        const localResult = saveLocalProfilePhoto(buffer, userId, mime);
+        photoUrl = localResult.url;
+        photoPublicId = localResult.publicId;
+      }
+    } else {
+      const localResult = saveLocalProfilePhoto(buffer, userId, mime);
+      photoUrl = localResult.url;
+      photoPublicId = localResult.publicId;
     }
 
-    if (
-      currentUser.profile_photo_public_id &&
-      currentUser.profile_photo_public_id !== uploadResult.public_id
-    ) {
-      await deleteCloudinaryPhoto(
-        currentUser.profile_photo_public_id,
-      );
-    }
+    const updatedUser = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        profile_photo: photoUrl,
+        profile_photo_public_id: photoPublicId,
+      },
+      select: {
+        id: true,
+        employee_code: true,
+        name: true,
+        email: true,
+        role: true,
+        employee_type: true,
+        phone: true,
+        status: true,
+        profile_photo: true,
+        profile_photo_public_id: true,
+        jabatan_id: true,
+        department_id: true,
+        position_id: true,
+        shift_id: true,
+        registered_office_id: true,
+        npwp_number: true,
+        ptkp_status: true,
+        base_salary: true,
+        created_at: true,
+        updated_at: true,
+      },
+    });
 
     return NextResponse.json({
       success: true,
       message: "Foto profil berhasil diperbarui.",
-      photoUrl: uploadResult.secure_url,
-      profilePhoto: uploadResult.secure_url,
-      photo: uploadResult.secure_url,
-      publicId: uploadResult.public_id,
+      photoUrl,
+      profilePhoto: photoUrl,
+      photo: photoUrl,
+      publicId: photoPublicId,
       user: updatedUser,
     });
   } catch (error) {
