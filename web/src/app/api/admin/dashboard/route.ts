@@ -3,6 +3,8 @@ import { requireOwner } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
 
+export const runtime = "nodejs";
+
 function getTodayRangeWIB() {
   const now = new Date();
 
@@ -16,7 +18,10 @@ function getTodayRangeWIB() {
   const start = new Date(`${wibDate}T00:00:00.000+07:00`);
   const end = new Date(`${wibDate}T23:59:59.999+07:00`);
 
-  return { start, end };
+  const [year, month, day] = wibDate.split("-").map(Number);
+  const dateOnlyUtc = new Date(Date.UTC(year, month - 1, day));
+
+  return { start, end, dateOnlyUtc };
 }
 
 function toIsoDate(value: Date | string | null | undefined) {
@@ -77,7 +82,7 @@ export async function GET(req: NextRequest) {
   try {
     await requireOwner(req);
 
-    const { start, end } = getTodayRangeWIB();
+    const { start, end, dateOnlyUtc } = getTodayRangeWIB();
 
     const employees = await prisma.user.findMany({
       where: {
@@ -113,10 +118,7 @@ export async function GET(req: NextRequest) {
       where: {
         OR: [
           {
-            attendance_date: {
-              gte: start,
-              lte: end,
-            },
+            attendance_date: dateOnlyUtc,
           },
           {
             check_in_time: {
@@ -193,7 +195,7 @@ export async function GET(req: NextRequest) {
         department: employee.department?.name || null,
         checkInTime: toIsoDate(attendance?.check_in_time),
         checkOutTime: toIsoDate(attendance?.check_out_time),
-        status: attendance?.status || "ABSENT",
+        status: attendance?.check_in_time ? (attendance?.status || "PRESENT") : "ABSENT",
         lateMinutes: Number(attendance?.late_minutes || 0),
         workMinutes,
       };

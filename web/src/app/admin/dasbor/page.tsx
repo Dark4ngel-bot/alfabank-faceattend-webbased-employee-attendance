@@ -498,15 +498,16 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="mt-6 overflow-hidden rounded-2xl border border-blue-100">
-            <div className="hidden grid-cols-[0.55fr_1.5fr_0.8fr_0.8fr_0.8fr_0.8fr] bg-[#eaf1ff] px-5 py-3 text-xs font-black uppercase tracking-wide text-[#123c8c] md:grid">
-              <p>Profil</p>
-              <p>Karyawan</p>
-              <p>Check-in</p>
-              <p>Check-out</p>
-              <p>Durasi</p>
-              <p>Status</p>
-            </div>
+          <div className="mt-6 overflow-x-auto rounded-2xl border border-blue-100 custom-scrollbar">
+            <div className="min-w-[700px]">
+              <div className="hidden grid-cols-[0.55fr_1.5fr_0.8fr_0.8fr_0.8fr_0.8fr] bg-[#eaf1ff] px-5 py-3 text-xs font-black uppercase tracking-wide text-[#123c8c] md:grid">
+                <p>Profil</p>
+                <p>Karyawan</p>
+                <p>Check-in</p>
+                <p>Check-out</p>
+                <p>Durasi</p>
+                <p>Status</p>
+              </div>
 
             <div className="divide-y divide-blue-100 bg-white">
               {isLoading ? (
@@ -574,7 +575,8 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       <BottomNav variant="admin" />
     </MobileShell>
