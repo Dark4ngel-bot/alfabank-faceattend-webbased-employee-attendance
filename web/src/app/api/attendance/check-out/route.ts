@@ -695,7 +695,9 @@ export async function POST(req: NextRequest) {
     }
 
     const checkInWorkMode = normalizeWorkMode(attendance.work_mode);
-    const workMode = checkOutWorkMode || checkInWorkMode;
+    const requestedCheckOutMode = checkOutWorkMode || checkInWorkMode;
+    const workMode =
+      checkInWorkMode === "office" ? requestedCheckOutMode : checkInWorkMode;
     const isOfficeMode = workMode === "office";
     const isWfhMode = workMode === "wfh";
     const isVisitMode = workMode === "visit";

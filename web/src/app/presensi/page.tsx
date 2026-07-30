@@ -100,6 +100,8 @@ type TodayAttendance = {
   workMode?: WorkMode | string | null;
   work_mode?: WorkMode | string | null;
   workModeLabel?: string | null;
+  checkOutWorkMode?: WorkMode | string | null;
+  check_out_work_mode?: WorkMode | string | null;
 };
 
 type LeaveBlock = {
@@ -1027,6 +1029,7 @@ function WorkModeFilter({
   onOpenVisit: () => void;
 }) {
   const isWfhQuotaEmpty = wfhQuotaRemaining !== null && wfhQuotaRemaining <= 0;
+  const shouldDisableWfhOption = isWfhQuotaEmpty && value !== "wfh";
 
   return (
     <div className="attendance-row-enter grid grid-cols-[1fr_auto] items-center gap-2 rounded-[1.2rem] border border-blue-100 bg-[#f8fbff] p-2 sm:p-3">
@@ -1037,8 +1040,8 @@ function WorkModeFilter({
         disabled={disabled}
       >
         <option value="office">Kantor</option>
-        <option value="wfh" disabled={isWfhQuotaEmpty}>
-          {isWfhQuotaEmpty ? "WFH - kuota habis" : "WFH"}
+        <option value="wfh" disabled={shouldDisableWfhOption}>
+          {shouldDisableWfhOption ? "WFH - kuota habis" : "WFH"}
         </option>
         <option value="visit">Kunjungan</option>
       </AppSelect>
@@ -2634,7 +2637,14 @@ export default function AttendancePage() {
   }
 
   async function handleAttendance(action: AttendanceAction, reason = "") {
-    const selectedWorkMode = workModeRef.current;
+    const checkedInMode = getAttendanceWorkMode(todayAttendance);
+    const selectedWorkMode =
+      action === "check-out" &&
+      hasAttendanceCheckIn(todayAttendance) &&
+      !hasAttendanceCheckOut(todayAttendance) &&
+      checkedInMode !== "office"
+        ? checkedInMode
+        : workModeRef.current;
 
     if (isLaptopBlocked) {
       showLaptopBlockedAlert();
