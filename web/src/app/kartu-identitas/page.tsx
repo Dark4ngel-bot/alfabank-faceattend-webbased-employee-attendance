@@ -20,6 +20,7 @@ import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
 import { useSiteLogo } from "@/hooks/useSiteLogo";
+import { getBankOption } from "@/lib/bank-options";
 
 type UserRelation = {
   id: string;
@@ -36,7 +37,7 @@ type KartuIdentitasUser = {
   status: string;
   profile_photo: string | null;
   nik?: string | null;
-  bank_name?: string | null;
+  bank_code?: string | null;
   bank_account_number?: string | null;
   employment_start_date?: string | null;
   employment_end_date?: string | null;
@@ -202,7 +203,7 @@ export default function KartuIdentitasPage() {
       },
       {
         label: "Bank",
-        value: user.bank_name || "-",
+        value: getBankOption(user.bank_code)?.shortName || "-",
         icon: Building2,
       },
       {

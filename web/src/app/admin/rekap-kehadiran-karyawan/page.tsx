@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MobileShell from "@/components/MobileShell";
+import { AppLoadingState } from "@/components/ui/AppUI";
 
 type Employee = {
   id: string;
@@ -157,6 +158,15 @@ function formatWorkDuration(minutes: number) {
   if (hours > 0) return `${hours}j`;
 
   return `${remainingMinutes}m`;
+}
+
+function getNetWorkMinutes(summary?: EmployeeAttendanceSummary | null) {
+  if (!summary) return 0;
+
+  return Math.max(
+    Number(summary.totalWorkMinutes || 0) - Number(summary.terlambat || 0),
+    0,
+  );
 }
 
 function getDisplayErrorMessage(
@@ -413,6 +423,29 @@ export default function AdminEmployeeAttendanceRecapPage() {
   const selectedEmployeeRecap = selectedEmployeeId
     ? recapByEmployeeId.get(selectedEmployeeId) || null
     : null;
+  const rankedEmployees = useMemo(() => {
+    return [...filteredEmployees].sort((firstEmployee, secondEmployee) => {
+      const firstSummary = recapByEmployeeId.get(firstEmployee.id)?.summary;
+      const secondSummary = recapByEmployeeId.get(secondEmployee.id)?.summary;
+      const netWorkDifference =
+        getNetWorkMinutes(secondSummary) - getNetWorkMinutes(firstSummary);
+
+      if (netWorkDifference !== 0) return netWorkDifference;
+
+      const totalWorkDifference =
+        Number(secondSummary?.totalWorkMinutes || 0) -
+        Number(firstSummary?.totalWorkMinutes || 0);
+
+      if (totalWorkDifference !== 0) return totalWorkDifference;
+
+      const presentDifference =
+        Number(secondSummary?.hadir || 0) - Number(firstSummary?.hadir || 0);
+
+      if (presentDifference !== 0) return presentDifference;
+
+      return firstEmployee.name.localeCompare(secondEmployee.name, "id");
+    });
+  }, [filteredEmployees, recapByEmployeeId]);
 
   const selectedSummary =
     selectedEmployeeRecap?.summary ||
@@ -452,8 +485,8 @@ export default function AdminEmployeeAttendanceRecapPage() {
       className: "border-teal-100 bg-teal-50 text-teal-700",
     },
     {
-      label: "Total Kerja",
-      value: formatWorkDuration(selectedSummary.totalWorkMinutes),
+      label: "Kerja Bersih",
+      value: formatWorkDuration(getNetWorkMinutes(selectedSummary)),
       className: "border-blue-100 bg-blue-50 text-[#123c8c]",
     },
     {
@@ -641,27 +674,27 @@ export default function AdminEmployeeAttendanceRecapPage() {
 
           <div className="attendance-recap-enter overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
             {isLoading ? (
-              <div className="flex min-h-64 flex-col items-center justify-center gap-3 p-8 text-center">
-                <Loader2
-                  className="h-8 w-8 animate-spin text-[#123c8c]"
-                  strokeWidth={2.7}
-                />
-                <p className="text-sm font-bold text-slate-500">
-                  Memuat rekap karyawan...
-                </p>
+              <div className="p-5">
+                <AppLoadingState text="Memuat rekap karyawan..." />
               </div>
-            ) : filteredEmployees.length ? (
+            ) : rankedEmployees.length ? (
               <div className="divide-y divide-blue-50">
-                {filteredEmployees.map((employee, index) => {
+                {rankedEmployees.map((employee, index) => {
                   const pendingLeaveCount =
                     pendingLeaveCountByEmployeeId.get(employee.id) || 0;
                   const hasPendingLeave = pendingLeaveCount > 0;
                   const employeePhoto = getEmployeePhoto(employee);
+                  const summary = recapByEmployeeId.get(employee.id)?.summary;
+                  const netWorkMinutes = getNetWorkMinutes(summary);
+                  const detailParams = new URLSearchParams({
+                    startDate,
+                    endDate,
+                  });
 
                   return (
                     <Link
                       key={employee.id}
-                      href={`/admin/rekap-kehadiran-karyawan/${employee.id}`}
+                      href={`/admin/rekap-kehadiran-karyawan/${employee.id}?${detailParams.toString()}`}
                       onClick={() => setSelectedEmployeeId(employee.id)}
                       className={`group attendance-recap-row-enter flex w-full items-center gap-4 border-l-4 p-4 text-left transition hover:bg-[#f8fbff] md:p-5 ${
                         hasPendingLeave
@@ -738,6 +771,9 @@ export default function AdminEmployeeAttendanceRecapPage() {
                             ]
                               .filter(Boolean)
                               .join(" / ") || employee.email}
+                          </p>
+                          <p className="mt-2 text-xs font-black uppercase tracking-[0.1em] text-[#123c8c]">
+                            Kerja bersih {formatWorkDuration(netWorkMinutes)}
                           </p>
                         </div>
 

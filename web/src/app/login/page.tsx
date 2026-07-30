@@ -592,7 +592,7 @@ export default function LoginPage() {
 
             <div className="relative z-10 flex h-32 w-32 items-center justify-center p-0 md:h-40 md:w-40 md:overflow-hidden md:rounded-[2rem] md:border md:border-white/80 md:bg-white md:p-7 md:shadow-[0_24px_58px_rgba(18,60,140,0.14)]">
               <Image
-                src={logoSrc}
+                src={DEFAULT_SITE_MARK_LOGO_SRC}
                 alt="Creativemu Logo"
                 width={421}
                 height={390}

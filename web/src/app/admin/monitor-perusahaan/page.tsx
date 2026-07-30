@@ -2,12 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  BarChart3,
-  ChevronDown,
-  Clock3,
-  Loader2,
-} from "lucide-react";
+import { BarChart3, ChevronDown, Clock3, Loader2 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MobileShell from "@/components/MobileShell";
 
@@ -291,7 +286,6 @@ function AnimatedHistogram({
             transform: translate(-50%, 0) scale(1);
           }
         }
-
       `}</style>
 
       <div className="monitor-row-enter mt-6 rounded-[1.65rem] border border-slate-200 bg-white p-3 text-slate-900 shadow-xl shadow-slate-200/70 md:rounded-[2rem] md:p-5">
@@ -462,16 +456,11 @@ function AnimatedHistogram({
           </div>
         </div>
       </div>
-
     </>
   );
 }
 
-function AttendancePieChart({
-  summary,
-}: {
-  summary: Summary;
-}) {
+function AttendancePieChart({ summary }: { summary: Summary }) {
   const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
   const totalEmployees = Math.max(toSafeNumber(summary.activeEmployees), 0);
   const wfh = toSafeNumber(summary.wfh);
@@ -481,13 +470,10 @@ function AttendancePieChart({
     toSafeNumber(summary.office) || toSafeNumber(summary.present),
     0,
   );
-  const remaining = Math.max(
-    totalEmployees - office - wfh - visit - cuti,
-    0,
-  );
+  const remaining = Math.max(totalEmployees - office - wfh - visit - cuti, 0);
   const base = Math.max(totalEmployees, 1);
   const items = [
-    { label: "Hadir Kantor", value: office, color: "#8b5cf6" },
+    { label: "Hadir", value: office, color: "#8b5cf6" },
     { label: "WFH", value: wfh, color: "#f59e0b" },
     { label: "Kunjungan", value: visit, color: "#ef4444" },
     { label: "Cuti", value: cuti, color: "#14b8a6" },
@@ -963,31 +949,31 @@ export default function AdminCompanyMonitorPage() {
                     <AttendancePieChart summary={data.summary} />
                   </>
                 ) : (
-                <div className="space-y-5">
-                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    {summaryCards.map((item, index) => (
-                      <div
-                        key={item.label}
-                        className="monitor-row-enter rounded-2xl border border-blue-100 bg-white p-4 shadow-lg shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40"
-                        style={{
-                          animationDelay: `${index * 55}ms`,
-                        }}
-                      >
-                        <p className="text-xs font-black uppercase tracking-[0.15em] text-slate-500">
-                          {item.label}
-                        </p>
+                  <div className="space-y-5">
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      {summaryCards.map((item, index) => (
+                        <div
+                          key={item.label}
+                          className="monitor-row-enter rounded-2xl border border-blue-100 bg-white p-4 shadow-lg shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40"
+                          style={{
+                            animationDelay: `${index * 55}ms`,
+                          }}
+                        >
+                          <p className="text-xs font-black uppercase tracking-[0.15em] text-slate-500">
+                            {item.label}
+                          </p>
 
-                        <p className="mt-2 text-3xl font-black text-slate-950">
-                          {item.value}
-                        </p>
+                          <p className="mt-2 text-3xl font-black text-slate-950">
+                            {item.value}
+                          </p>
 
-                        <p className="mt-1 text-xs font-black text-[#123c8c]">
-                          {item.note}
-                        </p>
-                      </div>
-                    ))}
+                          <p className="mt-1 text-xs font-black text-[#123c8c]">
+                            {item.note}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
                 )}
               </div>
 

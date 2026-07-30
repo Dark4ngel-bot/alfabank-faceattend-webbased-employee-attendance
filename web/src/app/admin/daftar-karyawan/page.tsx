@@ -39,11 +39,9 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
-import BankLogoBadge from "@/components/BankLogoBadge";
 import { AppBankSelect } from "@/components/AppBankSelect";
 import {
   AppAnimatedActionButton,
-  AppFormReveal,
   AppModalMotion,
   AppModalPanel,
 } from "@/components/ui/AppUI";
@@ -57,7 +55,7 @@ import {
   isCreativemuEmail,
   isValidEmailFormat,
 } from "@/lib/creativemu-email";
-import { BANK_OPTIONS, getBankOption } from "@/lib/bank-options";
+import { getBankOption } from "@/lib/bank-options";
 
 type OfficeMiniRelation = {
   id: string;
@@ -608,6 +606,23 @@ export default function AdminEmployeesPage() {
       const result = await readJsonResponse(response);
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          showEmployeeAlert(
+            "Sesi admin tidak valid",
+            "Silakan login ulang memakai akun admin.",
+            "error",
+          );
+
+          await fetch("/api/auth/logout", {
+            method: "POST",
+          }).catch(() => undefined);
+
+          window.setTimeout(() => {
+            router.replace("/login?redirect=/admin/daftar-karyawan");
+          }, 700);
+          return;
+        }
+
         showEmployeeAlert(
           "Gagal mengambil data employee",
           result.message || "Gagal mengambil data karyawan.",
@@ -644,7 +659,7 @@ export default function AdminEmployeesPage() {
       window.clearTimeout(timeoutId);
       setIsLoading(false);
     }
-  }, [showEmployeeAlert]);
+  }, [router, showEmployeeAlert]);
 
   useEffect(() => {
     void loadEmployees();
@@ -682,16 +697,22 @@ export default function AdminEmployeesPage() {
     return activeShifts.find((shift) => shift.id === form.shift_id) || null;
   }, [activeShifts, form.shift_id]);
 
-  const isMainShiftSelected =
+  const isSelectedPrimaryShift =
     selectedShift?.name.trim().toLowerCase() === "utama";
-  const finalEmploymentStatus = isMainShiftSelected
-    ? "Utama"
-    : form.employment_status.trim();
+
+  const finalEmploymentStatus = form.employment_status.trim();
 
   const activeEmploymentStatuses = useMemo(() => {
-    const list = employmentStatuses.filter((item) => item.status === "active");
+    const list = employmentStatuses.filter(
+      (item) =>
+        item.status === "active" && item.name.trim().toLowerCase() !== "utama",
+    );
     const currentVal = form.employment_status;
-    if (currentVal && !list.some((item) => item.name === currentVal)) {
+    if (
+      currentVal &&
+      currentVal.trim().toLowerCase() !== "utama" &&
+      !list.some((item) => item.name === currentVal)
+    ) {
       const found = employmentStatuses.find((item) => item.name === currentVal);
       if (found) {
         list.push(found);
@@ -782,7 +803,10 @@ export default function AdminEmployeesPage() {
       temporaryPassword: "",
       confirmTemporaryPassword: "",
       status: employee.status,
-      employment_status: employee.employment_status || "",
+      employment_status:
+        employee.employment_status?.trim().toLowerCase() === "utama"
+          ? ""
+          : employee.employment_status || "",
       employment_start_date: formatDateInput(employee.employment_start_date),
       employment_end_date: formatDateInput(employee.employment_end_date),
       birth_place: employee.birth_place || "",
@@ -966,11 +990,14 @@ export default function AdminEmployeesPage() {
       return;
     }
 
+    const employmentEndDateForSave = isSelectedPrimaryShift
+      ? ""
+      : form.employment_end_date;
+
     if (
       form.employment_start_date &&
-      !isMainShiftSelected &&
-      form.employment_end_date &&
-      form.employment_start_date > form.employment_end_date
+      employmentEndDateForSave &&
+      form.employment_start_date > employmentEndDateForSave
     ) {
       showEmployeeAlert(
         "Masa kerja tidak valid",
@@ -1002,9 +1029,7 @@ export default function AdminEmployeesPage() {
           status: form.status,
           employment_status: finalEmploymentStatus,
           employment_start_date: form.employment_start_date,
-          employment_end_date: isMainShiftSelected
-            ? ""
-            : form.employment_end_date,
+          employment_end_date: employmentEndDateForSave,
           birth_place: form.birth_place.trim(),
           birth_date: form.birth_date,
           bank_code: form.bank_code,
@@ -1890,26 +1915,19 @@ export default function AdminEmployeesPage() {
                         />
                         <select
                           value={form.shift_id}
-                          onChange={(event) =>
-                            setForm((prev) => {
-                              const nextShift = activeShifts.find(
-                                (shift) => shift.id === event.target.value,
-                              );
-                              const isNextMainShift =
-                                nextShift?.name.trim().toLowerCase() === "utama";
-
-                              return {
-                                ...prev,
-                                shift_id: event.target.value,
-                                employment_status: isNextMainShift
-                                  ? "Utama"
-                                  : prev.employment_status,
-                                employment_end_date: isNextMainShift
+                          onChange={(event) => {
+                            const nextShift = activeShifts.find(
+                              (shift) => shift.id === event.target.value,
+                            );
+                            setForm((prev) => ({
+                              ...prev,
+                              shift_id: event.target.value,
+                              employment_end_date:
+                                nextShift?.name.trim().toLowerCase() === "utama"
                                   ? ""
                                   : prev.employment_end_date,
-                              };
-                            })
-                          }
+                            }));
+                          }}
                           className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                         >
                           <option value="">Pilih Shift</option>
@@ -1982,17 +2000,14 @@ export default function AdminEmployeesPage() {
                       </label>
                       <div className="app-field-smooth relative rounded-2xl">
                         <select
-                          value={
-                            isMainShiftSelected ? "Utama" : form.employment_status
-                          }
+                          value={form.employment_status}
                           onChange={(event) =>
                             setForm((prev) => ({
                               ...prev,
                               employment_status: event.target.value,
                             }))
                           }
-                          disabled={isMainShiftSelected}
-                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500"
+                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                         >
                           <option value="">Pilih Status Kepegawaian</option>
                           {activeEmploymentStatuses.map((status) => (
@@ -2009,7 +2024,11 @@ export default function AdminEmployeesPage() {
                     </div>
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div
+                    className={`grid gap-4 ${
+                      isSelectedPrimaryShift ? "" : "md:grid-cols-2"
+                    }`}
+                  >
                     <div>
                       <label className="mb-2 block text-sm font-black text-slate-700">
                         Mulai Masa Kerja
@@ -2033,32 +2052,31 @@ export default function AdminEmployeesPage() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="mb-2 block text-sm font-black text-slate-700">
-                        Akhir Masa Kerja
-                      </label>
-                      <div className="app-field-smooth relative rounded-2xl">
-                        <CalendarDays
-                          size={18}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                        />
-                        <input
-                          type="date"
-                          value={
-                            isMainShiftSelected ? "" : form.employment_end_date
-                          }
-                          onChange={(event) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              employment_end_date: event.target.value,
-                            }))
-                          }
-                          disabled={isMainShiftSelected}
-                          min={form.employment_start_date || undefined}
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
-                        />
+                    {!isSelectedPrimaryShift ? (
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-slate-700">
+                          Akhir Masa Kerja
+                        </label>
+                        <div className="app-field-smooth relative rounded-2xl">
+                          <CalendarDays
+                            size={18}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                          />
+                          <input
+                            type="date"
+                            value={form.employment_end_date}
+                            onChange={(event) =>
+                              setForm((prev) => ({
+                                ...prev,
+                                employment_end_date: event.target.value,
+                              }))
+                            }
+                            min={form.employment_start_date || undefined}
+                            className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          />
+                        </div>
                       </div>
-                    </div>
+                    ) : null}
                   </div>
                 </div>
               )}

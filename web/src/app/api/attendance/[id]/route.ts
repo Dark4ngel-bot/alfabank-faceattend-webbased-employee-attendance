@@ -209,9 +209,33 @@ export async function GET(
 
         status: true,
         late_minutes: true,
+        late_reason: true,
         early_leave_minutes: true,
         work_minutes: true,
         note: true,
+
+        visits: {
+          orderBy: [
+            {
+              end_time: "desc",
+            },
+            {
+              start_time: "desc",
+            },
+            {
+              created_at: "desc",
+            },
+          ],
+          take: 1,
+          select: {
+            title: true,
+            client_name: true,
+            address: true,
+            note: true,
+            start_time: true,
+            end_time: true,
+          },
+        },
 
         user: {
           select: {
@@ -263,6 +287,7 @@ export async function GET(
     const checkOutWorkMode = attendance.check_out_time
       ? normalizeWorkMode(rawCheckOutWorkMode || attendance.work_mode)
       : null;
+    const visit = attendance.visits[0] || null;
     const workMinutes =
       attendance.check_in_time &&
       attendance.check_out_time &&
@@ -297,9 +322,24 @@ export async function GET(
       ),
 
       lateMinutes: attendance.late_minutes,
+      lateReason: attendance.late_reason || null,
       earlyLeaveMinutes,
       workMinutes,
       note: attendance.note,
+      visitTitle: visit?.title || null,
+      visitClientName: visit?.client_name || null,
+      visitAddress: visit?.address || null,
+      visitNote: visit?.note || null,
+      visitStartTime: formatTime(visit?.start_time),
+      visitEndTime: formatTime(visit?.end_time),
+      checkOutVisitTitle:
+        checkOutWorkMode === "visit" ? visit?.title || null : null,
+      checkOutVisitClientName:
+        checkOutWorkMode === "visit" ? visit?.client_name || null : null,
+      checkOutVisitAddress:
+        checkOutWorkMode === "visit" ? visit?.address || null : null,
+      checkOutVisitNote:
+        checkOutWorkMode === "visit" ? visit?.note || null : null,
 
       scheduledCheckOutTime,
 

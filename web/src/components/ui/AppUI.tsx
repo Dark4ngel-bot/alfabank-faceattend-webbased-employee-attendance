@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
+import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
 
 type Variant = "primary" | "secondary" | "danger" | "ghost" | "soft";
 type Size = "sm" | "md" | "lg";
@@ -202,6 +204,37 @@ function AppInteractionStyles() {
         }
       }
 
+      @keyframes appBrandLoaderPulse {
+        0%,
+        100% {
+          transform: scale(0.96);
+          opacity: 0.82;
+        }
+
+        50% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes appBrandLoaderScan {
+        0%,
+        100% {
+          transform: translateY(-1.35rem);
+          opacity: 0;
+        }
+
+        18%,
+        82% {
+          opacity: 1;
+        }
+
+        50% {
+          transform: translateY(1.35rem);
+          opacity: 1;
+        }
+      }
+
       .app-button-press-active {
         animation: appSoftPress 260ms ease-out;
       }
@@ -242,6 +275,14 @@ function AppInteractionStyles() {
         animation: appFormRevealEnter 240ms ease-out both;
       }
 
+      .app-brand-loader-pulse {
+        animation: appBrandLoaderPulse 1.9s ease-in-out infinite;
+      }
+
+      .app-brand-loader-scan {
+        animation: appBrandLoaderScan 2.15s ease-in-out infinite;
+      }
+
       .app-field-smooth {
         transition:
           border-color 180ms ease,
@@ -258,7 +299,9 @@ function AppInteractionStyles() {
         .app-skeleton-enter,
         .app-modal-backdrop-enter,
         .app-modal-panel-enter,
-        .app-form-reveal-enter {
+        .app-form-reveal-enter,
+        .app-brand-loader-pulse,
+        .app-brand-loader-scan {
           animation: none !important;
         }
       }
@@ -823,10 +866,25 @@ export function AppLoadingState({
   text = "Memuat data...",
 }: AppLoadingStateProps) {
   return (
-    <div className="flex items-center justify-center gap-2 rounded-[2rem] border border-blue-100 bg-white px-5 py-12 text-sm font-bold text-slate-500">
-      <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#123c8c] border-t-transparent" />
-      {text}
-    </div>
+    <>
+      <AppInteractionStyles />
+
+      <div className="flex min-h-48 flex-col items-center justify-center rounded-[2rem] border border-blue-100 bg-white px-5 py-12 text-center text-sm font-bold text-slate-500 shadow-lg shadow-slate-200/50">
+        <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-[1.75rem] border border-blue-100 bg-[#f8fbff] shadow-inner">
+          <span className="app-brand-loader-scan pointer-events-none absolute left-3 right-3 top-1/2 z-20 h-0.5 bg-gradient-to-r from-transparent via-[#ff8a00] to-transparent shadow-[0_0_12px_rgba(255,138,0,0.62)]" />
+          <Image
+            src={DEFAULT_SITE_MARK_LOGO_SRC}
+            alt=""
+            aria-hidden="true"
+            width={56}
+            height={56}
+            className="app-brand-loader-pulse h-14 w-14 object-contain"
+          />
+        </div>
+
+        <p className="mt-4 text-sm font-black text-slate-600">{text}</p>
+      </div>
+    </>
   );
 }
 
