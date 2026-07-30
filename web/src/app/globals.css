@@ -127,7 +127,7 @@ input {
 .typewriter-title {
   display: inline-block;
   width: 0;
-  max-width: max-content;
+  max-width: 100%;
   overflow: hidden;
   white-space: nowrap;
   border-right: 4px solid #ff8a00;
@@ -148,4 +148,10 @@ input {
     typingTitle 5s steps(19, end) infinite,
     blinkCursor 0.8s step-end infinite,
     gradientMove 5s ease infinite;
+}
+
+@media (max-width: 640px) {
+  .typewriter-title {
+    font-size: 1.65rem;
+  }
 }

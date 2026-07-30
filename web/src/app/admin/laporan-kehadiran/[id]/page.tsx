@@ -957,6 +957,12 @@ export default function AdminAttendanceReportDetailPage() {
                         {report.statusLabel}
                       </span>
 
+                      {report.checkIn !== "-" && (report.checkOut === "-" || !report.checkOut) ? (
+                        <span className="rounded-full bg-amber-500/90 px-3 py-1 text-xs font-black text-white ring-1 ring-amber-400">
+                          Belum Checkout
+                        </span>
+                      ) : null}
+
                       <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white ring-1 ring-white/20">
                         Check-in: {formatModeLabel(report.workMode)}
                       </span>

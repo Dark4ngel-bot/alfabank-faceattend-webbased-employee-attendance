@@ -112,7 +112,7 @@ function getLeaveMessage(params: {
   totalDays: number | null;
   adminNote: string | null;
 }) {
-  const details = [];
+  const details: string[] = [];
 
   if (params.reason) details.push(params.reason);
   if (params.totalDays) details.push(`${params.totalDays} hari`);
