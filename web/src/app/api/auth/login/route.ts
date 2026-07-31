@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createToken, verifyPassword } from "@/lib/auth";
-import { isCreativemuEmail } from "@/lib/creativemu-email";
+import { isAlfabankEmail } from "@/lib/alfabank-email";
 import { deactivateExpiredEmployee } from "@/lib/employment-period";
 
 const LOGIN_RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -151,7 +151,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!isCreativemuEmail(normalizedEmail)) {
+    if (!isAlfabankEmail(normalizedEmail)) {
       return NextResponse.json(
         {
           success: false,
