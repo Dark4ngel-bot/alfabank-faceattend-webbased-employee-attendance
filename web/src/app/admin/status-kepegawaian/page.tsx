@@ -26,6 +26,9 @@ type EmploymentStatus = {
   status: string;
   created_at?: string;
   updated_at?: string;
+  _count?: {
+    users?: number;
+  };
 };
 
 type EmploymentStatusForm = {
@@ -354,13 +357,18 @@ export default function EmploymentStatusPage() {
                           <h3 className="font-black text-slate-800 text-base">
                             {item.name}
                           </h3>
-                          <span
-                            className={`mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${statusClass(
-                              item.status
-                            )}`}
-                          >
-                            {formatStatus(item.status)}
-                          </span>
+                          <div className="mt-1 flex items-center gap-2">
+                            <span
+                              className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${statusClass(
+                                item.status
+                              )}`}
+                            >
+                              {formatStatus(item.status)}
+                            </span>
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-500">
+                              {item._count?.users ?? 0} Karyawan
+                            </span>
+                          </div>
                         </div>
                       </div>
 

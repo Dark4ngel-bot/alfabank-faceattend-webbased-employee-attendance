@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   BriefcaseBusiness,
   Edit,
@@ -13,40 +13,21 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
-
-type Office = {
-  id: string;
-  name: string;
-  address?: string | null;
-  status?: string;
-};
-
-type Department = {
-  id: string;
-  name: string;
-  office_id: string | null;
-  status: string;
-  office?: Office | null;
-};
-
-type Jabatan = {
-  id: string;
-  name: string;
-  department_id: string | null;
-  status: string;
-  department?: Department | null;
-};
+import {
+  AppButton,
+  AppEmptyState,
+  AppInput,
+  AppSelect,
+} from "@/components/ui/AppUI";
 
 type Position = {
   id: string;
   name: string;
-  jabatan_id: string | null;
   status: string;
   created_at?: string;
   updated_at?: string;
-  jabatan?: Jabatan | null;
   _count?: {
-    users: number;
+    users?: number;
   };
 };
 
@@ -60,25 +41,15 @@ const initialForm: PositionForm = {
   status: "active",
 };
 
-const statusOptions = [
-  {
-    value: "all",
-    label: "Semua Status",
-  },
-  {
-    value: "active",
-    label: "Status Aktif",
-  },
-  {
-    value: "inactive",
-    label: "Status Nonaktif",
-  },
+const filterOptions = [
+  { value: "all", label: "Semua Status" },
+  { value: "active", label: "Status Aktif" },
+  { value: "inactive", label: "Status Nonaktif" },
 ];
 
 function formatStatus(status: string) {
   if (status === "active") return "Aktif";
   if (status === "inactive") return "Nonaktif";
-
   return status;
 }
 
@@ -90,7 +61,6 @@ function statusClass(status: string) {
 
 async function readJsonResponse(response: Response) {
   const text = await response.text();
-
   try {
     return text ? JSON.parse(text) : {};
   } catch {
@@ -98,85 +68,41 @@ async function readJsonResponse(response: Response) {
   }
 }
 
-function PositionMotionStyles() {
+function MotionStyles() {
   return (
     <style>{`
-      @keyframes positionEnter {
-        0% {
-          opacity: 0;
-          transform: translateY(14px);
-        }
-
-        100% {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      @keyframes enter {
+        0% { opacity: 0; transform: translateY(14px); }
+        100% { opacity: 1; transform: translateY(0); }
       }
-
-      @keyframes positionRowEnter {
-        0% {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-
-        100% {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      @keyframes rowEnter {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
       }
-
-      @keyframes positionModalBackdrop {
-        0% {
-          opacity: 0;
-        }
-
-        100% {
-          opacity: 1;
-        }
+      @keyframes backdrop {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
       }
-
-      @keyframes positionModalPanel {
-        0% {
-          opacity: 0;
-          transform: translateY(16px) scale(0.985);
-        }
-
-        100% {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
+      @keyframes panel {
+        0% { opacity: 0; transform: translateY(16px) scale(0.985); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
       }
-
-      .position-enter {
-        animation: positionEnter 320ms ease-out both;
+      .page-enter {
+        animation: enter 320ms ease-out both;
       }
-
-      .position-row-enter {
+      .row-enter {
         opacity: 0;
-        animation: positionRowEnter 300ms ease-out both;
+        animation: rowEnter 300ms ease-out both;
       }
-
-      .position-modal-backdrop {
-        animation: positionModalBackdrop 180ms ease-out both;
+      .modal-backdrop {
+        animation: backdrop 180ms ease-out both;
       }
-
-      .position-modal-panel {
-        animation: positionModalPanel 260ms ease-out both;
+      .modal-panel {
+        animation: panel 260ms ease-out both;
         transform-origin: center bottom;
       }
-
-      .position-field {
-        transition:
-          border-color 180ms ease,
-          background-color 180ms ease,
-          box-shadow 180ms ease;
-      }
-
       @media (prefers-reduced-motion: reduce) {
-        .position-enter,
-        .position-row-enter,
-        .position-modal-backdrop,
-        .position-modal-panel {
+        .page-enter, .row-enter, .modal-backdrop, .modal-panel {
           animation: none !important;
           opacity: 1 !important;
           transform: none !important;
@@ -186,111 +112,18 @@ function PositionMotionStyles() {
   );
 }
 
-function FieldLabel({ children }: { children: ReactNode }) {
-  return (
-    <label className="text-sm font-black text-slate-500">{children}</label>
-  );
-}
-
-function SelectField(props: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  children: ReactNode;
-  disabled?: boolean;
-  icon?: ReactNode;
-  className?: string;
-}) {
-  const {
-    label,
-    value,
-    onChange,
-    children,
-    disabled,
-    icon,
-    className = "",
-  } = props;
-
-  return (
-    <div className={className}>
-      <FieldLabel>{label}</FieldLabel>
-
-      <div className="relative mt-3">
-        {icon ? (
-          <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-            {icon}
-          </div>
-        ) : null}
-
-        <select
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          disabled={disabled}
-          className={`position-field h-[58px] w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] pr-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 ${
-            icon ? "pl-11" : "px-4"
-          }`}
-        >
-          {children}
-        </select>
-      </div>
-    </div>
-  );
-}
-
-function SearchField(props: {
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  const { value, onChange } = props;
-
-  return (
-    <div>
-      <FieldLabel>Nama Posisi</FieldLabel>
-
-      <div className="relative mt-3">
-        <Search
-          size={20}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-        />
-
-        <input
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder="Cari posisi..."
-          className="position-field h-[58px] w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-        />
-      </div>
-    </div>
-  );
-}
-
-export default function AdminPositionsPage() {
+export default function PositionsPage() {
   const [positions, setPositions] = useState<Position[]>([]);
-
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState<PositionForm>(initialForm);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPosition, setEditingPosition] = useState<Position | null>(null);
-
-  const filteredPositions = useMemo(() => {
-    const keyword = search.toLowerCase().trim();
-
-    return positions.filter((position) => {
-      const positionName = position.name.toLowerCase();
-
-      return (
-        (!keyword || positionName.includes(keyword)) &&
-        (statusFilter === "all" || position.status === statusFilter)
-      );
-    });
-  }, [positions, search, statusFilter]);
 
   async function loadPositions() {
     try {
@@ -304,19 +137,14 @@ export default function AdminPositionsPage() {
       const data = await readJsonResponse(response);
 
       if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Gagal mengambil posisi.",
-        );
+        throw new Error(data.error || data.message || "Gagal mengambil data posisi.");
       }
 
       setPositions(data.positions || data.data || []);
     } catch (error) {
       console.error("LOAD_POSITIONS_ERROR:", error);
-
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Gagal mengambil data jabatan.",
+        error instanceof Error ? error.message : "Gagal mengambil data posisi."
       );
     } finally {
       setIsLoading(false);
@@ -327,17 +155,27 @@ export default function AdminPositionsPage() {
     void loadPositions();
   }, []);
 
-  function openCreateModal() {
+  const filteredPositions = useMemo(() => {
+    const keyword = search.toLowerCase().trim();
+
+    return positions.filter((item) => {
+      const nameMatch = item.name.toLowerCase().includes(keyword);
+      const statusMatch = statusFilter === "all" || item.status === statusFilter;
+      return nameMatch && statusMatch;
+    });
+  }, [positions, search, statusFilter]);
+
+  function openAddModal() {
     setEditingPosition(null);
     setForm(initialForm);
     setIsModalOpen(true);
   }
 
-  function openEditModal(position: Position) {
-    setEditingPosition(position);
+  function openEditModal(item: Position) {
+    setEditingPosition(item);
     setForm({
-      name: position.name,
-      status: position.status || "active",
+      name: item.name,
+      status: item.status,
     });
     setIsModalOpen(true);
   }
@@ -348,388 +186,298 @@ export default function AdminPositionsPage() {
     setIsModalOpen(false);
   }
 
-  function resetFilter() {
-    setSearch("");
-    setStatusFilter("all");
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const name = form.name.trim();
-
     if (!name) {
       alert("Nama posisi wajib diisi.");
-      return;
-    }
-
-    if (!["active", "inactive"].includes(form.status)) {
-      alert("Status posisi tidak valid.");
       return;
     }
 
     try {
       setIsSubmitting(true);
 
-      const response = await fetch("/api/admin/positions", {
-        method: editingPosition ? "PATCH" : "POST",
+      const url = "/api/admin/positions";
+      const method = editingPosition ? "PATCH" : "POST";
+      const bodyPayload = editingPosition
+        ? { id: editingPosition.id, name, status: form.status }
+        : { name, status: form.status };
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          id: editingPosition?.id,
-          name,
-          status: form.status,
-        }),
+        body: JSON.stringify(bodyPayload),
       });
 
       const data = await readJsonResponse(response);
 
       if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Gagal menyimpan posisi.",
-        );
+        throw new Error(data.error || data.message || "Gagal menyimpan data.");
       }
 
       await loadPositions();
       closeModal();
     } catch (error) {
       console.error("SAVE_POSITION_ERROR:", error);
-
-      alert(
-        error instanceof Error ? error.message : "Gagal menyimpan posisi.",
-      );
+      alert(error instanceof Error ? error.message : "Gagal menyimpan data.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function handleDeletePosition(position: Position) {
-    const totalUsers = position._count?.users || 0;
-
-    if (totalUsers > 0) {
-      alert(
-        "Posisi ini masih digunakan oleh karyawan. Ubah status menjadi Nonaktif jika tidak ingin digunakan.",
-      );
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      `Yakin ingin menghapus posisi "${position.name}"? Data yang dihapus tidak bisa dikembalikan.`,
+  async function handleDelete(item: Position) {
+    const confirmed = confirm(
+      `Apakah Anda yakin ingin menghapus posisi "${item.name}"?`
     );
 
-    if (!confirmDelete) return;
+    if (!confirmed) return;
 
     try {
-      setIsDeleting(true);
+      setIsLoading(true);
 
-      const response = await fetch(`/api/admin/positions?id=${position.id}`, {
+      const response = await fetch(`/api/admin/positions?id=${item.id}`, {
         method: "DELETE",
       });
 
       const data = await readJsonResponse(response);
 
       if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Gagal menghapus posisi.",
-        );
+        throw new Error(data.error || data.message || "Gagal menghapus data.");
       }
 
-      alert("Posisi berhasil dihapus.");
       await loadPositions();
     } catch (error) {
       console.error("DELETE_POSITION_ERROR:", error);
-
-      alert(
-        error instanceof Error ? error.message : "Gagal menghapus posisi.",
-      );
+      alert(error instanceof Error ? error.message : "Gagal menghapus data.");
     } finally {
-      setIsDeleting(false);
+      setIsLoading(false);
     }
   }
 
   return (
     <MobileShell variant="admin">
-      <PositionMotionStyles />
+      <MotionStyles />
 
-      <AppHeader title="Daftar Posisi" variant="admin" />
+      <AppHeader title="Posisi Karyawan" variant="admin" />
 
       <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
-        <div className="position-enter overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-xl shadow-slate-300/30">
-          <div className="bg-[#123c8c] p-6 text-white md:p-8">
-            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-              <div>
-                <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
-                  Daftar Posisi
-                </h1>
-              </div>
+        <div className="page-enter rounded-[2rem] border border-white/70 bg-white/95 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl md:p-8">
+          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
+                Master Data Admin Panel
+              </p>
 
-              <button
-                type="button"
-                onClick={openCreateModal}
-                className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-2xl bg-white px-5 text-sm font-black text-[#123c8c] shadow-lg shadow-blue-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-50 active:scale-[0.98]"
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
+                POSISI KARYAWAN
+              </h1>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row md:items-center">
+              <AppButton
+                onClick={openAddModal}
+                leftIcon={<Plus size={18} />}
+                className="w-full sm:w-auto shrink-0 whitespace-nowrap"
               >
-                <Plus size={18} />
-                <span>Tambah Posisi</span>
-              </button>
+                Tambah Posisi
+              </AppButton>
             </div>
           </div>
 
-          <div className="p-5 md:p-8">
-            <div
-              className="position-row-enter space-y-4"
-              style={{ animationDelay: "80ms" }}
-            >
-              <div className="grid gap-4 xl:grid-cols-[minmax(320px,1fr)_minmax(230px,0.35fr)_auto]">
-                <SearchField value={search} onChange={setSearch} />
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <div className="relative">
+              <Search
+                size={20}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
 
-                <SelectField
-                  label="Filter Status"
-                  value={statusFilter}
-                  onChange={setStatusFilter}
-                >
-                  {statusOptions.map((item) => (
-                    <option key={item.value} value={item.value}>
-                      {item.label}
-                    </option>
-                  ))}
-                </SelectField>
-
-                <div className="flex items-end gap-2">
-                  <button
-                    type="button"
-                    onClick={resetFilter}
-                    className="flex h-[58px] flex-1 items-center justify-center rounded-2xl border border-blue-100 bg-white px-5 text-sm font-black text-[#123c8c] shadow-sm transition hover:bg-blue-50 active:scale-[0.96] xl:flex-none"
-                  >
-                    Atur Ulang
-                  </button>
-                </div>
-              </div>
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Cari posisi..."
+                className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+              />
             </div>
 
-            {errorMessage ? (
-              <div className="position-row-enter mt-5 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-black text-red-700">
-                {errorMessage}
+            <div>
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+              >
+                {filterOptions.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {errorMessage ? (
+            <div className="mt-5 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm font-bold text-amber-700">
+              {errorMessage}
+            </div>
+          ) : null}
+
+          <div className="mt-8">
+            {isLoading ? (
+              <div className="flex min-h-[200px] flex-col items-center justify-center gap-3">
+                <Loader2 size={36} className="animate-spin text-[#123c8c]" />
+                <p className="text-sm font-bold text-slate-500">
+                  Memuat data posisi...
+                </p>
               </div>
-            ) : null}
-
-            <div
-              className="position-row-enter mt-8 overflow-hidden rounded-2xl border border-blue-100"
-              style={{ animationDelay: "130ms" }}
-            >
-              <div className="hidden grid-cols-[0.3fr_1.6fr_0.75fr_1fr] bg-[#f6f8ff] px-5 py-4 text-xs font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
-                <p>#</p>
-                <p>Posisi</p>
-                <p>Status</p>
-                <p className="text-center">Aksi</p>
-              </div>
-
-              <div className="divide-y divide-blue-50 bg-white">
-                {isLoading ? (
-                  <div className="position-row-enter px-5 py-10 text-center">
-                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#123c8c]" />
-                    <p className="mt-3 text-sm font-black text-slate-600">
-                      Mengambil data posisi...
-                    </p>
-                  </div>
-                ) : filteredPositions.length === 0 ? (
-                  <div className="position-row-enter px-5 py-10 text-center">
-                    <BriefcaseBusiness
-                      className="mx-auto text-slate-300"
-                      size={36}
-                    />
-                    <p className="mt-3 font-black text-slate-700">
-                      Data posisi tidak ditemukan.
-                    </p>
-                    <p className="mt-1 text-sm text-slate-400">
-                      Tambahkan posisi baru atau ubah filter pencarian.
-                    </p>
-                  </div>
-                ) : (
-                  filteredPositions.map((position, index) => (
-                      <div
-                        key={position.id}
-                        className="position-row-enter grid gap-4 px-4 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] md:grid-cols-[0.3fr_1.6fr_0.75fr_1fr] md:items-center md:px-5 md:py-6"
-                        style={{
-                          animationDelay: `${index * 55}ms`,
-                        }}
-                      >
-                        <div className="flex items-start justify-between gap-3 md:block">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-xs font-black text-[#123c8c] md:h-auto md:w-auto md:bg-transparent md:text-sm md:text-slate-500">
-                              {index + 1}
-                            </div>
-
-                            <div className="md:hidden">
-                              <p className="font-black uppercase text-slate-950">
-                                {position.name}
-                              </p>
-
-                              <p className="mt-1 text-xs font-semibold text-slate-400">
-                                {position._count?.users || 0} karyawan
-                              </p>
-                            </div>
+            ) : filteredPositions.length === 0 ? (
+              <AppEmptyState
+                title="Tidak Ada Data"
+                description={
+                  search
+                    ? "Tidak ada posisi yang cocok dengan pencarian Anda."
+                    : "Belum ada data posisi yang ditambahkan."
+                }
+              />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredPositions.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="row-enter rounded-3xl border border-blue-50/50 bg-[#fbfdff] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-100 hover:bg-white hover:shadow-md hover:shadow-blue-900/5"
+                    style={{ animationDelay: `${index * 40}ms` }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c]">
+                          <BriefcaseBusiness size={20} />
+                        </div>
+                        <div>
+                          <h3 className="font-black text-slate-800 text-base">
+                            {item.name}
+                          </h3>
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            <span
+                              className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${statusClass(
+                                item.status
+                              )}`}
+                            >
+                              {formatStatus(item.status)}
+                            </span>
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-500">
+                              {item._count?.users ?? 0} Karyawan
+                            </span>
                           </div>
-
-                          <span
-                            className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black md:hidden ${statusClass(
-                              position.status,
-                            )}`}
-                          >
-                            {formatStatus(position.status)}
-                          </span>
-                        </div>
-
-                        <div className="hidden md:block">
-                          <p className="font-black uppercase text-slate-950">
-                            {position.name}
-                          </p>
-
-                          <p className="mt-1 text-xs font-semibold text-slate-400">
-                            {position._count?.users || 0} karyawan
-                          </p>
-                        </div>
-
-                        <div className="hidden md:block">
-                          <span
-                            className={`w-fit rounded-full px-4 py-2 text-xs font-black ${statusClass(
-                              position.status,
-                            )}`}
-                          >
-                            {formatStatus(position.status)}
-                          </span>
-                        </div>
-
-                        <div className="grid gap-2 md:flex md:justify-center">
-                          <button
-                            type="button"
-                            onClick={() => openEditModal(position)}
-                            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.97] md:h-auto md:w-fit md:rounded-xl md:border md:border-blue-100 md:bg-white md:px-4 md:py-2 md:text-xs md:text-[#123c8c] md:shadow-none md:hover:bg-[#eaf1ff]"
-                          >
-                            <Edit size={16} className="md:h-3.5 md:w-3.5" />
-                            Edit
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDeletePosition(position)}
-                            disabled={
-                              isDeleting || (position._count?.users || 0) > 0
-                            }
-                            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 text-sm font-black text-red-600 transition hover:bg-red-100 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 md:h-auto md:w-fit md:rounded-xl md:px-4 md:py-2 md:text-xs"
-                          >
-                            {isDeleting ? (
-                              <Loader2
-                                size={16}
-                                className="animate-spin md:h-3.5 md:w-3.5"
-                              />
-                            ) : (
-                              <Trash2 size={16} className="md:h-3.5 md:w-3.5" />
-                            )}
-                            Hapus
-                          </button>
                         </div>
                       </div>
-                    ))
-                )}
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => openEditModal(item)}
+                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-50 bg-white text-[#123c8c] shadow-sm hover:bg-blue-50 transition"
+                          title="Ubah"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item)}
+                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-100 bg-rose-50/50 text-rose-600 hover:bg-rose-100 transition"
+                          title="Hapus"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
 
-      {isModalOpen ? (
-        <div className="position-modal-backdrop fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 px-4 pb-4 md:items-center md:pb-0">
-          <div className="position-modal-panel max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
-            <div className="flex items-start justify-between gap-4">
+      {/* Modal Dialog Form */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="modal-backdrop absolute inset-0 bg-slate-900/60"
+            onClick={closeModal}
+          />
+
+          <div className="modal-panel relative w-full max-w-md rounded-[2.5rem] border border-white bg-white p-6 shadow-2xl md:p-8">
+            <button
+              onClick={closeModal}
+              className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 transition"
+            >
+              <X size={20} />
+            </button>
+
+            <h2 className="text-2xl font-black text-slate-950">
+              {editingPosition ? "Ubah Posisi" : "Tambah Posisi"}
+            </h2>
+            <p className="mt-1 text-sm font-semibold text-slate-500">
+              {editingPosition
+                ? "Perbarui nama atau status posisi terpilih."
+                : "Masukkan nama posisi baru untuk disimpan."}
+            </p>
+
+            <form onSubmit={handleSubmit} className="mt-6 space-y-5">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
-                  {editingPosition ? "Edit Posisi" : "Tambah Posisi"}
-                </p>
-
-                <h2 className="mt-2 text-2xl font-black text-slate-950">
-                  {editingPosition ? "Update Data Posisi" : "Posisi Baru"}
-                </h2>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  Isi nama posisi sebagai label yang bisa dipakai bebas.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={closeModal}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 active:scale-[0.96]"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <div
-                className="position-row-enter"
-                style={{ animationDelay: "40ms" }}
-              >
-                <FieldLabel>Nama Posisi</FieldLabel>
-
-                <input
+                <label className="mb-2 block text-sm font-black text-slate-700">
+                  Nama Posisi
+                </label>
+                <AppInput
                   value={form.name}
                   onChange={(event) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      name: event.target.value,
-                    }))
+                    setForm((prev) => ({ ...prev, name: event.target.value }))
                   }
-                  placeholder="Contoh: Kembaliend Developer, Mobile Developer, Finance Staff"
-                  className="position-field mt-3 h-[58px] w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  placeholder="Contoh: Backend Developer, Staff HR"
+                  required
                 />
               </div>
 
-              <SelectField
-                label="Status Posisi"
-                value={form.status}
-                onChange={(value) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    status: value,
-                  }))
-                }
-                className="position-row-enter"
-              >
-                <option value="active">Aktif</option>
-                <option value="inactive">Nonaktif</option>
-              </SelectField>
+              <div>
+                <label className="mb-2 block text-sm font-black text-slate-700">
+                  Status
+                </label>
+                <AppSelect
+                  value={form.status}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, status: event.target.value }))
+                  }
+                >
+                  <option value="active">Aktif</option>
+                  <option value="inactive">Nonaktif</option>
+                </AppSelect>
+              </div>
 
-              <div
-                className="position-row-enter flex flex-col-reverse gap-3 pt-2 md:flex-row md:justify-end"
-                style={{ animationDelay: "160ms" }}
-              >
-                <button
+              <div className="pt-2 flex justify-end gap-3">
+                <AppButton
                   type="button"
+                  variant="secondary"
                   onClick={closeModal}
-                  className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-200 active:scale-[0.98]"
+                  disabled={isSubmitting}
                 >
                   Batal
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isSubmitting
-                    ? "Menyimpan..."
-                    : editingPosition
-                      ? "Update Posisi"
-                      : "Tambah Posisi"}
-                </button>
+                </AppButton>
+                <AppButton type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="mr-2 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    "Simpan"
+                  )}
+                </AppButton>
               </div>
             </form>
           </div>
         </div>
-      ) : null}
+      )}
 
       <BottomNav variant="admin" />
     </MobileShell>
   );
-}
+}

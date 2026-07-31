@@ -1,17 +1,8 @@
 "use client";
 
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
-  FormEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  AlertTriangle,
   Building2,
-  CheckCircle2,
   Edit,
   Loader2,
   Plus,
@@ -22,33 +13,21 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
-
-type Office = {
-  id: string;
-  name: string;
-  address?: string | null;
-  status?: string;
-};
-
-type Department = {
-  id: string;
-  name: string;
-  office_id: string | null;
-  status: string;
-  office?: Office | null;
-};
+import {
+  AppButton,
+  AppEmptyState,
+  AppInput,
+  AppSelect,
+} from "@/components/ui/AppUI";
 
 type Jabatan = {
   id: string;
   name: string;
-  department_id: string | null;
   status: string;
   created_at?: string;
   updated_at?: string;
-  department?: Department | null;
   _count?: {
-    users: number;
-    positions: number;
+    users?: number;
   };
 };
 
@@ -57,79 +36,31 @@ type JabatanForm = {
   status: string;
 };
 
-type JabatanAlert = {
-  title: string;
-  message: string;
-  type: "success" | "error" | "warning";
-};
-
 const initialForm: JabatanForm = {
   name: "",
   status: "active",
 };
 
-const statusOptions = [
-  {
-    value: "all",
-    label: "Semua Status",
-  },
-  {
-    value: "active",
-    label: "Status Aktif",
-  },
-  {
-    value: "inactive",
-    label: "Status Nonaktif",
-  },
+const filterOptions = [
+  { value: "all", label: "Semua Status" },
+  { value: "active", label: "Status Aktif" },
+  { value: "inactive", label: "Status Nonaktif" },
 ];
 
 function formatStatus(status: string) {
   if (status === "active") return "Aktif";
   if (status === "inactive") return "Nonaktif";
-
   return status;
 }
 
-function normalizeJabatanName(value: string) {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
-}
-
-function getJabatanAlertTheme(type: JabatanAlert["type"]) {
-  if (type === "success") {
-    return {
-      shell: "from-emerald-50 via-white to-blue-50",
-      iconWrap: "bg-emerald-100 text-emerald-600",
-      badge: "bg-white/70 text-emerald-600",
-      button: "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20",
-      icon: CheckCircle2,
-      label: "BERHASIL",
-    };
-  }
-
-  if (type === "error") {
-    return {
-      shell: "from-red-50 via-white to-blue-50",
-      iconWrap: "bg-red-100 text-red-600",
-      badge: "bg-white/70 text-red-600",
-      button: "bg-red-600 hover:bg-red-700 shadow-red-900/20",
-      icon: AlertTriangle,
-      label: "GAGAL",
-    };
-  }
-
-  return {
-    shell: "from-orange-50 via-white to-blue-50",
-    iconWrap: "bg-orange-100 text-orange-600",
-    badge: "bg-white/70 text-orange-600",
-    button: "bg-[#526fae] hover:bg-[#46629d] shadow-blue-900/20",
-    icon: AlertTriangle,
-    label: "PERHATIAN",
-  };
+function statusClass(status: string) {
+  return status === "active"
+    ? "bg-blue-50 text-[#123c8c]"
+    : "bg-slate-100 text-slate-600";
 }
 
 async function readJsonResponse(response: Response) {
   const text = await response.text();
-
   try {
     return text ? JSON.parse(text) : {};
   } catch {
@@ -137,102 +68,41 @@ async function readJsonResponse(response: Response) {
   }
 }
 
-function JabatanMotionStyles() {
+function MotionStyles() {
   return (
     <style>{`
-      @keyframes jabatanEnter {
-        0% {
-          opacity: 0;
-          transform: translateY(14px);
-        }
-
-        100% {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      @keyframes enter {
+        0% { opacity: 0; transform: translateY(14px); }
+        100% { opacity: 1; transform: translateY(0); }
       }
-
-      @keyframes jabatanRowEnter {
-        0% {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-
-        100% {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      @keyframes rowEnter {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
       }
-
-      @keyframes jabatanModalBackdrop {
-        0% {
-          opacity: 0;
-        }
-
-        100% {
-          opacity: 1;
-        }
+      @keyframes backdrop {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
       }
-
-      @keyframes jabatanModalPanel {
-        0% {
-          opacity: 0;
-          transform: translateY(16px) scale(0.985);
-        }
-
-        100% {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
+      @keyframes panel {
+        0% { opacity: 0; transform: translateY(16px) scale(0.985); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
       }
-
-      .jabatan-enter {
-        animation: jabatanEnter 320ms ease-out both;
+      .page-enter {
+        animation: enter 320ms ease-out both;
       }
-
-      .jabatan-row-enter {
+      .row-enter {
         opacity: 0;
-        animation: jabatanRowEnter 300ms ease-out both;
+        animation: rowEnter 300ms ease-out both;
       }
-
-      .jabatan-modal-backdrop {
-        animation: jabatanModalBackdrop 180ms ease-out both;
+      .modal-backdrop {
+        animation: backdrop 180ms ease-out both;
       }
-
-      .jabatan-modal-panel {
-        animation: jabatanModalPanel 260ms ease-out both;
+      .modal-panel {
+        animation: panel 260ms ease-out both;
         transform-origin: center bottom;
       }
-
-      @keyframes jabatanToastEnter {
-        0% {
-          opacity: 0;
-          transform: translateX(18px) scale(0.98);
-        }
-
-        100% {
-          opacity: 1;
-          transform: translateX(0) scale(1);
-        }
-      }
-
-      .jabatan-toast-enter {
-        animation: jabatanToastEnter 260ms ease-out both;
-      }
-
-      .jabatan-field {
-        transition:
-          border-color 180ms ease,
-          background-color 180ms ease,
-          box-shadow 180ms ease;
-      }
-
       @media (prefers-reduced-motion: reduce) {
-        .jabatan-enter,
-        .jabatan-row-enter,
-        .jabatan-modal-backdrop,
-        .jabatan-modal-panel,
-        .jabatan-toast-enter {
+        .page-enter, .row-enter, .modal-backdrop, .modal-panel {
           animation: none !important;
           opacity: 1 !important;
           transform: none !important;
@@ -242,118 +112,39 @@ function JabatanMotionStyles() {
   );
 }
 
-export default function JabatansPage() {
+export default function JabatanPage() {
   const [jabatans, setJabatans] = useState<Jabatan[]>([]);
-
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState<JabatanForm>(initialForm);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJabatan, setEditingJabatan] = useState<Jabatan | null>(null);
-  const [jabatanAlert, setJabatanAlert] = useState<JabatanAlert | null>(null);
-  const [isAlertClosing, setIsAlertClosing] = useState(false);
-  const alertCloseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
-
-  const filteredJabatans = useMemo(() => {
-    const keyword = search.toLowerCase().trim();
-
-    return jabatans.filter((jabatan) => {
-      const jabatanName = jabatan.name.toLowerCase();
-      const jabatanStatus = jabatan.status.toLowerCase();
-
-      if (keyword && !jabatanName.includes(keyword)) {
-        return false;
-      }
-
-      if (statusFilter !== "all" && jabatanStatus !== statusFilter) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [jabatans, search, statusFilter]);
-
-  const jabatanAlertTheme = jabatanAlert
-    ? getJabatanAlertTheme(jabatanAlert.type)
-    : null;
-  const JabatanAlertIcon = jabatanAlertTheme?.icon || AlertTriangle;
-
-  const showJabatanAlert = useCallback(
-    (title: string, message: string, type: JabatanAlert["type"]) => {
-      if (alertCloseTimeoutRef.current) {
-        clearTimeout(alertCloseTimeoutRef.current);
-      }
-
-      setIsAlertClosing(false);
-      setJabatanAlert({
-        title,
-        message,
-        type,
-      });
-
-      alertCloseTimeoutRef.current = setTimeout(() => {
-        setIsAlertClosing(true);
-
-        alertCloseTimeoutRef.current = setTimeout(() => {
-          setJabatanAlert(null);
-          setIsAlertClosing(false);
-        }, 260);
-      }, 3600);
-    },
-    [],
-  );
-
-  const closeJabatanAlert = useCallback(() => {
-    if (alertCloseTimeoutRef.current) {
-      clearTimeout(alertCloseTimeoutRef.current);
-    }
-
-    setIsAlertClosing(true);
-
-    alertCloseTimeoutRef.current = setTimeout(() => {
-      setJabatanAlert(null);
-      setIsAlertClosing(false);
-    }, 260);
-  }, []);
 
   async function loadJabatans() {
     try {
       setIsLoading(true);
       setErrorMessage("");
 
-      const params = new URLSearchParams({
-        search,
-        status: statusFilter,
-      });
-
-      const response = await fetch(`/api/admin/jabatans?${params.toString()}`, {
+      const response = await fetch("/api/admin/jabatans", {
         cache: "no-store",
       });
 
       const data = await readJsonResponse(response);
 
       if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Gagal mengambil jabatan.",
-        );
+        throw new Error(data.error || data.message || "Gagal mengambil data jabatan.");
       }
 
       setJabatans(data.jabatans || data.data || []);
     } catch (error) {
-      console.error("LOAD_UNITS_ERROR:", error);
-
+      console.error("LOAD_JABATANS_ERROR:", error);
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Gagal mengambil data jabatan.",
+        error instanceof Error ? error.message : "Gagal mengambil data jabatan."
       );
     } finally {
       setIsLoading(false);
@@ -362,28 +153,29 @@ export default function JabatansPage() {
 
   useEffect(() => {
     void loadJabatans();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (alertCloseTimeoutRef.current) {
-        clearTimeout(alertCloseTimeoutRef.current);
-      }
-    };
-  }, []);
+  const filteredJabatans = useMemo(() => {
+    const keyword = search.toLowerCase().trim();
 
-  function openCreateModal() {
+    return jabatans.filter((item) => {
+      const nameMatch = item.name.toLowerCase().includes(keyword);
+      const statusMatch = statusFilter === "all" || item.status === statusFilter;
+      return nameMatch && statusMatch;
+    });
+  }, [jabatans, search, statusFilter]);
+
+  function openAddModal() {
     setEditingJabatan(null);
     setForm(initialForm);
     setIsModalOpen(true);
   }
 
-  function openEditModal(jabatan: Jabatan) {
-    setEditingJabatan(jabatan);
+  function openEditModal(item: Jabatan) {
+    setEditingJabatan(item);
     setForm({
-      name: jabatan.name,
-      status: jabatan.status || "active",
+      name: item.name,
+      status: item.status,
     });
     setIsModalOpen(true);
   }
@@ -394,539 +186,296 @@ export default function JabatansPage() {
     setIsModalOpen(false);
   }
 
-  function resetFilter() {
-    setSearch("");
-    setStatusFilter("all");
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const name = form.name.trim();
-
     if (!name) {
-      showJabatanAlert(
-        "Data belum lengkap",
-        "Nama jabatan wajib diisi.",
-        "warning",
-      );
-      return;
-    }
-
-    if (!["active", "inactive"].includes(form.status)) {
-      showJabatanAlert(
-        "Status tidak valid",
-        "Status jabatan tidak valid.",
-        "warning",
-      );
-      return;
-    }
-
-    const duplicateJabatan = jabatans.find((jabatan) => {
-      if (editingJabatan?.id === jabatan.id) return false;
-
-      return normalizeJabatanName(jabatan.name) === normalizeJabatanName(name);
-    });
-
-    if (duplicateJabatan) {
-      showJabatanAlert(
-        "Nama jabatan sudah ada",
-        "Gunakan nama jabatan lain karena nama ini sudah terdaftar.",
-        "warning",
-      );
+      alert("Nama jabatan wajib diisi.");
       return;
     }
 
     try {
       setIsSubmitting(true);
 
-      const response = await fetch("/api/admin/jabatans", {
-        method: editingJabatan ? "PATCH" : "POST",
+      const url = "/api/admin/jabatans";
+      const method = editingJabatan ? "PATCH" : "POST";
+      const bodyPayload = editingJabatan
+        ? { id: editingJabatan.id, name, status: form.status }
+        : { name, status: form.status };
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          id: editingJabatan?.id,
-          name,
-          status: form.status,
-        }),
+        body: JSON.stringify(bodyPayload),
       });
 
       const data = await readJsonResponse(response);
 
       if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Gagal menyimpan jabatan.",
-        );
+        throw new Error(data.error || data.message || "Gagal menyimpan data.");
       }
 
       await loadJabatans();
       closeModal();
-      showJabatanAlert(
-        "Jabatan tersimpan",
-        data.message || "Data jabatan berhasil disimpan.",
-        "success",
-      );
     } catch (error) {
-      console.error("SAVE_UNIT_ERROR:", error);
-
-      const message =
-        error instanceof Error ? error.message : "Gagal menyimpan jabatan.";
-
-      showJabatanAlert(
-        message.toLowerCase().includes("sudah ada")
-          ? "Nama jabatan sudah ada"
-          : "Gagal menyimpan jabatan",
-        message,
-        message.toLowerCase().includes("sudah ada") ? "warning" : "error",
-      );
+      console.error("SAVE_JABATAN_ERROR:", error);
+      alert(error instanceof Error ? error.message : "Gagal menyimpan data.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function handleDeleteJabatan(jabatan: Jabatan) {
-    const totalUsers = jabatan._count?.users || 0;
-    const totalPositions = jabatan._count?.positions || 0;
-
-    if (totalUsers > 0 || totalPositions > 0) {
-      showJabatanAlert(
-        "Jabatan masih digunakan",
-        "Jabatan ini masih memiliki posisi atau digunakan oleh karyawan. Ubah status menjadi Nonaktif jika tidak ingin digunakan.",
-        "warning",
-      );
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      `Yakin ingin menghapus jabatan "${jabatan.name}"? Data yang dihapus tidak bisa dikembalikan.`,
+  async function handleDelete(item: Jabatan) {
+    const confirmed = confirm(
+      `Apakah Anda yakin ingin menghapus jabatan "${item.name}"?`
     );
 
-    if (!confirmDelete) return;
+    if (!confirmed) return;
 
     try {
-      setIsDeleting(true);
+      setIsLoading(true);
 
-      const response = await fetch(`/api/admin/jabatans?id=${jabatan.id}`, {
+      const response = await fetch(`/api/admin/jabatans?id=${item.id}`, {
         method: "DELETE",
       });
 
       const data = await readJsonResponse(response);
 
       if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Gagal menghapus jabatan.",
-        );
+        throw new Error(data.error || data.message || "Gagal menghapus data.");
       }
 
-      showJabatanAlert(
-        "Jabatan dihapus",
-        "Jabatan berhasil dihapus.",
-        "success",
-      );
       await loadJabatans();
     } catch (error) {
-      console.error("DELETE_UNIT_ERROR:", error);
-
-      showJabatanAlert(
-        "Gagal menghapus jabatan",
-        error instanceof Error ? error.message : "Gagal menghapus jabatan.",
-        "error",
-      );
+      console.error("DELETE_JABATAN_ERROR:", error);
+      alert(error instanceof Error ? error.message : "Gagal menghapus data.");
     } finally {
-      setIsDeleting(false);
+      setIsLoading(false);
     }
   }
 
   return (
     <MobileShell variant="admin">
-      <JabatanMotionStyles />
+      <MotionStyles />
 
-      <AppHeader title="Daftar Jabatan" variant="admin" />
+      <AppHeader title="Jabatan Karyawan" variant="admin" />
 
       <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
-        <div className="jabatan-enter overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-xl shadow-slate-300/30">
-          <div className="bg-[#123c8c] p-6 text-white md:p-8">
-            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-              <div>
-                <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
-                  Daftar Jabatan
-                </h1>
-              </div>
+        <div className="page-enter rounded-[2rem] border border-white/70 bg-white/95 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl md:p-8">
+          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
+                Master Data Admin Panel
+              </p>
 
-              <button
-                type="button"
-                onClick={openCreateModal}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white px-5 text-sm font-black text-[#123c8c] shadow-lg shadow-blue-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-50 active:scale-[0.98]"
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
+                JABATAN KARYAWAN
+              </h1>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row md:items-center">
+              <AppButton
+                onClick={openAddModal}
+                leftIcon={<Plus size={18} />}
+                className="w-full sm:w-auto shrink-0 whitespace-nowrap"
               >
-                <Plus size={18} />
                 Tambah Jabatan
-              </button>
+              </AppButton>
             </div>
           </div>
 
-          <div className="p-5 md:p-8">
-            <div
-              className="jabatan-row-enter grid gap-3 md:grid-cols-[1fr_210px_auto]"
-              style={{ animationDelay: "80ms" }}
-            >
-              <div>
-                <label className="text-sm font-black text-slate-500">
-                  Nama Jabatan
-                </label>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <div className="relative">
+              <Search
+                size={20}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
 
-                <div className="relative mt-3">
-                  <Search
-                    size={20}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-
-                  <input
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Cari jabatan..."
-                    className="jabatan-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-black text-slate-500">
-                  Filter Status
-                </label>
-
-                <select
-                  value={statusFilter}
-                  onChange={(event) => setStatusFilter(event.target.value)}
-                  className="jabatan-field mt-3 w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                >
-                  {statusOptions.map((item) => (
-                    <option key={item.value} value={item.value}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-end gap-2">
-                <button
-                  type="button"
-                  onClick={resetFilter}
-                  className="flex h-[54px] flex-1 items-center justify-center rounded-2xl border border-blue-100 bg-white px-5 text-sm font-black text-[#123c8c] shadow-sm transition hover:bg-blue-50 active:scale-[0.96] md:flex-none"
-                >
-                  Atur Ulang
-                </button>
-              </div>
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Cari jabatan..."
+                className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+              />
             </div>
 
-            {errorMessage ? (
-              <div className="jabatan-row-enter mt-5 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-black text-red-700">
-                {errorMessage}
+            <div>
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+              >
+                {filterOptions.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {errorMessage ? (
+            <div className="mt-5 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm font-bold text-amber-700">
+              {errorMessage}
+            </div>
+          ) : null}
+
+          <div className="mt-8">
+            {isLoading ? (
+              <div className="flex min-h-[200px] flex-col items-center justify-center gap-3">
+                <Loader2 size={36} className="animate-spin text-[#123c8c]" />
+                <p className="text-sm font-bold text-slate-500">
+                  Memuat data jabatan...
+                </p>
               </div>
-            ) : null}
-
-            <div
-              className="jabatan-row-enter mt-8 overflow-hidden rounded-2xl border border-blue-100"
-              style={{ animationDelay: "130ms" }}
-            >
-              <div className="hidden grid-cols-[0.3fr_1.6fr_0.75fr_0.75fr_1fr] bg-[#f6f8ff] px-5 py-4 text-xs font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
-                <p>#</p>
-                <p>Jabatan</p>
-                <p>Posisi</p>
-                <p>Status</p>
-                <p className="text-center">Aksi</p>
-              </div>
-
-              <div className="divide-y divide-blue-50 bg-white">
-                {isLoading ? (
-                  <div className="jabatan-row-enter px-5 py-10 text-center">
-                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#123c8c]" />
-                    <p className="mt-3 text-sm font-black text-slate-600">
-                      Mengambil data jabatan...
-                    </p>
-                  </div>
-                ) : filteredJabatans.length === 0 ? (
-                  <div className="jabatan-row-enter px-5 py-10 text-center">
-                    <Building2 className="mx-auto text-slate-300" size={36} />
-                    <p className="mt-3 font-black text-slate-700">
-                      Data jabatan tidak ditemukan.
-                    </p>
-                    <p className="mt-1 text-sm text-slate-400">
-                      Tambahkan jabatan baru atau ubah filter pencarian.
-                    </p>
-                  </div>
-                ) : (
-                  filteredJabatans.map((jabatan, index) => (
-                    <div
-                      key={jabatan.id}
-                      className="jabatan-row-enter grid gap-4 px-4 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] md:grid-cols-[0.3fr_1.6fr_0.75fr_0.75fr_1fr] md:items-center md:px-5 md:py-6"
-                      style={{
-                        animationDelay: `${index * 55}ms`,
-                      }}
-                    >
-                      <div className="flex items-start justify-between gap-3 md:block">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-xs font-black text-[#123c8c] md:h-auto md:w-auto md:bg-transparent md:text-sm md:text-slate-500">
-                            {index + 1}
-                          </div>
-
-                          <div className="md:hidden">
-                            <p className="font-black uppercase text-slate-950">
-                              {jabatan.name}
-                            </p>
-
-                            <p className="mt-1 text-xs font-semibold text-slate-400">
-                              {jabatan._count?.positions || 0} posisi
-                            </p>
+            ) : filteredJabatans.length === 0 ? (
+              <AppEmptyState
+                title="Tidak Ada Data"
+                description={
+                  search
+                    ? "Tidak ada jabatan yang cocok dengan pencarian Anda."
+                    : "Belum ada data jabatan yang ditambahkan."
+                }
+              />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredJabatans.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="row-enter rounded-3xl border border-blue-50/50 bg-[#fbfdff] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-100 hover:bg-white hover:shadow-md hover:shadow-blue-900/5"
+                    style={{ animationDelay: `${index * 40}ms` }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c]">
+                          <Building2 size={20} />
+                        </div>
+                        <div>
+                          <h3 className="font-black text-slate-800 text-base">
+                            {item.name}
+                          </h3>
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            <span
+                              className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${statusClass(
+                                item.status
+                              )}`}
+                            >
+                              {formatStatus(item.status)}
+                            </span>
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-500">
+                              {item._count?.users ?? 0} Karyawan
+                            </span>
                           </div>
                         </div>
-
-                        <span
-                          className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black md:hidden ${
-                            jabatan.status === "active"
-                              ? "bg-blue-50 text-[#123c8c]"
-                              : "bg-slate-100 text-slate-600"
-                          }`}
-                        >
-                          {formatStatus(jabatan.status)}
-                        </span>
                       </div>
 
-                      <div className="hidden md:block">
-                        <p className="font-black uppercase text-slate-950">
-                          {jabatan.name}
-                        </p>
-
-                        <p className="mt-1 text-xs font-semibold text-slate-400">
-                          {jabatan._count?.users || 0} karyawan
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-3 md:border-0 md:bg-transparent md:p-0">
-                        <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400 md:hidden">
-                          Posisi
-                        </p>
-
-                        <p className="mt-1 font-black text-slate-600 md:mt-0">
-                          {jabatan._count?.positions || 0}
-                        </p>
-                      </div>
-
-                      <div className="hidden md:block">
-                        <span
-                          className={`w-fit rounded-full px-4 py-2 text-xs font-black ${
-                            jabatan.status === "active"
-                              ? "bg-blue-50 text-[#123c8c]"
-                              : "bg-slate-100 text-slate-600"
-                          }`}
-                        >
-                          {formatStatus(jabatan.status)}
-                        </span>
-                      </div>
-
-                      <div className="grid gap-2 md:flex md:justify-center">
+                      <div className="flex items-center gap-1.5">
                         <button
-                          type="button"
-                          onClick={() => openEditModal(jabatan)}
-                          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.97] md:h-auto md:w-fit md:rounded-xl md:border md:border-blue-100 md:bg-white md:px-4 md:py-2 md:text-xs md:text-[#123c8c] md:shadow-none md:hover:bg-[#eaf1ff]"
+                          onClick={() => openEditModal(item)}
+                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-50 bg-white text-[#123c8c] shadow-sm hover:bg-blue-50 transition"
+                          title="Ubah"
                         >
-                          <Edit size={16} className="md:h-3.5 md:w-3.5" />
-                          Edit
+                          <Edit size={16} />
                         </button>
-
                         <button
-                          type="button"
-                          onClick={() => handleDeleteJabatan(jabatan)}
-                          disabled={
-                            isDeleting ||
-                            (jabatan._count?.users || 0) > 0 ||
-                            (jabatan._count?.positions || 0) > 0
-                          }
-                          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 text-sm font-black text-red-600 transition hover:bg-red-100 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 md:h-auto md:w-fit md:rounded-xl md:px-4 md:py-2 md:text-xs"
+                          onClick={() => handleDelete(item)}
+                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-100 bg-rose-50/50 text-rose-600 hover:bg-rose-100 transition"
+                          title="Hapus"
                         >
-                          {isDeleting ? (
-                            <Loader2
-                              size={16}
-                              className="animate-spin md:h-3.5 md:w-3.5"
-                            />
-                          ) : (
-                            <Trash2 size={16} className="md:h-3.5 md:w-3.5" />
-                          )}
-                          Hapus
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </div>
-                  ))
-                )}
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
 
-      {isModalOpen ? (
-        <div className="jabatan-modal-backdrop fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 px-4 pb-4 md:items-center md:pb-0">
-          <div className="jabatan-modal-panel max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
-            <div className="flex items-start justify-between gap-4">
+      {/* Modal Dialog Form */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="modal-backdrop absolute inset-0 bg-slate-900/60"
+            onClick={closeModal}
+          />
+
+          <div className="modal-panel relative w-full max-w-md rounded-[2.5rem] border border-white bg-white p-6 shadow-2xl md:p-8">
+            <button
+              onClick={closeModal}
+              className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 transition"
+            >
+              <X size={20} />
+            </button>
+
+            <h2 className="text-2xl font-black text-slate-950">
+              {editingJabatan ? "Ubah Jabatan" : "Tambah Jabatan"}
+            </h2>
+            <p className="mt-1 text-sm font-semibold text-slate-500">
+              {editingJabatan
+                ? "Perbarui nama atau status jabatan terpilih."
+                : "Masukkan nama jabatan baru untuk disimpan."}
+            </p>
+
+            <form onSubmit={handleSubmit} className="mt-6 space-y-5">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
-                  {editingJabatan ? "Edit Jabatan" : "Tambah Jabatan"}
-                </p>
-
-                <h2 className="mt-2 text-2xl font-black text-slate-950">
-                  {editingJabatan ? "Update Data Jabatan" : "Jabatan Baru"}
-                </h2>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  Isi nama jabatan sebagai label yang bisa dipakai bebas.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={closeModal}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 active:scale-[0.96]"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <div
-                className="jabatan-row-enter"
-                style={{ animationDelay: "40ms" }}
-              >
                 <label className="mb-2 block text-sm font-black text-slate-700">
                   Nama Jabatan
                 </label>
-
-                <input
+                <AppInput
                   value={form.name}
                   onChange={(event) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      name: event.target.value,
-                    }))
+                    setForm((prev) => ({ ...prev, name: event.target.value }))
                   }
-                  placeholder="Contoh: Kembaliend Development, Mobile Development, Accounting"
-                  className="jabatan-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  placeholder="Contoh: Manager, Head of Department, Supervisor"
+                  required
                 />
               </div>
 
-              <div
-                className="jabatan-row-enter"
-                style={{ animationDelay: "80ms" }}
-              >
+              <div>
                 <label className="mb-2 block text-sm font-black text-slate-700">
-                  Status Jabatan
+                  Status
                 </label>
-
-                <select
+                <AppSelect
                   value={form.status}
                   onChange={(event) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      status: event.target.value,
-                    }))
+                    setForm((prev) => ({ ...prev, status: event.target.value }))
                   }
-                  className="jabatan-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                 >
                   <option value="active">Aktif</option>
                   <option value="inactive">Nonaktif</option>
-                </select>
+                </AppSelect>
               </div>
 
-              <div
-                className="jabatan-row-enter flex flex-col-reverse gap-3 pt-2 md:flex-row md:justify-end"
-                style={{ animationDelay: "160ms" }}
-              >
-                <button
+              <div className="pt-2 flex justify-end gap-3">
+                <AppButton
                   type="button"
+                  variant="secondary"
                   onClick={closeModal}
-                  className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-200 active:scale-[0.98]"
+                  disabled={isSubmitting}
                 >
                   Batal
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isSubmitting
-                    ? "Menyimpan..."
-                    : editingJabatan
-                      ? "Update Jabatan"
-                      : "Tambah Jabatan"}
-                </button>
+                </AppButton>
+                <AppButton type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="mr-2 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    "Simpan"
+                  )}
+                </AppButton>
               </div>
             </form>
           </div>
         </div>
-      ) : null}
-
-      {jabatanAlert && jabatanAlertTheme ? (
-        <div
-          className={`jabatan-toast-enter fixed right-4 top-4 z-[140] w-[calc(100vw-2rem)] max-w-md transition-all duration-300 ease-out md:right-7 md:top-7 ${
-            isAlertClosing
-              ? "translate-x-8 scale-95 opacity-0"
-              : "translate-x-0 scale-100 opacity-100"
-          }`}
-        >
-          <div
-            className={`overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br ${jabatanAlertTheme.shell} shadow-2xl shadow-slate-900/20 backdrop-blur-xl transition-all duration-300 ease-out ${
-              isAlertClosing
-                ? "translate-y-2 opacity-0"
-                : "translate-y-0 opacity-100"
-            }`}
-          >
-            <div className="relative p-5">
-              <div className="relative flex items-start gap-4">
-                <div
-                  className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] ${jabatanAlertTheme.iconWrap} shadow-lg shadow-slate-300/40`}
-                >
-                  <JabatanAlertIcon size={32} strokeWidth={3} />
-                </div>
-
-                <div className="min-w-0 flex-1 pt-1">
-                  <div
-                    className={`inline-flex rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-[0.24em] ${jabatanAlertTheme.badge}`}
-                  >
-                    {jabatanAlertTheme.label}
-                  </div>
-
-                  <h3 className="mt-3 text-2xl font-black leading-tight text-slate-950">
-                    {jabatanAlert.title}
-                  </h3>
-
-                  <p className="mt-2 text-sm font-bold leading-6 text-slate-600">
-                    {jabatanAlert.message}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={closeJabatanAlert}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-slate-500 shadow-sm transition hover:bg-white hover:text-slate-800 active:scale-[0.96]"
-                  aria-label="Tutup alert"
-                >
-                  <X size={22} strokeWidth={2.8} />
-                </button>
-              </div>
-            </div>
-
-            <div className="border-t border-white/60 bg-white/70 p-4">
-              <button
-                type="button"
-                onClick={closeJabatanAlert}
-                className={`w-full rounded-2xl px-6 py-3.5 text-sm font-black text-white shadow-lg transition active:scale-[0.98] ${jabatanAlertTheme.button}`}
-              >
-                Mengerti
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      )}
 
       <BottomNav variant="admin" />
     </MobileShell>

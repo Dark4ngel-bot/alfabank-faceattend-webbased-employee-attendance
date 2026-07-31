@@ -92,8 +92,12 @@ export async function GET(req: NextRequest) {
         name: true,
         tolerance_minutes: true,
         status: true,
-        created_at: true,
-        updated_at: true,
+        _count: {
+          select: {
+            users: true,
+            work_schedules: true,
+          },
+        },
       },
     });
 

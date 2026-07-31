@@ -401,8 +401,14 @@ export async function GET(req: NextRequest) {
     }
 
     if (status && status !== "all" && statusColumn) {
-      whereClauses.push(`LOWER(a.\`${statusColumn}\`) = ?`);
-      queryValues.push(status);
+      if (status === "uncheckout" && checkOutColumn) {
+        whereClauses.push(
+          `(a.\`${checkOutColumn}\` IS NULL OR a.\`${checkOutColumn}\` = '' OR a.\`${checkOutColumn}\` = '-')`
+        );
+      } else {
+        whereClauses.push(`LOWER(a.\`${statusColumn}\`) = ?`);
+        queryValues.push(status);
+      }
     }
 
     if (employeeId) {

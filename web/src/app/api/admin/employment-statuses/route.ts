@@ -74,6 +74,13 @@ export async function GET(req: NextRequest) {
     await ensureDefaultStatuses();
 
     const statuses = await prisma.employmentStatus.findMany({
+      include: {
+        _count: {
+          select: {
+            users: true,
+          },
+        },
+      },
       orderBy: {
         created_at: "asc",
       },
