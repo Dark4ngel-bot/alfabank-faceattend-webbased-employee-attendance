@@ -21,9 +21,6 @@ export async function findAttendanceInDateRange(params: {
   startDate: Date;
   endDate: Date;
 }) {
-  // Normalize dates to UTC date-only boundaries to avoid timezone shift issues.
-  // The input dates may have timezone offsets (e.g. +07:00) that shift them to a
-  // different UTC date. We extract the Jakarta date parts and create UTC-midnight dates.
   const startUtc = toUtcDateOnly(params.startDate);
   const endUtc = toUtcDateOnly(params.endDate);
 
@@ -51,12 +48,8 @@ export async function findAttendanceInDateRange(params: {
 }
 
 function toUtcDateOnly(date: Date) {
-  // Extract the date in Jakarta timezone, then create a UTC-midnight Date
-  const jakartaStr = date.toLocaleDateString("en-CA", {
-    timeZone: "Asia/Jakarta",
-  });
-  // jakartaStr is "YYYY-MM-DD"
-  return new Date(`${jakartaStr}T00:00:00.000Z`);
+  const isoStr = date.toISOString().split("T")[0];
+  return new Date(`${isoStr}T00:00:00.000Z`);
 }
 
 export async function findActiveLeaveForDate(params: {
