@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ChevronDown,
   Clock3,
+  Eye,
   LayoutDashboard,
   Loader2,
   LogIn,
@@ -41,6 +42,9 @@ type RecentAttendance = {
   status: string;
   lateMinutes: number;
   workMinutes: number;
+  workMode?: string;
+  hasPhoto?: boolean;
+  hasLocation?: boolean;
 };
 
 type DashboardResponse = {
@@ -498,83 +502,112 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="mt-6 overflow-x-auto rounded-2xl border border-blue-100 custom-scrollbar">
-            <div className="min-w-[700px]">
-              <div className="hidden grid-cols-[0.55fr_1.5fr_0.8fr_0.8fr_0.8fr_0.8fr] bg-[#eaf1ff] px-5 py-3 text-xs font-black uppercase tracking-wide text-[#123c8c] md:grid">
-                <p>Profil</p>
-                <p>Karyawan</p>
-                <p>Check-in</p>
-                <p>Check-out</p>
-                <p>Durasi</p>
-                <p>Status</p>
+          <div className="mt-6 space-y-3">
+            {isLoading ? (
+              <div className="dashboard-row-enter flex items-center justify-center gap-2 rounded-3xl border border-blue-100 bg-white px-5 py-10 text-sm font-bold text-slate-500">
+                <Loader2 size={18} className="animate-spin text-[#123c8c]" />
+                Mengambil data presensi...
               </div>
-
-            <div className="divide-y divide-blue-100 bg-white">
-              {isLoading ? (
-                <div className="dashboard-row-enter flex items-center justify-center gap-2 px-5 py-10 text-sm font-bold text-slate-500">
-                  <Loader2 size={18} className="animate-spin" />
-                  Mengambil data presensi...
-                </div>
-              ) : data?.recentAttendance.length ? (
-                data.recentAttendance.map((item, index) => (
-                  <div key={getAttendanceKey(item, index)}>
-                    <div className="md:hidden">
-                      <MobileAttendanceCard item={item} index={index} />
-                    </div>
-
-                    <Link
-                      href={`/admin/daftar-karyawan/${item.id}`}
-                      className="dashboard-row-enter hidden cursor-pointer px-5 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#123c8c] focus-visible:ring-offset-2 md:grid md:grid-cols-[0.55fr_1.5fr_0.8fr_0.8fr_0.8fr_0.8fr] md:items-center"
-                      style={{
-                        animationDelay: `${index * 45}ms`,
-                      }}
-                      aria-label={`Buka detail karyawan ${item.name}`}
-                    >
+            ) : data?.recentAttendance.length ? (
+              data.recentAttendance.map((item, index) => (
+                <div
+                  key={getAttendanceKey(item, index)}
+                  className="dashboard-row-enter group rounded-2xl border border-blue-100 bg-white px-4 py-4 shadow-sm shadow-slate-200/60 transition duration-300 hover:-translate-y-0.5 hover:border-[#123c8c]/30 hover:bg-[#fbfdff] hover:shadow-xl hover:shadow-slate-300/40 md:rounded-[1.6rem] md:px-5 md:py-4"
+                  style={{
+                    animationDelay: `${index * 45}ms`,
+                  }}
+                >
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-center gap-3 md:w-[260px] md:shrink-0">
                       <EmployeeProfileAvatar item={item} />
 
-                      <div className="min-w-0">
-                        <p className="truncate font-bold text-slate-950">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="truncate text-base font-black text-slate-950">
                           {item.name}
-                        </p>
+                        </h4>
 
-                        <p className="mt-1 truncate text-xs font-semibold text-slate-400">
+                        <p className="mt-1 truncate text-xs font-bold text-slate-400">
+                          {item.employeeCode ? `${item.employeeCode} • ` : ""}
                           {getEmployeeSubtitle(item)}
                         </p>
                       </div>
+                    </div>
 
-                      <p className="text-slate-500">
-                        {formatTime(item.checkInTime)}
-                      </p>
+                    <div className="grid grid-cols-3 gap-2 text-xs font-bold text-slate-500 md:w-[320px] md:shrink-0">
+                      <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
+                        <p className="text-[11px] font-bold text-slate-400">Masuk</p>
+                        <p className="mt-0.5 text-sm font-black text-slate-800">
+                          {formatTime(item.checkInTime)}
+                        </p>
+                      </div>
 
-                      <p className="text-slate-500">
-                        {formatTime(item.checkOutTime)}
-                      </p>
+                      <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
+                        <p className="text-[11px] font-bold text-slate-400">Keluar</p>
+                        <p className="mt-0.5 text-sm font-black text-slate-800">
+                          {formatTime(item.checkOutTime)}
+                        </p>
+                      </div>
 
-                      <p className="font-semibold text-slate-500">
-                        {formatMinutes(
-                          item.workMinutes,
-                          Boolean(item.checkOutTime),
-                        )}
-                      </p>
+                      <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
+                        <p className="text-[11px] font-bold text-slate-400">Durasi</p>
+                        <p className="mt-0.5 text-sm font-black text-slate-800">
+                          {formatMinutes(item.workMinutes, Boolean(item.checkOutTime))}
+                        </p>
+                      </div>
+                    </div>
 
+                    <div className="flex flex-wrap items-center gap-1.5 md:flex-1 md:justify-start">
                       <span
-                        className={`w-fit rounded-full px-3 py-1 text-xs font-black ${getStatusClass(
+                        className={`rounded-full px-3 py-1 text-xs font-black ${getStatusClass(
                           item,
                         )}`}
                       >
                         {getStatusLabel(item)}
                       </span>
-                    </Link>
+
+                      {item.checkInTime && !item.checkOutTime ? (
+                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700 ring-1 ring-amber-200">
+                          Belum Checkout
+                        </span>
+                      ) : null}
+
+                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-[#123c8c]">
+                        {item.workMode === "WFA" || item.workMode === "wfa"
+                          ? "WFA"
+                          : "Kantor"}
+                      </span>
+
+                      {item.hasPhoto ? (
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
+                          Ada Foto
+                        </span>
+                      ) : null}
+
+                      {item.hasLocation ? (
+                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700">
+                          Ada Lokasi
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className="flex shrink-0 items-center justify-end">
+                      <Link
+                        href={`/admin/daftar-karyawan/${item.id}`}
+                        className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-4 text-xs font-black text-[#123c8c] shadow-sm transition hover:bg-[#eaf1ff] hover:shadow-md"
+                      >
+                        <Eye size={15} />
+                        Lihat detail
+                      </Link>
+                    </div>
                   </div>
-                ))
-              ) : (
-                <div className="dashboard-row-enter px-5 py-10 text-center text-sm font-bold text-slate-500">
-                  Belum ada data check-in atau check-out hari ini.
                 </div>
-              )}
-            </div>
+              ))
+            ) : (
+              <div className="dashboard-row-enter rounded-3xl border border-blue-100 bg-white px-5 py-10 text-center text-sm font-bold text-slate-500">
+                Belum ada data check-in atau check-out hari ini.
+              </div>
+            )}
           </div>
-        </div>
       </div>
     </section>
 

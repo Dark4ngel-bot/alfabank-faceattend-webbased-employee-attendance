@@ -515,6 +515,7 @@ export default function AdminEmployeesPage() {
   const [offices, setOffices] = useState<OfficeOption[]>([]);
 
   const [keyword, setKeyword] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeModalTab, setActiveModalTab] = useState<
     "account" | "structure" | "employment" | "payroll"
@@ -738,7 +739,7 @@ export default function AdminEmployeesPage() {
   }, [employees]);
 
   const filteredEmployees = useMemo(() => {
-    return employeeAccounts.filter((employee) => {
+    const list = employeeAccounts.filter((employee) => {
       const text = `
         ${employee.id || ""}
         ${employee.employee_code || ""}
@@ -766,7 +767,15 @@ export default function AdminEmployeesPage() {
 
       return text.includes(keyword.toLowerCase());
     });
-  }, [employeeAccounts, keyword]);
+
+    return list.sort((a, b) => {
+      const nameA = a.name.toLowerCase();
+      const nameB = b.name.toLowerCase();
+      return sortOrder === "asc"
+        ? nameA.localeCompare(nameB)
+        : nameB.localeCompare(nameA);
+    });
+  }, [employeeAccounts, keyword, sortOrder]);
 
   const activeEmployees = employeeAccounts.filter(
     (employee) => employee.status === "active",
@@ -1235,8 +1244,8 @@ export default function AdminEmployeesPage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-3 md:flex-row">
-              <div className="relative w-full md:w-[330px]">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative w-full sm:w-[300px]">
                 <Search
                   size={18}
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -1248,6 +1257,15 @@ export default function AdminEmployeesPage() {
                   className="employee-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                 />
               </div>
+
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+                className="employee-field rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-xs font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+              >
+                <option value="asc">Nama: A - Z</option>
+                <option value="desc">Nama: Z - A</option>
+              </select>
             </div>
           </div>
 
@@ -1302,7 +1320,10 @@ export default function AdminEmployeesPage() {
                                 {employee.name}
                               </p>
                               <p className="mt-0.5 truncate text-[11px] font-black uppercase tracking-[0.12em] text-[#123c8c]">
-                                {employee.employee_code || "No induk -"}
+                                {employee.employee_code ? `${employee.employee_code} • ` : ""}
+                                {getRelationName(employee.department) !== "-"
+                                  ? getRelationName(employee.department)
+                                  : getRelationName(employee.jabatan)}
                               </p>
                               <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
                                 <p className="truncate text-xs font-bold text-slate-500">
@@ -1402,7 +1423,10 @@ export default function AdminEmployeesPage() {
                             {employee.name}
                           </p>
                           <p className="mt-0.5 truncate text-[11px] font-black uppercase tracking-[0.12em] text-[#123c8c]">
-                            {employee.employee_code || "No induk -"}
+                            {employee.employee_code ? `${employee.employee_code} • ` : ""}
+                            {getRelationName(employee.department) !== "-"
+                              ? getRelationName(employee.department)
+                              : getRelationName(employee.jabatan)}
                           </p>
                           <span
                             className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-black ${

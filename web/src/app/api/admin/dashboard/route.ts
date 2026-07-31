@@ -105,6 +105,9 @@ export async function GET(req: NextRequest) {
         attendance_date: true,
         check_in_time: true,
         check_out_time: true,
+        check_in_photo: true,
+        check_out_photo: true,
+        work_mode: true,
         status: true,
         late_minutes: true,
         work_minutes: true,
@@ -163,6 +166,9 @@ export async function GET(req: NextRequest) {
         status: attendance?.check_in_time ? (attendance?.status || "PRESENT") : "ABSENT",
         lateMinutes: Number(attendance?.late_minutes || 0),
         workMinutes,
+        workMode: attendance?.work_mode || "OFFICE",
+        hasPhoto: Boolean(attendance?.check_in_photo || attendance?.check_out_photo),
+        hasLocation: Boolean(attendance?.check_in_time),
       };
     });
 
