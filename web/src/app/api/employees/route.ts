@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import {
+  CREATIVEMU_EMAIL_DOMAIN,
   CREATIVEMU_EMAIL_EXAMPLE,
   isCreativemuEmail,
   isValidEmailFormat,
@@ -594,7 +595,7 @@ export async function POST(req: NextRequest) {
     }
     if (!isCreativemuEmail(email)) {
       return jsonError(
-        "Email akun wajib menggunakan domain resmi @alfabank.id.",
+        `Email akun wajib menggunakan domain resmi ${CREATIVEMU_EMAIL_DOMAIN}.`,
         403
       );
     }
@@ -787,7 +788,7 @@ export async function PATCH(req: NextRequest) {
     }
     if (!isCreativemuEmail(email)) {
       return jsonError(
-        "Email akun wajib menggunakan domain resmi @alfabank.id.",
+        `Email akun wajib menggunakan domain resmi ${CREATIVEMU_EMAIL_DOMAIN}.`,
         403
       );
     }
