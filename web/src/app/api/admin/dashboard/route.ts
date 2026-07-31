@@ -172,19 +172,33 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    const checkInToday = recentAttendance.filter(
+    const sortedRecentAttendance = recentAttendance.sort((a, b) => {
+      // 1. Yang sudah check-in diutamakan di atas daripada yang belum check-in
+      if (a.checkInTime && !b.checkInTime) return -1;
+      if (!a.checkInTime && b.checkInTime) return 1;
+
+      // 2. Jika keduanya sudah check-in, urutkan dari waktu terawal/tercepat (ASC: 07:00 dulu baru 08:00)
+      if (a.checkInTime && b.checkInTime) {
+        return new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime();
+      }
+
+      // 3. Jika keduanya belum check-in, urutkan alfabetis berdasarkan nama
+      return a.name.localeCompare(b.name);
+    });
+
+    const checkInToday = sortedRecentAttendance.filter(
       (attendance) => attendance.checkInTime,
     ).length;
 
-    const checkOutToday = recentAttendance.filter(
+    const checkOutToday = sortedRecentAttendance.filter(
       (attendance) => attendance.checkOutTime,
     ).length;
 
-    const lateToday = recentAttendance.filter((attendance) => {
+    const lateToday = sortedRecentAttendance.filter((attendance) => {
       return attendance.lateMinutes > 0 || isLateStatus(attendance.status);
     }).length;
 
-    const absentToday = recentAttendance.filter(
+    const absentToday = sortedRecentAttendance.filter(
       (attendance) => !attendance.checkInTime,
     ).length;
 
@@ -196,7 +210,7 @@ export async function GET(req: NextRequest) {
         lateToday,
         absentToday,
       },
-      recentAttendance,
+      recentAttendance: sortedRecentAttendance,
     });
   } catch (error) {
     console.error("ADMIN_DASHBOARD_ERROR:", error);
