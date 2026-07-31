@@ -468,7 +468,7 @@ export default function AppHeader({
             <div className="relative hidden h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-4 py-2.5 shadow-sm ring-1 ring-blue-100/90 transition hover:bg-[#eaf1ff] active:scale-[0.96] sm:flex">
               <Image
                 src={logoSrc}
-                alt="Logo Creativemu"
+                alt="Logo AlfaBank"
                 width={140}
                 height={35}
                 className="h-full w-auto object-contain object-center"
@@ -506,7 +506,7 @@ export default function AppHeader({
               <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-slate-300/50 ring-1 ring-blue-100">
                 <Image
                   src={logoSrc}
-                  alt="Creativemu Logo"
+                  alt="Logo AlfaBank"
                   width={64}
                   height={59}
                   className="h-full w-full object-contain"
@@ -516,7 +516,7 @@ export default function AppHeader({
 
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c]">
-                  Creativemu
+                  AlfaBank
                 </p>
 
                 <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">

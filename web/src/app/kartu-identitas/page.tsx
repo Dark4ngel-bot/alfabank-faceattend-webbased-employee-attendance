@@ -705,7 +705,7 @@ export default function KartuIdentitasPage() {
                       {/* Footer Badge */}
                       <div className="flex shrink-0 items-center justify-between rounded-xl bg-gradient-to-r from-[#123c8c] to-[#0f3478] px-3 py-1.5 shadow-sm">
                         <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-blue-100 md:text-[10px]">
-                          Creativemu
+                          AlfaBank
                         </p>
                         <BadgeCheck
                           size={14}

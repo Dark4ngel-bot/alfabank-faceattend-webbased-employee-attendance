@@ -497,7 +497,7 @@ export default function LoginPage() {
     if (!isCreativemuEmail(normalizedEmail)) {
       showAlert(
         "Email tidak valid",
-        "Masuk hanya dapat menggunakan email resmi Creativemu.",
+        "Masuk hanya dapat menggunakan email resmi AlfaBank.",
       );
       return;
     }
@@ -593,7 +593,7 @@ export default function LoginPage() {
             <div className="relative z-10 flex h-32 w-32 items-center justify-center p-0 md:h-40 md:w-40 md:overflow-hidden md:rounded-[2rem] md:border md:border-white/80 md:bg-white md:p-7 md:shadow-[0_24px_58px_rgba(18,60,140,0.14)]">
               <Image
                 src={DEFAULT_SITE_MARK_LOGO_SRC}
-                alt="Creativemu Logo"
+                alt="Logo AlfaBank"
                 width={421}
                 height={390}
                 className="intro-logo-pulse h-full w-full object-contain"
@@ -604,7 +604,7 @@ export default function LoginPage() {
 
           <div className="relative mt-9 text-center md:mt-12">
             <h2 className="intro-text-in text-3xl font-black uppercase tracking-[0.18em] text-slate-950 md:text-5xl">
-              Creativemu
+              AlfaBank
             </h2>
             <p
               className="intro-text-in mt-3 text-xs font-black uppercase tracking-[0.28em] text-[#ff8a00] md:text-sm"
@@ -631,7 +631,7 @@ export default function LoginPage() {
         <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
           <Image
             src={DEFAULT_SITE_MARK_LOGO_SRC}
-            alt="Watermark C Creativemu"
+            alt="Watermark AlfaBank"
             width={500}
             height={500}
             className="mx-auto w-[22rem] max-w-[85vw] opacity-[0.05] mix-blend-multiply sm:w-[24rem] md:w-[25rem] lg:w-[24rem]"
@@ -644,7 +644,7 @@ export default function LoginPage() {
           <div className="pointer-events-auto flex h-20 w-72 shrink-0 items-center justify-center transition-transform duration-300 hover:scale-[1.02] sm:h-24 sm:w-80 md:h-28 md:w-[26rem] lg:h-32 lg:w-[32rem]">
             <Image
               src={logoSrc}
-              alt="Creativemu Logo"
+              alt="Logo AlfaBank"
               width={512}
               height={128}
               className="h-full w-full object-contain object-center"
@@ -673,7 +673,7 @@ export default function LoginPage() {
                 }}
               >
                 <span className="typewriter-title login-presence-title">
-                  Presensi Creativemu
+                  Presensi AlfaBank
                 </span>
               </h2>
 
@@ -693,7 +693,7 @@ export default function LoginPage() {
                 animationDelay: "280ms",
               }}
             >
-              © 2026 Presensi for Creativemu
+              © 2026 Presensi for AlfaBank
             </div>
           </div>
 
@@ -811,7 +811,7 @@ export default function LoginPage() {
               animationDelay: "300ms",
             }}
           >
-            © 2026 Presensi for Creativemu
+            © 2026 Presensi for AlfaBank
           </div>
         </div>
 

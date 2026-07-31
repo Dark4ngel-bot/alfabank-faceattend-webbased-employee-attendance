@@ -155,7 +155,7 @@ export default function AdminSiteLogoPage() {
   }
 
   async function handleResetLogo() {
-    if (!window.confirm("Kembalikan logo ke default Creativemu?")) return;
+    if (!window.confirm("Kembalikan logo ke default AlfaBank?")) return;
 
     try {
       setIsSaving(true);

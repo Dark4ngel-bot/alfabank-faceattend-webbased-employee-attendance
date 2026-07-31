@@ -3,7 +3,7 @@ import { Buffer } from "node:buffer";
 import fs from "node:fs";
 import path from "node:path";
 import type { UploadApiResponse } from "cloudinary";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireOwner } from "@/lib/api-auth";
 import { jsonApiError } from "@/lib/api-response";

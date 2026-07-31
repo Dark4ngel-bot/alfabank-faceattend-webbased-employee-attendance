@@ -57,7 +57,7 @@ function formatPhoneNumber(value: string) {
 
 export default function AdminContactNumbersPage() {
   const [numbers, setNumbers] = useState<AdminContactNumber[]>([]);
-  const [label, setLabel] = useState("Admin Creativemu");
+  const [label, setLabel] = useState("Admin AlfaBank");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [activateNewNumber, setActivateNewNumber] = useState(true);
   const [editingId, setEditingId] = useState("");
@@ -132,7 +132,7 @@ export default function AdminContactNumbersPage() {
       }
 
       setPhoneNumber("");
-      setLabel("Admin Creativemu");
+      setLabel("Admin AlfaBank");
       setActivateNewNumber(true);
       setFeedbackMessage(data.message || "Nomor admin berhasil ditambahkan.");
       await loadNumbers();
@@ -258,7 +258,7 @@ export default function AdminContactNumbersPage() {
                     value={label}
                     onChange={(event) => setLabel(event.target.value)}
                     className="mt-2 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                    placeholder="Admin Creativemu"
+                    placeholder="Admin AlfaBank"
                   />
                 </label>
 

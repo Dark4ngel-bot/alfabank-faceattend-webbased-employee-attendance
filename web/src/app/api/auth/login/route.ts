@@ -155,7 +155,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Login hanya dapat menggunakan email resmi Creativemu.",
+          message: "Login hanya dapat menggunakan email resmi AlfaBank.",
         },
         { status: 403 }
       );

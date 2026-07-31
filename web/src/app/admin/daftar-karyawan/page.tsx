@@ -893,8 +893,8 @@ export default function AdminEmployeesPage() {
     if (!isCreativemuEmail(email)) {
       setActiveModalTab("account");
       showEmployeeAlert(
-        "Email harus Creativemu",
-        "Email akun wajib menggunakan domain resmi Creativemu.",
+        "Email harus AlfaBank",
+        "Email akun wajib menggunakan domain resmi AlfaBank.",
         "warning",
       );
       return;
