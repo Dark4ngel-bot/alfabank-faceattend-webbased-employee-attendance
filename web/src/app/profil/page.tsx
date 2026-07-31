@@ -468,18 +468,21 @@ function ProfileAvatar({ user, initials, size = "md" }: ProfileAvatarProps) {
     lg: "h-32 w-32 text-4xl",
   }[size];
 
+  const photoSrc = user.profile_photo
+    ? `${user.profile_photo}${user.profile_photo.includes("?") ? "&" : "?"}v=${Date.now()}`
+    : null;
+
   return (
     <div
       className={`profile-avatar-pop flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#eaf1ff] font-black text-[#123c8c] ring-4 ring-blue-100 ${sizeClass}`}
     >
-      {user.profile_photo ? (
-        <>
-          <img
-            src={user.profile_photo}
-            alt={user.name}
-            className="h-full w-full object-cover"
-          />
-        </>
+      {photoSrc ? (
+        <img
+          key={user.profile_photo}
+          src={photoSrc}
+          alt={user.name}
+          className="h-full w-full object-cover"
+        />
       ) : (
         initials
       )}

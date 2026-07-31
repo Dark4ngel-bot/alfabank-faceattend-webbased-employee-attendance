@@ -264,9 +264,12 @@ function ProfileAvatar({
     size === "desktop" ? "h-24 w-24 text-2xl" : "h-12 w-12 text-sm";
 
   if (user.profile_photo) {
+    const photoSrc = `${user.profile_photo}${user.profile_photo.includes("?") ? "&" : "?"}v=${Date.now()}`;
+
     return (
       <img
-        src={user.profile_photo}
+        key={user.profile_photo}
+        src={photoSrc}
         alt={user.name || "Profil"}
         className={`home-icon-pop ${sizeClass} shrink-0 rounded-full object-cover ${
           size === "desktop" ? "ring-4 ring-white/70" : "ring-4 ring-white"

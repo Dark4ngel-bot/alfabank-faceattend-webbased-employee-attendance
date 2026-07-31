@@ -478,54 +478,62 @@ export async function POST(req: NextRequest) {
     });
 
     let savedAnnouncement = announcement;
+    let documentWarning: string | null = null;
 
     if (document) {
-      const uploadResult = await uploadAnnouncementDocument(
-        document,
-        announcement.id,
-      );
-      uploadedDocumentPublicId = uploadResult.public_id;
+      try {
+        const uploadResult = await uploadAnnouncementDocument(
+          document,
+          announcement.id,
+        );
+        uploadedDocumentPublicId = uploadResult.public_id;
 
-      savedAnnouncement = await prisma.announcement.update({
-        where: {
-          id: announcement.id,
-        },
-        data: {
-          document_url: uploadResult.secure_url,
-          document_public_id: uploadResult.public_id,
-          document_name: document.name || "dokumen-pengumuman.pdf",
-          document_mime: document.type || "application/pdf",
-          document_size: document.size,
-        },
-        select: {
-          id: true,
-          title: true,
-          content: true,
-          document_url: true,
-          document_public_id: true,
-          document_name: true,
-          document_mime: true,
-          document_size: true,
-          target: true,
-          status: true,
-          created_at: true,
-          updated_at: true,
-          author: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
+        savedAnnouncement = await prisma.announcement.update({
+          where: {
+            id: announcement.id,
+          },
+          data: {
+            document_url: uploadResult.secure_url,
+            document_public_id: uploadResult.public_id,
+            document_name: document.name || "dokumen-pengumuman.pdf",
+            document_mime: document.type || "application/pdf",
+            document_size: document.size,
+          },
+          select: {
+            id: true,
+            title: true,
+            content: true,
+            document_url: true,
+            document_public_id: true,
+            document_name: true,
+            document_mime: true,
+            document_size: true,
+            target: true,
+            status: true,
+            created_at: true,
+            updated_at: true,
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
             },
           },
-        },
-      });
+        });
+      } catch (uploadError) {
+        console.error("ANNOUNCEMENT_DOCUMENT_UPLOAD_ERROR:", uploadError);
+        documentWarning =
+          "Pengumuman berhasil disimpan, tetapi dokumen PDF gagal diupload. Silakan edit pengumuman dan upload ulang dokumen.";
+      }
     }
 
     const formattedAnnouncement = formatAnnouncement(savedAnnouncement);
 
     return NextResponse.json({
       success: true,
-      message: "Pengumuman berhasil disimpan.",
+      message: documentWarning || "Pengumuman berhasil disimpan.",
+      warning: documentWarning,
       data: formattedAnnouncement,
       announcement: formattedAnnouncement,
     });
@@ -598,16 +606,24 @@ export async function PATCH(req: NextRequest) {
       data.status = normalizeStatus(body.status);
     }
 
-    if (document) {
-      const uploadResult = await uploadAnnouncementDocument(document, id);
-      uploadedDocumentPublicId = uploadResult.public_id;
-      oldDocumentPublicId = existingAnnouncement.document_public_id;
+    let documentWarning: string | null = null;
 
-      data.document_url = uploadResult.secure_url;
-      data.document_public_id = uploadResult.public_id;
-      data.document_name = document.name || "dokumen-pengumuman.pdf";
-      data.document_mime = document.type || "application/pdf";
-      data.document_size = document.size;
+    if (document) {
+      try {
+        const uploadResult = await uploadAnnouncementDocument(document, id);
+        uploadedDocumentPublicId = uploadResult.public_id;
+        oldDocumentPublicId = existingAnnouncement.document_public_id;
+
+        data.document_url = uploadResult.secure_url;
+        data.document_public_id = uploadResult.public_id;
+        data.document_name = document.name || "dokumen-pengumuman.pdf";
+        data.document_mime = document.type || "application/pdf";
+        data.document_size = document.size;
+      } catch (uploadError) {
+        console.error("ANNOUNCEMENT_DOCUMENT_UPLOAD_ERROR:", uploadError);
+        documentWarning =
+          "Pengumuman berhasil diperbarui, tetapi dokumen PDF gagal diupload. Silakan coba upload ulang dokumen.";
+      }
     }
 
     if (body.removeDocument === "true" || body.remove_document === "true") {
@@ -658,7 +674,8 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Pengumuman berhasil diperbarui.",
+      message: documentWarning || "Pengumuman berhasil diperbarui.",
+      warning: documentWarning,
       data: formattedAnnouncement,
       announcement: formattedAnnouncement,
     });
