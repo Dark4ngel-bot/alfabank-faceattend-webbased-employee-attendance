@@ -594,7 +594,7 @@ export async function POST(req: NextRequest) {
     }
     if (!isCreativemuEmail(email)) {
       return jsonError(
-        "Email akun wajib menggunakan domain resmi @alfabank.ac.id.",
+        "Email akun wajib menggunakan domain resmi @alfabank.id.",
         403
       );
     }
@@ -787,7 +787,7 @@ export async function PATCH(req: NextRequest) {
     }
     if (!isCreativemuEmail(email)) {
       return jsonError(
-        "Email akun wajib menggunakan domain resmi @alfabank.ac.id.",
+        "Email akun wajib menggunakan domain resmi @alfabank.id.",
         403
       );
     }
