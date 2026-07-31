@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Buffer } from "node:buffer";
+import fs from "node:fs";
+import path from "node:path";
 import type { UploadApiResponse } from "cloudinary";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -174,41 +176,95 @@ function validatePdfDocument(file: File) {
   }
 }
 
+function saveLocalAnnouncementDocument(
+  file: File,
+  buffer: Buffer,
+  announcementId: string,
+): { url: string; publicId: string | null } {
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "announcements");
+
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const ext = file.name ? path.extname(file.name).toLowerCase() || ".pdf" : ".pdf";
+  const filename = `announcement-${announcementId}-${Date.now()}${ext}`;
+  const filePath = path.join(uploadDir, filename);
+
+  fs.writeFileSync(filePath, buffer);
+
+  return {
+    url: `/uploads/announcements/${filename}`,
+    publicId: null,
+  };
+}
+
 async function uploadAnnouncementDocument(
   file: File,
   announcementId: string,
-): Promise<UploadApiResponse> {
+): Promise<{ secure_url: string; public_id: string | null }> {
   validatePdfDocument(file);
 
-  const cloudinary = getCloudinary();
   const buffer = Buffer.from(await file.arrayBuffer());
+  const hasCloudinary = Boolean(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET,
+  );
 
-  return new Promise<UploadApiResponse>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: "presensi/announcements",
-        public_id: `announcement-${announcementId}-${Date.now()}`,
-        resource_type: "raw",
-        overwrite: false,
-        use_filename: true,
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
+  if (hasCloudinary) {
+    try {
+      const cloudinary = getCloudinary();
 
-        if (!result) {
-          reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
-          return;
-        }
+      const result = await new Promise<UploadApiResponse>((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "presensi/announcements",
+            public_id: `announcement-${announcementId}-${Date.now()}`,
+            resource_type: "raw",
+            overwrite: false,
+            use_filename: true,
+          },
+          (error, res) => {
+            if (error) {
+              reject(error);
+              return;
+            }
 
-        resolve(result);
-      },
-    );
+            if (!res) {
+              reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
+              return;
+            }
 
-    uploadStream.end(buffer);
-  });
+            resolve(res);
+          },
+        );
+
+        uploadStream.end(buffer);
+      });
+
+      return {
+        secure_url: result.secure_url,
+        public_id: result.public_id,
+      };
+    } catch (cloudinaryError) {
+      console.warn(
+        "Cloudinary PDF upload failed, falling back to local storage:",
+        cloudinaryError,
+      );
+      const localResult = saveLocalAnnouncementDocument(file, buffer, announcementId);
+      return {
+        secure_url: localResult.url,
+        public_id: localResult.publicId,
+      };
+    }
+  }
+
+  const localResult = saveLocalAnnouncementDocument(file, buffer, announcementId);
+  return {
+    secure_url: localResult.url,
+    public_id: localResult.publicId,
+  };
 }
 
 async function deleteAnnouncementDocument(publicId: string | null | undefined) {

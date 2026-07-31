@@ -192,6 +192,7 @@ export async function GET(req: NextRequest) {
         birth_place: user.birth_place,
         birth_date: user.birth_date,
         bank_code: user.bank_code,
+        bank_name: user.bank_code,
         bank_account_number: user.bank_account_number,
         nik: user.nik,
         profile_photo: user.profile_photo,

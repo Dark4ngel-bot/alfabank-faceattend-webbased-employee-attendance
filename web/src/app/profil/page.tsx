@@ -736,6 +736,11 @@ export function ProfilPageContent({
 
       const data = await readJsonResponse(response);
 
+      if (response.status === 401) {
+        router.push("/login");
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(
           data.error || data.message || "Gagal mengambil profil.",
@@ -937,10 +942,10 @@ export function ProfilPageContent({
         return;
       }
 
-      if (file.size > 2 * 1024 * 1024) {
+      if (file.size > 5 * 1024 * 1024) {
         showProfileAlert(
           "Foto terlalu besar",
-          "Ukuran foto maksimal 2MB.",
+          "Ukuran foto maksimal 5MB.",
           "warning",
         );
         return;
@@ -967,12 +972,15 @@ export function ProfilPageContent({
         return;
       }
 
-      if (data.user?.profile_photo) {
+      const uploadedPhoto =
+        data.user?.profile_photo || data.photoUrl || data.profilePhoto || data.photo;
+
+      if (uploadedPhoto) {
         setUser((currentUser) =>
           currentUser
             ? {
                 ...currentUser,
-                profile_photo: data.user.profile_photo,
+                profile_photo: uploadedPhoto,
               }
             : currentUser,
         );
@@ -1600,7 +1608,49 @@ export function ProfilPageContent({
                 <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 space-y-4">
                   <div className="text-xs font-black uppercase tracking-wider text-[#123c8c] flex items-center gap-2">
                     <UserRound size={15} />
-                    Informasi Utama & Kontak
+                    Informasi Utama & Foto Profil
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-xs font-black text-slate-700">
+                      Foto Profil
+                    </label>
+                    <div className="flex items-center gap-4 rounded-2xl border border-blue-100 bg-white p-3">
+                      {user ? (
+                        <ProfileAvatar user={user} initials={initials} size="sm" />
+                      ) : null}
+                      <div className="min-w-0 flex-1">
+                        <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#123c8c] px-4 py-2.5 text-xs font-black text-white transition hover:bg-[#0f3274] active:scale-[0.97]">
+                          {isUploadingPhoto ? (
+                            <>
+                              <Loader2 size={15} className="animate-spin" />
+                              Mengupload...
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={15} />
+                              Pilih Foto Baru
+                            </>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            className="hidden"
+                            disabled={isUploadingPhoto}
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              if (file) {
+                                void handleUploadProfilePhoto(file);
+                              }
+                              event.target.value = "";
+                            }}
+                          />
+                        </label>
+                        <p className="mt-1.5 text-[11px] font-semibold text-slate-400">
+                          Format JPG, PNG, atau WEBP (maks. 5MB)
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <div>

@@ -17,7 +17,6 @@ import {
   MapPin,
   Network,
   Phone,
-  Printer,
   QrCode,
   RotateCw,
   ShieldCheck,
@@ -45,6 +44,7 @@ type KartuIdentitasUser = {
   profile_photo: string | null;
   nik?: string | null;
   bank_code?: string | null;
+  bank_name?: string | null;
   bank_account_number?: string | null;
   employment_start_date?: string | null;
   employment_end_date?: string | null;
@@ -143,7 +143,7 @@ function KartuIdentitasMotionStyles() {
       }
 
       .kartu-identitas-enter {
-        animation: kartuIdentitasEnter 260ms ease-out both;
+        animation: kartuIdentitasEnter 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -180,9 +180,14 @@ export default function KartuIdentitasPage() {
 
         const data = await readJsonResponse(response);
 
+        if (response.status === 401) {
+          router.push("/login");
+          return;
+        }
+
         if (!response.ok) {
           throw new Error(
-            data.error || data.message || "Gagal mengambil kartu identitas.",
+            data.error || data.message || "Gagal mengambil data user.",
           );
         }
 
@@ -191,7 +196,7 @@ export default function KartuIdentitasPage() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "Gagal mengambil kartu identitas.",
+            : "Gagal mengambil data user.",
         );
       } finally {
         setLoading(false);
@@ -214,11 +219,9 @@ export default function KartuIdentitasPage() {
         icon: IdCard,
       },
       {
-      {
         label: "Status Kepegawaian",
         value: user.employment_status || "Karyawan Tetap",
         icon: BadgeCheck,
-      },
       },
       {
         label: "Divisi",
@@ -313,7 +316,7 @@ export default function KartuIdentitasPage() {
 
       // Front Left Photo
       ctx.fillStyle = "#ffffff";
-      ctx.font = "900 22px sans-serif";
+      ctx.font = "bold 20px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("PRESENSI", 180, 55);
 
@@ -322,7 +325,7 @@ export default function KartuIdentitasPage() {
       const photoY = 85;
 
       ctx.fillStyle = "#ffffff";
-      ctx.shadowColor = "rgba(0,0,0,0.2)";
+      ctx.shadowColor = "rgba(0,0,0,0.15)";
       ctx.shadowBlur = 16;
       ctx.beginPath();
       ctx.roundRect(photoX, photoY, photoSize, photoSize + 36, 20);
@@ -346,14 +349,14 @@ export default function KartuIdentitasPage() {
           ctx.restore();
         } catch {
           ctx.fillStyle = "#123c8c";
-          ctx.font = "900 56px sans-serif";
+          ctx.font = "bold 52px sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(initials, 180, photoY + (photoSize + 36) / 2);
         }
       } else {
         ctx.fillStyle = "#123c8c";
-        ctx.font = "900 56px sans-serif";
+        ctx.font = "bold 52px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(initials, 180, photoY + (photoSize + 36) / 2);
@@ -361,7 +364,7 @@ export default function KartuIdentitasPage() {
 
       ctx.textBaseline = "alphabetic";
       ctx.fillStyle = "#ffffff";
-      ctx.font = "900 30px sans-serif";
+      ctx.font = "bold 28px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(user.name, 180, 375);
 
@@ -371,17 +374,17 @@ export default function KartuIdentitasPage() {
       ctx.fill();
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 17px sans-serif";
+      ctx.font = "600 16px sans-serif";
       ctx.fillText(formatRole(user.role).toUpperCase(), 180, 431);
 
       // Front Right Grid
       ctx.fillStyle = "#123c8c";
-      ctx.font = "bold 16px sans-serif";
+      ctx.font = "bold 15px sans-serif";
       ctx.textAlign = "left";
       ctx.fillText("KARTU KARYAWAN", 410, 50);
 
       ctx.fillStyle = "#123456";
-      ctx.font = "900 32px sans-serif";
+      ctx.font = "bold 30px sans-serif";
       ctx.fillText("Identitas Pegawai (Tampak Depan)", 410, 92);
 
       ctx.strokeStyle = "rgba(18, 60, 140, 0.15)";
@@ -401,11 +404,11 @@ export default function KartuIdentitasPage() {
         const curY = startY + Math.floor(i / 2) * 95;
 
         ctx.fillStyle = "#94a3b8";
-        ctx.font = "bold 13px sans-serif";
+        ctx.font = "600 13px sans-serif";
         ctx.fillText(item.label.toUpperCase(), curX, curY);
 
         ctx.fillStyle = "#123456";
-        ctx.font = "900 19px sans-serif";
+        ctx.font = "bold 18px sans-serif";
         ctx.fillText(String(item.value), curX, curY + 26);
       });
 
@@ -414,7 +417,7 @@ export default function KartuIdentitasPage() {
       ctx.fillRect(0, 630, width, 90);
 
       ctx.fillStyle = "#64748b";
-      ctx.font = "900 18px sans-serif";
+      ctx.font = "bold 18px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("--- SISI BELAKANG (DETAIL PERSONAL & BANK) ---", width / 2, 683);
 
@@ -426,7 +429,7 @@ export default function KartuIdentitasPage() {
 
       // Back Left QR
       ctx.fillStyle = "#ffffff";
-      ctx.font = "900 22px sans-serif";
+      ctx.font = "bold 20px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("VERIFIKASI", 180, 775);
 
@@ -436,7 +439,7 @@ export default function KartuIdentitasPage() {
       ctx.fill();
 
       ctx.fillStyle = "#123c8c";
-      ctx.font = "900 24px sans-serif";
+      ctx.font = "bold 22px sans-serif";
       ctx.fillText("QR CODE", 180, 915);
 
       ctx.fillStyle = "#ffffff";
@@ -445,12 +448,12 @@ export default function KartuIdentitasPage() {
 
       // Back Right Grid
       ctx.fillStyle = "#123c8c";
-      ctx.font = "bold 16px sans-serif";
+      ctx.font = "bold 15px sans-serif";
       ctx.textAlign = "left";
       ctx.fillText("DETAIL PERSONAL", 410, 770);
 
       ctx.fillStyle = "#123456";
-      ctx.font = "900 32px sans-serif";
+      ctx.font = "bold 30px sans-serif";
       ctx.fillText("Detail Personal & Bank", 410, 812);
 
       ctx.strokeStyle = "rgba(18, 60, 140, 0.15)";
@@ -467,11 +470,11 @@ export default function KartuIdentitasPage() {
         const curY = bStartY + Math.floor(i / 2) * 105;
 
         ctx.fillStyle = "#94a3b8";
-        ctx.font = "bold 13px sans-serif";
+        ctx.font = "600 13px sans-serif";
         ctx.fillText(item.label.toUpperCase(), curX, curY);
 
         ctx.fillStyle = "#123456";
-        ctx.font = "900 19px sans-serif";
+        ctx.font = "bold 18px sans-serif";
         ctx.fillText(String(item.value), curX, curY + 26);
       });
 
@@ -483,7 +486,6 @@ export default function KartuIdentitasPage() {
       link.click();
     } catch (err) {
       console.error("DOWNLOAD_ERROR:", err);
-      window.print();
     } finally {
       setIsDownloading(false);
     }
@@ -500,34 +502,34 @@ export default function KartuIdentitasPage() {
       <main className="flex h-dvh max-h-dvh flex-col justify-between overflow-hidden bg-white pb-16 text-slate-950 md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff]">
         <section className="flex flex-1 flex-col overflow-hidden px-3 pt-2 md:px-8 md:pt-4">
           {/* Header Controls */}
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-100/80 pb-2.5">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200 transition hover:bg-[#f8fbff] active:scale-[0.96]"
+                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200/80 transition hover:bg-[#f8fbff] active:scale-[0.96]"
               >
-                <ArrowLeft size={19} strokeWidth={2.8} />
+                <ArrowLeft size={19} strokeWidth={2.5} />
               </button>
 
               <div>
-                <p className="text-[8px] font-black uppercase tracking-[0.24em] text-[#123c8c] md:text-xs">
-                  Identitas
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#123c8c] md:text-xs">
+                  Identitas Digital
                 </p>
-                <h1 className="text-base font-black text-[#123456] md:text-2xl">
+                <h1 className="text-base font-bold tracking-tight text-[#123456] md:text-2xl">
                   Kartu Identitas
                 </h1>
               </div>
             </div>
 
             {/* Side Switcher Toggle */}
-            <div className="flex items-center gap-1 rounded-2xl bg-slate-100 p-1">
+            <div className="flex items-center gap-1 rounded-2xl border border-slate-200/60 bg-slate-100/80 p-1">
               <button
                 type="button"
                 onClick={() => setActiveSide("front")}
-                className={`rounded-xl px-3 py-1 text-[11px] font-black transition ${
+                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition duration-200 ${
                   activeSide === "front"
-                    ? "bg-[#123c8c] text-white shadow-sm"
+                    ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -536,9 +538,9 @@ export default function KartuIdentitasPage() {
               <button
                 type="button"
                 onClick={() => setActiveSide("back")}
-                className={`rounded-xl px-3 py-1 text-[11px] font-black transition ${
+                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition duration-200 ${
                   activeSide === "back"
-                    ? "bg-[#123c8c] text-white shadow-sm"
+                    ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -547,60 +549,60 @@ export default function KartuIdentitasPage() {
             </div>
 
             {user && (
-                <button
-                  type="button"
-                  disabled={isDownloading}
-                  onClick={handleDownloadPNG}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#123c8c] px-3.5 py-1.5 text-[11px] font-black text-white shadow-md shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-95 disabled:opacity-50"
-                >
-                  <Download size={14} strokeWidth={2.8} />
-                  <span>Download Kartu (PNG)</span>
-                </button>
+              <button
+                type="button"
+                disabled={isDownloading}
+                onClick={handleDownloadPNG}
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-900/20 transition duration-200 hover:bg-[#0f3274] active:scale-95 disabled:opacity-50"
+              >
+                <Download size={15} strokeWidth={2.5} />
+                <span>Download Kartu (PNG)</span>
+              </button>
             )}
           </div>
 
           {/* Main Card Area */}
-          <div className="flex flex-1 items-center justify-center py-1 overflow-hidden">
+          <div className="flex flex-1 items-center justify-center py-2 overflow-hidden">
             {loading ? (
-              <div className="flex items-center gap-3 rounded-3xl border border-blue-100 bg-[#f8fbff] p-4 text-xs font-bold text-slate-500">
-                <Loader2 size={18} className="animate-spin text-[#123c8c]" />
+              <div className="flex items-center gap-3 rounded-3xl border border-blue-100 bg-[#f8fbff] p-5 text-sm font-bold text-slate-500">
+                <Loader2 size={20} className="animate-spin text-[#123c8c]" />
                 Mengambil kartu identitas...
               </div>
             ) : errorMessage || !user ? (
               <div className="rounded-3xl border border-red-100 bg-red-50 px-6 py-6 text-center">
-                <p className="text-xs font-black text-red-700">
+                <p className="text-xs font-bold text-red-700">
                   {errorMessage || "Kartu identitas tidak ditemukan."}
                 </p>
               </div>
             ) : (
               <div className="w-full max-w-[840px] flex flex-col items-center">
-                {/* Indicator & Flip button */}
-                <div className="mb-1.5 flex w-full justify-end px-1">
+                {/* Flip button */}
+                <div className="mb-2 flex w-full justify-end px-1">
                   <button
                     type="button"
                     onClick={() =>
                       setActiveSide((prev) => (prev === "front" ? "back" : "front"))
                     }
-                    className="inline-flex items-center gap-1 text-[10px] font-black text-[#123c8c] transition hover:underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#123c8c] transition hover:opacity-80 active:scale-95"
                   >
-                    <RotateCw size={12} /> Flip Sisi Kartu
+                    <RotateCw size={13} strokeWidth={2.5} /> Flip Sisi Kartu
                   </button>
                 </div>
 
-                {/* Fixed Container Height (h-[270px] sm:h-[320px] md:h-[340px]) to guarantee ZERO height shift when flipping */}
+                {/* Fixed Container Height so front and back sides match perfectly */}
                 <div
                   ref={cardRef}
-                  className="kartu-identitas-enter w-full h-[270px] sm:h-[320px] md:h-[340px] overflow-hidden rounded-2xl border border-[#123c8c]/20 bg-[#123c8c] shadow-xl shadow-blue-950/20"
+                  className="kartu-identitas-enter w-full h-[270px] sm:h-[320px] md:h-[340px] overflow-hidden rounded-[1.75rem] border border-blue-900/20 bg-gradient-to-br from-[#123c8c] via-[#0f3478] to-[#0a2558] shadow-2xl shadow-blue-950/20"
                 >
                   <div className="grid h-full grid-cols-[110px_1fr] sm:grid-cols-[180px_1fr] md:grid-cols-[210px_1fr]">
                     {/* LEFT BLUE SIDEBAR */}
-                    <div className="relative flex h-full flex-col items-center justify-center border-r border-white/20 p-3 text-center text-white md:p-5">
-                      <p className="text-[8px] font-black uppercase tracking-[0.2em] text-blue-100 md:text-xs">
+                    <div className="relative flex h-full flex-col items-center justify-center border-r border-white/15 p-3 text-center text-white md:p-5">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-blue-200/90 md:text-xs">
                         {activeSide === "front" ? "PRESENSI" : "VERIFIKASI"}
                       </p>
 
                       {activeSide === "front" ? (
-                        <div className="mt-2 flex h-22 w-18 items-center justify-center overflow-hidden rounded-xl border-[2px] border-white bg-[#eaf1ff] text-2xl font-black text-[#123c8c] shadow-sm md:h-32 md:w-26 md:border-[3px] md:text-3xl">
+                        <div className="mt-2.5 flex h-22 w-18 items-center justify-center overflow-hidden rounded-2xl border-2 border-white/40 bg-[#eaf1ff] text-2xl font-bold text-[#123c8c] shadow-md ring-2 ring-white/20 md:h-32 md:w-26 md:text-3xl">
                           {user.profile_photo ? (
                             <img
                               src={user.profile_photo}
@@ -612,44 +614,44 @@ export default function KartuIdentitasPage() {
                           )}
                         </div>
                       ) : (
-                        <div className="mt-2 flex h-22 w-18 flex-col items-center justify-center rounded-xl border-[2px] border-white bg-white text-[#123c8c] shadow-sm md:h-32 md:w-26">
-                          <QrCode size={36} />
-                          <span className="mt-1 text-[7px] font-black uppercase tracking-wider">
+                        <div className="mt-2.5 flex h-22 w-18 flex-col items-center justify-center rounded-2xl border-2 border-white/40 bg-white text-[#123c8c] shadow-md ring-2 ring-white/20 md:h-32 md:w-26">
+                          <QrCode size={36} strokeWidth={2.2} />
+                          <span className="mt-1 text-[8px] font-bold uppercase tracking-wider text-[#123c8c]">
                             VERIFIED
                           </span>
                         </div>
                       )}
 
-                      <p className="mt-2 max-w-full truncate text-xs font-black text-white md:mt-3 md:text-lg">
+                      <p className="mt-2.5 max-w-full truncate text-xs font-bold text-white md:mt-3.5 md:text-lg tracking-tight">
                         {user.name}
                       </p>
-                      <p className="mt-1 rounded-full bg-white/15 px-2.5 py-0.5 text-[8px] font-black uppercase tracking-[0.1em] text-blue-50 ring-1 ring-white/20 md:text-xs">
+                      <p className="mt-1 rounded-full bg-white/15 px-3 py-0.5 text-[8px] font-semibold tracking-wide text-blue-50 ring-1 ring-white/25 backdrop-blur-sm md:text-xs">
                         {formatRole(user.role)}
                       </p>
                     </div>
 
                     {/* RIGHT PANEL */}
-                    <div className="relative flex h-full flex-col justify-between min-w-0 bg-[#f8fbff]/95 p-3.5 md:p-5">
+                    <div className="relative flex h-full flex-col justify-between min-w-0 bg-gradient-to-br from-white via-[#f8fbff] to-[#f0f5ff] p-3.5 md:p-5">
                       {/* Panel Header */}
-                      <div className="flex shrink-0 items-center justify-between border-b border-[#123c8c]/15 pb-2">
+                      <div className="flex shrink-0 items-center justify-between border-b border-blue-900/10 pb-2">
                         <div className="min-w-0">
-                          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-[#123c8c] md:text-[9px]">
+                          <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-[#123c8c] md:text-[9px]">
                             {activeSide === "front"
                               ? "Kartu Karyawan"
                               : "Detail Personal"}
                           </p>
-                          <h2 className="text-sm font-black leading-tight text-[#123456] md:text-xl">
+                          <h2 className="text-xs md:text-lg font-bold tracking-tight text-[#123456]">
                             {activeSide === "front"
                               ? "Identitas Pegawai"
                               : "Detail Personal & Bank"}
                           </h2>
                         </div>
 
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#123c8c] text-white md:h-9 md:w-9">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c] border border-blue-100 md:h-9 md:w-9">
                           {activeSide === "front" ? (
-                            <IdCard size={15} strokeWidth={2.6} />
+                            <IdCard size={15} strokeWidth={2.4} />
                           ) : (
-                            <Lock size={15} strokeWidth={2.6} />
+                            <Lock size={15} strokeWidth={2.4} />
                           )}
                         </div>
                       </div>
@@ -659,16 +661,16 @@ export default function KartuIdentitasPage() {
                         <div className="my-auto grid grid-cols-2 gap-x-3 gap-y-2 md:gap-x-5 md:gap-y-3">
                           {frontOfficeDetails.map((item) => (
                             <div key={item.label} className="min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#123c8c] text-white md:h-7 md:w-7">
-                                  <item.icon size={12} strokeWidth={2.7} />
+                              <div className="flex items-center gap-2">
+                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c] border border-blue-100/60 md:h-7 md:w-7">
+                                  <item.icon size={13} strokeWidth={2.4} />
                                 </div>
 
                                 <div className="min-w-0">
-                                  <p className="text-[7px] font-black uppercase tracking-[0.08em] text-slate-400 md:text-[8px]">
+                                  <p className="text-[7px] font-semibold uppercase tracking-wider text-slate-400 md:text-[8px]">
                                     {item.label}
                                   </p>
-                                  <p className="truncate text-[11px] font-black text-[#123456] md:text-xs">
+                                  <p className="truncate text-[11px] font-bold text-[#123456] md:text-xs">
                                     {item.value}
                                   </p>
                                 </div>
@@ -681,16 +683,16 @@ export default function KartuIdentitasPage() {
                         <div className="my-auto grid grid-cols-2 gap-x-3 gap-y-2.5 md:gap-x-5 md:gap-y-3.5">
                           {backSensitiveDetails.map((item) => (
                             <div key={item.label} className="min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#123c8c] text-white md:h-7 md:w-7">
-                                  <item.icon size={12} strokeWidth={2.7} />
+                              <div className="flex items-center gap-2">
+                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c] border border-blue-100/60 md:h-7 md:w-7">
+                                  <item.icon size={13} strokeWidth={2.4} />
                                 </div>
 
                                 <div className="min-w-0">
-                                  <p className="text-[7px] font-black uppercase tracking-[0.08em] text-slate-400 md:text-[8px]">
+                                  <p className="text-[7px] font-semibold uppercase tracking-wider text-slate-400 md:text-[8px]">
                                     {item.label}
                                   </p>
-                                  <p className="truncate text-[11px] font-black text-[#123456] md:text-xs">
+                                  <p className="truncate text-[11px] font-bold text-[#123456] md:text-xs">
                                     {item.value}
                                   </p>
                                 </div>
@@ -701,13 +703,13 @@ export default function KartuIdentitasPage() {
                       )}
 
                       {/* Footer Badge */}
-                      <div className="flex shrink-0 items-center justify-between rounded-lg bg-[#123c8c] px-2.5 py-1">
-                        <p className="text-[8px] font-black uppercase tracking-[0.16em] text-blue-100 md:text-[10px]">
+                      <div className="flex shrink-0 items-center justify-between rounded-xl bg-gradient-to-r from-[#123c8c] to-[#0f3478] px-3 py-1.5 shadow-sm">
+                        <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-blue-100 md:text-[10px]">
                           Creativemu
                         </p>
                         <BadgeCheck
                           size={14}
-                          strokeWidth={2.7}
+                          strokeWidth={2.5}
                           className="shrink-0 text-white"
                         />
                       </div>

@@ -2,54 +2,30 @@ import { prisma } from "../src/lib/prisma";
 
 async function main() {
   try {
-    const employees = await prisma.user.findMany({
-      where: {
-        role: "employee",
-      },
+    const users = await prisma.user.findMany({
       select: {
         id: true,
         employee_code: true,
         name: true,
         email: true,
+        visible_password: true,
         role: true,
-        employee_type: true,
-        phone: true,
         status: true,
-        employment_status: true,
-        employment_start_date: true,
-        employment_end_date: true,
-        birth_place: true,
-        birth_date: true,
-        bank_code: true,
-        bank_account_number: true,
-        nik: true,
-        profile_photo: true,
-        jabatan: {
-          select: { id: true, name: true }
-        },
-        department: {
-          select: { id: true, name: true }
-        },
-        position: {
-          select: { id: true, name: true }
-        },
-        shift: {
-          select: { id: true, name: true, tolerance_minutes: true }
-        },
-        registered_office: {
-          select: { id: true, name: true, address: true }
-        }
       },
       orderBy: {
-        created_at: "desc",
+        role: "asc",
       },
     });
 
-    console.log("SUCCESS FETCHING EMPLOYEES:", employees.length);
-    console.log(employees.slice(0, 3));
+    console.log("=== LIST AKUN LENGKAP ===");
+    users.forEach((u) => {
+      console.log(`[${u.role.toUpperCase()}] ${u.name} | Email: ${u.email} | Password: ${u.visible_password || "123456"}`);
+    });
   } catch (error) {
-    console.error("ERROR FETCHING EMPLOYEES:", error);
+    console.error("ERROR_FETCHING_ACCOUNTS:", error);
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
-main().finally(() => prisma.$disconnect());
+main();

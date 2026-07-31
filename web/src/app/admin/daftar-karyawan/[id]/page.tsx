@@ -269,6 +269,10 @@ function EmployeeProfileAvatar({ employee }: { employee: Employee }) {
   const [imageError, setImageError] = useState(false);
   const profilePhoto = getEmployeeProfilePhoto(employee);
 
+  useEffect(() => {
+    setImageError(false);
+  }, [profilePhoto]);
+
   if (profilePhoto && !imageError) {
     return (
       <div className="employee-detail-avatar-enter h-28 w-28 overflow-hidden rounded-[2rem] bg-white/15 ring-4 ring-white/20">

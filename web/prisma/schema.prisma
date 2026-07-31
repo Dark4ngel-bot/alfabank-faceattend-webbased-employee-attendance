@@ -31,6 +31,7 @@ model User {
   birth_place           String?   @db.VarChar(100)
   birth_date            DateTime? @db.Date
   bank_code             String?   @db.VarChar(30)
+  bank_name             String?   @db.VarChar(100)
   bank_account_number   String?   @db.VarChar(50)
   nik                   String?   @db.VarChar(30)
 
