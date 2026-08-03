@@ -42,6 +42,11 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} notranslate h-full antialiased`}
     >
+      <head>
+        <link rel="icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" type="image/png" />
+        <link rel="shortcut icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" />
+        <link rel="apple-touch-icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" />
+      </head>
       <body
         suppressHydrationWarning
         className="notranslate min-h-full flex flex-col"

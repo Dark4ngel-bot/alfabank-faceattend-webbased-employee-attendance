@@ -130,10 +130,14 @@ function formatTime(value: string | null) {
 
   if (Number.isNaN(date.getTime())) return "-";
 
-  return date.toLocaleTimeString("id-ID", {
+  return new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
     hour: "2-digit",
     minute: "2-digit",
-  });
+    hour12: false,
+  })
+    .format(date)
+    .replace(":", ".");
 }
 
 function formatMinutes(minutes: number, hasCheckOut = false) {

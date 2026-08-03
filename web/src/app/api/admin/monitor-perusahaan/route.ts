@@ -79,10 +79,14 @@ function formatJakartaDateKey(date: Date) {
 function formatTime(date?: Date | null) {
   if (!date) return "-";
 
-  return date.toLocaleTimeString("id-ID", {
+  return new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
     hour: "2-digit",
     minute: "2-digit",
-  });
+    hour12: false,
+  })
+    .format(date)
+    .replace(":", ".");
 }
 
 function normalizeDate(date: Date) {
