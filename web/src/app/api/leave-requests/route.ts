@@ -2,10 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
+import type { UploadApiResponse } from "cloudinary";
+import { getCloudinary } from "@/lib/cloudinary";
 import {
   findAttendanceInDateRange,
   formatJakartaDate,
 } from "@/lib/leave-attendance-guard";
+import {
+  ensureAnnualLeaveQuotaColumn,
+  isMissingAnnualLeaveQuotaColumnError,
+} from "@/lib/annual-leave-quota-schema";
+import {
+  ensureLeaveAttachmentColumns,
+  isMissingLeaveAttachmentColumnError,
+} from "@/lib/leave-attachment-schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -114,6 +124,51 @@ function getStatusLabel(status: string) {
   return status || "-";
 }
 
+async function uploadLeaveAttachment(
+  fileBuffer: Uint8Array,
+  mime: string,
+  fileName: string,
+  userId: string,
+): Promise<UploadApiResponse | null> {
+  let cloudinary: ReturnType<typeof getCloudinary>;
+
+  try {
+    cloudinary = getCloudinary();
+  } catch (error) {
+    console.warn("LEAVE_ATTACHMENT_CLOUDINARY_UNAVAILABLE:", error);
+    return null;
+  }
+
+  const isPdf = mime.includes("pdf");
+  const resourceType = isPdf ? "raw" : "image";
+
+  return new Promise<UploadApiResponse>((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "presensi/surat-dokter",
+        public_id: `leave-${userId}-${Date.now()}`,
+        resource_type: resourceType,
+        overwrite: false,
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        if (!result) {
+          reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
+          return;
+        }
+
+        resolve(result);
+      },
+    );
+
+    uploadStream.end(Buffer.from(fileBuffer));
+  });
+}
+
 function mapLeaveRequest(item: {
   id: string;
   user_id: string;
@@ -164,6 +219,9 @@ function mapLeaveRequest(item: {
     statusLabel: getStatusLabel(item.status),
 
     adminNote: item.admin_note,
+    attachmentUrl: (item as any).attachment_url || null,
+    attachmentName: (item as any).attachment_name || null,
+    attachmentMime: (item as any).attachment_mime || null,
     createdAt: toIsoDate(item.created_at),
     updatedAt: toIsoDate(item.updated_at),
   };
@@ -220,6 +278,9 @@ export async function GET(req: NextRequest) {
         reason: true,
         status: true,
         admin_note: true,
+        attachment_url: true,
+        attachment_name: true,
+        attachment_mime: true,
         created_at: true,
         updated_at: true,
         user: {
@@ -281,33 +342,63 @@ export async function POST(req: NextRequest) {
       return jsonError("Akun tidak aktif.", 403);
     }
 
-    let body: {
-      leaveType?: string;
-      leave_type?: string;
-      startDate?: string;
-      start_date?: string;
-      endDate?: string;
-      end_date?: string;
-      reason?: string;
-    };
+    let leaveTypeStr = "";
+    let startDateText = "";
+    let endDateText = "";
+    let reason = "";
+    let attachmentBuffer: Uint8Array | null = null;
+    let attachmentMime = "";
+    let attachmentName = "";
 
-    try {
-      body = await req.json();
-    } catch {
-      return jsonError("Body request tidak valid.");
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      leaveTypeStr = String(formData.get("leaveType") || formData.get("leave_type") || "").trim();
+      startDateText = String(formData.get("startDate") || formData.get("start_date") || "").trim();
+      endDateText = String(formData.get("endDate") || formData.get("end_date") || "").trim();
+      reason = String(formData.get("reason") || "").trim();
+
+      const attachment =
+        formData.get("attachment") ||
+        formData.get("file") ||
+        formData.get("suratDokter") ||
+        formData.get("surat_dokter");
+
+      if (attachment instanceof File && attachment.size > 0) {
+        if (attachment.size > 5 * 1024 * 1024) {
+          return jsonError("Ukuran file lampiran maksimal 5MB.");
+        }
+        const arrayBuf = await attachment.arrayBuffer();
+        attachmentBuffer = new Uint8Array(arrayBuf);
+        attachmentMime = attachment.type || "application/octet-stream";
+        attachmentName = attachment.name || "lampiran";
+      }
+    } else {
+      let body: any = {};
+      try {
+        body = await req.json();
+      } catch {
+        return jsonError("Body request tidak valid.");
+      }
+
+      leaveTypeStr = String(body.leaveType || body.leave_type || "").trim();
+      startDateText = String(body.startDate || body.start_date || "").trim();
+      endDateText = String(body.endDate || body.end_date || "").trim();
+      reason = String(body.reason || "").trim();
+
+      const dataUrl = String(body.attachmentDataUrl || body.attachment_url || "");
+      if (dataUrl) {
+        const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) {
+          attachmentMime = match[1].toLowerCase();
+          attachmentBuffer = Uint8Array.from(Buffer.from(match[2], "base64"));
+          attachmentName = String(body.attachmentName || body.attachment_name || "lampiran");
+        }
+      }
     }
 
-    const leaveType = String(
-      body.leaveType || body.leave_type || ""
-    ).trim() as LeaveType;
-
-    const startDateText = String(
-      body.startDate || body.start_date || ""
-    ).trim();
-
-    const endDateText = String(body.endDate || body.end_date || "").trim();
-
-    const reason = String(body.reason || "").trim();
+    const leaveType = leaveTypeStr as LeaveType;
 
     if (!leaveType || !allowedLeaveTypes.includes(leaveType)) {
       return jsonError("Jenis pengajuan tidak valid.");
@@ -344,6 +435,67 @@ export async function POST(req: NextRequest) {
       return jsonError("Total hari pengajuan tidak valid.");
     }
 
+    if (leaveType === "annual") {
+      await ensureAnnualLeaveQuotaColumn();
+
+      let userQuotaRows: Array<{ annual_leave_quota: number | null }> = [];
+      try {
+        userQuotaRows = await prisma.$queryRawUnsafe<
+          Array<{ annual_leave_quota: number | null }>
+        >(
+          "SELECT COALESCE(annual_leave_quota, 12) AS annual_leave_quota FROM users WHERE id = ? LIMIT 1",
+          currentUser.id,
+        );
+      } catch (error) {
+        if (!isMissingAnnualLeaveQuotaColumnError(error)) throw error;
+      }
+
+      const annualLeaveQuota = Math.max(
+        0,
+        Number(userQuotaRows[0]?.annual_leave_quota ?? 12),
+      );
+
+      const currentYear = startDate.getUTCFullYear();
+      const startOfYear = new Date(Date.UTC(currentYear, 0, 1));
+      const endOfYear = new Date(Date.UTC(currentYear + 1, 0, 1));
+
+      const existingLeaveRequests = await prisma.leaveRequest.findMany({
+        where: {
+          user_id: currentUser.id,
+          leave_type: "annual",
+          status: {
+            in: ["pending", "approved"],
+          },
+          start_date: {
+            gte: startOfYear,
+            lt: endOfYear,
+          },
+        },
+        select: {
+          total_days: true,
+        },
+      });
+
+      const usedLeaveDays = existingLeaveRequests.reduce(
+        (sum, item) => sum + Number(item.total_days || 0),
+        0,
+      );
+
+      const remainingQuota = annualLeaveQuota - usedLeaveDays;
+
+      if (totalDays > remainingQuota) {
+        if (remainingQuota <= 0) {
+          return jsonError(
+            `Kuota cuti tahunan kamu untuk tahun ${currentYear} sudah habis (Kuota: ${annualLeaveQuota} hari).`,
+          );
+        }
+
+        return jsonError(
+          `Sisa kuota cuti tahunan kamu tinggal ${remainingQuota} hari, tidak mencukupi untuk pengajuan ${totalDays} hari.`,
+        );
+      }
+    }
+
     const attendanceConflict = await findAttendanceInDateRange({
       userId: currentUser.id,
       startDate,
@@ -358,6 +510,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    let uploadedAttachment: UploadApiResponse | null = null;
+
+    if (attachmentBuffer && attachmentBuffer.length > 0) {
+      uploadedAttachment = await uploadLeaveAttachment(
+        attachmentBuffer,
+        attachmentMime,
+        attachmentName,
+        currentUser.id,
+      );
+    }
+
+    await ensureLeaveAttachmentColumns();
+
     const leaveRequest = await prisma.leaveRequest.create({
       data: {
         user_id: currentUser.id,
@@ -367,6 +532,10 @@ export async function POST(req: NextRequest) {
         total_days: totalDays,
         reason,
         status: "pending",
+        attachment_url: uploadedAttachment?.secure_url || null,
+        attachment_public_id: uploadedAttachment?.public_id || null,
+        attachment_name: attachmentName || null,
+        attachment_mime: attachmentMime || null,
       },
       select: {
         id: true,
@@ -378,6 +547,9 @@ export async function POST(req: NextRequest) {
         reason: true,
         status: true,
         admin_note: true,
+        attachment_url: true,
+        attachment_name: true,
+        attachment_mime: true,
         created_at: true,
         updated_at: true,
         user: {

@@ -201,6 +201,7 @@ type Employee = {
   bank_account_number: string | null;
   nik: string | null;
   wfh_quota_monthly?: number | null;
+  annual_leave_quota?: number | null;
   created_at: string;
 
   profile_photo?: string | null;
@@ -231,6 +232,7 @@ type EmployeeForm = {
   bank_account_number: string;
   nik: string;
   wfh_quota_monthly: string;
+  annual_leave_quota: string;
 };
 
 type EmployeeAlert = {
@@ -261,6 +263,7 @@ const initialForm: EmployeeForm = {
   bank_account_number: "",
   nik: "",
   wfh_quota_monthly: "0",
+  annual_leave_quota: "12",
 };
 
 const EMPLOYEE_REQUEST_TIMEOUT_MS = 15_000;
@@ -828,6 +831,7 @@ export default function AdminEmployeesPage() {
       bank_account_number: employee.bank_account_number || "",
       nik: employee.nik || "",
       wfh_quota_monthly: String(employee.wfh_quota_monthly ?? 0),
+      annual_leave_quota: String(employee.annual_leave_quota ?? 12),
     });
     setIsModalOpen(true);
   }
@@ -841,10 +845,10 @@ export default function AdminEmployeesPage() {
   }
 
   function handleNumericFormChange(
-    field: "bank_account_number" | "nik" | "wfh_quota_monthly",
+    field: "bank_account_number" | "nik" | "wfh_quota_monthly" | "annual_leave_quota",
     value: string,
   ) {
-    const maxLength = field === "wfh_quota_monthly" ? 3 : 16;
+    const maxLength = field === "wfh_quota_monthly" || field === "annual_leave_quota" ? 3 : 16;
     const normalizedValue = normalizeNumericInput(value).slice(0, maxLength);
 
     setForm((prev) => ({
@@ -989,6 +993,7 @@ export default function AdminEmployeesPage() {
     }
 
     const wfhQuotaMonthly = Number(form.wfh_quota_monthly || 0);
+    const annualLeaveQuota = Number(form.annual_leave_quota || 12);
 
     if (
       !Number.isInteger(wfhQuotaMonthly) ||
@@ -998,6 +1003,19 @@ export default function AdminEmployeesPage() {
       showEmployeeAlert(
         "Kuota WFH tidak valid",
         "Kuota WFH harus angka 0 sampai 999.",
+        "warning",
+      );
+      return;
+    }
+
+    if (
+      !Number.isInteger(annualLeaveQuota) ||
+      annualLeaveQuota < 0 ||
+      annualLeaveQuota > 365
+    ) {
+      showEmployeeAlert(
+        "Kuota Cuti Tahunan tidak valid",
+        "Kuota Cuti Tahunan harus angka 0 sampai 365.",
         "warning",
       );
       return;
@@ -1050,6 +1068,7 @@ export default function AdminEmployeesPage() {
           nik: form.nik,
           employee_code: form.employee_code.trim(),
           wfh_quota_monthly: wfhQuotaMonthly,
+          annual_leave_quota: annualLeaveQuota,
         }),
       });
 
@@ -2105,6 +2124,60 @@ export default function AdminEmployeesPage() {
                         </div>
                       </div>
                     ) : null}
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Kuota WFH (hari/bulan)
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <Clock3
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          value={form.wfh_quota_monthly}
+                          onChange={(event) =>
+                            handleNumericFormChange(
+                              "wfh_quota_monthly",
+                              event.target.value,
+                            )
+                          }
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={3}
+                          placeholder="0"
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-slate-700">
+                        Kuota Cuti Tahunan (hari/tahun)
+                      </label>
+                      <div className="app-field-smooth relative rounded-2xl">
+                        <CalendarDays
+                          size={18}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          value={form.annual_leave_quota}
+                          onChange={(event) =>
+                            handleNumericFormChange(
+                              "annual_leave_quota",
+                              event.target.value,
+                            )
+                          }
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={3}
+                          placeholder="12"
+                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

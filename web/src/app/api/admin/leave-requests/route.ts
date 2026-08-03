@@ -200,6 +200,9 @@ function mapLeaveRequest(item: {
     statusLabel: getStatusLabel(item.status),
 
     adminNote: item.admin_note,
+    attachmentUrl: (item as any).attachment_url || null,
+    attachmentName: (item as any).attachment_name || null,
+    attachmentMime: (item as any).attachment_mime || null,
     createdAt: toIsoDate(item.created_at),
     updatedAt: toIsoDate(item.updated_at),
   };
@@ -321,6 +324,9 @@ export async function GET(req: NextRequest) {
         reason: true,
         status: true,
         admin_note: true,
+        attachment_url: true,
+        attachment_name: true,
+        attachment_mime: true,
         created_at: true,
         updated_at: true,
         user: {

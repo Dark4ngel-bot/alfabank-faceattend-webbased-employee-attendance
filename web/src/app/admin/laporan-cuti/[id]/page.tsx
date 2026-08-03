@@ -7,6 +7,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
+  FileText,
   Loader2,
   UserRound,
   X,
@@ -40,6 +41,8 @@ type AdminLeaveRequest = {
   status: string;
   statusLabel: string;
   adminNote: string | null;
+  attachmentUrl?: string | null;
+  attachmentName?: string | null;
   createdAt: string;
 };
 
@@ -458,6 +461,25 @@ export default function AdminLeaveRequestDetailPage() {
                         {request.reason}
                       </p>
                     </div>
+
+                    {request.attachmentUrl ? (
+                      <div className="mt-3 rounded-3xl bg-white p-4">
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                          Surat Dokter / Lampiran
+                        </p>
+                        <div className="mt-2">
+                          <a
+                            href={request.attachmentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-xs font-black text-[#123c8c] shadow-sm transition hover:bg-blue-100 active:scale-[0.98]"
+                          >
+                            <FileText size={16} />
+                            Buka / Unduh Lampiran Surat Dokter
+                          </a>
+                        </div>
+                      </div>
+                    ) : null}
 
                     {request.adminNote ? (
                       <div className="mt-3 rounded-3xl bg-blue-50 p-4">

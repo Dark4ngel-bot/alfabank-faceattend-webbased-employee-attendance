@@ -9,6 +9,7 @@ import {
   FileText,
   Loader2,
   Send,
+  Upload,
   X,
   XCircle,
 } from "lucide-react";
@@ -30,6 +31,8 @@ type LeaveRequest = {
   status: string;
   statusLabel: string;
   adminNote: string | null;
+  attachmentUrl?: string | null;
+  attachmentName?: string | null;
   createdAt: string | null;
 };
 
@@ -167,6 +170,7 @@ export default function LeaveRequestPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
 
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [stats, setStats] = useState<LeaveStats>(emptyStats);
@@ -260,17 +264,19 @@ export default function LeaveRequestPage() {
     try {
       setIsSubmitting(true);
 
+      const formData = new FormData();
+      formData.append("leaveType", leaveType);
+      formData.append("startDate", startDate);
+      formData.append("endDate", endDate);
+      formData.append("reason", reason.trim());
+
+      if (attachmentFile) {
+        formData.append("attachment", attachmentFile);
+      }
+
       const response = await fetch("/api/leave-requests", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          leaveType,
-          startDate,
-          endDate,
-          reason: reason.trim(),
-        }),
+        body: formData,
       });
 
       const data = await readJsonResponse(response);
@@ -289,6 +295,7 @@ export default function LeaveRequestPage() {
       setStartDate("");
       setEndDate("");
       setReason("");
+      setAttachmentFile(null);
 
       setPageAlert({
         type: "success",
@@ -458,6 +465,70 @@ export default function LeaveRequestPage() {
               />
             </div>
 
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-black text-slate-700">
+                  {leaveType === "sick" ? "Surat Dokter / Lampiran" : "Lampiran Dokumen"}
+                </label>
+                <span className="text-[11px] font-bold text-slate-400">
+                  (Opsional)
+                </span>
+              </div>
+
+              {attachmentFile ? (
+                <div className="mt-2 flex items-center justify-between rounded-2xl border border-blue-100 bg-[#f8fbff] p-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c]">
+                      <FileText size={20} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-black text-slate-800">
+                        {attachmentFile.name}
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400">
+                        {(attachmentFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAttachmentFile(null)}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <label className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-200 bg-[#f8fbff] p-4 text-center transition hover:border-[#123c8c] hover:bg-blue-50/50">
+                  <Upload size={24} className="text-[#123c8c]" />
+                  <p className="mt-1 text-xs font-black text-slate-700">
+                    Upload Surat Dokter / Lampiran
+                  </p>
+                  <p className="text-[10px] font-bold text-slate-400">
+                    Format: JPG, PNG, WEBP, PDF (Maks. 5MB)
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 5 * 1024 * 1024) {
+                        setPageAlert({
+                          type: "warning",
+                          title: "Ukuran file terlalu besar",
+                          message: "Maksimal ukuran file lampiran adalah 5MB.",
+                        });
+                        return;
+                      }
+                      setAttachmentFile(file);
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+
             <button
               type="submit"
               disabled={isSubmitting}
@@ -568,6 +639,20 @@ export default function LeaveRequestPage() {
                     <p className="mt-4 rounded-2xl bg-[#f8fbff] p-4 text-sm font-semibold leading-6 text-slate-600">
                       {item.reason}
                     </p>
+
+                    {item.attachmentUrl ? (
+                      <div className="mt-3">
+                        <a
+                          href={item.attachmentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-[#123c8c] hover:bg-blue-100 transition"
+                        >
+                          <FileText size={15} />
+                          Lihat Surat Dokter / Lampiran
+                        </a>
+                      </div>
+                    ) : null}
 
                     {item.adminNote ? (
                       <p className="mt-3 rounded-2xl bg-blue-50 p-4 text-sm font-semibold leading-6 text-[#123c8c]">

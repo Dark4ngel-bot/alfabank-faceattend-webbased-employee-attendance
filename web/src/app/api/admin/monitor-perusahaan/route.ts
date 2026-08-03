@@ -589,6 +589,20 @@ export async function GET(req: NextRequest) {
         reason: record.late_reason || "Belum ada alasan",
       }));
 
+    const monthPresentTotal = dailyChart.reduce((sum, item) => sum + item.present, 0);
+    const monthOfficeTotal = dailyChart.reduce((sum, item) => sum + item.office, 0);
+    const monthLateTotal = dailyChart.reduce((sum, item) => sum + item.late, 0);
+    const monthWfhTotal = dailyChart.reduce((sum, item) => sum + item.wfh, 0);
+    const monthVisitTotal = dailyChart.reduce((sum, item) => sum + item.visit, 0);
+    const monthCutiTotal = dailyChart.reduce((sum, item) => sum + item.cuti, 0);
+    const monthPendingTotal = dailyChart.reduce((sum, item) => sum + item.pending, 0);
+    const monthTotalEvents = totalActiveEmployees * chartDaysInMonth || 1;
+
+    const monthPercent = (val: number) => {
+      if (monthTotalEvents === 0) return 0;
+      return Math.round((val / monthTotalEvents) * 100);
+    };
+
     return NextResponse.json({
       month,
       year,
@@ -598,6 +612,23 @@ export async function GET(req: NextRequest) {
         activeEmployees: totalActiveEmployees,
         todayRecords: isSelectedCurrentMonth ? todayRecords.length : 0,
 
+        // Rekap Bulanan sesuai filter bulan & tahun
+        monthPresent: monthPresentTotal,
+        monthOffice: monthOfficeTotal,
+        monthLate: monthLateTotal,
+        monthWfh: monthWfhTotal,
+        monthVisit: monthVisitTotal,
+        monthCuti: monthCutiTotal,
+        monthPending: monthPendingTotal,
+
+        monthPresentPercentage: monthPercent(monthPresentTotal),
+        monthLatePercentage: monthPercent(monthLateTotal),
+        monthWfhPercentage: monthPercent(monthWfhTotal),
+        monthVisitPercentage: monthPercent(monthVisitTotal),
+        monthCutiPercentage: monthPercent(monthCutiTotal),
+        monthPendingPercentage: monthPercent(monthPendingTotal),
+
+        // Data Hari Ini
         present: todayPresent,
         office: todayOffice,
         late: todayLate,

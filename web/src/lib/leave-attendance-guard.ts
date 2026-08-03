@@ -21,8 +21,8 @@ export async function findAttendanceInDateRange(params: {
   startDate: Date;
   endDate: Date;
 }) {
-  const startUtc = toUtcDateOnly(params.startDate);
-  const endUtc = toUtcDateOnly(params.endDate);
+  const startUtc = getJakartaDateOnly(params.startDate);
+  const endUtc = getJakartaDateOnly(params.endDate);
 
   return prisma.attendance.findFirst({
     where: {
@@ -47,15 +47,12 @@ export async function findAttendanceInDateRange(params: {
   });
 }
 
-function toUtcDateOnly(date: Date) {
-  const isoStr = date.toISOString().split("T")[0];
-  return new Date(`${isoStr}T00:00:00.000Z`);
-}
-
 export async function findActiveLeaveForDate(params: {
   userId: string;
   date: Date;
 }) {
+  const targetDate = getJakartaDateOnly(params.date);
+
   return prisma.leaveRequest.findFirst({
     where: {
       user_id: params.userId,
@@ -63,10 +60,10 @@ export async function findActiveLeaveForDate(params: {
         in: ["pending", "approved"],
       },
       start_date: {
-        lte: params.date,
+        lte: targetDate,
       },
       end_date: {
-        gte: params.date,
+        gte: targetDate,
       },
     },
     orderBy: {

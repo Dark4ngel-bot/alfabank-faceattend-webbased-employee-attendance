@@ -16,6 +16,10 @@ import {
   ensureWfhQuotaColumn,
   isMissingWfhQuotaColumnError,
 } from "@/lib/wfh-quota-schema";
+import {
+  ensureAnnualLeaveQuotaColumn,
+  isMissingAnnualLeaveQuotaColumnError,
+} from "@/lib/annual-leave-quota-schema";
 import { normalizeBankCode } from "@/lib/bank-options";
 
 export const runtime = "nodejs";
@@ -371,17 +375,41 @@ async function getWfhQuotaByUserId(userIds: string[]) {
   );
 }
 
+async function getAnnualLeaveQuotaByUserId(userIds: string[]) {
+  if (userIds.length === 0) return new Map<string, number>();
+  if (!(await ensureAnnualLeaveQuotaColumn())) return new Map<string, number>();
+
+  const placeholders = userIds.map(() => "?").join(", ");
+  let rows: Array<{ id: string; annual_leave_quota: number | null }> = [];
+
+  try {
+    rows = await prisma.$queryRawUnsafe<
+      Array<{ id: string; annual_leave_quota: number | null }>
+    >(
+      `SELECT id, COALESCE(annual_leave_quota, 12) AS annual_leave_quota FROM users WHERE id IN (${placeholders})`,
+      ...userIds
+    );
+  } catch (error) {
+    if (!isMissingAnnualLeaveQuotaColumnError(error)) throw error;
+  }
+
+  return new Map(
+    rows.map((row) => [row.id, Math.max(0, Number(row.annual_leave_quota ?? 12))])
+  );
+}
+
 async function attachWfhQuotaToEmployees<
   T extends { id: string; [key: string]: unknown },
 >(employees: T[]) {
-  const quotaByUserId = await getWfhQuotaByUserId(
-    employees.map((employee) => employee.id)
-  );
+  const userIds = employees.map((employee) => employee.id);
+  const wfhQuotaByUserId = await getWfhQuotaByUserId(userIds);
+  const annualLeaveQuotaByUserId = await getAnnualLeaveQuotaByUserId(userIds);
 
   return employees.map((employee) => ({
     ...employee,
     bank_code: typeof employee.bank_code === "string" ? employee.bank_code : null,
-    wfh_quota_monthly: quotaByUserId.get(employee.id) || 0,
+    wfh_quota_monthly: wfhQuotaByUserId.get(employee.id) || 0,
+    annual_leave_quota: annualLeaveQuotaByUserId.get(employee.id) ?? 12,
   }));
 }
 
@@ -396,6 +424,20 @@ async function updateEmployeeWfhQuota(userId: string, quota: number) {
     );
   } catch (error) {
     if (!isMissingWfhQuotaColumnError(error)) throw error;
+  }
+}
+
+async function updateEmployeeAnnualLeaveQuota(userId: string, quota: number) {
+  if (!(await ensureAnnualLeaveQuotaColumn())) return;
+
+  try {
+    await prisma.$executeRawUnsafe(
+      "UPDATE users SET annual_leave_quota = ? WHERE id = ?",
+      quota,
+      userId
+    );
+  } catch (error) {
+    if (!isMissingAnnualLeaveQuotaColumnError(error)) throw error;
   }
 }
 
@@ -583,6 +625,10 @@ export async function POST(req: NextRequest) {
       body.wfh_quota_monthly ?? body.wfhQuotaMonthly ?? body.wfh_quota,
       "Kuota WFH"
     );
+    const annualLeaveQuota = normalizeNonNegativeInteger(
+      body.annual_leave_quota ?? body.annualLeaveQuota ?? body.leave_quota ?? 12,
+      "Kuota Cuti Tahunan"
+    );
 
     if (!name) return jsonError("Nama karyawan wajib diisi.");
     if (!email) return jsonError("Email karyawan wajib diisi.");
@@ -686,6 +732,7 @@ export async function POST(req: NextRequest) {
       select: employeeSelect,
     });
     await updateEmployeeWfhQuota(employee.id, wfhQuotaMonthly);
+    await updateEmployeeAnnualLeaveQuota(employee.id, annualLeaveQuota);
     const [employeeWithWfhQuota] = await attachWfhQuotaToEmployees([employee]);
 
     return NextResponse.json({
@@ -775,6 +822,10 @@ export async function PATCH(req: NextRequest) {
     const wfhQuotaMonthly = normalizeNonNegativeInteger(
       body.wfh_quota_monthly ?? body.wfhQuotaMonthly ?? body.wfh_quota,
       "Kuota WFH"
+    );
+    const annualLeaveQuota = normalizeNonNegativeInteger(
+      body.annual_leave_quota ?? body.annualLeaveQuota ?? body.leave_quota ?? 12,
+      "Kuota Cuti Tahunan"
     );
 
     if (!id) return jsonError("ID karyawan wajib dikirim.");
@@ -936,6 +987,7 @@ export async function PATCH(req: NextRequest) {
       select: employeeSelect,
     });
     await updateEmployeeWfhQuota(employee.id, wfhQuotaMonthly);
+    await updateEmployeeAnnualLeaveQuota(employee.id, annualLeaveQuota);
     const [employeeWithWfhQuota] = await attachWfhQuotaToEmployees([employee]);
 
     return NextResponse.json({

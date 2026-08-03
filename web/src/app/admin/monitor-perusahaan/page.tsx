@@ -26,6 +26,21 @@ type Summary = {
   activeEmployees: number;
   todayRecords: number;
 
+  monthPresent?: number;
+  monthOffice?: number;
+  monthLate?: number;
+  monthWfh?: number;
+  monthVisit?: number;
+  monthCuti?: number;
+  monthPending?: number;
+
+  monthPresentPercentage?: number;
+  monthLatePercentage?: number;
+  monthWfhPercentage?: number;
+  monthVisitPercentage?: number;
+  monthCutiPercentage?: number;
+  monthPendingPercentage?: number;
+
   present: number;
   office?: number;
   late: number;
@@ -460,18 +475,29 @@ function AnimatedHistogram({
   );
 }
 
-function AttendancePieChart({ summary }: { summary: Summary }) {
+function AttendancePieChart({
+  summary,
+  month,
+  year,
+}: {
+  summary: Summary;
+  month: number;
+  year: number;
+}) {
   const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
   const totalEmployees = Math.max(toSafeNumber(summary.activeEmployees), 0);
-  const wfh = toSafeNumber(summary.wfh);
-  const visit = toSafeNumber(summary.visit);
-  const cuti = toSafeNumber(summary.cuti);
+
+  const wfh = toSafeNumber(summary.monthWfh ?? summary.wfh);
+  const visit = toSafeNumber(summary.monthVisit ?? summary.visit);
+  const cuti = toSafeNumber(summary.monthCuti ?? summary.cuti);
   const office = Math.max(
-    toSafeNumber(summary.office) || toSafeNumber(summary.present),
+    toSafeNumber(summary.monthOffice ?? summary.office) ||
+      toSafeNumber(summary.monthPresent ?? summary.present),
     0,
   );
-  const remaining = Math.max(totalEmployees - office - wfh - visit - cuti, 0);
-  const base = Math.max(totalEmployees, 1);
+  const pending = toSafeNumber(summary.monthPending ?? summary.pending);
+  const base = Math.max(office + wfh + visit + cuti + pending, 1);
+
   const items = [
     { label: "Hadir", value: office, color: "#8b5cf6" },
     { label: "WFH", value: wfh, color: "#f59e0b" },
@@ -480,8 +506,10 @@ function AttendancePieChart({ summary }: { summary: Summary }) {
   ];
   const chartItems = [
     ...items,
-    { label: "Belum Hadir", value: remaining, color: "#e2e8f0" },
+    { label: "Belum Hadir", value: pending, color: "#e2e8f0" },
   ];
+  const selectedMonthOption = monthOptions.find((opt) => opt.value === month);
+  const monthLabel = selectedMonthOption ? selectedMonthOption.label : `Bulan ${month}`;
   const hasAttendanceData = office + wfh + visit + cuti > 0;
   const chartSlices = chartItems.reduce<
     Array<
@@ -592,7 +620,7 @@ function AttendancePieChart({ summary }: { summary: Summary }) {
           Persentase dari {totalEmployees} karyawan
         </h4>
         <p className="mt-1 text-xs font-black text-[#123c8c]">
-          Data rekap hari ini
+          Data rekap {monthLabel} {year}
         </p>
         {!hasAttendanceData ? (
           <p className="mt-2 text-sm font-semibold text-slate-500">
@@ -946,7 +974,11 @@ export default function AdminCompanyMonitorPage() {
                       year={year}
                     />
 
-                    <AttendancePieChart summary={data.summary} />
+                    <AttendancePieChart
+                      summary={data.summary}
+                      month={month}
+                      year={year}
+                    />
                   </>
                 ) : (
                   <div className="space-y-5">

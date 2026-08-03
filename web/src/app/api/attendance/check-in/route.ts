@@ -724,6 +724,32 @@ export async function POST(req: NextRequest) {
           { status: 400 },
         );
       }
+
+      // Max 2 Karyawan WFH per hari
+      const MAX_DAILY_WFH = 2;
+      const todayWfhCount = await prisma.attendance.count({
+        where: {
+          attendance_date: today,
+          work_mode: "wfh",
+          check_in_time: {
+            not: null,
+          },
+          NOT: {
+            user_id: userId,
+          },
+        },
+      });
+
+      if (todayWfhCount >= MAX_DAILY_WFH) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Kuota WFH harian kantor sudah penuh (Maksimal ${MAX_DAILY_WFH} karyawan per hari). Silakan absensi mode Kantor atau Kunjungan.`,
+            message: `Kuota WFH harian kantor sudah penuh (Maksimal ${MAX_DAILY_WFH} karyawan per hari). Silakan absensi mode Kantor atau Kunjungan.`,
+          },
+          { status: 400 },
+        );
+      }
     }
 
     let matchedOffice: {
