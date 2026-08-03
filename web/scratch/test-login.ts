@@ -1,38 +1,23 @@
-import "dotenv/config";
+import { prisma } from "../src/lib/prisma";
 import bcrypt from "bcryptjs";
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
-import { PrismaClient } from "../src/generated/prisma/client";
 
-const adapter = new PrismaMariaDb({
-  host: process.env.DATABASE_HOST || "127.0.0.1",
-  port: Number(process.env.DATABASE_PORT || 3306),
-  user: process.env.DATABASE_USER || "root",
-  password: process.env.DATABASE_PASSWORD || undefined,
-  database: process.env.DATABASE_NAME || "faceattend_alfabank",
-  connectionLimit: 5,
-});
+async function test() {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: "owner@alfabankjogja.com" },
+    });
+    console.log("User:", user);
 
-const prisma = new PrismaClient({ adapter });
+    const tables = await prisma.$queryRaw<Array<{ TABLE_NAME: string }>>`
+      SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'login_rate_limits'
+    `;
+    console.log("login_rate_limits table exists:", tables.length > 0);
 
-async function main() {
-  const user = await prisma.user.findUnique({
-    where: { email: "admin@alfabank.id" },
-  });
-
-  if (!user) {
-    console.log("LOGIN_TEST_RESULT: USER_NOT_FOUND");
-    return;
+  } catch (err) {
+    console.error("TEST_LOGIN_ERROR:", err);
+  } finally {
+    await prisma.$disconnect();
   }
-
-  const isPasswordValid = await bcrypt.compare("adminpassword123", user.password_hash);
-  console.log("LOGIN_TEST_RESULT:", JSON.stringify({
-    email: user.email,
-    role: user.role,
-    status: user.status,
-    passwordMatch: isPasswordValid
-  }));
 }
 
-main()
-  .catch((e) => console.error(e))
-  .finally(() => prisma.$disconnect());
+test();
