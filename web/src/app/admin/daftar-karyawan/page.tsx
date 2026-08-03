@@ -329,6 +329,11 @@ function formatWfhQuota(value?: number | string | null) {
   return String(Number.isFinite(quota) ? Math.max(0, quota) : 0);
 }
 
+function formatLeaveQuota(value?: number | string | null) {
+  const quota = Math.max(0, Number(value ?? 12));
+  return `${quota} Hari`;
+}
+
 function getEmployeeProfilePhoto(employee: Employee) {
   return normalizeProfilePhotoUrl(
     employee.profile_photo ||
@@ -1401,7 +1406,16 @@ export default function AdminEmployeesPage() {
                               Kuota WFH
                             </p>
                             <p className="mt-1 truncate text-xs font-black text-slate-700">
-                              {formatWfhQuota(employee.wfh_quota_monthly)}
+                              {formatWfhQuota(employee.wfh_quota_monthly)} Hari
+                            </p>
+                          </div>
+
+                          <div className="rounded-2xl bg-[#f6f8ff] px-3 py-2">
+                            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                              Kuota Cuti
+                            </p>
+                            <p className="mt-1 truncate text-xs font-black text-[#123c8c]">
+                              {formatLeaveQuota(employee.annual_leave_quota)}
                             </p>
                           </div>
                         </div>
@@ -1984,32 +1998,6 @@ export default function AdminEmployeesPage() {
                             </option>
                           ))}
                         </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-sm font-black text-slate-700">
-                        Kuota WFH / Bulan (Hari)
-                      </label>
-                      <div className="app-field-smooth relative rounded-2xl">
-                        <BriefcaseBusiness
-                          size={18}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                        />
-                        <input
-                          value={form.wfh_quota_monthly}
-                          onChange={(event) =>
-                            handleNumericFormChange(
-                              "wfh_quota_monthly",
-                              event.target.value,
-                            )
-                          }
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          maxLength={3}
-                          placeholder="0"
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-                        />
                       </div>
                     </div>
                   </div>

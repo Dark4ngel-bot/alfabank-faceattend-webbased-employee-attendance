@@ -92,6 +92,7 @@ type Employee = {
   bank_account_number: string | null;
   nik: string | null;
   wfh_quota_monthly?: number | null;
+  annual_leave_quota?: number | null;
   created_at: string;
 
   profile_photo?: string | null;
@@ -198,6 +199,11 @@ function formatWfhQuota(value?: number | string | null) {
   const quota = Number(value || 0);
 
   return String(Number.isFinite(quota) ? Math.max(0, quota) : 0);
+}
+
+function formatLeaveQuota(value?: number | string | null) {
+  const quota = Math.max(0, Number(value ?? 12));
+  return `${quota} Hari/Tahun`;
 }
 
 function EmployeeDetailMotionStyles() {
@@ -638,6 +644,14 @@ export default function AdminEmployeeDetailPage() {
                   value={formatWfhQuota(employee.wfh_quota_monthly)}
                   description="Kuota otomatis dihitung ulang setiap awal bulan."
                   delay={330}
+                />
+
+                <DetailCard
+                  icon={CalendarDays}
+                  label="Kuota Cuti Tahunan"
+                  value={formatLeaveQuota(employee.annual_leave_quota)}
+                  description="Kuota cuti tahunan karyawan (input manual di daftar karyawan)."
+                  delay={335}
                 />
 
                 <DetailCard

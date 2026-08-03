@@ -42,24 +42,63 @@ function toTime(value: Date | string) {
   return value instanceof Date ? value.getTime() : new Date(value).getTime();
 }
 
+let ensureLoginRateLimitsPromise: Promise<boolean> | null = null;
+
+async function ensureLoginRateLimitsTable() {
+  ensureLoginRateLimitsPromise ??= (async () => {
+    try {
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS login_rate_limits (
+          rate_limit_key VARCHAR(255) PRIMARY KEY,
+          attempt_count INT NOT NULL DEFAULT 1,
+          reset_at DATETIME(3) NOT NULL,
+          created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+          updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+      return true;
+    } catch (error) {
+      console.warn("ENSURE_LOGIN_RATE_LIMITS_TABLE_WARN:", error);
+      return false;
+    }
+  })();
+
+  const ok = await ensureLoginRateLimitsPromise;
+  if (!ok) ensureLoginRateLimitsPromise = null;
+  return ok;
+}
+
 async function getActiveAttempt(key: string) {
-  const rows = await prisma.$queryRaw<LoginAttempt[]>`
-    SELECT attempt_count, reset_at
-    FROM login_rate_limits
-    WHERE rate_limit_key = ${key}
-    LIMIT 1
-  `;
+  try {
+    const rows = await prisma.$queryRaw<LoginAttempt[]>`
+      SELECT attempt_count, reset_at
+      FROM login_rate_limits
+      WHERE rate_limit_key = ${key}
+      LIMIT 1
+    `;
 
-  const attempt = rows[0];
+    const attempt = rows[0];
 
-  if (!attempt) return null;
+    if (!attempt) return null;
 
-  if (toTime(attempt.reset_at) <= Date.now()) {
-    await clearFailedLogin(key);
+    if (toTime(attempt.reset_at) <= Date.now()) {
+      await clearFailedLogin(key);
+      return null;
+    }
+
+    return attempt;
+  } catch (error) {
+    const isMissingTable =
+      String(error).includes("1146") ||
+      String(error).toLowerCase().includes("doesn't exist");
+
+    if (isMissingTable) {
+      await ensureLoginRateLimitsTable();
+    } else {
+      console.warn("GET_ACTIVE_LOGIN_ATTEMPT_WARN:", error);
+    }
     return null;
   }
-
-  return attempt;
 }
 
 async function isRateLimited(key: string) {
@@ -89,27 +128,61 @@ async function getRateLimitedRetryAfter(keys: string[]) {
 async function recordFailedLogin(key: string) {
   const resetAt = new Date(Date.now() + LOGIN_RATE_LIMIT_WINDOW_MS);
 
-  await prisma.$executeRaw`
-    INSERT INTO login_rate_limits (
-      rate_limit_key,
-      attempt_count,
-      reset_at,
-      created_at,
-      updated_at
-    )
-    VALUES (${key}, 1, ${resetAt}, NOW(3), NOW(3))
-    ON DUPLICATE KEY UPDATE
-      attempt_count = IF(reset_at <= NOW(3), 1, attempt_count + 1),
-      reset_at = IF(reset_at <= NOW(3), VALUES(reset_at), reset_at),
-      updated_at = NOW(3)
-  `;
+  try {
+    await prisma.$executeRaw`
+      INSERT INTO login_rate_limits (
+        rate_limit_key,
+        attempt_count,
+        reset_at,
+        created_at,
+        updated_at
+      )
+      VALUES (${key}, 1, ${resetAt}, NOW(3), NOW(3))
+      ON DUPLICATE KEY UPDATE
+        attempt_count = IF(reset_at <= NOW(3), 1, attempt_count + 1),
+        reset_at = IF(reset_at <= NOW(3), VALUES(reset_at), reset_at),
+        updated_at = NOW(3)
+    `;
+  } catch (error) {
+    const isMissingTable =
+      String(error).includes("1146") ||
+      String(error).toLowerCase().includes("doesn't exist");
+
+    if (isMissingTable) {
+      await ensureLoginRateLimitsTable();
+      try {
+        await prisma.$executeRaw`
+          INSERT INTO login_rate_limits (
+            rate_limit_key,
+            attempt_count,
+            reset_at,
+            created_at,
+            updated_at
+          )
+          VALUES (${key}, 1, ${resetAt}, NOW(3), NOW(3))
+          ON DUPLICATE KEY UPDATE
+            attempt_count = IF(reset_at <= NOW(3), 1, attempt_count + 1),
+            reset_at = IF(reset_at <= NOW(3), VALUES(reset_at), reset_at),
+            updated_at = NOW(3)
+        `;
+      } catch (retryError) {
+        console.warn("RECORD_FAILED_LOGIN_RETRY_WARN:", retryError);
+      }
+    } else {
+      console.warn("RECORD_FAILED_LOGIN_WARN:", error);
+    }
+  }
 }
 
 async function clearFailedLogin(key: string) {
-  await prisma.$executeRaw`
-    DELETE FROM login_rate_limits
-    WHERE rate_limit_key = ${key}
-  `;
+  try {
+    await prisma.$executeRaw`
+      DELETE FROM login_rate_limits
+      WHERE rate_limit_key = ${key}
+    `;
+  } catch (error) {
+    console.warn("CLEAR_FAILED_LOGIN_WARN:", error);
+  }
 }
 
 async function recordFailedLogins(keys: string[]) {
@@ -251,7 +324,7 @@ export async function POST(req: Request) {
     console.error("LOGIN_ERROR:", error);
 
     return NextResponse.json(
-      { success: false, message: "Terjadi kesalahan server" },
+      { success: false, message: "Terjadi kesalahan server saat login." },
       { status: 500 }
     );
   }
