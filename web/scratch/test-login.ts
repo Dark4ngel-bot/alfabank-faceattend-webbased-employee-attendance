@@ -16,7 +16,7 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const user = await prisma.user.findUnique({
-    where: { email: "admin@alfabank.com" },
+    where: { email: "admin@alfabank.id" },
   });
 
   if (!user) {
