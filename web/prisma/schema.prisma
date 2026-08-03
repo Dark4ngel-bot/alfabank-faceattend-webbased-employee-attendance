@@ -54,6 +54,9 @@ model User {
   // Kuota WFH karyawan per bulan. Pemakaian dihitung dari presensi WFH bulan berjalan.
   wfh_quota_monthly Int @default(0)
 
+  // Kuota Cuti tahunan karyawan. Input manual per karyawan.
+  leave_quota_yearly Int @default(12)
+
   jabatan           Jabatan?        @relation(fields: [jabatan_id], references: [id], onDelete: SetNull)
   department        Department?     @relation(fields: [department_id], references: [id], onDelete: SetNull)
   position          Position?       @relation(fields: [position_id], references: [id], onDelete: SetNull)
@@ -440,6 +443,11 @@ model LeaveRequest {
   total_days Int      @default(1)
 
   reason String @db.Text
+
+  // Lampiran surat dokter / dokumen pendukung (opsional)
+  document_url       String? @db.Text
+  document_public_id String? @db.VarChar(255)
+  document_name      String? @db.VarChar(255)
 
   // pending, approved, rejected
   status String @default("pending") @db.VarChar(20)

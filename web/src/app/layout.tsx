@@ -15,8 +15,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AlfaBank",
-  description: "Sistem Presensi Karyawan AlfaBank",
+  title: {
+    default: "Presensi",
+    template: "%s - Alfabank Jogja",
+  },
+  description: "Sistem Presensi Karyawan Alfabank Jogja",
+  icons: {
+    icon: "/images/alfabank-logo/alfabank-solo.png",
+    shortcut: "/images/alfabank-logo/alfabank-solo.png",
+    apple: "/images/alfabank-logo/alfabank-solo.png",
+  },
   other: {
     google: "notranslate",
   },

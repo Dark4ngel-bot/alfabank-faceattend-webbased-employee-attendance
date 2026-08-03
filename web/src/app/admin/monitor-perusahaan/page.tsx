@@ -460,7 +460,15 @@ function AnimatedHistogram({
   );
 }
 
-function AttendancePieChart({ summary }: { summary: Summary }) {
+function AttendancePieChart({
+  summary,
+  monthLabel,
+  year,
+}: {
+  summary: Summary;
+  monthLabel: string;
+  year: number;
+}) {
   const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
   const totalEmployees = Math.max(toSafeNumber(summary.activeEmployees), 0);
   const wfh = toSafeNumber(summary.wfh);
@@ -470,19 +478,15 @@ function AttendancePieChart({ summary }: { summary: Summary }) {
     toSafeNumber(summary.office) || toSafeNumber(summary.present),
     0,
   );
-  const remaining = Math.max(totalEmployees - office - wfh - visit - cuti, 0);
-  const base = Math.max(totalEmployees, 1);
-  const items = [
+  const totalMonthPresensi = office + wfh + visit + cuti;
+  const base = Math.max(totalMonthPresensi > 0 ? totalMonthPresensi : totalEmployees, 1);
+  const chartItems = [
     { label: "Hadir", value: office, color: "#8b5cf6" },
     { label: "WFH", value: wfh, color: "#f59e0b" },
     { label: "Kunjungan", value: visit, color: "#ef4444" },
     { label: "Cuti", value: cuti, color: "#14b8a6" },
   ];
-  const chartItems = [
-    ...items,
-    { label: "Belum Hadir", value: remaining, color: "#e2e8f0" },
-  ];
-  const hasAttendanceData = office + wfh + visit + cuti > 0;
+  const hasAttendanceData = totalMonthPresensi > 0;
   const chartSlices = chartItems.reduce<
     Array<
       (typeof chartItems)[number] & {
@@ -589,14 +593,16 @@ function AttendancePieChart({ summary }: { summary: Summary }) {
           Komposisi Kehadiran
         </p>
         <h4 className="mt-2 text-2xl font-black text-slate-950">
-          Persentase dari {totalEmployees} karyawan
+          {hasAttendanceData
+            ? `Total ${totalMonthPresensi} Presensi & Cuti`
+            : `Persentase dari ${totalEmployees} karyawan`}
         </h4>
         <p className="mt-1 text-xs font-black text-[#123c8c]">
-          Data rekap hari ini
+          Data rekap bulan {monthLabel} {year}
         </p>
         {!hasAttendanceData ? (
           <p className="mt-2 text-sm font-semibold text-slate-500">
-            Belum ada presensi kantor, WFH, kunjungan, atau cuti hari ini.
+            Belum ada presensi kantor, WFH, kunjungan, atau cuti pada bulan ini.
           </p>
         ) : null}
 
@@ -946,7 +952,13 @@ export default function AdminCompanyMonitorPage() {
                       year={year}
                     />
 
-                    <AttendancePieChart summary={data.summary} />
+                    <AttendancePieChart
+                      summary={data.summary}
+                      monthLabel={
+                        monthOptions.find((m) => m.value === month)?.label || ""
+                      }
+                      year={year}
+                    />
                   </>
                 ) : (
                   <div className="space-y-5">

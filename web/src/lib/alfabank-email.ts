@@ -1,4 +1,4 @@
-export const ALFABANK_EMAIL_DOMAIN = "@alfabank.id";
+export const ALFABANK_EMAIL_DOMAIN = "@alfabankjogja.com";
 export const ALFABANK_EMAIL_EXAMPLE = `nama${ALFABANK_EMAIL_DOMAIN}`;
 
 export function isValidEmailFormat(email: string) {

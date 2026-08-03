@@ -17,6 +17,10 @@ import {
   ensureWfhQuotaColumn,
   isMissingWfhQuotaColumnError,
 } from "@/lib/wfh-quota-schema";
+import {
+  ensureLeaveQuotaColumn,
+  isMissingLeaveQuotaColumnError,
+} from "@/lib/leave-quota-schema";
 import { normalizeBankCode } from "@/lib/bank-options";
 
 export const runtime = "nodejs";
@@ -372,17 +376,41 @@ async function getWfhQuotaByUserId(userIds: string[]) {
   );
 }
 
+async function getLeaveQuotaByUserId(userIds: string[]) {
+  if (userIds.length === 0) return new Map<string, number>();
+  if (!(await ensureLeaveQuotaColumn())) return new Map<string, number>();
+
+  const placeholders = userIds.map(() => "?").join(", ");
+  let rows: Array<{ id: string; leave_quota_yearly: number | null }> = [];
+
+  try {
+    rows = await prisma.$queryRawUnsafe<
+      Array<{ id: string; leave_quota_yearly: number | null }>
+    >(
+      `SELECT id, COALESCE(leave_quota_yearly, 12) AS leave_quota_yearly FROM users WHERE id IN (${placeholders})`,
+      ...userIds
+    );
+  } catch (error) {
+    if (!isMissingLeaveQuotaColumnError(error)) throw error;
+  }
+
+  return new Map(
+    rows.map((row) => [row.id, Math.max(0, Number(row.leave_quota_yearly ?? 12))])
+  );
+}
+
 async function attachWfhQuotaToEmployees<
   T extends { id: string; [key: string]: unknown },
 >(employees: T[]) {
-  const quotaByUserId = await getWfhQuotaByUserId(
-    employees.map((employee) => employee.id)
-  );
+  const userIds = employees.map((employee) => employee.id);
+  const wfhQuotaByUserId = await getWfhQuotaByUserId(userIds);
+  const leaveQuotaByUserId = await getLeaveQuotaByUserId(userIds);
 
   return employees.map((employee) => ({
     ...employee,
     bank_code: typeof employee.bank_code === "string" ? employee.bank_code : null,
-    wfh_quota_monthly: quotaByUserId.get(employee.id) || 0,
+    wfh_quota_monthly: wfhQuotaByUserId.get(employee.id) ?? 0,
+    leave_quota_yearly: leaveQuotaByUserId.get(employee.id) ?? 12,
   }));
 }
 
@@ -397,6 +425,20 @@ async function updateEmployeeWfhQuota(userId: string, quota: number) {
     );
   } catch (error) {
     if (!isMissingWfhQuotaColumnError(error)) throw error;
+  }
+}
+
+async function updateEmployeeLeaveQuota(userId: string, quota: number) {
+  if (!(await ensureLeaveQuotaColumn())) return;
+
+  try {
+    await prisma.$executeRawUnsafe(
+      "UPDATE users SET leave_quota_yearly = ? WHERE id = ?",
+      quota,
+      userId
+    );
+  } catch (error) {
+    if (!isMissingLeaveQuotaColumnError(error)) throw error;
   }
 }
 
@@ -584,6 +626,10 @@ export async function POST(req: NextRequest) {
       body.wfh_quota_monthly ?? body.wfhQuotaMonthly ?? body.wfh_quota,
       "Kuota WFH"
     );
+    const leaveQuotaYearly = normalizeNonNegativeInteger(
+      body.leave_quota_yearly ?? body.leaveQuotaYearly ?? body.leave_quota,
+      "Kuota Cuti Tahunan"
+    );
 
     if (!name) return jsonError("Nama karyawan wajib diisi.");
     if (!email) return jsonError("Email karyawan wajib diisi.");
@@ -687,6 +733,7 @@ export async function POST(req: NextRequest) {
       select: employeeSelect,
     });
     await updateEmployeeWfhQuota(employee.id, wfhQuotaMonthly);
+    await updateEmployeeLeaveQuota(employee.id, leaveQuotaYearly);
     const [employeeWithWfhQuota] = await attachWfhQuotaToEmployees([employee]);
 
     return NextResponse.json({
@@ -776,6 +823,10 @@ export async function PATCH(req: NextRequest) {
     const wfhQuotaMonthly = normalizeNonNegativeInteger(
       body.wfh_quota_monthly ?? body.wfhQuotaMonthly ?? body.wfh_quota,
       "Kuota WFH"
+    );
+    const leaveQuotaYearly = normalizeNonNegativeInteger(
+      body.leave_quota_yearly ?? body.leaveQuotaYearly ?? body.leave_quota,
+      "Kuota Cuti Tahunan"
     );
 
     if (!id) return jsonError("ID karyawan wajib dikirim.");
@@ -937,6 +988,7 @@ export async function PATCH(req: NextRequest) {
       select: employeeSelect,
     });
     await updateEmployeeWfhQuota(employee.id, wfhQuotaMonthly);
+    await updateEmployeeLeaveQuota(employee.id, leaveQuotaYearly);
     const [employeeWithWfhQuota] = await attachWfhQuotaToEmployees([employee]);
 
     return NextResponse.json({

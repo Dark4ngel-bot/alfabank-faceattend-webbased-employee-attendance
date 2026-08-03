@@ -17,8 +17,14 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   const users = await prisma.user.findMany();
   for (const user of users) {
-    if (user.email.endsWith("@alfabank.com")) {
-      const newEmail = user.email.replace("@alfabank.com", "@alfabank.id");
+    const emailLower = user.email.toLowerCase();
+    if (
+      emailLower.endsWith("@creativemu.id") ||
+      emailLower.endsWith("@alfabank.com") ||
+      emailLower.endsWith("@alfabank.id")
+    ) {
+      const username = user.email.split("@")[0];
+      const newEmail = `${username}@alfabankjogja.com`;
       await prisma.user.update({
         where: { id: user.id },
         data: { email: newEmail },
@@ -27,21 +33,21 @@ async function main() {
     }
   }
 
-  // Ensure admin@alfabank.id exists with known password
-  const adminEmail = "admin@alfabank.id";
+  // Ensure admin@alfabankjogja.com exists with known password
+  const adminEmail = "admin@alfabankjogja.com";
   const password = "adminpassword123";
   const password_hash = await bcrypt.hash(password, 10);
 
   await prisma.user.upsert({
     where: { email: adminEmail },
     update: {
-      name: "Admin AlfaBank",
+      name: "Admin AlfaBank Jogja",
       password_hash,
       role: "admin",
       status: "active",
     },
     create: {
-      name: "Admin AlfaBank",
+      name: "Admin AlfaBank Jogja",
       email: adminEmail,
       password_hash,
       role: "admin",

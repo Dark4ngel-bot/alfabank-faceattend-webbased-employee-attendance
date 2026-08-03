@@ -27,6 +27,10 @@ type LeaveRequest = {
   endDateIso?: string | null;
   totalDays: number;
   reason: string;
+  documentUrl?: string | null;
+  document_url?: string | null;
+  documentName?: string | null;
+  document_name?: string | null;
   status: string;
   statusLabel: string;
   adminNote: string | null;
@@ -168,6 +172,8 @@ export default function LeaveRequestPage() {
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [stats, setStats] = useState<LeaveStats>(emptyStats);
 
@@ -260,18 +266,34 @@ export default function LeaveRequestPage() {
     try {
       setIsSubmitting(true);
 
-      const response = await fetch("/api/leave-requests", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          leaveType,
-          startDate,
-          endDate,
-          reason: reason.trim(),
-        }),
-      });
+      let response: Response;
+
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("leaveType", leaveType);
+        formData.append("startDate", startDate);
+        formData.append("endDate", endDate);
+        formData.append("reason", reason.trim());
+        formData.append("document", selectedFile);
+
+        response = await fetch("/api/leave-requests", {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        response = await fetch("/api/leave-requests", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            leaveType,
+            startDate,
+            endDate,
+            reason: reason.trim(),
+          }),
+        });
+      }
 
       const data = await readJsonResponse(response);
 
@@ -289,6 +311,7 @@ export default function LeaveRequestPage() {
       setStartDate("");
       setEndDate("");
       setReason("");
+      setSelectedFile(null);
 
       setPageAlert({
         type: "success",
@@ -458,6 +481,27 @@ export default function LeaveRequestPage() {
               />
             </div>
 
+            {leaveType === "sick" && (
+              <div>
+                <label className="text-sm font-black text-slate-700">
+                  Lampiran Surat Dokter (Opsional)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(event) =>
+                    setSelectedFile(event.target.files?.[0] || null)
+                  }
+                  className="mt-2 block w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none file:mr-4 file:rounded-xl file:border-0 file:bg-[#123c8c] file:px-3 file:py-1.5 file:text-xs file:font-black file:text-white hover:file:bg-[#0f3274]"
+                />
+                {selectedFile && (
+                  <p className="mt-1.5 text-xs font-bold text-[#123c8c]">
+                    File terpilih: {selectedFile.name}
+                  </p>
+                )}
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={isSubmitting}
@@ -568,6 +612,20 @@ export default function LeaveRequestPage() {
                     <p className="mt-4 rounded-2xl bg-[#f8fbff] p-4 text-sm font-semibold leading-6 text-slate-600">
                       {item.reason}
                     </p>
+
+                    {(item.documentUrl || item.document_url) && (
+                      <div className="mt-3">
+                        <a
+                          href={item.documentUrl || item.document_url || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3.5 py-2 text-xs font-black text-[#123c8c] ring-1 ring-blue-200 transition hover:bg-blue-100"
+                        >
+                          <FileText size={15} />
+                          Lihat Surat Dokter ({item.documentName || item.document_name || "Lampiran"})
+                        </a>
+                      </div>
+                    )}
 
                     {item.adminNote ? (
                       <p className="mt-3 rounded-2xl bg-blue-50 p-4 text-sm font-semibold leading-6 text-[#123c8c]">

@@ -1,11 +1,20 @@
+import fs from "node:fs";
+import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
+import type { UploadApiResponse } from "cloudinary";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
+import { getCloudinary } from "@/lib/cloudinary";
 import {
   findAttendanceInDateRange,
   formatJakartaDate,
 } from "@/lib/leave-attendance-guard";
+import {
+  ensureLeaveQuotaColumn,
+  isMissingLeaveQuotaColumnError,
+} from "@/lib/leave-quota-schema";
+import { ensureLeaveDocumentColumns } from "@/lib/leave-document-schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,7 +61,7 @@ function canManageLeave(role: string) {
 function normalizeDateOnly(value: string) {
   if (!value) return null;
 
-  const date = new Date(`${value}T00:00:00.000+07:00`);
+  const date = new Date(`${value}T00:00:00.000Z`);
 
   if (Number.isNaN(date.getTime())) return null;
 
@@ -113,6 +122,86 @@ function getStatusLabel(status: string) {
   return status || "-";
 }
 
+function saveLocalLeaveDocument(file: File, buffer: Buffer, requestId: string) {
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "leave-documents");
+  fs.mkdirSync(uploadDir, { recursive: true });
+
+  const ext = path.extname(file.name) || ".pdf";
+  const fileName = `leave-${requestId}-${Date.now()}${ext}`;
+  const filePath = path.join(uploadDir, fileName);
+
+  fs.writeFileSync(filePath, buffer);
+
+  return {
+    url: `/uploads/leave-documents/${fileName}`,
+    publicId: null,
+  };
+}
+
+async function uploadLeaveDocument(
+  file: File,
+  requestId: string,
+): Promise<{ secure_url: string; public_id: string | null }> {
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const hasCloudinary = Boolean(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET,
+  );
+
+  if (hasCloudinary) {
+    try {
+      const cloudinary = getCloudinary();
+      const isPdf = file.type.includes("pdf");
+
+      const result = await new Promise<UploadApiResponse>((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "presensi/leave-documents",
+            public_id: `leave-${requestId}-${Date.now()}`,
+            resource_type: isPdf ? "raw" : "image",
+            overwrite: false,
+            use_filename: true,
+          },
+          (error, res) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+
+            if (!res) {
+              reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
+              return;
+            }
+
+            resolve(res);
+          },
+        );
+
+        uploadStream.end(buffer);
+      });
+
+      return {
+        secure_url: result.secure_url,
+        public_id: result.public_id,
+      };
+    } catch (cloudinaryError) {
+      console.warn("Cloudinary upload failed, falling back to local storage:", cloudinaryError);
+      const localResult = saveLocalLeaveDocument(file, buffer, requestId);
+      return {
+        secure_url: localResult.url,
+        public_id: localResult.publicId,
+      };
+    }
+  }
+
+  const localResult = saveLocalLeaveDocument(file, buffer, requestId);
+  return {
+    secure_url: localResult.url,
+    public_id: localResult.publicId,
+  };
+}
+
 function mapLeaveRequest(item: {
   id: string;
   user_id: string;
@@ -121,6 +210,9 @@ function mapLeaveRequest(item: {
   end_date: Date;
   total_days: number;
   reason: string;
+  document_url?: string | null;
+  document_public_id?: string | null;
+  document_name?: string | null;
   status: string;
   admin_note: string | null;
   created_at: Date;
@@ -158,6 +250,11 @@ function mapLeaveRequest(item: {
 
     totalDays: item.total_days,
     reason: item.reason,
+
+    documentUrl: item.document_url || null,
+    document_url: item.document_url || null,
+    documentName: item.document_name || null,
+    document_name: item.document_name || null,
 
     status: item.status,
     statusLabel: getStatusLabel(item.status),
@@ -280,35 +377,59 @@ export async function POST(req: NextRequest) {
       return jsonError("Akun tidak aktif.", 403);
     }
 
-    let body: {
-      leaveType?: string;
-      leave_type?: string;
-      startDate?: string;
-      start_date?: string;
-      endDate?: string;
-      end_date?: string;
-      reason?: string;
-    };
+    let leaveType = "";
+    let startDateText = "";
+    let endDateText = "";
+    let reason = "";
+    let fileToUpload: File | null = null;
 
-    try {
-      body = await req.json();
-    } catch {
-      return jsonError("Body request tidak valid.");
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      leaveType = String(
+        formData.get("leaveType") || formData.get("leave_type") || ""
+      ).trim();
+      startDateText = String(
+        formData.get("startDate") || formData.get("start_date") || ""
+      ).trim();
+      endDateText = String(
+        formData.get("endDate") || formData.get("end_date") || ""
+      ).trim();
+      reason = String(formData.get("reason") || "").trim();
+
+      const documentFile = formData.get("document") || formData.get("file");
+      if (documentFile && documentFile instanceof File && documentFile.size > 0) {
+        fileToUpload = documentFile;
+      }
+    } else {
+      let body: {
+        leaveType?: string;
+        leave_type?: string;
+        startDate?: string;
+        start_date?: string;
+        endDate?: string;
+        end_date?: string;
+        reason?: string;
+      };
+
+      try {
+        body = await req.json();
+      } catch {
+        return jsonError("Body request tidak valid.");
+      }
+
+      leaveType = String(
+        body.leaveType || body.leave_type || ""
+      ).trim();
+      startDateText = String(
+        body.startDate || body.start_date || ""
+      ).trim();
+      endDateText = String(body.endDate || body.end_date || "").trim();
+      reason = String(body.reason || "").trim();
     }
 
-    const leaveType = String(
-      body.leaveType || body.leave_type || ""
-    ).trim() as LeaveType;
-
-    const startDateText = String(
-      body.startDate || body.start_date || ""
-    ).trim();
-
-    const endDateText = String(body.endDate || body.end_date || "").trim();
-
-    const reason = String(body.reason || "").trim();
-
-    if (!leaveType || !allowedLeaveTypes.includes(leaveType)) {
+    if (!leaveType || !allowedLeaveTypes.includes(leaveType as LeaveType)) {
       return jsonError("Jenis pengajuan tidak valid.");
     }
 
@@ -343,6 +464,46 @@ export async function POST(req: NextRequest) {
       return jsonError("Total hari pengajuan tidak valid.");
     }
 
+    if (leaveType === "annual") {
+      await ensureLeaveQuotaColumn();
+
+      let quotaRows: Array<{ leave_quota_yearly: number | null }> = [];
+      try {
+        quotaRows = await prisma.$queryRawUnsafe<
+          Array<{ leave_quota_yearly: number | null }>
+        >(
+          "SELECT COALESCE(leave_quota_yearly, 12) AS leave_quota_yearly FROM users WHERE id = ? LIMIT 1",
+          currentUser.id
+        );
+      } catch (error) {
+        if (!isMissingLeaveQuotaColumnError(error)) throw error;
+      }
+
+      const yearlyQuota = Math.max(0, Number(quotaRows[0]?.leave_quota_yearly ?? 12));
+
+      const startOfYear = new Date(Date.UTC(startDate.getUTCFullYear(), 0, 1));
+      const endOfYear = new Date(Date.UTC(startDate.getUTCFullYear(), 11, 31, 23, 59, 59));
+
+      const existingAnnualLeaves = await prisma.leaveRequest.aggregate({
+        where: {
+          user_id: currentUser.id,
+          leave_type: "annual",
+          status: { in: ["pending", "approved"] },
+          start_date: { gte: startOfYear, lte: endOfYear },
+        },
+        _sum: { total_days: true },
+      });
+
+      const usedAnnualDays = existingAnnualLeaves._sum.total_days || 0;
+      const remainingQuota = Math.max(0, yearlyQuota - usedAnnualDays);
+
+      if (totalDays > remainingQuota) {
+        return jsonError(
+          `Sisa kuota cuti tahunan kamu tidak mencukupi (Kuota tahunan: ${yearlyQuota} hari, Terpakai/Pending: ${usedAnnualDays} hari, Sisa: ${remainingQuota} hari, Pengajuan: ${totalDays} hari).`
+        );
+      }
+    }
+
     const attendanceConflict = await findAttendanceInDateRange({
       userId: currentUser.id,
       startDate,
@@ -357,14 +518,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    await ensureLeaveDocumentColumns();
+
+    let documentUrl: string | null = null;
+    let documentPublicId: string | null = null;
+    let documentName: string | null = null;
+
+    if (fileToUpload) {
+      const tempId = `doc-${Date.now()}`;
+      const uploadResult = await uploadLeaveDocument(fileToUpload, tempId);
+      documentUrl = uploadResult.secure_url;
+      documentPublicId = uploadResult.public_id;
+      documentName = fileToUpload.name;
+    }
+
     const leaveRequest = await prisma.leaveRequest.create({
       data: {
         user_id: currentUser.id,
-        leave_type: leaveType,
+        leave_type: leaveType as LeaveType,
         start_date: startDate,
         end_date: endDate,
         total_days: totalDays,
         reason,
+        document_url: documentUrl,
+        document_public_id: documentPublicId,
+        document_name: documentName,
         status: "pending",
       },
       select: {
@@ -375,6 +553,9 @@ export async function POST(req: NextRequest) {
         end_date: true,
         total_days: true,
         reason: true,
+        document_url: true,
+        document_public_id: true,
+        document_name: true,
         status: true,
         admin_note: true,
         created_at: true,
@@ -401,7 +582,7 @@ export async function POST(req: NextRequest) {
     await createAdminNotification({
       userId: currentUser.id,
       userName: currentUser.name,
-      leaveType,
+      leaveType: leaveType as LeaveType,
       totalDays,
       reason,
     });

@@ -589,6 +589,17 @@ export async function GET(req: NextRequest) {
         reason: record.late_reason || "Belum ada alasan",
       }));
 
+    const monthOffice = monthRecords.filter((record) => isOfficeRecord(record)).length;
+    const monthWfh = monthRecords.filter((record) => isWfhRecord(record)).length;
+    const monthVisit = monthRecords.filter((record) => isVisitRecord(record)).length;
+    const monthPresent = monthRecords.filter((record) => isAttendanceRecord(record)).length;
+    const monthLate = monthRecords.filter((record) => isLateOfficeRecord(record)).length;
+
+    let monthCuti = 0;
+    for (const point of dailyChart) {
+      monthCuti += point.cuti;
+    }
+
     return NextResponse.json({
       month,
       year,
@@ -598,13 +609,20 @@ export async function GET(req: NextRequest) {
         activeEmployees: totalActiveEmployees,
         todayRecords: isSelectedCurrentMonth ? todayRecords.length : 0,
 
-        present: todayPresent,
-        office: todayOffice,
-        late: todayLate,
-        wfh: todayWfh,
-        visit: todayVisit,
-        cuti: todayCuti,
+        present: monthPresent,
+        office: monthOffice,
+        late: monthLate,
+        wfh: monthWfh,
+        visit: monthVisit,
+        cuti: monthCuti,
         pending: todayPending,
+
+        todayPresent,
+        todayOffice,
+        todayLate,
+        todayWfh,
+        todayVisit,
+        todayCuti,
 
         presentPercentage: dayPercent(todayPresent),
         latePercentage: dayPercent(todayLate),

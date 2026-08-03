@@ -7,6 +7,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
+  FileText,
   Loader2,
   UserRound,
   X,
@@ -37,6 +38,10 @@ type AdminLeaveRequest = {
   endDate: string;
   totalDays: number;
   reason: string;
+  documentUrl?: string | null;
+  document_url?: string | null;
+  documentName?: string | null;
+  document_name?: string | null;
   status: string;
   statusLabel: string;
   adminNote: string | null;
@@ -458,6 +463,25 @@ export default function AdminLeaveRequestDetailPage() {
                         {request.reason}
                       </p>
                     </div>
+
+                    {request.documentUrl || request.document_url ? (
+                      <div className="mt-3 rounded-3xl border border-blue-100 bg-blue-50/60 p-4">
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#123c8c]">
+                          Lampiran Surat Dokter / Dokumen
+                        </p>
+                        <div className="mt-2 flex items-center gap-3">
+                          <a
+                            href={request.documentUrl || request.document_url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-2.5 text-xs font-black text-white shadow-md shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98]"
+                          >
+                            <FileText size={16} />
+                            Lihat / Unduh Dokumen ({request.documentName || request.document_name || "Lampiran"})
+                          </a>
+                        </div>
+                      </div>
+                    ) : null}
 
                     {request.adminNote ? (
                       <div className="mt-3 rounded-3xl bg-blue-50 p-4">

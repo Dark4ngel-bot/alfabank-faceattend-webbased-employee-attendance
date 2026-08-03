@@ -118,6 +118,9 @@ function mapLeaveRequest(item: {
   end_date: Date;
   total_days: number;
   reason: string;
+  document_url?: string | null;
+  document_public_id?: string | null;
+  document_name?: string | null;
   status: string;
   admin_note: string | null;
   created_at: Date;
@@ -195,6 +198,11 @@ function mapLeaveRequest(item: {
 
     totalDays: item.total_days,
     reason: item.reason,
+
+    documentUrl: item.document_url || null,
+    document_url: item.document_url || null,
+    documentName: item.document_name || null,
+    document_name: item.document_name || null,
 
     status: item.status,
     statusLabel: getStatusLabel(item.status),
@@ -319,6 +327,9 @@ export async function GET(req: NextRequest) {
         end_date: true,
         total_days: true,
         reason: true,
+        document_url: true,
+        document_public_id: true,
+        document_name: true,
         status: true,
         admin_note: true,
         created_at: true,

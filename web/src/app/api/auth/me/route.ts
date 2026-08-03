@@ -6,6 +6,10 @@ import {
   ensureWfhQuotaColumn,
   isMissingWfhQuotaColumnError,
 } from "@/lib/wfh-quota-schema";
+import {
+  ensureLeaveQuotaColumn,
+  isMissingLeaveQuotaColumnError,
+} from "@/lib/leave-quota-schema";
 
 function serializeOffice(
   office:
@@ -176,6 +180,38 @@ export async function GET(req: NextRequest) {
       Number(quotaRows[0]?.wfh_quota_monthly || 0),
     );
 
+    const hasLeaveQuotaColumn = await ensureLeaveQuotaColumn();
+    let leaveQuotaRows: Array<{ leave_quota_yearly: number | null }> = [];
+    if (hasLeaveQuotaColumn) {
+      try {
+        leaveQuotaRows = await prisma.$queryRawUnsafe<
+          Array<{ leave_quota_yearly: number | null }>
+        >(
+          "SELECT COALESCE(leave_quota_yearly, 12) AS leave_quota_yearly FROM users WHERE id = ? LIMIT 1",
+          user.id,
+        );
+      } catch (error) {
+        if (!isMissingLeaveQuotaColumnError(error)) throw error;
+      }
+    }
+    const currentYear = new Date().getFullYear();
+    const startOfYear = new Date(Date.UTC(currentYear, 0, 1));
+    const endOfYear = new Date(Date.UTC(currentYear, 11, 31, 23, 59, 59));
+
+    const usedAnnualLeaves = await prisma.leaveRequest.aggregate({
+      where: {
+        user_id: user.id,
+        leave_type: "annual",
+        status: { in: ["pending", "approved"] },
+        start_date: { gte: startOfYear, lte: endOfYear },
+      },
+      _sum: { total_days: true },
+    });
+
+    const leaveQuotaYearly = Math.max(0, Number(leaveQuotaRows[0]?.leave_quota_yearly ?? 12));
+    const leaveQuotaUsedYearly = usedAnnualLeaves._sum.total_days || 0;
+    const leaveQuotaRemainingYearly = Math.max(0, leaveQuotaYearly - leaveQuotaUsedYearly);
+
     return NextResponse.json({
       success: true,
       user: {
@@ -202,6 +238,9 @@ export async function GET(req: NextRequest) {
           0,
           wfhQuotaMonthly - usedWfhThisMonth,
         ),
+        leave_quota_yearly: leaveQuotaYearly,
+        leave_quota_used_yearly: leaveQuotaUsedYearly,
+        leave_quota_remaining_yearly: leaveQuotaRemainingYearly,
 
         jabatan: user.jabatan,
         department: user.department,

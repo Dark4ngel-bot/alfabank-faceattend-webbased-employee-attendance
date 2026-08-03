@@ -665,6 +665,32 @@ export async function POST(req: NextRequest) {
     const today = getTodayDateOnly();
 
     if (isWfhMode) {
+      const todayWfhCount = await prisma.attendance.count({
+        where: {
+          attendance_date: today,
+          work_mode: "wfh",
+          check_in_time: {
+            not: null,
+          },
+          NOT: {
+            user_id: userId,
+          },
+        },
+      });
+
+      if (todayWfhCount >= 2) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "Kuota WFH harian kantor sudah penuh (Maksimal 2 karyawan per hari). Silakan pilih mode Kantor atau hubungi admin.",
+            message:
+              "Kuota WFH harian kantor sudah penuh (Maksimal 2 karyawan per hari). Silakan pilih mode Kantor atau hubungi admin.",
+          },
+          { status: 400 },
+        );
+      }
+
       const hasWfhQuotaColumn = await ensureWfhQuotaColumn();
       let quotaRows: Array<{ wfh_quota_monthly: number | null }> = [];
 
