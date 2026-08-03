@@ -17,6 +17,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Presensi",
   description: "Sistem Presensi Karyawan Creativemu",
+  icons: {
+    icon: [
+      { url: "/images/creativemu-logo/creativemu-solo.png" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    shortcut: "/images/creativemu-logo/creativemu-solo.png",
+    apple: "/images/creativemu-logo/creativemu-solo.png",
+  },
   other: {
     google: "notranslate",
   },
