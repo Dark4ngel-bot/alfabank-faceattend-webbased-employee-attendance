@@ -292,9 +292,21 @@ export default function AppHeader({
 
         const data = (await readJsonResponse(response)) as NotificationResponse;
 
-        const count = isAdmin
+        let count = isAdmin
           ? getAdminNotificationCount(data.stats)
           : getEmployeeNotificationCount(data.stats);
+
+        if (!isAdmin) {
+          try {
+            const swapRes = await fetch("/api/shift-swaps", { cache: "no-store" });
+            if (swapRes.ok) {
+              const swapData = await swapRes.json();
+              count += Number(swapData.pendingIncomingCount || 0);
+            }
+          } catch {
+            // ignore error
+          }
+        }
 
         if (isMounted) {
           setNotificationCount(count);
