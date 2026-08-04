@@ -137,7 +137,7 @@ function getShiftStartTime(shiftName?: string | null) {
   const name = String(shiftName || "").toUpperCase();
 
   if (name.includes("SHIFT SIANG") || name.includes("SIANG")) return "13:00";
-  if (name.includes("SHIFT PAGI") || name.includes("PAGI")) return "08:00";
+  if (name.includes("SHIFT PAGI") || name.includes("PAGI")) return "07:30";
   if (name.includes("MAGANG") || name.includes("UTAMA")) return "08:00";
 
   return "08:00";
