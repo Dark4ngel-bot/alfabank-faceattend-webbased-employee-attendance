@@ -178,7 +178,13 @@ model Shift {
   name String @unique @db.VarChar(100)
 
   // Toleransi telat dalam menit
-  tolerance_minutes Int @default(0)
+  tolerance_minutes Int @default(5)
+
+  // Jam kerja & jam buka absensi (format "HH:mm")
+  start_time     String @default("08:00") @db.VarChar(10)
+  end_time        String @default("17:00") @db.VarChar(10)
+  check_in_open  String @default("07:00") @db.VarChar(10)
+  check_out_open String @default("16:50") @db.VarChar(10)
 
   // active, inactive
   status String @default("active") @db.VarChar(20)

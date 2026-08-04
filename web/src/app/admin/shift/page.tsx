@@ -25,6 +25,10 @@ type Shift = {
   id: string;
   name: string;
   tolerance_minutes?: number;
+  start_time?: string;
+  end_time?: string;
+  check_in_open?: string;
+  check_out_open?: string;
   status: string;
   created_at?: string;
   updated_at?: string;
@@ -37,11 +41,21 @@ type Shift = {
 type ShiftForm = {
   name: string;
   status: string;
+  tolerance_minutes: number;
+  start_time: string;
+  end_time: string;
+  check_in_open: string;
+  check_out_open: string;
 };
 
 const initialForm: ShiftForm = {
   name: "",
   status: "active",
+  tolerance_minutes: 5,
+  start_time: "08:00",
+  end_time: "17:00",
+  check_in_open: "07:00",
+  check_out_open: "16:50",
 };
 
 const filterOptions = [
@@ -179,6 +193,11 @@ export default function ShiftsPage() {
     setForm({
       name: item.name,
       status: item.status,
+      tolerance_minutes: item.tolerance_minutes ?? 5,
+      start_time: item.start_time || "08:00",
+      end_time: item.end_time || "17:00",
+      check_in_open: item.check_in_open || "07:00",
+      check_out_open: item.check_out_open || "16:50",
     });
     setIsModalOpen(true);
   }
@@ -204,7 +223,16 @@ export default function ShiftsPage() {
       const url = "/api/admin/shifts";
       const method = editingShift ? "PATCH" : "POST";
       const bodyPayload = editingShift
-        ? { id: editingShift.id, name, status: form.status }
+        ? {
+            id: editingShift.id,
+            name,
+            status: form.status,
+            tolerance_minutes: form.tolerance_minutes,
+            start_time: form.start_time,
+            end_time: form.end_time,
+            check_in_open: form.check_in_open,
+            check_out_open: form.check_out_open,
+          }
         : { name, status: form.status };
 
       const response = await fetch(url, {
@@ -392,6 +420,30 @@ export default function ShiftsPage() {
                         </button>
                       </div>
                     </div>
+
+                    {/* Jam Info */}
+                    <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 rounded-2xl border border-blue-50 bg-blue-50/30 p-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Check-in Buka</p>
+                        <p className="text-sm font-black text-[#123c8c]">{item.check_in_open || "07:00"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Check-out Buka</p>
+                        <p className="text-sm font-black text-[#123c8c]">{item.check_out_open || "16:50"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Jam Masuk</p>
+                        <p className="text-sm font-bold text-slate-700">{item.start_time || "08:00"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Jam Pulang</p>
+                        <p className="text-sm font-bold text-slate-700">{item.end_time || "17:00"}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Toleransi Telat</p>
+                        <p className="text-sm font-bold text-slate-700">{item.tolerance_minutes ?? 0} menit</p>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -408,7 +460,7 @@ export default function ShiftsPage() {
             onClick={closeModal}
           />
 
-          <div className="modal-panel relative w-full max-w-md rounded-[2.5rem] border border-white bg-white p-6 shadow-2xl md:p-8">
+          <div className="modal-panel relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[2.5rem] border border-white bg-white p-6 shadow-2xl md:p-8">
             <button
               onClick={closeModal}
               className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 transition"
@@ -421,11 +473,11 @@ export default function ShiftsPage() {
             </h2>
             <p className="mt-1 text-sm font-semibold text-slate-500">
               {editingShift
-                ? "Perbarui nama atau status shift terpilih."
+                ? "Perbarui pengaturan shift terpilih."
                 : "Masukkan nama shift kerja baru untuk disimpan."}
             </p>
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div>
                 <label className="mb-2 block text-sm font-black text-slate-700">
                   Nama Shift Kerja
@@ -454,6 +506,93 @@ export default function ShiftsPage() {
                   <option value="inactive">Nonaktif</option>
                 </AppSelect>
               </div>
+
+              {editingShift && (
+                <>
+                  <hr className="border-slate-100" />
+
+                  <p className="text-xs font-black uppercase tracking-widest text-[#123c8c]">
+                    Pengaturan Waktu Absensi
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-black text-slate-600">
+                        Jam Masuk
+                      </label>
+                      <input
+                        type="time"
+                        value={form.start_time}
+                        onChange={(e) =>
+                          setForm((prev) => ({ ...prev, start_time: e.target.value }))
+                        }
+                        className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-black text-slate-600">
+                        Jam Pulang
+                      </label>
+                      <input
+                        type="time"
+                        value={form.end_time}
+                        onChange={(e) =>
+                          setForm((prev) => ({ ...prev, end_time: e.target.value }))
+                        }
+                        className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-black text-slate-600">
+                        Check-in Dibuka
+                      </label>
+                      <input
+                        type="time"
+                        value={form.check_in_open}
+                        onChange={(e) =>
+                          setForm((prev) => ({ ...prev, check_in_open: e.target.value }))
+                        }
+                        className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-black text-slate-600">
+                        Check-out Dibuka
+                      </label>
+                      <input
+                        type="time"
+                        value={form.check_out_open}
+                        onChange={(e) =>
+                          setForm((prev) => ({ ...prev, check_out_open: e.target.value }))
+                        }
+                        className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black text-slate-600">
+                      Toleransi Keterlambatan (menit)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={60}
+                      value={form.tolerance_minutes}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          tolerance_minutes: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
+                    />
+                  </div>
+                </>
+              )}
 
               <div className="pt-2 flex justify-end gap-3">
                 <AppButton
