@@ -151,13 +151,50 @@ export async function GET(req: NextRequest) {
       };
     });
 
+    let swapNotifications: typeof mappedNotifications = [];
+
+    try {
+      const pendingShiftSwaps = await prisma.shiftSwapRequest.findMany({
+        where: {
+          target_user_id: currentUser.id,
+          status: "pending",
+        },
+        include: {
+          requester: {
+            select: { name: true },
+          },
+        },
+        orderBy: { created_at: "desc" },
+      });
+
+      swapNotifications = pendingShiftSwaps.map((item) => ({
+        id: `swap-${item.id}`,
+        rawId: item.id,
+        type: "shift_swap",
+        typeLabel: "Tukar Shift",
+        title: "Permintaan Tukar Shift Masuk",
+        message: `${item.requester?.name || "Rekan kerja"} mengajukan tukar shift (${item.requester_shift_name} ↔ ${item.target_shift_name}) untuk tanggal ${item.swap_date.toISOString().slice(0, 10)}.`,
+        status: "unread",
+        statusText: "Belum Dibaca",
+        isRead: false,
+        createdAt: toIsoDate(item.created_at),
+        updatedAt: toIsoDate(item.updated_at),
+        dateText: formatDate(item.created_at),
+        href: "/tukar-shift",
+      }));
+    } catch {
+      // ignore if table doesn't exist yet
+    }
+
+    const allNotifications = [...swapNotifications, ...mappedNotifications];
+
     return NextResponse.json({
       success: true,
       stats: {
-        total: mappedNotifications.length,
-        unread: mappedNotifications.filter((item) => !item.isRead).length,
+        total: allNotifications.length,
+        unread: allNotifications.filter((item) => !item.isRead).length,
       },
-      notifications: mappedNotifications,
+      notifications: allNotifications,
     });
   } catch (error) {
     console.error("GET /api/notifications error:", error);

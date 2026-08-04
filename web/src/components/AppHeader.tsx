@@ -247,7 +247,14 @@ export default function AppHeader({
   }, [pathname, variant]);
 
   const isAdmin = resolvedVariant === "admin";
-  const notificationHref = isAdmin ? "/admin/notifikasi" : "/notifikasi";
+  const [pendingShiftSwapCount, setPendingShiftSwapCount] = useState(0);
+
+  const notificationHref = isAdmin
+    ? "/admin/notifikasi"
+    : pendingShiftSwapCount > 0
+    ? "/tukar-shift"
+    : "/notifikasi";
+
   const isNotificationPage = isActivePath(pathname, notificationHref);
   const hasNewNotification = notificationCount > 0;
 
@@ -301,7 +308,9 @@ export default function AppHeader({
             const swapRes = await fetch("/api/shift-swaps", { cache: "no-store" });
             if (swapRes.ok) {
               const swapData = await swapRes.json();
-              count += Number(swapData.pendingIncomingCount || 0);
+              const pCount = Number(swapData.pendingIncomingCount || 0);
+              count += pCount;
+              if (isMounted) setPendingShiftSwapCount(pCount);
             }
           } catch {
             // ignore error
