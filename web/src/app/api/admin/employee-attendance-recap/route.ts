@@ -508,6 +508,20 @@ export async function GET(req: NextRequest) {
         dailyRecords: Array.from(
           employeeDailyRecords.get(employee.id)?.values() || [],
         ).sort((first, second) => first.date.localeCompare(second.date)),
+        logs: attendances
+          .filter((att) => att.user_id === employee.id)
+          .map((att) => ({
+            id: att.id,
+            date: toDateKey(att.attendance_date),
+            checkInTime: att.check_in_time ? att.check_in_time.toISOString() : null,
+            checkOutTime: att.check_out_time ? att.check_out_time.toISOString() : null,
+            lateMinutes: Number(att.late_minutes || 0),
+            workMinutes: Number(att.work_minutes || 0),
+            status: att.status,
+            checkInStatus: att.check_in_status,
+            workMode: att.work_mode,
+            checkOutWorkMode: checkOutWorkModeByAttendanceId.get(att.id) || null,
+          })),
       })),
     });
   } catch (error) {

@@ -203,40 +203,51 @@ function MobileAttendanceCard({
         animationDelay: `${index * 45}ms`,
       }}
     >
-      <button
-        type="button"
-        className="flex w-full items-center gap-3 text-left"
-        onClick={() => setIsOpen((current) => !current)}
-        aria-expanded={isOpen}
-      >
-        <EmployeeProfileAvatar item={item} />
+      <div className="flex w-full items-center gap-3 text-left">
+        <Link href={`/admin/daftar-karyawan/${item.id}`} className="shrink-0">
+          <EmployeeProfileAvatar item={item} />
+        </Link>
 
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-black text-slate-950">
+        <Link href={`/admin/daftar-karyawan/${item.id}`} className="min-w-0 flex-1">
+          <p className="truncate text-base font-black text-slate-950 hover:text-[#123c8c]">
             {item.name}
           </p>
 
           <p className="mt-1 truncate text-xs font-bold text-slate-500">
             {employeeMeta}
           </p>
-        </div>
+        </Link>
 
-        <span
-          className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-black ${getStatusClass(
+        <Link
+          href={
+            item.attendanceId
+              ? `/admin/laporan-kehadiran/${item.attendanceId}`
+              : `/admin/rekap-kehadiran-karyawan/${item.id}`
+          }
+          className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-black transition hover:scale-105 hover:opacity-90 active:scale-95 ${getStatusClass(
             item,
           )}`}
+          title={`Lihat detail log kehadiran ${item.name}`}
         >
           {getStatusLabel(item)}
-        </span>
+        </Link>
 
-        <ChevronDown
-          size={22}
-          strokeWidth={3}
-          className={`shrink-0 text-[#123c8c] transition duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
+        <button
+          type="button"
+          onClick={() => setIsOpen((current) => !current)}
+          aria-expanded={isOpen}
+          aria-label="Buka detail card"
+          className="shrink-0 p-1"
+        >
+          <ChevronDown
+            size={22}
+            strokeWidth={3}
+            className={`text-[#123c8c] transition duration-200 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+      </div>
 
       {isOpen ? (
         <div className="mt-4 grid grid-cols-2 gap-3 rounded-2xl bg-[#f6f8ff] p-4">
@@ -274,6 +285,19 @@ function MobileAttendanceCard({
             <p className="mt-1 text-sm font-black text-slate-800">
               {getStatusLabel(item)}
             </p>
+          </div>
+
+          <div className="col-span-2 mt-1 border-t border-blue-100 pt-2">
+            <Link
+              href={
+                item.attendanceId
+                  ? `/admin/laporan-kehadiran/${item.attendanceId}`
+                  : `/admin/rekap-kehadiran-karyawan/${item.id}`
+              }
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#123c8c] px-3 py-2 text-xs font-black text-white shadow-sm transition hover:bg-[#0e2f70] active:scale-95"
+            >
+              Lihat Detail Kehadiran
+            </Link>
           </div>
         </div>
       ) : null}
@@ -522,24 +546,32 @@ export default function AdminDashboardPage() {
                       <MobileAttendanceCard item={item} index={index} />
                     </div>
 
-                    <Link
-                      href={`/admin/daftar-karyawan/${item.id}`}
-                      className="dashboard-row-enter hidden cursor-pointer px-5 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#123c8c] focus-visible:ring-offset-2 md:grid md:grid-cols-[0.55fr_1.5fr_0.8fr_0.8fr_0.8fr_0.8fr] md:items-center"
+                    <div
+                      className="dashboard-row-enter hidden px-5 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] md:grid md:grid-cols-[0.55fr_1.5fr_0.8fr_0.8fr_0.8fr_0.8fr] md:items-center"
                       style={{
                         animationDelay: `${index * 45}ms`,
                       }}
-                      aria-label={`Buka detail karyawan ${item.name}`}
                     >
-                      <EmployeeProfileAvatar item={item} />
+                      <Link
+                        href={`/admin/daftar-karyawan/${item.id}`}
+                        className="flex items-center"
+                      >
+                        <EmployeeProfileAvatar item={item} />
+                      </Link>
 
                       <div className="min-w-0">
-                        <p className="truncate font-bold text-slate-950">
-                          {item.name}
-                        </p>
+                        <Link
+                          href={`/admin/daftar-karyawan/${item.id}`}
+                          className="group inline-block max-w-full"
+                        >
+                          <p className="truncate font-bold text-slate-950 group-hover:text-[#123c8c]">
+                            {item.name}
+                          </p>
 
-                        <p className="mt-1 truncate text-xs font-semibold text-slate-400">
-                          {getEmployeeSubtitle(item)}
-                        </p>
+                          <p className="mt-1 truncate text-xs font-semibold text-slate-400">
+                            {getEmployeeSubtitle(item)}
+                          </p>
+                        </Link>
                       </div>
 
                       <p className="text-slate-500">
@@ -557,14 +589,22 @@ export default function AdminDashboardPage() {
                         )}
                       </p>
 
-                      <span
-                        className={`w-fit rounded-full px-3 py-1 text-xs font-black ${getStatusClass(
-                          item,
-                        )}`}
-                      >
-                        {getStatusLabel(item)}
-                      </span>
-                    </Link>
+                      <div className="flex items-center">
+                        <Link
+                          href={
+                            item.attendanceId
+                              ? `/admin/laporan-kehadiran/${item.attendanceId}`
+                              : `/admin/rekap-kehadiran-karyawan/${item.id}`
+                          }
+                          className={`w-fit rounded-full px-3 py-1 text-xs font-black transition hover:scale-105 hover:opacity-90 hover:shadow-sm active:scale-95 ${getStatusClass(
+                            item,
+                          )}`}
+                          title={`Lihat detail log kehadiran ${item.name}`}
+                        >
+                          {getStatusLabel(item)}
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 ))
               ) : (

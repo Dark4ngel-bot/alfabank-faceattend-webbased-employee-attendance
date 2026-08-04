@@ -47,6 +47,19 @@ type DailyAttendanceRecord = {
   category: DailyAttendanceCategory;
 };
 
+type AttendanceLogItem = {
+  id: string;
+  date: string;
+  checkInTime: string | null;
+  checkOutTime: string | null;
+  lateMinutes: number;
+  workMinutes: number;
+  status: string | null;
+  checkInStatus: string | null;
+  workMode: string | null;
+  checkOutWorkMode: string | null;
+};
+
 type EmployeeRecap = {
   id: string;
   name: string;
@@ -60,6 +73,7 @@ type EmployeeRecap = {
   shiftName?: string | null;
   summary: EmployeeAttendanceSummary;
   dailyRecords?: DailyAttendanceRecord[];
+  logs?: AttendanceLogItem[];
 };
 
 type EmployeeAttendanceRecapResponse = {
@@ -435,8 +449,9 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
   }, [employee]);
 
   const backHref = `/admin/rekap-kehadiran-karyawan?startDate=${startDate}&endDate=${endDate}`;
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
-  const handleDownloadExcel = () => {
+  const handleDownloadExcelSummary = () => {
     if (!employee) return;
 
     const rows = [
@@ -495,6 +510,130 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+    setIsExportModalOpen(false);
+  };
+
+  const handleDownloadExcelDetailList = () => {
+    if (!employee) return;
+
+    const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const logsMap = new Map((employee.logs || []).map((log) => [log.date, log]));
+
+    const datesInRange: string[] = [];
+    if (startDate && endDate) {
+      const cur = new Date(`${startDate}T00:00:00`);
+      const end = new Date(`${endDate}T00:00:00`);
+      while (cur <= end) {
+        datesInRange.push(cur.toISOString().slice(0, 10));
+        cur.setDate(cur.getDate() + 1);
+      }
+    } else {
+      (employee.logs || []).forEach((log) => datesInRange.push(log.date));
+    }
+
+    const tableRows = datesInRange
+      .map((dateStr) => {
+        const dateObj = new Date(`${dateStr}T00:00:00`);
+        const dayName = dayNames[dateObj.getDay()] || "-";
+        const log = logsMap.get(dateStr);
+
+        const checkIn = log?.checkInTime
+          ? new Date(log.checkInTime).toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })
+          : "-";
+
+        const checkOut = log?.checkOutTime
+          ? new Date(log.checkOutTime).toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })
+          : "-";
+
+        const workMode = log?.workMode
+          ? log.workMode.toUpperCase()
+          : log?.checkInTime
+          ? "OFFICE"
+          : "-";
+
+        let statusText = "Tidak Hadir";
+        if (log?.checkInTime) {
+          if (log.lateMinutes > 0) {
+            statusText = `Terlambat (${log.lateMinutes} mnt)`;
+          } else {
+            statusText = "Hadir Tepat Waktu";
+          }
+        }
+
+        return `<tr>
+          <td>${escapeExcelCell(dateStr)}</td>
+          <td>${escapeExcelCell(dayName)}</td>
+          <td>${escapeExcelCell(employee.name)}</td>
+          <td>${escapeExcelCell(employee.employeeCode || "-")}</td>
+          <td>${escapeExcelCell(employee.shiftName || "-")}</td>
+          <td>${escapeExcelCell(checkIn)}</td>
+          <td>${escapeExcelCell(checkOut)}</td>
+          <td>${escapeExcelCell(log?.lateMinutes || 0)}</td>
+          <td>${escapeExcelCell(formatWorkDuration(log?.workMinutes || 0))}</td>
+          <td>${escapeExcelCell(workMode)}</td>
+          <td>${escapeExcelCell(statusText)}</td>
+        </tr>`;
+      })
+      .join("");
+
+    const html = `<!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <style>
+            table { border-collapse: collapse; font-family: Arial, sans-serif; width: 100%; }
+            th, td { border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 13px; }
+            th { background: #123c8c; color: #ffffff; text-align: left; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f8fbff; }
+          </style>
+        </head>
+        <body>
+          <h3>Laporan List Kehadiran Harian - ${escapeExcelCell(employee.name)}</h3>
+          <p>Periode: ${escapeExcelCell(formatDateRange(startDate, endDate))}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Hari</th>
+                <th>Nama Karyawan</th>
+                <th>NIK/Kode</th>
+                <th>Shift</th>
+                <th>Jam Masuk</th>
+                <th>Jam Pulang</th>
+                <th>Terlambat (Menit)</th>
+                <th>Durasi Kerja</th>
+                <th>Mode Absen (WFH/Office)</th>
+                <th>Status Kehadiran</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+        </body>
+      </html>`;
+
+    const blob = new Blob([html], {
+      type: "application/vnd.ms-excel;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `list-kehadiran-${employee.name.toLowerCase().replace(/\s+/g, "-")}-${startDate}-${endDate}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setIsExportModalOpen(false);
   };
 
   const attendanceItems = [
@@ -570,7 +709,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
 
             <button
               type="button"
-              onClick={handleDownloadExcel}
+              onClick={() => setIsExportModalOpen(true)}
               disabled={isLoading || !employee}
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-950/20 transition hover:bg-[#0f3274] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
             >
@@ -578,6 +717,63 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
               Download Excel
             </button>
           </div>
+
+          {isExportModalOpen ? (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+              <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                <h3 className="text-xl font-black text-slate-900">
+                  Pilihan Mode Export Excel
+                </h3>
+                <p className="mt-1 text-xs font-semibold text-slate-500">
+                  Pilih format laporan Excel yang ingin diunduh untuk {employee?.name}:
+                </p>
+
+                <div className="mt-6 space-y-3">
+                  <button
+                    type="button"
+                    onClick={handleDownloadExcelSummary}
+                    className="flex w-full items-center justify-between rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 text-left transition hover:border-[#123c8c] hover:bg-blue-50/50"
+                  >
+                    <div>
+                      <p className="text-sm font-black text-[#123c8c]">
+                        1. Mode Rekap Total (Summary)
+                      </p>
+                      <p className="mt-0.5 text-xs font-medium text-slate-500">
+                        Ringkasan total hari kerja, total hadir, terlambat, WFH & total jam kerja.
+                      </p>
+                    </div>
+                    <Download size={18} className="shrink-0 text-[#123c8c]" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDownloadExcelDetailList}
+                    className="flex w-full items-center justify-between rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 text-left transition hover:border-[#123c8c] hover:bg-blue-50/50"
+                  >
+                    <div>
+                      <p className="text-sm font-black text-[#123c8c]">
+                        2. Mode List Kehadiran (Detail Harian)
+                      </p>
+                      <p className="mt-0.5 text-xs font-medium text-slate-500">
+                        Rincian log absen per baris tanggal (Jam Masuk, Jam Pulang, WFH & Keterangan).
+                      </p>
+                    </div>
+                    <Download size={18} className="shrink-0 text-[#123c8c]" />
+                  </button>
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsExportModalOpen(false)}
+                    className="rounded-xl bg-slate-100 px-4 py-2 text-xs font-black text-slate-600 transition hover:bg-slate-200"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           <div className="recap-detail-enter overflow-hidden rounded-[2.25rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
