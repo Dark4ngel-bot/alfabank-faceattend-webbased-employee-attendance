@@ -170,6 +170,8 @@ export default function LeaveRequestPage() {
   const [leaveType, setLeaveType] = useState("annual");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [startTimeOvertime, setStartTimeOvertime] = useState("17:00");
+  const [endTimeOvertime, setEndTimeOvertime] = useState("20:00");
   const [reason, setReason] = useState("");
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -189,6 +191,29 @@ export default function LeaveRequestPage() {
   const totalDays = useMemo(() => {
     return countDays(startDate, endDate);
   }, [startDate, endDate]);
+
+  const overtimeDurationMinutes = useMemo(() => {
+    if (leaveType !== "overtime") return 0;
+    if (!startTimeOvertime || !endTimeOvertime) return 0;
+
+    const [startH, startM] = startTimeOvertime.split(":").map(Number);
+    const [endH, endM] = endTimeOvertime.split(":").map(Number);
+
+    const startTotal = startH * 60 + startM;
+    const endTotal = endH * 60 + endM;
+
+    return endTotal - startTotal;
+  }, [leaveType, startTimeOvertime, endTimeOvertime]);
+
+  const overtimeDurationText = useMemo(() => {
+    if (overtimeDurationMinutes <= 0) return "0 jam";
+    const h = Math.floor(overtimeDurationMinutes / 60);
+    const m = overtimeDurationMinutes % 60;
+
+    if (h > 0 && m > 0) return `${h} jam ${m} menit`;
+    if (h > 0) return `${h} jam`;
+    return `${m} menit`;
+  }, [overtimeDurationMinutes]);
 
   async function getLeaveRequests() {
     try {
@@ -235,32 +260,52 @@ export default function LeaveRequestPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!leaveType || !startDate || !endDate || !reason.trim()) {
-      setPageAlert({
-        type: "warning",
-        title: "Data belum lengkap",
-        message:
-          "Jenis pengajuan, tanggal mulai, tanggal selesai, dan alasan wajib diisi.",
-      });
-      return;
-    }
+    if (leaveType === "overtime") {
+      if (!startDate || !reason.trim()) {
+        setPageAlert({
+          type: "warning",
+          title: "Data belum lengkap",
+          message: "Tanggal lembur, jam start-selesai, dan deskripsi pekerjaan lembur wajib diisi.",
+        });
+        return;
+      }
 
-    if (startDate < todayDate) {
-      setPageAlert({
-        type: "warning",
-        title: "Tanggal mulai tidak valid",
-        message: "Tanggal mulai tidak boleh kurang dari tanggal hari ini.",
-      });
-      return;
-    }
+      if (overtimeDurationMinutes < 120) {
+        setPageAlert({
+          type: "warning",
+          title: "Durasi lembur tidak memenuhi syarat",
+          message: "Pengajuan lembur terhitung dan hanya diizinkan jika durasi 2 jam atau lebih (≥ 120 menit).",
+        });
+        return;
+      }
+    } else {
+      if (!leaveType || !startDate || !endDate || !reason.trim()) {
+        setPageAlert({
+          type: "warning",
+          title: "Data belum lengkap",
+          message:
+            "Jenis pengajuan, tanggal mulai, tanggal selesai, dan alasan wajib diisi.",
+        });
+        return;
+      }
 
-    if (totalDays <= 0) {
-      setPageAlert({
-        type: "warning",
-        title: "Tanggal tidak valid",
-        message: "Tanggal selesai tidak boleh lebih awal dari tanggal mulai.",
-      });
-      return;
+      if (startDate < todayDate) {
+        setPageAlert({
+          type: "warning",
+          title: "Tanggal mulai tidak valid",
+          message: "Tanggal mulai tidak boleh kurang dari tanggal hari ini.",
+        });
+        return;
+      }
+
+      if (totalDays <= 0) {
+        setPageAlert({
+          type: "warning",
+          title: "Tanggal tidak valid",
+          message: "Tanggal selesai tidak boleh lebih awal dari tanggal mulai.",
+        });
+        return;
+      }
     }
 
     try {
@@ -268,13 +313,20 @@ export default function LeaveRequestPage() {
 
       let response: Response;
 
+      const effectiveEndDate = leaveType === "overtime" ? startDate : endDate;
+      const finalReason =
+        leaveType === "overtime"
+          ? `[Lembur: ${startTimeOvertime} - ${endTimeOvertime} (${overtimeDurationText})] ${reason.trim()}`
+          : reason.trim();
+
       if (selectedFile) {
         const formData = new FormData();
         formData.append("leaveType", leaveType);
         formData.append("startDate", startDate);
-        formData.append("endDate", endDate);
-        formData.append("reason", reason.trim());
+        formData.append("endDate", effectiveEndDate);
+        formData.append("reason", finalReason);
         formData.append("document", selectedFile);
+        formData.append("attachment", selectedFile);
 
         response = await fetch("/api/leave-requests", {
           method: "POST",
@@ -289,8 +341,8 @@ export default function LeaveRequestPage() {
           body: JSON.stringify({
             leaveType,
             startDate,
-            endDate,
-            reason: reason.trim(),
+            endDate: effectiveEndDate,
+            reason: finalReason,
           }),
         });
       }
@@ -302,7 +354,7 @@ export default function LeaveRequestPage() {
           type: "error",
           title: "Gagal mengirim pengajuan",
           message:
-            data.message || data.error || "Gagal mengirim pengajuan cuti.",
+            data.message || data.error || "Gagal mengirim pengajuan.",
         });
         return;
       }
@@ -328,7 +380,7 @@ export default function LeaveRequestPage() {
       setPageAlert({
         type: "error",
         title: "Terjadi kesalahan",
-        message: "Gagal mengirim pengajuan cuti.",
+        message: "Gagal mengirim pengajuan.",
       });
     } finally {
       setIsSubmitting(false);
@@ -341,7 +393,7 @@ export default function LeaveRequestPage() {
 
   return (
     <MobileShell variant="employee">
-      <AppHeader title="Pengajuan Cuti" rightLabel="Cuti" />
+      <AppHeader title="Pengajuan Cuti & Lembur" rightLabel="Cuti" />
 
       <section className="mx-auto grid max-w-7xl items-start gap-6 px-5 py-6 pb-28 md:px-10 lg:grid-cols-[0.85fr_1.15fr] lg:px-16">
         <form
@@ -357,7 +409,7 @@ export default function LeaveRequestPage() {
 
             <div>
               <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
-                Form Cuti
+                Form Cuti & Lembur
               </p>
 
               <h2 className="mt-1 text-2xl font-black text-slate-950">
@@ -413,59 +465,122 @@ export default function LeaveRequestPage() {
                 suppressHydrationWarning
                 value={leaveType}
                 onChange={(event) => setLeaveType(event.target.value)}
-                className="mt-2 min-h-[52px] w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px- py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 min-h-[52px] w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
               >
                 <option value="annual">Cuti Tahunan</option>
                 <option value="permission">Izin</option>
                 <option value="sick">Sakit</option>
+                <option value="overtime">Lembur</option>
                 <option value="other">Lainnya</option>
               </select>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-black text-slate-700">
-                  Tanggal Mulai
-                </label>
+            {leaveType === "overtime" ? (
+              <>
+                <div>
+                  <label className="text-sm font-black text-slate-700">
+                    Tanggal Lembur
+                  </label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    min={todayDate}
+                    onChange={(event) => {
+                      setStartDate(event.target.value);
+                      setEndDate(event.target.value);
+                    }}
+                    className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
 
-                <input
-                  type="date"
-                  value={startDate}
-                  min={todayDate}
-                  onChange={(event) => {
-                    const nextStartDate = event.target.value;
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-sm font-black text-slate-700">
+                      Jam Start Lembur
+                    </label>
+                    <input
+                      type="time"
+                      value={startTimeOvertime}
+                      onChange={(e) => setStartTimeOvertime(e.target.value)}
+                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
 
-                    setStartDate(nextStartDate);
+                  <div>
+                    <label className="text-sm font-black text-slate-700">
+                      Jam Selesai Lembur
+                    </label>
+                    <input
+                      type="time"
+                      value={endTimeOvertime}
+                      onChange={(e) => setEndTimeOvertime(e.target.value)}
+                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
 
-                    if (endDate && nextStartDate > endDate) {
-                      setEndDate(nextStartDate);
-                    }
-                  }}
-                  className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-1 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                />
-              </div>
+                <div className={`rounded-2xl border p-4 ${overtimeDurationMinutes >= 120 ? "border-emerald-100 bg-emerald-50 text-emerald-800" : "border-amber-100 bg-amber-50 text-amber-800"}`}>
+                  <p className="text-xs font-black uppercase tracking-wider">Total Durasi Lembur</p>
+                  <p className="mt-1 text-2xl font-black">{overtimeDurationText}</p>
+                  {overtimeDurationMinutes < 120 ? (
+                    <p className="mt-1 text-xs font-bold text-amber-700">
+                      ⚠️ Lembur minimal 2 jam (120 menit) untuk dapat diajukan.
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-xs font-bold text-emerald-700">
+                      ✓ Durasi memenuhi syarat lembur (≥ 2 jam).
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-sm font-black text-slate-700">
+                      Tanggal Mulai
+                    </label>
 
-              <div>
-                <label className="text-sm font-black text-slate-700">
-                  Tanggal Selesai
-                </label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      min={todayDate}
+                      onChange={(event) => {
+                        const nextStartDate = event.target.value;
 
-                <input
-                  type="date"
-                  value={endDate}
-                  min={startDate || todayDate}
-                  onChange={(event) => setEndDate(event.target.value)}
-                  className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-1 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                />
-              </div>
-            </div>
+                        setStartDate(nextStartDate);
 
-            <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4">
-              <p className="text-sm font-black text-[#123c8c]">Total Hari</p>
-              <p className="mt-1 text-2xl font-black text-slate-950">
-                {totalDays} hari
-              </p>
-            </div>
+                        if (endDate && nextStartDate > endDate) {
+                          setEndDate(nextStartDate);
+                        }
+                      }}
+                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-1 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-black text-slate-700">
+                      Tanggal Selesai
+                    </label>
+
+                    <input
+                      type="date"
+                      value={endDate}
+                      min={startDate || todayDate}
+                      onChange={(event) => setEndDate(event.target.value)}
+                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-1 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4">
+                  <p className="text-sm font-black text-[#123c8c]">Total Hari</p>
+                  <p className="mt-1 text-2xl font-black text-slate-950">
+                    {totalDays} hari
+                  </p>
+                </div>
+              </>
+            )}
 
             <div>
               <label className="text-sm font-black text-slate-700">
