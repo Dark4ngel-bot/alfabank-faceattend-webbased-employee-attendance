@@ -29,8 +29,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Pengguna tidak ditemukan." }, { status: 404 });
     }
 
-    const userShiftName = String(user.shift?.name || "").toUpperCase();
-    const isEligible = userShiftName.includes("PAGI") || userShiftName.includes("SIANG");
+    const currentShiftName = user.shift?.name || "Shift Utama";
 
     const sentRequests = await prisma.shiftSwapRequest.findMany({
       where: { requester_id: user.id },
@@ -62,10 +61,15 @@ export async function GET(req: NextRequest) {
       orderBy: { created_at: "desc" },
     });
 
+    const pendingIncomingCount = incomingRequests.filter(
+      (req) => req.status === "pending",
+    ).length;
+
     return NextResponse.json({
       success: true,
-      isEligible,
-      currentShiftName: user.shift?.name || "Tanpa Shift",
+      isEligible: true,
+      currentShiftName,
+      pendingIncomingCount,
       sentRequests: sentRequests.map((item) => ({
         id: item.id,
         targetUser: {
@@ -123,16 +127,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Pengguna tidak ditemukan." }, { status: 404 });
     }
 
-    const userShiftName = String(user.shift?.name || "").toUpperCase();
-    const isShiftPagi = userShiftName.includes("PAGI");
-    const isShiftSiang = userShiftName.includes("SIANG");
-
-    if (!isShiftPagi && !isShiftSiang) {
-      return NextResponse.json(
-        { error: "Fitur tukar shift hanya dapat digunakan oleh karyawan Shift Pagi dan Shift Siang." },
-        { status: 403 },
-      );
-    }
+    const requesterShiftName = user.shift?.name || "Shift Utama";
 
     const body = await req.json();
     const targetUserId = String(body.targetUserId || "").trim();
@@ -142,6 +137,13 @@ export async function POST(req: NextRequest) {
     if (!targetUserId || !swapDateStr) {
       return NextResponse.json(
         { error: "Rekan kerja tujuan dan tanggal tukar shift wajib diisi." },
+        { status: 400 },
+      );
+    }
+
+    if (targetUserId === user.id) {
+      return NextResponse.json(
+        { error: "Kamu tidak dapat melakukan tukar shift dengan diri sendiri." },
         { status: 400 },
       );
     }
@@ -162,22 +164,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const targetShiftName = String(targetUser.shift?.name || "").toUpperCase();
-    const isTargetOpposite = isShiftPagi
-      ? targetShiftName.includes("SIANG")
-      : targetShiftName.includes("PAGI");
-
-    if (!isTargetOpposite) {
-      return NextResponse.json(
-        {
-          error: isShiftPagi
-            ? "Tukar shift hanya bisa dilakukan dengan karyawan Shift Siang."
-            : "Tukar shift hanya bisa dilakukan dengan karyawan Shift Pagi.",
-        },
-        { status: 400 },
-      );
-    }
-
+    const targetShiftName = targetUser.shift?.name || "Shift Utama";
     const swapDate = toIsoDateOnly(swapDateStr);
 
     const existingPending = await prisma.shiftSwapRequest.findFirst({
@@ -201,8 +188,8 @@ export async function POST(req: NextRequest) {
         requester_id: user.id,
         target_user_id: targetUserId,
         swap_date: swapDate,
-        requester_shift_name: isShiftPagi ? "Shift Pagi" : "Shift Siang",
-        target_shift_name: isShiftPagi ? "Shift Siang" : "Shift Pagi",
+        requester_shift_name: requesterShiftName,
+        target_shift_name: targetShiftName,
         reason: reason || null,
         status: "pending",
       },

@@ -18,30 +18,13 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const userShiftName = String(currentUser?.shift?.name || "").toUpperCase();
-
-    const isShiftPagi = userShiftName.includes("PAGI");
-    const isShiftSiang = userShiftName.includes("SIANG");
-
-    if (!isShiftPagi && !isShiftSiang) {
-      return NextResponse.json({
-        success: true,
-        oppositeShiftName: "",
-        colleagues: [],
-      });
-    }
-
-    const oppositeSearch = isShiftPagi ? "SIANG" : "PAGI";
-    const oppositeShiftName = isShiftPagi ? "Shift Siang" : "Shift Pagi";
+    const userShiftName = currentUser?.shift?.name || "Shift Utama";
 
     const colleagues = await prisma.user.findMany({
       where: {
         id: { not: authUser.id },
         role: { in: ["employee", "EMPLOYEE"] },
         status: { in: ["active", "ACTIVE"] },
-        shift: {
-          name: { contains: oppositeSearch },
-        },
       },
       select: {
         id: true,
@@ -62,14 +45,13 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      currentShiftName: isShiftPagi ? "Shift Pagi" : "Shift Siang",
-      oppositeShiftName,
+      currentShiftName: userShiftName,
       colleagues: colleagues.map((col) => ({
         id: col.id,
         name: col.name,
         employeeCode: col.employee_code,
         profilePhoto: col.profile_photo,
-        shiftName: col.shift?.name || oppositeShiftName,
+        shiftName: col.shift?.name || "Shift Utama",
       })),
     });
   } catch (error) {
