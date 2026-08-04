@@ -417,10 +417,10 @@ function getShiftEndTime(shiftName?: string | null) {
 function getShiftCheckInOpenTime(shiftName?: string | null) {
   const name = String(shiftName || "").toUpperCase();
 
-  if (name.includes("SIANG")) return "12:00";
-  if (name.includes("PAGI")) return "07:00";
+  if (name.includes("SIANG")) return "11:00"; // 2 jam sebelum jam 13:00
+  if (name.includes("PAGI")) return "06:30"; // 1 jam sebelum jam 07:30
 
-  return "07:00"; // Shift Utama & Shift Pagi
+  return "07:00"; // Shift Utama — 1 jam sebelum jam 08:00
 }
 
 function getShiftCheckOutOpenTime(shiftName?: string | null) {
