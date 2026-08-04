@@ -20,8 +20,8 @@ async function main() {
     const updated = await prisma.user.update({
       where: { id: existingCs.id },
       data: {
-        name: "Admin 2 AlfaBank Jogja",
-        email: "admin2@alfabankjogja.com",
+        name: "Admin AlfaBank Jogja",
+        email: "admin@alfabankjogja.com",
         role: "admin",
         password_hash,
       },
@@ -30,8 +30,8 @@ async function main() {
   } else {
     const created = await prisma.user.create({
       data: {
-        name: "Admin 2 AlfaBank Jogja",
-        email: "admin2@alfabankjogja.com",
+        name: "Admin AlfaBank Jogja",
+        email: "admin@alfabankjogja.com",
         role: "admin",
         status: "active",
         employee_code: "CR-0021",
