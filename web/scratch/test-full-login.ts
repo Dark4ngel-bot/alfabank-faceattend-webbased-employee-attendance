@@ -3,7 +3,7 @@ import { prisma } from "../src/lib/prisma";
 
 async function testFullLogin() {
   const user = await prisma.user.findUnique({
-    where: { email: "owner@alfabankjogja.com" },
+    where: { email: "admin@alfabankjogja.com" },
   });
 
   if (!user) {
@@ -11,8 +11,8 @@ async function testFullLogin() {
     return;
   }
 
-  const valid = await bcrypt.compare("password123", user.password_hash);
-  console.log("Password valid:", valid);
+  const valid = await bcrypt.compare("admin123", user.password_hash);
+  console.log("Password valid for admin@alfabankjogja.com (admin123):", valid);
 }
 
 testFullLogin().finally(() => prisma.$disconnect());
