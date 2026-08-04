@@ -400,7 +400,7 @@ function getShiftStartTime(shiftName?: string | null) {
   const name = String(shiftName || "").toUpperCase();
 
   if (name.includes("SIANG")) return "13:00";
-  if (name.includes("PAGI")) return "08:00";
+  if (name.includes("PAGI")) return "07:30";
 
   return "08:00"; // Shift Utama
 }
@@ -409,7 +409,7 @@ function getShiftEndTime(shiftName?: string | null) {
   const name = String(shiftName || "").toUpperCase();
 
   if (name.includes("SIANG")) return "21:00";
-  if (name.includes("PAGI")) return "16:00";
+  if (name.includes("PAGI")) return "15:30";
 
   return "17:00"; // Shift Utama
 }
@@ -418,6 +418,7 @@ function getShiftCheckInOpenTime(shiftName?: string | null) {
   const name = String(shiftName || "").toUpperCase();
 
   if (name.includes("SIANG")) return "12:00";
+  if (name.includes("PAGI")) return "07:00";
 
   return "07:00"; // Shift Utama & Shift Pagi
 }
@@ -426,7 +427,7 @@ function getShiftCheckOutOpenTime(shiftName?: string | null) {
   const name = String(shiftName || "").toUpperCase();
 
   if (name.includes("SIANG")) return "20:50";
-  if (name.includes("PAGI")) return "15:50";
+  if (name.includes("PAGI")) return "15:20";
 
   return "16:50"; // Shift Utama (10 menit sebelum 17.00)
 }
