@@ -399,20 +399,47 @@ function getAttendanceWorkMode(attendance: TodayAttendance | null): WorkMode {
 function getShiftStartTime(shiftName?: string | null) {
   const name = String(shiftName || "").toUpperCase();
 
-  if (name.includes("SHIFT SIANG") || name.includes("SIANG")) return "13:00";
+  if (name.includes("SIANG")) return "13:00";
+  if (name.includes("PAGI")) return "08:00";
 
-  return DEFAULT_SHIFT_START_TIME;
+  return "08:00"; // Shift Utama
+}
+
+function getShiftEndTime(shiftName?: string | null) {
+  const name = String(shiftName || "").toUpperCase();
+
+  if (name.includes("SIANG")) return "21:00";
+  if (name.includes("PAGI")) return "16:00";
+
+  return "17:00"; // Shift Utama
+}
+
+function getShiftCheckInOpenTime(shiftName?: string | null) {
+  const name = String(shiftName || "").toUpperCase();
+
+  if (name.includes("SIANG")) return "12:00";
+
+  return "07:00"; // Shift Utama & Shift Pagi
+}
+
+function getShiftCheckOutOpenTime(shiftName?: string | null) {
+  const name = String(shiftName || "").toUpperCase();
+
+  if (name.includes("SIANG")) return "20:50";
+  if (name.includes("PAGI")) return "15:50";
+
+  return "16:50"; // Shift Utama (10 menit sebelum 17.00)
 }
 
 function getShiftToleranceMinutes(user: CurrentUser | null) {
   const tolerance =
-    user?.shift?.tolerance_minutes ?? user?.shift?.toleranceMinutes ?? 0;
+    user?.shift?.tolerance_minutes ?? user?.shift?.toleranceMinutes ?? 5;
 
   const parsedTolerance = Number(tolerance);
 
   return Number.isFinite(parsedTolerance) && parsedTolerance >= 0
     ? parsedTolerance
-    : 0;
+    : 5;
 }
 
 function timeToMinutes(time: string) {
@@ -460,9 +487,10 @@ function getLateLimitLabel(user: CurrentUser | null) {
 
 function getEarlyCheckinMinutes(user: CurrentUser | null) {
   const nowMinutes = getJakartaMinutesNow();
-  const startMinutes = timeToMinutes(getShiftStartTime(user?.shift?.name));
+  const openTimeStr = getShiftCheckInOpenTime(user?.shift?.name);
+  const openMinutes = timeToMinutes(openTimeStr);
 
-  return nowMinutes < startMinutes ? startMinutes - nowMinutes : 0;
+  return nowMinutes < openMinutes ? openMinutes - nowMinutes : 0;
 }
 
 function isLateCheckInNow(user: CurrentUser | null) {
@@ -472,19 +500,12 @@ function isLateCheckInNow(user: CurrentUser | null) {
   return nowMinutes > lateLimitMinutes;
 }
 
-function getShiftEndTime(shiftName?: string | null) {
-  const name = String(shiftName || "").toUpperCase();
-
-  if (name.includes("SHIFT SIANG") || name.includes("SIANG")) return "21:00";
-
-  return DEFAULT_SHIFT_END_TIME;
-}
-
 function getEarlyCheckoutMinutes(user: CurrentUser | null) {
   const nowMinutes = getJakartaMinutesNow();
-  const endMinutes = timeToMinutes(getShiftEndTime(user?.shift?.name));
+  const openTimeStr = getShiftCheckOutOpenTime(user?.shift?.name);
+  const openMinutes = timeToMinutes(openTimeStr);
 
-  return nowMinutes < endMinutes ? endMinutes - nowMinutes : 0;
+  return nowMinutes < openMinutes ? openMinutes - nowMinutes : 0;
 }
 
 function formatDurationHoursMinutes(totalMinutes: number) {

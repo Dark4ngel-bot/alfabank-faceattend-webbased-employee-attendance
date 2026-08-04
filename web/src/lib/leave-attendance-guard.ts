@@ -80,9 +80,10 @@ export async function findActiveLeaveForDate(params: {
 }
 
 export function getLeaveTypeLabel(type: string) {
-  if (type === "annual") return "cuti";
+  if (type === "annual" || type === "annual_leave") return "cuti";
   if (type === "permission") return "izin";
   if (type === "sick") return "sakit";
+  if (type === "overtime" || type === "lembur") return "lembur";
 
   return "pengajuan";
 }

@@ -20,7 +20,13 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type LeaveType = "annual" | "permission" | "sick" | "other";
+type LeaveType =
+  | "annual"
+  | "permission"
+  | "sick"
+  | "other"
+  | "overtime"
+  | "lembur";
 type LeaveStatus = "pending" | "approved" | "rejected";
 
 const allowedLeaveTypes: LeaveType[] = [
@@ -28,6 +34,8 @@ const allowedLeaveTypes: LeaveType[] = [
   "permission",
   "sick",
   "other",
+  "overtime",
+  "lembur",
 ];
 
 const allowedStatuses: LeaveStatus[] = ["pending", "approved", "rejected"];
