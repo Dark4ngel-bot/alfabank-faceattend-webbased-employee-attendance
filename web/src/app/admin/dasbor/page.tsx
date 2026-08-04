@@ -203,6 +203,7 @@ function MobileAttendanceCard({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const employeeMeta = getEmployeeMeta(item) || getEmployeeSubtitle(item);
+  const attendanceTargetId = item.attendanceId || item.id;
 
   return (
     <div
@@ -211,78 +212,98 @@ function MobileAttendanceCard({
         animationDelay: `${index * 45}ms`,
       }}
     >
-      <button
-        type="button"
-        className="flex w-full items-center gap-3 text-left"
-        onClick={() => setIsOpen((current) => !current)}
-        aria-expanded={isOpen}
-      >
-        <EmployeeProfileAvatar item={item} />
-
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-black text-slate-950">
-            {item.name}
-          </p>
-
-          <p className="mt-1 truncate text-xs font-bold text-slate-500">
-            {employeeMeta}
-          </p>
-        </div>
-
-        <span
-          className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-black ${getStatusClass(
-            item,
-          )}`}
+      <div className="flex w-full items-center justify-between gap-3">
+        <Link
+          href={`/admin/daftar-karyawan/${item.id}`}
+          className="flex min-w-0 flex-1 items-center gap-3 transition hover:opacity-80"
         >
-          {getStatusLabel(item)}
-        </span>
+          <EmployeeProfileAvatar item={item} />
 
-        <ChevronDown
-          size={22}
-          strokeWidth={3}
-          className={`shrink-0 text-[#123c8c] transition duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-base font-black text-slate-950 hover:text-[#123c8c]">
+              {item.name}
+            </p>
+
+            <p className="mt-1 truncate text-xs font-bold text-slate-500">
+              {employeeMeta}
+            </p>
+          </div>
+        </Link>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href={`/admin/laporan-kehadiran/${attendanceTargetId}`}
+            className={`rounded-full px-3 py-1 text-[11px] font-black transition hover:opacity-80 ${getStatusClass(
+              item,
+            )}`}
+          >
+            {getStatusLabel(item)}
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setIsOpen((current) => !current)}
+            aria-expanded={isOpen}
+            className="p-1"
+          >
+            <ChevronDown
+              size={22}
+              strokeWidth={3}
+              className={`text-[#123c8c] transition duration-200 ${
+                isOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+        </div>
+      </div>
 
       {isOpen ? (
-        <div className="mt-4 grid grid-cols-2 gap-3 rounded-2xl bg-[#f6f8ff] p-4">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wide text-slate-400">
-              Check-in
-            </p>
-            <p className="mt-1 text-sm font-black text-slate-800">
-              {formatTime(item.checkInTime)}
-            </p>
+        <div className="mt-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3 rounded-2xl bg-[#f6f8ff] p-4">
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-wide text-slate-400">
+                Check-in
+              </p>
+              <p className="mt-1 text-sm font-black text-slate-800">
+                {formatTime(item.checkInTime)}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-wide text-slate-400">
+                Check-out
+              </p>
+              <p className="mt-1 text-sm font-black text-slate-800">
+                {formatTime(item.checkOutTime)}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-wide text-slate-400">
+                Durasi
+              </p>
+              <p className="mt-1 text-sm font-black text-slate-800">
+                {formatMinutes(item.workMinutes, Boolean(item.checkOutTime))}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-wide text-slate-400">
+                Status
+              </p>
+              <p className="mt-1 text-sm font-black text-slate-800">
+                {getStatusLabel(item)}
+              </p>
+            </div>
           </div>
 
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wide text-slate-400">
-              Check-out
-            </p>
-            <p className="mt-1 text-sm font-black text-slate-800">
-              {formatTime(item.checkOutTime)}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wide text-slate-400">
-              Durasi
-            </p>
-            <p className="mt-1 text-sm font-black text-slate-800">
-              {formatMinutes(item.workMinutes, Boolean(item.checkOutTime))}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wide text-slate-400">
-              Status
-            </p>
-            <p className="mt-1 text-sm font-black text-slate-800">
-              {getStatusLabel(item)}
-            </p>
-          </div>
+          <Link
+            href={`/admin/laporan-kehadiran/${attendanceTargetId}`}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#123c8c] px-4 py-2.5 text-xs font-black text-white transition hover:bg-[#0f3274]"
+          >
+            <Eye size={15} />
+            Lihat Detail Kehadiran
+          </Link>
         </div>
       ) : null}
     </div>
@@ -513,107 +534,115 @@ export default function AdminDashboardPage() {
                 Mengambil data presensi...
               </div>
             ) : data?.recentAttendance.length ? (
-              data.recentAttendance.map((item, index) => (
-                <div
-                  key={getAttendanceKey(item, index)}
-                  className="dashboard-row-enter group rounded-2xl border border-blue-100 bg-white px-4 py-4 shadow-sm shadow-slate-200/60 transition duration-300 hover:-translate-y-0.5 hover:border-[#123c8c]/30 hover:bg-[#fbfdff] hover:shadow-xl hover:shadow-slate-300/40 md:rounded-[1.6rem] md:px-5 md:py-4"
-                  style={{
-                    animationDelay: `${index * 45}ms`,
-                  }}
-                >
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <div className="flex items-center gap-3 md:w-[260px] md:shrink-0">
-                      <EmployeeProfileAvatar item={item} />
+              data.recentAttendance.map((item, index) => {
+                const attendanceTargetId = item.attendanceId || item.id;
 
-                      <div className="min-w-0 flex-1">
-                        <h4 className="truncate text-base font-black text-slate-950">
-                          {item.name}
-                        </h4>
-
-                        <p className="mt-1 truncate text-xs font-bold text-slate-400">
-                          {item.employeeCode ? `${item.employeeCode} • ` : ""}
-                          {getEmployeeSubtitle(item)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 text-xs font-bold text-slate-500 md:w-[320px] md:shrink-0">
-                      <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
-                        <p className="text-[11px] font-bold text-slate-400">Masuk</p>
-                        <p className="mt-0.5 text-sm font-black text-slate-800">
-                          {formatTime(item.checkInTime)}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
-                        <p className="text-[11px] font-bold text-slate-400">Keluar</p>
-                        <p className="mt-0.5 text-sm font-black text-slate-800">
-                          {formatTime(item.checkOutTime)}
-                        </p>
-                      </div>
-
-                      <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
-                        <p className="text-[11px] font-bold text-slate-400">Durasi</p>
-                        <p className="mt-0.5 text-sm font-black text-slate-800">
-                          {formatMinutes(item.workMinutes, Boolean(item.checkOutTime))}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-1.5 md:flex-1 md:justify-start">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-black ${getStatusClass(
-                          item,
-                        )}`}
-                      >
-                        {getStatusLabel(item)}
-                      </span>
-
-                      {item.checkInTime && !item.checkOutTime ? (
-                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700 ring-1 ring-amber-200">
-                          Belum Checkout
-                        </span>
-                      ) : null}
-
-                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-[#123c8c]">
-                        {item.workMode === "WFA" || item.workMode === "wfa"
-                          ? "WFA"
-                          : "Kantor"}
-                      </span>
-
-                      {item.hasPhoto ? (
-                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
-                          Ada Foto
-                        </span>
-                      ) : null}
-
-                      {item.hasLocation ? (
-                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700">
-                          Ada Lokasi
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <div className="flex shrink-0 items-center justify-end">
+                return (
+                  <div
+                    key={getAttendanceKey(item, index)}
+                    className="dashboard-row-enter group rounded-2xl border border-blue-100 bg-white px-4 py-4 shadow-sm shadow-slate-200/60 transition duration-300 hover:-translate-y-0.5 hover:border-[#123c8c]/30 hover:bg-[#fbfdff] hover:shadow-xl hover:shadow-slate-300/40 md:rounded-[1.6rem] md:px-5 md:py-4"
+                    style={{
+                      animationDelay: `${index * 45}ms`,
+                    }}
+                  >
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                       <Link
                         href={`/admin/daftar-karyawan/${item.id}`}
-                        className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-4 text-xs font-black text-[#123c8c] shadow-sm transition hover:bg-[#eaf1ff] hover:shadow-md"
+                        className="flex items-center gap-3 md:w-[260px] md:shrink-0 transition hover:opacity-80"
                       >
-                        <Eye size={15} />
-                        Lihat detail
+                        <EmployeeProfileAvatar item={item} />
+
+                        <div className="min-w-0 flex-1">
+                          <h4 className="truncate text-base font-black text-slate-950 hover:text-[#123c8c]">
+                            {item.name}
+                          </h4>
+
+                          <p className="mt-1 truncate text-xs font-bold text-slate-400">
+                            {item.employeeCode ? `${item.employeeCode} • ` : ""}
+                            {getEmployeeSubtitle(item)}
+                          </p>
+                        </div>
                       </Link>
+
+                      <div className="grid grid-cols-3 gap-2 text-xs font-bold text-slate-500 md:w-[320px] md:shrink-0">
+                        <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
+                          <p className="text-[11px] font-bold text-slate-400">Masuk</p>
+                          <p className="mt-0.5 text-sm font-black text-slate-800">
+                            {formatTime(item.checkInTime)}
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
+                          <p className="text-[11px] font-bold text-slate-400">Keluar</p>
+                          <p className="mt-0.5 text-sm font-black text-slate-800">
+                            {formatTime(item.checkOutTime)}
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
+                          <p className="text-[11px] font-bold text-slate-400">Durasi</p>
+                          <p className="mt-0.5 text-sm font-black text-slate-800">
+                            {formatMinutes(item.workMinutes, Boolean(item.checkOutTime))}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-1.5 md:flex-1 md:justify-start">
+                        <Link
+                          href={`/admin/laporan-kehadiran/${attendanceTargetId}`}
+                          className={`rounded-full px-3 py-1 text-xs font-black transition hover:opacity-80 ${getStatusClass(
+                            item,
+                          )}`}
+                        >
+                          {getStatusLabel(item)}
+                        </Link>
+
+                        {item.checkInTime && !item.checkOutTime ? (
+                          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700 ring-1 ring-amber-200">
+                            Belum Checkout
+                          </span>
+                        ) : null}
+
+                        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-[#123c8c]">
+                          {item.workMode === "WFA" || item.workMode === "wfa"
+                            ? "WFA"
+                            : "Kantor"}
+                        </span>
+
+                        {item.hasPhoto ? (
+                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
+                            Ada Foto
+                          </span>
+                        ) : null}
+
+                        {item.hasLocation ? (
+                          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700">
+                            Ada Lokasi
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="flex shrink-0 items-center justify-end">
+                        <Link
+                          href={`/admin/laporan-kehadiran/${attendanceTargetId}`}
+                          className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-4 text-xs font-black text-[#123c8c] shadow-sm transition hover:bg-[#eaf1ff] hover:shadow-md"
+                        >
+                          <Eye size={15} />
+                          Lihat Detail Kehadiran
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="dashboard-row-enter rounded-3xl border border-blue-100 bg-white px-5 py-10 text-center text-sm font-bold text-slate-500">
                 Belum ada data check-in atau check-out hari ini.
               </div>
             )}
           </div>
-      </div>
-    </section>
+        </div>
+      </section>
 
       <BottomNav variant="admin" />
     </MobileShell>

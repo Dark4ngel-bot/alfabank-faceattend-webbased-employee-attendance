@@ -327,7 +327,20 @@ export async function GET(req: NextRequest) {
     const employeeDailyRecords = new Map(
       employees.map((employee) => [
         employee.id,
-        new Map<string, { date: string; category: DailyAttendanceCategory }>(),
+        new Map<
+          string,
+          {
+            id?: string;
+            date: string;
+            category: DailyAttendanceCategory;
+            checkInTime?: string | null;
+            checkOutTime?: string | null;
+            lateMinutes?: number;
+            workMinutes?: number;
+            workMode?: string | null;
+            checkOutWorkMode?: string | null;
+          }
+        >(),
       ]),
     );
     const attendances = await prisma.attendance.findMany({
@@ -402,10 +415,32 @@ export async function GET(req: NextRequest) {
               )
             : 0;
         const dateKey = toDateKey(attendance.attendance_date);
+        const computedWorkMinutes =
+          attendance.check_in_time && attendance.check_out_time
+            ? Math.max(
+                Number(attendance.work_minutes || 0),
+                calculateWorkMinutes(
+                  attendance.check_in_time,
+                  attendance.check_out_time,
+                ),
+              )
+            : 0;
 
         employeeDailyRecords.get(attendance.user_id)?.set(dateKey, {
+          id: attendance.id,
           date: dateKey,
           category: attendanceCategory,
+          checkInTime: attendance.check_in_time
+            ? attendance.check_in_time.toISOString()
+            : null,
+          checkOutTime: attendance.check_out_time
+            ? attendance.check_out_time.toISOString()
+            : null,
+          lateMinutes: Number(attendance.late_minutes || 0),
+          workMinutes: computedWorkMinutes,
+          workMode: attendance.work_mode || "OFFICE",
+          checkOutWorkMode:
+            checkOutWorkModeByAttendanceId.get(attendance.id) || null,
         });
       } else {
         summary.menunggu += 1;
@@ -469,6 +504,12 @@ export async function GET(req: NextRequest) {
         dailyRecords.set(dateKey, {
           date: dateKey,
           category,
+          checkInTime: null,
+          checkOutTime: null,
+          lateMinutes: 0,
+          workMinutes: 0,
+          workMode: null,
+          checkOutWorkMode: null,
         });
       }
     }
@@ -493,22 +534,27 @@ export async function GET(req: NextRequest) {
       success: true,
       startDate: toDateKey(startDate),
       endDate: toDateKey(endDate),
-      employees: employees.map((employee) => ({
-        id: employee.id,
-        name: employee.name,
-        employeeCode: employee.employee_code,
-        profile_photo: employee.profile_photo,
-        profile_photo_url: employee.profile_photo,
-        employmentStartDate: employee.employment_start_date,
-        employmentEndDate: employee.employment_end_date,
-        employmentStatus: employee.employment_status,
-        status: employee.status,
-        shiftName: employee.shift?.name || null,
-        summary: employeeSummaries.get(employee.id) || createEmptySummary(),
-        dailyRecords: Array.from(
+      employees: employees.map((employee) => {
+        const records = Array.from(
           employeeDailyRecords.get(employee.id)?.values() || [],
-        ).sort((first, second) => first.date.localeCompare(second.date)),
-      })),
+        ).sort((first, second) => first.date.localeCompare(second.date));
+
+        return {
+          id: employee.id,
+          name: employee.name,
+          employeeCode: employee.employee_code,
+          profile_photo: employee.profile_photo,
+          profile_photo_url: employee.profile_photo,
+          employmentStartDate: employee.employment_start_date,
+          employmentEndDate: employee.employment_end_date,
+          employmentStatus: employee.employment_status,
+          status: employee.status,
+          shiftName: employee.shift?.name || null,
+          summary: employeeSummaries.get(employee.id) || createEmptySummary(),
+          dailyRecords: records,
+          logs: records,
+        };
+      }),
     });
   } catch (error) {
     return NextResponse.json(
