@@ -18,7 +18,21 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const userShiftName = currentUser?.shift?.name || "Shift Utama";
+    const userShiftName = String(currentUser?.shift?.name || "Shift Utama").toUpperCase();
+
+    const isShiftPagi = userShiftName.includes("PAGI");
+    const isShiftSiang = userShiftName.includes("SIANG");
+
+    let allowedKeywords: string[] = [];
+
+    if (isShiftPagi) {
+      allowedKeywords = ["SIANG"];
+    } else if (isShiftSiang) {
+      allowedKeywords = ["PAGI"];
+    } else {
+      // Shift Utama can swap with Shift Pagi or Shift Siang
+      allowedKeywords = ["PAGI", "SIANG"];
+    }
 
     const colleagues = await prisma.user.findMany({
       where: {
@@ -43,10 +57,17 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    const filtered = colleagues.filter((col) => {
+      const shiftName = String(col.shift?.name || "").toUpperCase();
+      if (shiftName.includes("MAGANG")) return false;
+
+      return allowedKeywords.some((kw) => shiftName.includes(kw));
+    });
+
     return NextResponse.json({
       success: true,
-      currentShiftName: userShiftName,
-      colleagues: colleagues.map((col) => ({
+      currentShiftName: currentUser?.shift?.name || "Shift Utama",
+      colleagues: filtered.map((col) => ({
         id: col.id,
         name: col.name,
         employeeCode: col.employee_code,
