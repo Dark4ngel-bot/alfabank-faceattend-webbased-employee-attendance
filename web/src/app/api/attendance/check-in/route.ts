@@ -11,6 +11,7 @@ import {
   ensureWfhQuotaColumn,
   isMissingWfhQuotaColumnError,
 } from "@/lib/wfh-quota-schema";
+import { getEffectiveShiftNameForDate } from "@/lib/shift-swap-schema";
 import {
   findActiveLeaveForDate,
   formatJakartaDate,
@@ -958,12 +959,18 @@ export async function POST(req: NextRequest) {
 
     const shouldValidateLate = !isVisitMode;
 
+    const effectiveShiftName = await getEffectiveShiftNameForDate(
+      userId,
+      today,
+      user.shift?.name,
+    );
+
     const startTime = shouldValidateLate
-      ? getShiftStartTime(user.shift?.name)
+      ? getShiftStartTime(effectiveShiftName)
       : null;
 
     const toleranceMinutes = shouldValidateLate
-      ? user.shift?.tolerance_minutes || 0
+      ? user.shift?.tolerance_minutes || 5
       : 0;
 
     const lateMinutes =

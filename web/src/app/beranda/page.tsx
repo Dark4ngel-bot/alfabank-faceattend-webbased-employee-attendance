@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  ArrowLeftRight,
   Bell,
   PhoneCall,
   FileText,
@@ -91,10 +92,10 @@ const quickMenus = [
     icon: ScanFace,
   },
   {
-    href: "/profil",
-    label: "Profil",
-    description: "Data akun",
-    icon: UserRound,
+    href: "/tukar-shift",
+    label: "Tukar\nShift",
+    description: "Tukar shift",
+    icon: ArrowLeftRight,
   },
   {
     href: "/cuti",
