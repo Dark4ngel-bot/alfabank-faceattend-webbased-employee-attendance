@@ -205,67 +205,63 @@ export default function TukarShiftPage() {
     <MobileShell variant="employee">
       <AppHeader title="Tukar Shift" rightLabel="Tukar Shift" />
 
-      <main className="mx-auto max-w-5xl space-y-6 px-4 py-6 pb-28 md:px-8">
-        {/* ALERT BANNER / NOTIFIKASI PERMINTAAN SHIFT MASUK */}
+      <main className="mx-auto max-w-3xl space-y-5 px-4 py-5 pb-28 sm:px-6">
+        {/* NOTIFIKASI PERMINTAAN SHIFT MASUK */}
         {pendingIncoming.length > 0 ? (
           <div className="space-y-3">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
-              Notifikasi Permintaan Tukar Shift Masuk
-            </p>
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#123c8c]">
+              Permintaan Tukar Shift Masuk
+            </h3>
 
             {pendingIncoming.map((req) => (
               <div
                 key={req.id}
-                className="flex flex-col gap-4 rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50/90 to-white p-4 shadow-lg ring-2 ring-blue-500/20 sm:p-5 md:flex-row md:items-center md:justify-between"
+                className="flex flex-col gap-3 rounded-2xl border border-blue-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="flex items-start gap-3 sm:items-center">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#123c8c] text-white shadow-md sm:h-12 sm:w-12">
-                    <ArrowLeftRight size={22} />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c]">
+                    <ArrowLeftRight size={20} />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-black leading-snug text-slate-900 sm:text-base">
-                      {req.requester?.name} Mengajukan Tukar Shift!
+                  <div>
+                    <p className="text-sm font-extrabold text-slate-900">
+                      {req.requester?.name} ({req.requesterShiftName})
                     </p>
-                    <p className="mt-0.5 text-xs font-bold leading-5 text-slate-600 sm:text-sm">
-                      Tanggal: <span className="font-extrabold text-[#123c8c]">{req.swapDate}</span> • Shift Kamu ({req.targetShiftName}) ↔ Shift {req.requester?.name} ({req.requesterShiftName})
+                    <p className="text-xs font-bold text-slate-500">
+                      Tanggal: <span className="text-[#123c8c]">{req.swapDate}</span>
                     </p>
                     {req.reason ? (
-                      <p className="mt-1 text-xs font-medium italic text-slate-600">
+                      <p className="mt-0.5 text-xs font-medium italic text-slate-600">
                         &quot;{req.reason}&quot;
                       </p>
                     ) : null}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-2.5 border-t border-blue-100/80 pt-3 md:border-t-0 md:pt-0">
-                  {/* BUTTON SETUJU (CENTANG HIJAU) */}
+                <div className="flex items-center gap-2 pt-2 sm:pt-0">
                   <button
                     type="button"
                     disabled={processingId === req.id}
                     onClick={() => handleAction(req.id, "approve")}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 px-4 py-2.5 text-xs font-black text-white shadow-md transition hover:bg-emerald-700 active:scale-95 disabled:opacity-50 sm:flex-none md:px-5"
-                    title="Setujui Tukar Shift"
+                    className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-extrabold text-white transition hover:bg-emerald-700 active:scale-95 disabled:opacity-50 sm:flex-none"
                   >
                     {processingId === req.id ? (
-                      <Loader2 size={16} className="animate-spin" />
+                      <Loader2 size={14} className="animate-spin" />
                     ) : (
-                      <CheckCircle2 size={18} />
+                      <CheckCircle2 size={16} />
                     )}
                     Setuju
                   </button>
 
-                  {/* BUTTON TOLAK (SILANG MERAH) */}
                   <button
                     type="button"
                     disabled={processingId === req.id}
                     onClick={() => handleAction(req.id, "reject")}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-red-500 px-4 py-2.5 text-xs font-black text-white shadow-md transition hover:bg-red-600 active:scale-95 disabled:opacity-50 sm:flex-none md:px-5"
-                    title="Tolak Tukar Shift"
+                    className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-red-500 px-3.5 py-2 text-xs font-extrabold text-white transition hover:bg-red-600 active:scale-95 disabled:opacity-50 sm:flex-none"
                   >
                     {processingId === req.id ? (
-                      <Loader2 size={16} className="animate-spin" />
+                      <Loader2 size={14} className="animate-spin" />
                     ) : (
-                      <XCircle size={18} />
+                      <XCircle size={16} />
                     )}
                     Tolak
                   </button>
@@ -278,7 +274,7 @@ export default function TukarShiftPage() {
         {/* ALERT STATE */}
         {alertState ? (
           <div
-            className={`rounded-2xl border p-4 text-sm font-bold ${
+            className={`rounded-2xl border p-3.5 text-xs font-bold ${
               alertState.type === "success"
                 ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                 : alertState.type === "error"
@@ -293,31 +289,31 @@ export default function TukarShiftPage() {
         {/* FORM BUAT PENGAJUAN TUKAR SHIFT */}
         <form
           onSubmit={handleSubmit}
-          className="rounded-[2rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/60 md:p-6"
+          className="rounded-3xl border border-blue-100 bg-white p-5 shadow-sm sm:p-6"
         >
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
-              <ArrowLeftRight size={24} strokeWidth={2.6} />
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c]">
+              <ArrowLeftRight size={20} strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
-                Tukar Shift Karyawan
-              </p>
-              <h2 className="mt-0.5 text-xl font-black text-slate-950 sm:text-2xl">
-                Ajukan Tukar Shift
+              <h2 className="text-lg font-black text-slate-900">
+                Form Tukar Shift
               </h2>
+              <p className="text-xs font-bold text-slate-400">
+                Shift kamu saat ini: <span className="text-[#123c8c]">{currentShiftName}</span>
+              </p>
             </div>
           </div>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-4 space-y-3.5">
             <div>
-              <label className="text-sm font-black text-slate-700">
-                Pilih Rekan Kerja (Shift Utama / Pagi / Siang)
+              <label className="text-xs font-black uppercase tracking-wider text-slate-600">
+                Pilih Rekan Kerja
               </label>
               <select
                 value={targetUserId}
                 onChange={(e) => setTargetUserId(e.target.value)}
-                className="mt-2 min-h-[52px] w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                className="mt-1.5 min-h-[48px] w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-3.5 py-2.5 text-xs font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-2 focus:ring-blue-100"
               >
                 <option value="">-- Pilih Rekan Kerja --</option>
                 {colleagues.map((col) => (
@@ -329,7 +325,7 @@ export default function TukarShiftPage() {
             </div>
 
             <div>
-              <label className="text-sm font-black text-slate-700">
+              <label className="text-xs font-black uppercase tracking-wider text-slate-600">
                 Tanggal Tukar Shift
               </label>
               <input
@@ -337,125 +333,121 @@ export default function TukarShiftPage() {
                 value={swapDate}
                 min={getTodayString()}
                 onChange={(e) => setSwapDate(e.target.value)}
-                className="mt-2 min-h-[52px] w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                className="mt-1.5 min-h-[48px] w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-3.5 py-2.5 text-xs font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-2 focus:ring-blue-100"
               />
             </div>
 
             <div>
-              <label className="text-sm font-black text-slate-700">
-                Alasan Tukar Shift (Opsional)
+              <label className="text-xs font-black uppercase tracking-wider text-slate-600">
+                Alasan (Opsional)
               </label>
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Contoh: Ada keperluan keluarga mendadak di jam shift saya."
-                className="mt-2 min-h-24 w-full resize-none rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold leading-6 text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                placeholder="Alasan singkat tukar shift..."
+                className="mt-1.5 min-h-20 w-full resize-none rounded-2xl border border-blue-100 bg-[#f8fbff] px-3.5 py-2.5 text-xs font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-2 focus:ring-blue-100"
               />
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] text-sm font-black text-white shadow-lg transition hover:bg-[#0e2f70] active:scale-95 disabled:opacity-50"
+              className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] text-xs font-black text-white shadow-md transition hover:bg-[#0e2f70] active:scale-95 disabled:opacity-50"
             >
               {isSubmitting ? (
-                <Loader2 size={18} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin" />
               ) : (
-                <Send size={18} />
+                <Send size={16} />
               )}
-              Kirim Permintaan Tukar Shift
+              Kirim Pengajuan
             </button>
           </div>
         </form>
 
         {/* RIWAYAT SHIFT SWAP */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-black text-slate-900">
-            Riwayat Pengajuan Tukar Shift
+        <div className="space-y-3">
+          <h3 className="text-sm font-black uppercase tracking-wider text-slate-700">
+            Riwayat Tukar Shift
           </h3>
 
           {isLoading ? (
-            <div className="flex items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white p-8 text-sm font-bold text-slate-500">
-              <Loader2 size={18} className="animate-spin text-[#123c8c]" />
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white p-6 text-xs font-bold text-slate-400">
+              <Loader2 size={16} className="animate-spin text-[#123c8c]" />
               Memuat data...
             </div>
           ) : sentRequests.length === 0 && incomingRequests.length === 0 ? (
-            <div className="rounded-2xl border border-blue-100 bg-white p-8 text-center text-sm font-bold text-slate-500">
-              Belum ada riwayat pengajuan tukar shift.
+            <div className="rounded-2xl border border-blue-100 bg-white p-6 text-center text-xs font-bold text-slate-400">
+              Belum ada riwayat tukar shift.
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {sentRequests.map((req) => (
                 <div
                   key={req.id}
-                  className="flex flex-col gap-2 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between"
+                  className="flex items-center justify-between rounded-2xl border border-blue-100 bg-white p-3.5 shadow-sm"
                 >
                   <div>
-                    <p className="text-xs font-black uppercase tracking-wider text-slate-400">
-                      Pengajuan Keluar
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                      Tukar Keluar
                     </p>
-                    <p className="text-sm font-black text-slate-900">
+                    <p className="text-xs font-black text-slate-900">
                       Ke: {req.targetUser?.name} ({req.targetShiftName})
                     </p>
-                    <p className="text-xs font-bold text-slate-500">
-                      Tanggal Tukar: <span className="text-[#123c8c]">{req.swapDate}</span>
+                    <p className="text-[11px] font-bold text-slate-500">
+                      Tanggal: <span className="text-[#123c8c]">{req.swapDate}</span>
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-black ${
-                        req.status === "approved"
-                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                          : req.status === "rejected"
-                          ? "bg-red-50 text-red-700 ring-1 ring-red-200"
-                          : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
-                      }`}
-                    >
-                      {req.status === "approved"
-                        ? "Disetujui"
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
+                      req.status === "approved"
+                        ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
                         : req.status === "rejected"
-                        ? "Ditolak"
-                        : "Menunggu Konfirmasi"}
-                    </span>
-                  </div>
+                        ? "bg-red-50 text-red-700 ring-1 ring-red-200"
+                        : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                    }`}
+                  >
+                    {req.status === "approved"
+                      ? "Disetujui"
+                      : req.status === "rejected"
+                      ? "Ditolak"
+                      : "Menunggu"}
+                  </span>
                 </div>
               ))}
 
               {incomingRequests.map((req) => (
                 <div
                   key={req.id}
-                  className="flex flex-col gap-2 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between"
+                  className="flex items-center justify-between rounded-2xl border border-blue-100 bg-white p-3.5 shadow-sm"
                 >
                   <div>
-                    <p className="text-xs font-black uppercase tracking-wider text-slate-400">
-                      Pengajuan Masuk
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                      Tukar Masuk
                     </p>
-                    <p className="text-sm font-black text-slate-900">
+                    <p className="text-xs font-black text-slate-900">
                       Dari: {req.requester?.name} ({req.requesterShiftName})
                     </p>
-                    <p className="text-xs font-bold text-slate-500">
-                      Tanggal Tukar: <span className="text-[#123c8c]">{req.swapDate}</span>
+                    <p className="text-[11px] font-bold text-slate-500">
+                      Tanggal: <span className="text-[#123c8c]">{req.swapDate}</span>
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-black ${
-                        req.status === "approved"
-                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                          : req.status === "rejected"
-                          ? "bg-red-50 text-red-700 ring-1 ring-red-200"
-                          : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
-                      }`}
-                    >
-                      {req.status === "approved"
-                        ? "Disetujui"
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
+                      req.status === "approved"
+                        ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
                         : req.status === "rejected"
-                        ? "Ditolak"
-                        : "Menunggu Konfirmasi"}
-                    </span>
-                  </div>
+                        ? "bg-red-50 text-red-700 ring-1 ring-red-200"
+                        : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                    }`}
+                  >
+                    {req.status === "approved"
+                      ? "Disetujui"
+                      : req.status === "rejected"
+                      ? "Ditolak"
+                      : "Menunggu"}
+                  </span>
                 </div>
               ))}
             </div>
