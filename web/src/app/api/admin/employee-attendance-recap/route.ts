@@ -248,10 +248,13 @@ export async function GET(req: NextRequest) {
     );
 
     const employees = await prisma.user.findMany({
-      where: {
-        role: "employee",
-        ...(employeeId ? { id: employeeId } : {}),
-      },
+      where: employeeId
+        ? { id: employeeId }
+        : {
+            role: {
+              in: ["employee", "user", "EMPLOYEE", "USER"],
+            },
+          },
       select: {
         id: true,
         name: true,

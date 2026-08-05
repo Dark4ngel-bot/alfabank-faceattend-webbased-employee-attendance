@@ -985,7 +985,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
       </main>
 
       {isExportModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/25 backdrop-blur-md p-4">
           <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-blue-100 bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center gap-3">

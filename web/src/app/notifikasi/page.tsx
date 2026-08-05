@@ -154,6 +154,11 @@ export default function EmployeeNotificationPage() {
       return;
     }
 
+    if (notification.type === "shift_swap" || notification.id.startsWith("swap-")) {
+      router.push(notification.href);
+      return;
+    }
+
     if (notification.isRead) {
       router.push(notification.href);
       return;
@@ -175,36 +180,32 @@ export default function EmployeeNotificationPage() {
 
       const data = await readJsonResponse(response);
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "Gagal membaca notifikasi.");
+      if (response.ok && data.success) {
+        setNotifications((prev) =>
+          prev.map((item) =>
+            item.id === notification.id
+              ? {
+                ...item,
+                isRead: true,
+                status: "read",
+                statusText: "Dibaca",
+              }
+              : item,
+          ),
+        );
+
+        setStats((prev) => ({
+          ...prev,
+          unread: Math.max(0, prev.unread - 1),
+        }));
+
+        window.dispatchEvent(new Event("notification-count-changed"));
       }
-
-      setNotifications((prev) =>
-        prev.map((item) =>
-          item.id === notification.id
-            ? {
-              ...item,
-              isRead: true,
-              status: "read",
-              statusText: "Dibaca",
-            }
-            : item,
-        ),
-      );
-
-      setStats((prev) => ({
-        ...prev,
-        unread: Math.max(0, prev.unread - 1),
-      }));
-
-      window.dispatchEvent(new Event("notification-count-changed"));
-      router.push(notification.href);
-    } catch (error) {
-      setPageError(
-        error instanceof Error ? error.message : "Gagal membaca notifikasi.",
-      );
+    } catch {
+      // ignore
     } finally {
       setActiveId(null);
+      router.push(notification.href);
     }
   }
 
