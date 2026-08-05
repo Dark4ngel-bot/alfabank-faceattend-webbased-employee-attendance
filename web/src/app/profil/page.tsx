@@ -44,6 +44,7 @@ import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
 import BankLogoBadge from "@/components/BankLogoBadge";
 import { AppBankSelect } from "@/components/AppBankSelect";
+import { getBankOption } from "@/lib/bank-options";
 import {
   IDENTITY_VALIDATION,
   isValidBankAccountNumber,
@@ -1121,7 +1122,8 @@ export function ProfilPageContent({
   const detailSections = useMemo(() => {
     if (!user) return [];
 
-    const bankName = user.bank_name || user.bank_code || "-";
+    const bankOption = getBankOption(user.bank_name || user.bank_code);
+    const bankName = bankOption?.name || user.bank_name || user.bank_code || "-";
 
     return [
       {

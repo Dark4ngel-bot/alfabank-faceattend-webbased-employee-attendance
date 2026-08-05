@@ -551,10 +551,10 @@ export default function AdminAttendanceRankPage() {
                               </div>
 
                               <div className="min-w-0">
-                                <p className="truncate text-sm font-black text-[#123456]">
+                                <p className="text-xs font-black text-[#123456] leading-snug break-words sm:text-sm">
                                   {employee.name}
                                 </p>
-                                <p className="mt-1 truncate text-xs font-bold text-slate-500">
+                                <p className="mt-0.5 text-[11px] font-bold text-slate-500 leading-snug break-words sm:text-xs">
                                   {employee.employeeCode || "Karyawan"}
                                 </p>
                               </div>

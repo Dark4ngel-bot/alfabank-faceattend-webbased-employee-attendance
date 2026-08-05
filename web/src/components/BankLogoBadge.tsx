@@ -18,6 +18,8 @@ export default function BankLogoBadge({
     return <span>-</span>;
   }
 
+  const showText = !compact || accountNumber !== undefined;
+
   return (
     <span className="inline-flex min-w-0 items-center gap-2 align-middle">
       <span
@@ -27,16 +29,20 @@ export default function BankLogoBadge({
       >
         {bank?.shortName || <CreditCard size={15} strokeWidth={2.7} />}
       </span>
-      <span className="min-w-0">
-        {bank && !compact ? (
-          <span className="block text-xs font-bold leading-4 text-slate-400">
-            {bank.name}
-          </span>
-        ) : null}
-        <span className="block break-all leading-6">
-          {accountNumber || "No rekening belum diisi"}
+      {showText ? (
+        <span className="min-w-0">
+          {bank && !compact ? (
+            <span className="block text-xs font-bold leading-4 text-slate-400">
+              {bank.name}
+            </span>
+          ) : null}
+          {accountNumber !== undefined ? (
+            <span className="block break-all leading-6 font-bold text-slate-900">
+              {accountNumber || "No rekening belum diisi"}
+            </span>
+          ) : null}
         </span>
-      </span>
+      ) : null}
     </span>
   );
 }

@@ -666,11 +666,11 @@ export default function AdminAttendanceReportPage() {
                                 <EmployeeProfileAvatar item={item} />
 
                                 <div className="min-w-0 flex-1">
-                                  <h4 className="truncate text-base font-black text-slate-950">
+                                  <h4 className="text-sm font-black text-slate-950 leading-snug break-words sm:text-base">
                                     {item.employeeName}
                                   </h4>
 
-                                  <p className="mt-1 truncate text-xs font-bold text-slate-400">
+                                  <p className="mt-0.5 text-[11px] font-bold text-slate-400 leading-snug break-words sm:text-xs">
                                     {item.employeeCode || item.workModeLabel}
                                   </p>
 

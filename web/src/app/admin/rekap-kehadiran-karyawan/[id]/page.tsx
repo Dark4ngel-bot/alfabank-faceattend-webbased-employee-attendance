@@ -315,34 +315,34 @@ const calendarCategoryStyles: Record<
   { label: string; dot: string; tile: string }
 > = {
   hadir: {
-    label: "Hadir",
+    label: "Hadir Tepat Waktu",
     dot: "bg-emerald-500",
-    tile: "bg-emerald-500 text-white shadow-lg shadow-emerald-200",
+    tile: "bg-emerald-500 text-white shadow-md shadow-emerald-200 font-black",
   },
   terlambat: {
     label: "Terlambat",
-    dot: "bg-orange-500",
-    tile: "bg-orange-500 text-white shadow-lg shadow-orange-200",
+    dot: "bg-amber-500",
+    tile: "bg-amber-500 text-white shadow-md shadow-amber-200 font-black",
   },
   wfh: {
     label: "WFH",
-    dot: "bg-blue-500",
-    tile: "bg-blue-500 text-white shadow-lg shadow-blue-200",
+    dot: "bg-sky-500",
+    tile: "bg-sky-500 text-white shadow-md shadow-sky-200 font-black",
   },
   kunjungan: {
     label: "Kunjungan",
     dot: "bg-teal-500",
-    tile: "bg-teal-500 text-white shadow-lg shadow-teal-200",
+    tile: "bg-teal-500 text-white shadow-md shadow-teal-200 font-black",
   },
   izin_sakit: {
-    label: "Izin/Sakit",
+    label: "Izin / Sakit",
     dot: "bg-yellow-400",
-    tile: "bg-yellow-400 text-slate-900 shadow-lg shadow-yellow-100",
+    tile: "bg-yellow-400 text-slate-950 shadow-md shadow-yellow-100 font-black",
   },
   cuti: {
     label: "Cuti",
-    dot: "bg-violet-500",
-    tile: "bg-violet-500 text-white shadow-lg shadow-violet-200",
+    dot: "bg-purple-500",
+    tile: "bg-purple-500 text-white shadow-md shadow-purple-200 font-black",
   },
 };
 
@@ -691,22 +691,46 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
       className: "border-sky-100 bg-sky-50 text-sky-700",
     },
   ];
+
   const employeePhoto = getEmployeePhoto(employee);
   const dailyRecordByDate = useMemo(() => {
     return new Map(
       (employee?.dailyRecords || []).map((record) => [record.date, record]),
     );
   }, [employee?.dailyRecords]);
+
   const calendarDays = useMemo(
     () => buildCalendarDays(calendarMonth),
     [calendarMonth],
   );
-  const firstMonth = getMonthDate(startDate || getDateKey(new Date()));
-  const lastMonth = getMonthDate(endDate || startDate || getDateKey(new Date()));
-  const canOpenPreviousMonth =
-    getMonthKey(addMonths(calendarMonth, -1)) >= getMonthKey(firstMonth);
-  const canOpenNextMonth =
-    getMonthKey(addMonths(calendarMonth, 1)) <= getMonthKey(lastMonth);
+
+  const handlePrevMonth = () => {
+    const prevMonth = addMonths(calendarMonth, -1);
+    setCalendarMonth(prevMonth);
+
+    const year = prevMonth.getFullYear();
+    const month = prevMonth.getMonth();
+    const firstDayStr = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const lastDayStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
+    setStartDate(firstDayStr);
+    setEndDate(lastDayStr);
+  };
+
+  const handleNextMonth = () => {
+    const nextMonth = addMonths(calendarMonth, 1);
+    setCalendarMonth(nextMonth);
+
+    const year = nextMonth.getFullYear();
+    const month = nextMonth.getMonth();
+    const firstDayStr = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const lastDayStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
+    setStartDate(firstDayStr);
+    setEndDate(lastDayStr);
+  };
 
   return (
     <MobileShell variant="admin" withBottomPadding={false}>
@@ -722,7 +746,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#123c8c] shadow-lg shadow-slate-300/30 ring-1 ring-blue-100 transition hover:bg-[#f8fbff]"
             >
               <ArrowLeft size={17} strokeWidth={2.8} />
-      Kembali ke daftar
+              Kembali ke daftar
             </Link>
 
             <button
@@ -751,15 +775,16 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
             </div>
           ) : (
             <>
+              {/* Employee Summary Card */}
               <div className="recap-detail-enter overflow-hidden rounded-[2.25rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
-                <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-                  <div className="bg-[#123c8c] p-8 text-white md:p-12">
-                    <div className="flex items-center gap-5">
-                      <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-white/15 ring-1 ring-white/20">
+                <div className="grid grid-cols-1 divide-y divide-blue-50 lg:grid-cols-[1.4fr_1fr] lg:divide-x lg:divide-y-0">
+                  <div className="p-8 md:p-12">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100">
                         {employeePhoto ? (
                           <img
                             src={employeePhoto}
-                            alt={employee?.name || "Foto profil karyawan"}
+                            alt={employee.name}
                             className="h-full w-full object-cover"
                           />
                         ) : (
@@ -768,32 +793,23 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                       </div>
 
                       <div>
-                        <p className="text-sm font-black uppercase tracking-[0.16em] text-blue-100">
-                          Rekap karyawan
-                        </p>
-                        <h2 className="mt-2 text-4xl font-black tracking-tight md:text-5xl">
-                          {employee?.name || "-"}
+                        <h2 className="text-2xl font-black text-slate-950 md:text-3xl">
+                          {employee.name}
                         </h2>
+                        <p className="mt-1 text-sm font-bold text-slate-500">
+                          {employee.employeeCode || "Karyawan"} •{" "}
+                          {employee.shiftName || "Shift Normal"}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="mt-8 space-y-3 border-t border-white/15 pt-6 text-sm font-bold text-blue-50">
-                      <div className="flex justify-between">
-                        <span className="text-blue-200">NIK / Kode</span>
-                        <span>{employee?.employeeCode || "-"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-blue-200">Shift</span>
-                        <span>{employee?.shiftName || "-"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-blue-200">Status Kepegawaian</span>
-                        <span>{employee?.employmentStatus || "-"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-blue-200">Masa Kerja</span>
-                        <span>{formatEmploymentPeriod(employee)}</span>
-                      </div>
+                    <div className="mt-6 flex flex-wrap items-center gap-2">
+                      <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-[#123c8c] ring-1 ring-blue-100">
+                        {employee.employmentStatus || "Karyawan Tetap"}
+                      </span>
+                      <span className="inline-flex rounded-full bg-[#f8fbff] border border-blue-100 px-3 py-1 text-xs font-black text-slate-600">
+                        Masa Kerja: {formatEmploymentPeriod(employee)}
+                      </span>
                     </div>
                   </div>
 
@@ -841,6 +857,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                 </div>
               </div>
 
+              {/* Attendance Statistics Grid */}
               <div className="recap-detail-enter rounded-[2.25rem] border border-blue-100 bg-white p-8 shadow-xl shadow-slate-300/30 md:p-12">
                 <h3 className="text-2xl font-black text-slate-950">
                   Ringkasan Kehadiran
@@ -861,6 +878,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                 </div>
               </div>
 
+              {/* Kalender Kehadiran */}
               <div className="recap-detail-enter rounded-[2.25rem] border border-blue-100 bg-white p-8 shadow-xl shadow-slate-300/30 md:p-12">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -875,11 +893,8 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() =>
-                        setCalendarMonth((current) => addMonths(current, -1))
-                      }
-                      disabled={!canOpenPreviousMonth}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-blue-100 bg-white text-[#123c8c] shadow-sm transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-40"
+                      onClick={handlePrevMonth}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-blue-100 bg-white text-[#123c8c] shadow-md shadow-slate-200/60 transition hover:bg-[#f8fbff] active:scale-95"
                       title="Bulan sebelumnya"
                     >
                       <ChevronLeft size={18} strokeWidth={2.8} />
@@ -887,11 +902,8 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
 
                     <button
                       type="button"
-                      onClick={() =>
-                        setCalendarMonth((current) => addMonths(current, 1))
-                      }
-                      disabled={!canOpenNextMonth}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-blue-100 bg-white text-[#123c8c] shadow-sm transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-40"
+                      onClick={handleNextMonth}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-blue-100 bg-white text-[#123c8c] shadow-md shadow-slate-200/60 transition hover:bg-[#f8fbff] active:scale-95"
                       title="Bulan berikutnya"
                     >
                       <ChevronRight size={18} strokeWidth={2.8} />
@@ -935,11 +947,11 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                         <div
                           key={day.dateKey}
                           className={`flex h-11 items-center justify-center rounded-2xl text-xs font-black transition ${
-                            !isSelectedRange
-                              ? "bg-slate-100/70 text-slate-300"
-                              : categoryStyle
-                                ? categoryStyle.tile
-                                : "bg-[#f8fbff] text-slate-700"
+                            categoryStyle
+                              ? categoryStyle.tile
+                              : isSelectedRange
+                                ? "bg-[#f8fbff] text-slate-700 border border-blue-100/60"
+                                : "bg-slate-100/70 text-slate-400 font-semibold"
                           }`}
                           title={
                             categoryStyle
@@ -948,6 +960,19 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                           }
                         >
                           {day.day}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Legend Keterangan Warna Kehadiran */}
+                  <div className="mt-6 flex flex-wrap items-center justify-center gap-3.5 rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 text-xs font-bold">
+                    {calendarLegend.map((cat) => {
+                      const style = calendarCategoryStyles[cat];
+                      return (
+                        <div key={cat} className="flex items-center gap-2">
+                          <span className={`h-3 w-3 rounded-full ${style.dot}`} />
+                          <span className="text-slate-700">{style.label}</span>
                         </div>
                       );
                     })}
