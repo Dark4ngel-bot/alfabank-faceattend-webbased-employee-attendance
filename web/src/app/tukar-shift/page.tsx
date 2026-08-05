@@ -2,16 +2,16 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import {
+  AlertTriangle,
   ArrowLeftRight,
   Calendar,
   CheckCircle2,
   ChevronDown,
-  Clock,
   Loader2,
   MessageSquare,
   Send,
-  Sparkles,
   Users,
+  X,
   XCircle,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
@@ -234,6 +234,85 @@ export default function TukarShiftPage() {
     <MobileShell variant="employee">
       <AppHeader title="Tukar Shift" rightLabel="Tukar Shift" />
 
+      {alertState ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/20 px-5 backdrop-blur-[2px]">
+          <div
+            className={`relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-2xl shadow-slate-900/25 ${
+              alertState.type === "success"
+                ? "ring-1 ring-emerald-100"
+                : alertState.type === "error"
+                  ? "ring-1 ring-red-100"
+                  : "ring-1 ring-amber-100"
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => setAlertState(null)}
+              className="absolute right-5 top-5 z-10 flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-white text-slate-500 shadow-lg shadow-slate-900/10 ring-1 ring-slate-100 transition hover:bg-slate-50 hover:text-slate-800"
+              aria-label="Tutup alert"
+            >
+              <X size={28} strokeWidth={2.8} />
+            </button>
+
+            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-r from-amber-100/80 via-orange-50/70 to-transparent" />
+
+            <div className="relative grid gap-5 p-8 pt-9 sm:grid-cols-[116px_1fr] sm:p-10">
+              <div
+                className={`flex h-28 w-28 items-center justify-center rounded-[1.8rem] ${
+                  alertState.type === "success"
+                    ? "bg-emerald-50 text-emerald-600"
+                    : alertState.type === "error"
+                      ? "bg-orange-50 text-orange-600"
+                      : "bg-amber-50 text-amber-600"
+                }`}
+              >
+                {alertState.type === "success" ? (
+                  <CheckCircle2 size={56} strokeWidth={2.8} />
+                ) : alertState.type === "error" ? (
+                  <XCircle size={56} strokeWidth={2.8} />
+                ) : (
+                  <AlertTriangle size={56} strokeWidth={2.8} />
+                )}
+              </div>
+
+              <div className="min-w-0 pr-16">
+                <span
+                  className={`inline-flex rounded-full bg-white px-7 py-3 text-sm font-black uppercase tracking-[0.32em] shadow-sm ${
+                    alertState.type === "success"
+                      ? "text-emerald-700"
+                      : alertState.type === "error"
+                        ? "text-orange-700"
+                        : "text-amber-700"
+                  }`}
+                >
+                  {alertState.type === "success" ? "Berhasil" : "Perhatian"}
+                </span>
+
+                <h2 className="mt-6 text-3xl font-black leading-tight text-slate-950">
+                  {alertState.type === "success"
+                    ? "Pengajuan berhasil"
+                    : "Tukar shift tidak bisa"}
+                </h2>
+
+                <p className="mt-5 text-lg font-bold leading-8 text-slate-500">
+                  {alertState.message}
+                </p>
+              </div>
+            </div>
+
+            <div className="px-8 pb-8 sm:px-10 sm:pb-10">
+              <button
+                type="button"
+                onClick={() => setAlertState(null)}
+                className="flex min-h-[64px] w-full items-center justify-center rounded-[1.6rem] bg-[#123c8c] px-6 text-xl font-bold text-white shadow-xl shadow-blue-900/20 transition hover:bg-[#0e2f70] active:scale-[0.99]"
+              >
+                Mengerti
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <main className="mx-auto max-w-7xl space-y-6 px-4 pb-28 pt-5 sm:px-6 md:px-10 lg:px-16">
 
         {/* ── INCOMING REQUESTS ALERT ── */}
@@ -312,28 +391,6 @@ export default function TukarShiftPage() {
               </div>
             ))}
           </section>
-        )}
-
-        {/* ── ALERT ── */}
-        {alertState && (
-          <div
-            className={`flex items-start gap-2.5 rounded-2xl border p-3.5 text-xs font-bold ${
-              alertState.type === "success"
-                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                : alertState.type === "error"
-                ? "border-red-200 bg-red-50 text-red-800"
-                : "border-amber-200 bg-amber-50 text-amber-800"
-            }`}
-          >
-            {alertState.type === "success" ? (
-              <CheckCircle2 size={15} className="mt-0.5 shrink-0" />
-            ) : alertState.type === "error" ? (
-              <XCircle size={15} className="mt-0.5 shrink-0" />
-            ) : (
-              <Sparkles size={15} className="mt-0.5 shrink-0" />
-            )}
-            <span>{alertState.message}</span>
-          </div>
         )}
 
         {/* ── GRID LAYOUT: FORM (KIRI) & RIWAYAT (KANAN) ── */}

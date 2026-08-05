@@ -2,15 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
-import { ensureShiftSwapTable } from "@/lib/shift-swap-schema";
+import {
+  ensureShiftSwapTable,
+  formatShiftSwapDate,
+  getShiftWindowForSwapDate,
+  shiftWindowsOverlap,
+  toShiftSwapDate,
+} from "@/lib/shift-swap-schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function toIsoDateOnly(dateStr: string) {
-  const clean = dateStr.split("T")[0].trim();
-  return new Date(`${clean}T00:00:00.000Z`);
-}
 
 export async function GET(req: NextRequest) {
   try {
@@ -78,7 +79,7 @@ export async function GET(req: NextRequest) {
           employeeCode: item.target_user.employee_code,
           profilePhoto: item.target_user.profile_photo,
         },
-        swapDate: item.swap_date.toISOString().slice(0, 10),
+        swapDate: formatShiftSwapDate(item.swap_date),
         requesterShiftName: item.requester_shift_name,
         targetShiftName: item.target_shift_name,
         reason: item.reason,
@@ -93,7 +94,7 @@ export async function GET(req: NextRequest) {
           employeeCode: item.requester.employee_code,
           profilePhoto: item.requester.profile_photo,
         },
-        swapDate: item.swap_date.toISOString().slice(0, 10),
+        swapDate: formatShiftSwapDate(item.swap_date),
         requesterShiftName: item.requester_shift_name,
         targetShiftName: item.target_shift_name,
         reason: item.reason,
@@ -119,7 +120,21 @@ export async function POST(req: NextRequest) {
       where: { id: authUser.id },
       select: {
         id: true,
-        shift: { select: { name: true } },
+        shift: {
+          select: {
+            name: true,
+            start_time: true,
+            end_time: true,
+            work_schedules: {
+              select: {
+                day_of_week: true,
+                is_work_day: true,
+                check_in_time: true,
+                check_out_time: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -153,7 +168,21 @@ export async function POST(req: NextRequest) {
       select: {
         id: true,
         name: true,
-        shift: { select: { name: true } },
+        shift: {
+          select: {
+            name: true,
+            start_time: true,
+            end_time: true,
+            work_schedules: {
+              select: {
+                day_of_week: true,
+                is_work_day: true,
+                check_in_time: true,
+                check_out_time: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -165,7 +194,33 @@ export async function POST(req: NextRequest) {
     }
 
     const targetShiftName = targetUser.shift?.name || "Shift Utama";
-    const swapDate = toIsoDateOnly(swapDateStr);
+    const swapDate = toShiftSwapDate(swapDateStr);
+
+    if (!user.shift || !targetUser.shift) {
+      return NextResponse.json(
+        { error: "Shift karyawan belum lengkap. Lengkapi shift terlebih dahulu sebelum tukar shift." },
+        { status: 400 },
+      );
+    }
+
+    const requesterWindow = getShiftWindowForSwapDate(user.shift, swapDate);
+    const targetWindow = getShiftWindowForSwapDate(targetUser.shift, swapDate);
+
+    if (!requesterWindow || !targetWindow) {
+      return NextResponse.json(
+        { error: "Jadwal kerja pada tanggal tersebut belum lengkap atau bukan hari kerja." },
+        { status: 400 },
+      );
+    }
+
+    if (shiftWindowsOverlap(requesterWindow, targetWindow)) {
+      return NextResponse.json(
+        {
+          error: `${requesterWindow.shiftName} (${requesterWindow.startTime}-${requesterWindow.endTime}) tidak bisa ditukar dengan ${targetWindow.shiftName} (${targetWindow.startTime}-${targetWindow.endTime}) karena jam kerjanya masih saling bertabrakan.`,
+        },
+        { status: 400 },
+      );
+    }
 
     const existingPending = await prisma.shiftSwapRequest.findFirst({
       where: {
