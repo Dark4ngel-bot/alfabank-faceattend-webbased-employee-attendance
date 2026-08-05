@@ -32,7 +32,11 @@ import {
 } from "lucide-react";
 
 import { useSiteLogo } from "@/hooks/useSiteLogo";
-import { getReadAnnouncementIds, isAnnouncementToday } from "@/lib/announcement-read";
+import {
+  getReadAnnouncementIds,
+  getReadNotificationIds,
+  isAnnouncementToday,
+} from "@/lib/announcement-read";
 
 type AppHeaderProps = {
   title: string;
@@ -57,6 +61,13 @@ type NotificationResponse = {
   success?: boolean;
   stats?: NotificationStats;
   message?: string;
+  notifications?: Array<{
+    id: string;
+    rawId?: string;
+    type?: string;
+    isRead?: boolean;
+    status?: string;
+  }>;
 };
 
 type AdminContactNumberResponse = {
@@ -250,11 +261,7 @@ export default function AppHeader({
   const isAdmin = resolvedVariant === "admin";
   const [pendingShiftSwapCount, setPendingShiftSwapCount] = useState(0);
 
-  const notificationHref = isAdmin
-    ? "/admin/notifikasi"
-    : pendingShiftSwapCount > 0
-      ? "/tukar-shift"
-      : "/notifikasi";
+  const notificationHref = isAdmin ? "/admin/notifikasi" : "/notifikasi";
 
   const isNotificationPage = isActivePath(pathname, notificationHref);
   const hasNewNotification = notificationCount > 0;
@@ -285,7 +292,6 @@ export default function AppHeader({
     async function loadNotificationCount() {
       try {
         let count = 0;
-        const readAnnouncementIds = getReadAnnouncementIds();
 
         if (isAdmin) {
           const response = await fetch("/api/admin/notifications", {
@@ -305,33 +311,30 @@ export default function AppHeader({
 
           if (response.ok) {
             const data = (await readJsonResponse(response)) as NotificationResponse;
-            count += getEmployeeNotificationCount(data.stats);
-          }
+            const list = data.notifications || [];
+            const readAnnIds = getReadAnnouncementIds();
+            const readNotifIds = getReadNotificationIds();
 
-          try {
-            const swapRes = await fetch("/api/shift-swaps", { cache: "no-store" });
-            if (swapRes.ok) {
-              const swapData = await swapRes.json();
-              const pCount = Number(swapData.pendingIncomingCount || 0);
-              count += pCount;
-              if (isMounted) setPendingShiftSwapCount(pCount);
-            }
-          } catch {
-            // ignore error
-          }
+            const unreadItems = list.filter((item: any) => {
+              const itemId = item.rawId || item.id;
+              const cleanId = String(itemId).replace("announcement-", "").replace("swap-", "");
 
-          try {
-            const annRes = await fetch("/api/announcements?audience=employee", {
-              cache: "no-store",
+              if (
+                readAnnIds.includes(cleanId) ||
+                readNotifIds.includes(cleanId) ||
+                readNotifIds.includes(item.id)
+              ) {
+                return false;
+              }
+
+              if (item.type === "announcement") {
+                return true;
+              }
+
+              return !item.isRead;
             });
-            if (annRes.ok) {
-              const annData = await annRes.json();
-              const list = annData.announcements || annData.data || [];
-              const unreadAnn = list.filter((item: any) => !readAnnouncementIds.includes(item.id));
-              count += unreadAnn.length;
-            }
-          } catch {
-            // ignore error
+
+            count = unreadItems.length;
           }
         }
 

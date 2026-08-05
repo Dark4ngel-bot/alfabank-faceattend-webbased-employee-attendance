@@ -13,10 +13,11 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
-import { AppLoadingState } from "@/components/ui/AppUI";
 import {
   getReadAnnouncementIds,
+  getReadNotificationIds,
   markAnnouncementAsRead,
+  markNotificationAsRead,
 } from "@/lib/announcement-read";
 
 type NotificationItem = {
@@ -117,11 +118,19 @@ export default function EmployeeNotificationPage() {
       }
 
       const readAnnIds = getReadAnnouncementIds();
+      const readNotifIds = getReadNotificationIds();
+
       const list = (data.notifications || []).map((item) => {
-        if (
-          item.type === "announcement" &&
-          readAnnIds.includes(item.rawId || item.id.replace("announcement-", ""))
-        ) {
+        const cleanId = (item.rawId || item.id)
+          .replace("announcement-", "")
+          .replace("swap-", "");
+
+        const isReadLocally =
+          readAnnIds.includes(cleanId) ||
+          readNotifIds.includes(cleanId) ||
+          readNotifIds.includes(item.id);
+
+        if (isReadLocally || item.isRead) {
           return {
             ...item,
             isRead: true,
@@ -149,19 +158,20 @@ export default function EmployeeNotificationPage() {
   }
 
   async function markAsRead(notification: NotificationItem) {
-    if (notification.type === "announcement") {
-      const annId = notification.rawId || notification.id.replace("announcement-", "");
-      markAnnouncementAsRead(annId);
-      router.push(notification.href);
-      return;
-    }
+    const cleanId = (notification.rawId || notification.id)
+      .replace("announcement-", "")
+      .replace("swap-", "");
 
-    if (notification.type === "shift_swap" || notification.id.startsWith("swap-")) {
-      router.push(notification.href);
-      return;
-    }
+    markAnnouncementAsRead(cleanId);
+    markNotificationAsRead(notification.id);
+    markNotificationAsRead(cleanId);
 
-    if (notification.isRead) {
+    if (
+      notification.type === "announcement" ||
+      notification.type === "shift_swap" ||
+      notification.id.startsWith("swap-")
+    ) {
+      window.dispatchEvent(new Event("notification-count-changed"));
       router.push(notification.href);
       return;
     }
@@ -180,33 +190,12 @@ export default function EmployeeNotificationPage() {
         }),
       });
 
-      const data = await readJsonResponse(response);
-
-      if (response.ok && data.success) {
-        setNotifications((prev) =>
-          prev.map((item) =>
-            item.id === notification.id
-              ? {
-                ...item,
-                isRead: true,
-                status: "read",
-                statusText: "Dibaca",
-              }
-              : item,
-          ),
-        );
-
-        setStats((prev) => ({
-          ...prev,
-          unread: Math.max(0, prev.unread - 1),
-        }));
-
-        window.dispatchEvent(new Event("notification-count-changed"));
-      }
+      await readJsonResponse(response);
     } catch {
       // ignore
     } finally {
       setActiveId(null);
+      window.dispatchEvent(new Event("notification-count-changed"));
       router.push(notification.href);
     }
   }
@@ -323,8 +312,8 @@ export default function EmployeeNotificationPage() {
                         disabled={isActive}
                         className={`group flex w-full items-start gap-4 rounded-3xl border p-4 text-left transition duration-200 hover:-translate-y-0.5 md:p-5 ${
                           notification.isRead
-                            ? "border-slate-100 bg-slate-50/70 hover:bg-slate-100/80"
-                            : "border-blue-200 bg-[#f8fbff] shadow-md shadow-blue-900/5 ring-1 ring-blue-200/60 hover:bg-white"
+                            ? "border-slate-100 bg-slate-50/70 opacity-80 hover:bg-slate-100/80"
+                            : "border-2 border-blue-300 bg-[#f4f8ff] shadow-md shadow-blue-900/10 ring-2 ring-blue-400/30 hover:bg-white"
                         }`}
                       >
                         <div
@@ -343,16 +332,21 @@ export default function EmployeeNotificationPage() {
 
                             {notification.isRead ? (
                               <span className="rounded-full bg-slate-200/80 px-2.5 py-1 text-[10px] font-black text-slate-600">
-                                Dibaca
+                                ✓ Dibaca
                               </span>
                             ) : (
-                              <span className="rounded-full bg-orange-100 px-2.5 py-1 text-[10px] font-black text-orange-700 ring-1 ring-orange-200">
+                              <span className="flex items-center gap-1.5 rounded-full bg-orange-100 px-2.5 py-1 text-[10px] font-black text-orange-700 ring-1 ring-orange-200">
+                                <span className="h-1.5 w-1.5 rounded-full bg-orange-600 animate-pulse" />
                                 Belum Dibaca
                               </span>
                             )}
                           </div>
 
-                          <h4 className="mt-2 text-base font-black leading-6 text-slate-950">
+                          <h4
+                            className={`mt-2 text-base font-black leading-6 ${
+                              notification.isRead ? "text-slate-800" : "text-[#123c8c]"
+                            }`}
+                          >
                             {notification.title}
                           </h4>
 

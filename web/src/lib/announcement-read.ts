@@ -13,6 +13,34 @@ export function getReadAnnouncementIds(): string[] {
   }
 }
 
+export function getReadNotificationIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem("presensi_read_notification_ids");
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function markNotificationAsRead(id: string): void {
+  if (typeof window === "undefined" || !id) return;
+  try {
+    const current = getReadNotificationIds();
+    if (!current.includes(id)) {
+      current.push(id);
+      window.localStorage.setItem(
+        "presensi_read_notification_ids",
+        JSON.stringify(current),
+      );
+    }
+    window.dispatchEvent(new Event("notification-count-changed"));
+  } catch {
+    // ignore
+  }
+}
+
 export function markAnnouncementAsRead(id: string): void {
   if (typeof window === "undefined" || !id) return;
   try {
@@ -24,6 +52,7 @@ export function markAnnouncementAsRead(id: string): void {
         JSON.stringify(current),
       );
     }
+    markNotificationAsRead(id);
     window.localStorage.setItem("presensi_read_announcement_id", id);
     window.dispatchEvent(new Event("notification-count-changed"));
   } catch {
