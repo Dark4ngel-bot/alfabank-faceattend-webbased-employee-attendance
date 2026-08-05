@@ -1302,17 +1302,17 @@ export function ProfilPageContent({
           </section>
         ) : activeView === "personal-detail" ? (
           <section className="profile-enter mx-auto max-w-5xl px-5 pt-5 md:px-10 md:pt-8">
-            <div className="flex items-center gap-4 border-b border-slate-100 pb-5 md:hidden">
+            <div className="flex items-center gap-4 md:hidden">
               <button
                 type="button"
                 onClick={handleBackToMenu}
-                className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#123456] transition hover:bg-[#f8fbff] active:scale-[0.96]"
+                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200 transition active:scale-[0.96]"
               >
                 <ArrowLeft size={25} strokeWidth={2.8} />
               </button>
 
               <h1 className="text-xl font-black text-[#123456]">
-                Detail Personal
+                Info Pribadi
               </h1>
             </div>
 
@@ -1331,7 +1331,7 @@ export function ProfilPageContent({
                 </p>
 
                 <h1 className="mt-1 text-3xl font-black text-[#123456]">
-                  Detail Personal
+                  Info Pribadi
                 </h1>
               </div>
             </div>
@@ -1467,23 +1467,20 @@ export function ProfilPageContent({
               className="profile-row-enter mt-10"
               style={{ animationDelay: "100ms" }}
             >
-              <h3 className="text-xl font-black text-slate-950">
-                Data Pribadi
-              </h3>
 
               <div className="mt-4 overflow-hidden rounded-[1.8rem] border border-blue-100/80 bg-white shadow-xl shadow-slate-200/50">
                 <SectionRow
                   icon={UserRound}
                   title="Info Pribadi"
-                  subtitle="Lihat detail personal dan data karyawan"
+                  subtitle="Lihat detail data karyawan"
                   onClick={() => router.push(`/profil/${user.id}`)}
                   delay="120ms"
                 />
 
                 <label
                   className={`profile-row-enter block w-full border-b border-slate-100 transition hover:bg-[#f8fbff] active:scale-[0.99] ${isUploadingPhoto
-                      ? "cursor-not-allowed opacity-60"
-                      : "cursor-pointer"
+                    ? "cursor-not-allowed opacity-60"
+                    : "cursor-pointer"
                     }`}
                   style={{ animationDelay: "160ms" }}
                 >
@@ -1575,7 +1572,7 @@ export function ProfilPageContent({
                   </p>
 
                   <h2 className="mt-2 text-2xl font-black text-slate-950">
-                    Ubah Detail Personal
+                    Ubah Info Pribadi
                   </h2>
                 </div>
 
@@ -1977,14 +1974,14 @@ export function ProfilPageContent({
         {profileAlert && profileAlertTheme ? (
           <div
             className={`profile-toast-enter fixed right-4 top-4 z-[140] w-[calc(100vw-2rem)] max-w-md transition-all duration-300 ease-out md:right-7 md:top-7 ${isProfileAlertClosing
-                ? "translate-x-8 scale-95 opacity-0"
-                : "translate-x-0 scale-100 opacity-100"
+              ? "translate-x-8 scale-95 opacity-0"
+              : "translate-x-0 scale-100 opacity-100"
               }`}
           >
             <div
               className={`overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br ${profileAlertTheme.shell} shadow-2xl shadow-slate-900/20 backdrop-blur-xl transition-all duration-300 ease-out ${isProfileAlertClosing
-                  ? "translate-y-2 opacity-0"
-                  : "translate-y-0 opacity-100"
+                ? "translate-y-2 opacity-0"
+                : "translate-y-0 opacity-100"
                 }`}
             >
               <div className="relative p-5">
