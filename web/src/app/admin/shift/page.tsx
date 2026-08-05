@@ -513,37 +513,7 @@ export default function ShiftsPage() {
                 Pengaturan Waktu Absensi
               </p>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1.5 block text-xs font-black text-slate-600">
-                    Jam Masuk
-                  </label>
-                  <input
-                    type="time"
-                    value={form.start_time}
-                    onChange={(e) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        start_time: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-black text-slate-600">
-                    Jam Pulang
-                  </label>
-                  <input
-                    type="time"
-                    value={form.end_time}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, end_time: e.target.value }))
-                    }
-                    className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
-                  />
-                </div>
-              </div>
+
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
