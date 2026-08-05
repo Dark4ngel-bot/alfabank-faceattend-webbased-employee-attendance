@@ -59,6 +59,17 @@ type EarlyCheckinConfirm = {
   startLabel: string;
 };
 
+type WorkSchedule = {
+  day_of_week?: string | null;
+  dayOfWeek?: string | null;
+  is_work_day?: boolean | null;
+  isWorkDay?: boolean | null;
+  check_in_time?: string | null;
+  checkInTime?: string | null;
+  check_out_time?: string | null;
+  checkOutTime?: string | null;
+};
+
 type VisitForm = {
   visitTitle: string;
   visitClientName: string;
@@ -75,6 +86,12 @@ type CurrentUser = {
     name?: string | null;
     tolerance_minutes?: number | null;
     toleranceMinutes?: number | null;
+    start_time?: string | null;
+    end_time?: string | null;
+    check_in_open?: string | null;
+    check_out_open?: string | null;
+    work_schedules?: WorkSchedule[] | null;
+    workSchedules?: WorkSchedule[] | null;
   } | null;
   wfh_quota_monthly?: number | null;
   wfh_quota_used_monthly?: number | null;
@@ -414,15 +431,6 @@ function getShiftEndTime(shiftName?: string | null) {
   return "17:00"; // Shift Utama
 }
 
-function getShiftCheckInOpenTime(shiftName?: string | null) {
-  const name = String(shiftName || "").toUpperCase();
-
-  if (name.includes("SIANG")) return "11:00"; // 2 jam sebelum jam 13:00
-  if (name.includes("PAGI")) return "06:30"; // 1 jam sebelum jam 07:30
-
-  return "07:00"; // Shift Utama — 1 jam sebelum jam 08:00
-}
-
 function getShiftCheckOutOpenTime(shiftName?: string | null) {
   const name = String(shiftName || "").toUpperCase();
 
@@ -430,6 +438,35 @@ function getShiftCheckOutOpenTime(shiftName?: string | null) {
   if (name.includes("PAGI")) return "15:20";
 
   return "16:50"; // Shift Utama (10 menit sebelum 17.00)
+}
+
+function getJakartaDayOfWeek() {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Jakarta",
+    weekday: "long",
+  })
+    .format(new Date())
+    .toUpperCase();
+}
+
+function normalizeScheduleTime(value?: string | null) {
+  const text = String(value || "").trim();
+
+  return /^\d{2}:\d{2}/.test(text) ? text.slice(0, 5) : "";
+}
+
+function getTodayWorkSchedule(user: CurrentUser | null) {
+  const schedules =
+    user?.shift?.work_schedules || user?.shift?.workSchedules || [];
+  const today = getJakartaDayOfWeek();
+
+  return (
+    schedules.find((schedule) => {
+      const day = schedule.day_of_week || schedule.dayOfWeek || "";
+
+      return String(day).toUpperCase() === today;
+    }) || null
+  );
 }
 
 function getShiftToleranceMinutes(user: CurrentUser | null) {
@@ -441,6 +478,34 @@ function getShiftToleranceMinutes(user: CurrentUser | null) {
   return Number.isFinite(parsedTolerance) && parsedTolerance >= 0
     ? parsedTolerance
     : 5;
+}
+
+function getShiftStartTimeFromUser(user: CurrentUser | null) {
+  const schedule = getTodayWorkSchedule(user);
+  const scheduleStartTime = normalizeScheduleTime(
+    schedule?.check_in_time || schedule?.checkInTime,
+  );
+  const isWorkDay = schedule?.is_work_day ?? schedule?.isWorkDay;
+
+  if (scheduleStartTime && isWorkDay !== false) {
+    return scheduleStartTime;
+  }
+
+  return getShiftStartTime(user?.shift?.name);
+}
+
+function getShiftEndTimeFromUser(user: CurrentUser | null) {
+  const schedule = getTodayWorkSchedule(user);
+  const scheduleEndTime = normalizeScheduleTime(
+    schedule?.check_out_time || schedule?.checkOutTime,
+  );
+  const isWorkDay = schedule?.is_work_day ?? schedule?.isWorkDay;
+
+  if (scheduleEndTime && isWorkDay !== false) {
+    return scheduleEndTime;
+  }
+
+  return getShiftEndTime(user?.shift?.name);
 }
 
 function timeToMinutes(time: string) {
@@ -476,7 +541,7 @@ function getJakartaMinutesNow() {
 }
 
 function getLateLimitMinutes(user: CurrentUser | null) {
-  const startTime = getShiftStartTime(user?.shift?.name);
+  const startTime = getShiftStartTimeFromUser(user);
   const toleranceMinutes = getShiftToleranceMinutes(user);
 
   return timeToMinutes(startTime) + toleranceMinutes;
@@ -488,10 +553,10 @@ function getLateLimitLabel(user: CurrentUser | null) {
 
 function getEarlyCheckinMinutes(user: CurrentUser | null) {
   const nowMinutes = getJakartaMinutesNow();
-  const openTimeStr = getShiftCheckInOpenTime(user?.shift?.name);
-  const openMinutes = timeToMinutes(openTimeStr);
+  const startTimeStr = getShiftStartTimeFromUser(user);
+  const startMinutes = timeToMinutes(startTimeStr);
 
-  return nowMinutes < openMinutes ? openMinutes - nowMinutes : 0;
+  return nowMinutes < startMinutes ? startMinutes - nowMinutes : 0;
 }
 
 function isLateCheckInNow(user: CurrentUser | null) {
@@ -1814,8 +1879,8 @@ export default function AttendancePage() {
     "Pilih mode presensi, aktifkan kamera, lalu izinkan lokasi GPS sebelum melakukan presensi.",
   );
 
-  const shiftStartTime = getShiftStartTime(currentUser?.shift?.name);
-  const shiftEndTime = getShiftEndTime(currentUser?.shift?.name);
+  const shiftStartTime = getShiftStartTimeFromUser(currentUser);
+  const shiftEndTime = getShiftEndTimeFromUser(currentUser);
   const shiftToleranceMinutes = getShiftToleranceMinutes(currentUser);
   const lateLimitLabel = getLateLimitLabel(currentUser);
 
@@ -2634,7 +2699,7 @@ export default function AttendancePage() {
     const earlyMinutes = getEarlyCheckinMinutes(user);
 
     if (earlyMinutes > 0) {
-      const startLabel = getShiftStartTime(user.shift?.name);
+      const startLabel = getShiftStartTimeFromUser(user);
       const earlyLabel = formatDurationHoursMinutes(earlyMinutes);
 
       setEarlyCheckinConfirm({
@@ -2726,7 +2791,7 @@ export default function AttendancePage() {
     const earlyMinutes = getEarlyCheckoutMinutes(user);
 
     if (earlyMinutes > 0) {
-      const endLabel = getShiftEndTime(user.shift?.name);
+      const endLabel = getShiftEndTimeFromUser(user);
       const earlyLabel = formatDurationHoursMinutes(earlyMinutes);
 
       setEarlyCheckoutConfirm({

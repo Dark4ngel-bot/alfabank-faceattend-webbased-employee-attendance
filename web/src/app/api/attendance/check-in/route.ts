@@ -113,9 +113,63 @@ function toJakartaDate(date = new Date()) {
   return new Date(date.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
 }
 
+function getDayOfWeekEnum(date = new Date()) {
+  const dayIndex = toJakartaDate(date).getDay();
+
+  const days = [
+    "SUNDAY",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+  ];
+
+  return days[dayIndex];
+}
+
 function timeToMinutes(time: string) {
   const [hourText, minuteText] = time.split(":");
   return Number(hourText || 0) * 60 + Number(minuteText || 0);
+}
+
+function normalizeScheduleTime(value: unknown) {
+  if (!value) return "";
+
+  if (typeof value === "string") {
+    if (/^\d{2}:\d{2}/.test(value)) {
+      return value.slice(0, 5);
+    }
+
+    const parsedDate = new Date(value);
+
+    if (!Number.isNaN(parsedDate.getTime())) {
+      return new Intl.DateTimeFormat("id-ID", {
+        timeZone: "Asia/Jakarta",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+        .format(parsedDate)
+        .replace(".", ":");
+    }
+
+    return "";
+  }
+
+  if (value instanceof Date) {
+    return new Intl.DateTimeFormat("id-ID", {
+      timeZone: "Asia/Jakarta",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+      .format(value)
+      .replace(".", ":");
+  }
+
+  return "";
 }
 
 function dateToMinutes(date: Date) {
@@ -647,6 +701,13 @@ export async function POST(req: NextRequest) {
             end_time: true,
             check_in_open: true,
             check_out_open: true,
+            work_schedules: {
+              select: {
+                day_of_week: true,
+                is_work_day: true,
+                check_in_time: true,
+              },
+            },
           },
         },
       },
@@ -668,6 +729,10 @@ export async function POST(req: NextRequest) {
 
     const now = new Date();
     const today = getTodayDateOnly();
+    const todayName = getDayOfWeekEnum(now);
+    const todaySchedule = user.shift?.work_schedules?.find((schedule) => {
+      return String(schedule.day_of_week).toUpperCase() === todayName;
+    });
 
     if (isWfhMode) {
       const todayWfhCount = await prisma.attendance.count({
@@ -963,6 +1028,17 @@ export async function POST(req: NextRequest) {
 
     const shouldValidateLate = !isVisitMode;
 
+    if (
+      shouldValidateLate &&
+      todaySchedule &&
+      todaySchedule.is_work_day === false
+    ) {
+      return NextResponse.json(
+        { error: "Hari ini bukan jadwal kerja kamu." },
+        { status: 400 },
+      );
+    }
+
     const effectiveShiftName = await getEffectiveShiftNameForDate(
       userId,
       today,
@@ -970,7 +1046,9 @@ export async function POST(req: NextRequest) {
     );
 
     const startTime = shouldValidateLate
-      ? user.shift?.start_time || getShiftStartTime(effectiveShiftName)
+      ? normalizeScheduleTime(todaySchedule?.check_in_time) ||
+        user.shift?.start_time ||
+        getShiftStartTime(effectiveShiftName)
       : null;
 
     const toleranceMinutes = shouldValidateLate
