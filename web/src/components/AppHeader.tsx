@@ -347,12 +347,21 @@ export default function AppHeader({
 
     void loadNotificationCount();
 
+    function handleCountChange() {
+      void loadNotificationCount();
+    }
+
+    window.addEventListener("notification-count-changed", handleCountChange);
+    window.addEventListener("storage", handleCountChange);
+
     const intervalId = window.setInterval(() => {
       void loadNotificationCount();
-    }, 30000);
+    }, 4000);
 
     return () => {
       isMounted = false;
+      window.removeEventListener("notification-count-changed", handleCountChange);
+      window.removeEventListener("storage", handleCountChange);
       window.clearInterval(intervalId);
     };
   }, [isAdmin, pathname]);
