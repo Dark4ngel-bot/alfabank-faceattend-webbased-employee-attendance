@@ -649,11 +649,7 @@ export default function AppHeader({
               </>
             ) : (
               <>
-                <p className="px-3 text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
-                  Menu Karyawan
-                </p>
-
-                <nav className="mt-3 space-y-2">
+                <nav className="space-y-2">
                   {employeeNav.map((menu) => {
                     const Icon = menu.icon;
                     const active = isActivePath(pathname, menu.href);

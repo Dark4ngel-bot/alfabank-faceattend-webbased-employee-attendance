@@ -309,9 +309,8 @@ function getActiveScheduleText(schedules?: ShiftWorkSchedule[]) {
 
   const firstSchedule = activeSchedules[0];
 
-  return `${formatDay(firstSchedule.day_of_week)} • ${
-    firstSchedule.check_in_time
-  } - ${firstSchedule.check_out_time}`;
+  return `${formatDay(firstSchedule.day_of_week)} • ${firstSchedule.check_in_time
+    } - ${firstSchedule.check_out_time}`;
 }
 
 async function readJsonResponse(response: Response) {
@@ -496,6 +495,7 @@ type SectionRowProps = {
   subtitle?: string;
   onClick?: () => void;
   delay?: string;
+  isLast?: boolean;
 };
 
 function SectionRow({
@@ -504,15 +504,16 @@ function SectionRow({
   subtitle,
   onClick,
   delay = "0ms",
+  isLast = false,
 }: SectionRowProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="profile-row-enter w-full border-b border-slate-100 transition hover:bg-[#f8fbff] active:scale-[0.99]"
+      className={`profile-row-enter w-full transition hover:bg-[#f8fbff] active:scale-[0.99] ${isLast ? "" : "border-b border-slate-100"}`}
       style={{ animationDelay: delay }}
     >
-      <div className="flex w-full items-center gap-4 py-5">
+      <div className="flex w-full items-center gap-4 px-5 py-5 sm:px-6">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eef5ff] text-[#123c8c]">
           <Icon size={24} strokeWidth={2.7} />
         </div>
@@ -870,17 +871,17 @@ export function ProfilPageContent({
       setUser((currentUser) =>
         currentUser
           ? {
-              ...currentUser,
-              name: data.user?.name || name,
-              phone: data.user?.phone || phone || null,
-              birth_place:
-                data.user?.birth_place ?? editProfileForm.birth_place.trim(),
-              birth_date: data.user?.birth_date ?? editProfileForm.birth_date,
-              bank_code: data.user?.bank_code ?? bankCode,
-              bank_account_number:
-                data.user?.bank_account_number ?? bankAccountNumber,
-              nik: data.user?.nik ?? nik,
-            }
+            ...currentUser,
+            name: data.user?.name || name,
+            phone: data.user?.phone || phone || null,
+            birth_place:
+              data.user?.birth_place ?? editProfileForm.birth_place.trim(),
+            birth_date: data.user?.birth_date ?? editProfileForm.birth_date,
+            bank_code: data.user?.bank_code ?? bankCode,
+            bank_account_number:
+              data.user?.bank_account_number ?? bankAccountNumber,
+            nik: data.user?.nik ?? nik,
+          }
           : currentUser,
       );
 
@@ -982,9 +983,9 @@ export function ProfilPageContent({
         setUser((currentUser) =>
           currentUser
             ? {
-                ...currentUser,
-                profile_photo: uploadedPhoto,
-              }
+              ...currentUser,
+              profile_photo: uploadedPhoto,
+            }
             : currentUser,
         );
       }
@@ -1393,28 +1394,20 @@ export function ProfilPageContent({
           </section>
         ) : (
           <section className="profile-enter mx-auto max-w-5xl px-5 pt-5 md:px-10 md:pt-8">
-            <div className="rounded-[2rem] bg-white px-1 pt-2 md:px-0 md:pt-0">
-              <div className="flex items-center gap-4">
-                <div className="profile-avatar-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.35rem] bg-[#123c8c] text-white shadow-lg shadow-blue-900/20">
-                  <UserRound size={27} strokeWidth={2.7} />
-                </div>
-
-                <div className="min-w-0">
-                  <p className="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">
-                    Profil
-                  </p>
-
-                  <h1 className="mt-1 text-3xl font-black tracking-tight text-[#123456] md:text-4xl">
-                    Akun
-                  </h1>
-                </div>
+            <div className="flex flex-col items-center justify-center text-center">
+              <div className="profile-avatar-pop flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#123c8c] text-white shadow-xl shadow-blue-900/30">
+                <UserRound size={30} strokeWidth={2.7} />
               </div>
+
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#123456] md:text-4xl">
+                Akun
+              </h1>
             </div>
 
             <button
               type="button"
               onClick={() => router.push("/kartu-identitas")}
-              className="profile-row-enter mt-6 flex w-full items-center gap-5 rounded-[2rem] bg-white text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-200/50 active:scale-[0.99] md:border md:border-blue-100 md:p-6 md:shadow-xl md:shadow-slate-200/50"
+              className="profile-row-enter mt-6 flex w-full items-center gap-5 rounded-[2rem] border border-blue-100 bg-white p-5 text-left shadow-xl shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/60 active:scale-[0.99] sm:p-6"
               style={{ animationDelay: "60ms" }}
             >
               <ProfileAvatar user={user} initials={initials} size="sm" />
@@ -1437,10 +1430,10 @@ export function ProfilPageContent({
             </button>
 
             <div
-              className="profile-row-enter mt-5 grid grid-cols-3 overflow-hidden rounded-[1.8rem] border border-blue-100 bg-white shadow-xl shadow-slate-200/50"
+              className="profile-row-enter mt-5 grid grid-cols-3 overflow-hidden rounded-[1.8rem] border border-blue-100 bg-white text-center shadow-xl shadow-slate-200/50"
               style={{ animationDelay: "85ms" }}
             >
-              <div className="border-r border-blue-50 px-4 py-4">
+              <div className="flex flex-col items-center justify-center border-r border-blue-50 px-4 py-4 text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Kuota WFH
                 </p>
@@ -1451,7 +1444,7 @@ export function ProfilPageContent({
                 </p>
               </div>
 
-              <div className="border-r border-blue-50 px-4 py-4">
+              <div className="flex flex-col items-center justify-center border-r border-blue-50 px-4 py-4 text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Terpakai
                 </p>
@@ -1460,7 +1453,7 @@ export function ProfilPageContent({
                 </p>
               </div>
 
-              <div className="px-4 py-4">
+              <div className="flex flex-col items-center justify-center px-4 py-4 text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Sisa
                 </p>
@@ -1471,14 +1464,14 @@ export function ProfilPageContent({
             </div>
 
             <div
-              className="profile-row-enter mt-12 md:mt-10"
+              className="profile-row-enter mt-10"
               style={{ animationDelay: "100ms" }}
             >
               <h3 className="text-xl font-black text-slate-950">
                 Data Pribadi
               </h3>
 
-              <div className="mt-5 overflow-hidden rounded-[1.8rem] bg-white md:border md:border-blue-100 md:p-2 md:shadow-xl md:shadow-slate-200/50">
+              <div className="mt-4 overflow-hidden rounded-[1.8rem] border border-blue-100/80 bg-white shadow-xl shadow-slate-200/50">
                 <SectionRow
                   icon={UserRound}
                   title="Info Pribadi"
@@ -1488,14 +1481,13 @@ export function ProfilPageContent({
                 />
 
                 <label
-                  className={`profile-row-enter block w-full border-b border-slate-100 transition hover:bg-[#f8fbff] active:scale-[0.99] ${
-                    isUploadingPhoto
+                  className={`profile-row-enter block w-full border-b border-slate-100 transition hover:bg-[#f8fbff] active:scale-[0.99] ${isUploadingPhoto
                       ? "cursor-not-allowed opacity-60"
                       : "cursor-pointer"
-                  }`}
+                    }`}
                   style={{ animationDelay: "160ms" }}
                 >
-                  <div className="flex w-full items-center gap-4 py-5">
+                  <div className="flex w-full items-center gap-4 px-5 py-5 sm:px-6">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eef5ff] text-[#123c8c]">
                       {isUploadingPhoto ? (
                         <Loader2 size={23} className="animate-spin" />
@@ -1546,6 +1538,7 @@ export function ProfilPageContent({
                   subtitle="Perbarui password akun"
                   onClick={openPasswordModal}
                   delay="200ms"
+                  isLast
                 />
               </div>
             </div>
@@ -1890,10 +1883,6 @@ export function ProfilPageContent({
                   <h2 className="mt-2 text-2xl font-black text-slate-950">
                     Ubah Kata Sandi
                   </h2>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    Gunakan kata sandi baru minimal 8 karakter.
-                  </p>
                 </div>
 
                 <button
@@ -1987,18 +1976,16 @@ export function ProfilPageContent({
 
         {profileAlert && profileAlertTheme ? (
           <div
-            className={`profile-toast-enter fixed right-4 top-4 z-[140] w-[calc(100vw-2rem)] max-w-md transition-all duration-300 ease-out md:right-7 md:top-7 ${
-              isProfileAlertClosing
+            className={`profile-toast-enter fixed right-4 top-4 z-[140] w-[calc(100vw-2rem)] max-w-md transition-all duration-300 ease-out md:right-7 md:top-7 ${isProfileAlertClosing
                 ? "translate-x-8 scale-95 opacity-0"
                 : "translate-x-0 scale-100 opacity-100"
-            }`}
+              }`}
           >
             <div
-              className={`overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br ${profileAlertTheme.shell} shadow-2xl shadow-slate-900/20 backdrop-blur-xl transition-all duration-300 ease-out ${
-                isProfileAlertClosing
+              className={`overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br ${profileAlertTheme.shell} shadow-2xl shadow-slate-900/20 backdrop-blur-xl transition-all duration-300 ease-out ${isProfileAlertClosing
                   ? "translate-y-2 opacity-0"
                   : "translate-y-0 opacity-100"
-              }`}
+                }`}
             >
               <div className="relative p-5">
                 <div className="relative flex items-start gap-4">
