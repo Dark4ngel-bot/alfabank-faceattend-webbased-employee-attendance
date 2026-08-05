@@ -9,6 +9,7 @@ import {
   FileText,
   Loader2,
   Send,
+  Upload,
   X,
   XCircle,
 } from "lucide-react";
@@ -27,13 +28,11 @@ type LeaveRequest = {
   endDateIso?: string | null;
   totalDays: number;
   reason: string;
-  documentUrl?: string | null;
-  document_url?: string | null;
-  documentName?: string | null;
-  document_name?: string | null;
   status: string;
   statusLabel: string;
   adminNote: string | null;
+  attachmentUrl?: string | null;
+  attachmentName?: string | null;
   createdAt: string | null;
 };
 
@@ -173,8 +172,7 @@ export default function LeaveRequestPage() {
   const [startTimeOvertime, setStartTimeOvertime] = useState("17:00");
   const [endTimeOvertime, setEndTimeOvertime] = useState("20:00");
   const [reason, setReason] = useState("");
-
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
 
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [stats, setStats] = useState<LeaveStats>(emptyStats);
@@ -311,41 +309,26 @@ export default function LeaveRequestPage() {
     try {
       setIsSubmitting(true);
 
-      let response: Response;
-
+      const formData = new FormData();
+      formData.append("leaveType", leaveType);
       const effectiveEndDate = leaveType === "overtime" ? startDate : endDate;
+      formData.append("startDate", startDate);
+      formData.append("endDate", effectiveEndDate);
+
       const finalReason =
         leaveType === "overtime"
           ? `[Lembur: ${startTimeOvertime} - ${endTimeOvertime} (${overtimeDurationText})] ${reason.trim()}`
           : reason.trim();
+      formData.append("reason", finalReason);
 
-      if (selectedFile) {
-        const formData = new FormData();
-        formData.append("leaveType", leaveType);
-        formData.append("startDate", startDate);
-        formData.append("endDate", effectiveEndDate);
-        formData.append("reason", finalReason);
-        formData.append("document", selectedFile);
-        formData.append("attachment", selectedFile);
-
-        response = await fetch("/api/leave-requests", {
-          method: "POST",
-          body: formData,
-        });
-      } else {
-        response = await fetch("/api/leave-requests", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            leaveType,
-            startDate,
-            endDate: effectiveEndDate,
-            reason: finalReason,
-          }),
-        });
+      if (attachmentFile) {
+        formData.append("attachment", attachmentFile);
       }
+
+      const response = await fetch("/api/leave-requests", {
+        method: "POST",
+        body: formData,
+      });
 
       const data = await readJsonResponse(response);
 
@@ -363,7 +346,7 @@ export default function LeaveRequestPage() {
       setStartDate("");
       setEndDate("");
       setReason("");
-      setSelectedFile(null);
+      setAttachmentFile(null);
 
       setPageAlert({
         type: "success",
@@ -372,6 +355,10 @@ export default function LeaveRequestPage() {
           data.message ||
           "Pengajuan berhasil dikirim dan menunggu persetujuan admin.",
       });
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("notification-count-changed"));
+      }
 
       await getLeaveRequests();
     } catch (error) {
@@ -596,26 +583,69 @@ export default function LeaveRequestPage() {
               />
             </div>
 
-            {leaveType === "sick" && (
-              <div>
+            <div>
+              <div className="flex items-center justify-between">
                 <label className="text-sm font-black text-slate-700">
-                  Lampiran Surat Dokter (Opsional)
+                  {leaveType === "sick" ? "Surat Dokter / Lampiran" : "Lampiran Dokumen"}
                 </label>
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(event) =>
-                    setSelectedFile(event.target.files?.[0] || null)
-                  }
-                  className="mt-2 block w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none file:mr-4 file:rounded-xl file:border-0 file:bg-[#123c8c] file:px-3 file:py-1.5 file:text-xs file:font-black file:text-white hover:file:bg-[#0f3274]"
-                />
-                {selectedFile && (
-                  <p className="mt-1.5 text-xs font-bold text-[#123c8c]">
-                    File terpilih: {selectedFile.name}
-                  </p>
-                )}
+                <span className="text-[11px] font-bold text-slate-400">
+                  (Opsional)
+                </span>
               </div>
-            )}
+
+              {attachmentFile ? (
+                <div className="mt-2 flex items-center justify-between rounded-2xl border border-blue-100 bg-[#f8fbff] p-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c]">
+                      <FileText size={20} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-black text-slate-800">
+                        {attachmentFile.name}
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400">
+                        {(attachmentFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAttachmentFile(null)}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <label className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-200 bg-[#f8fbff] p-4 text-center transition hover:border-[#123c8c] hover:bg-blue-50/50">
+                  <Upload size={24} className="text-[#123c8c]" />
+                  <p className="mt-1 text-xs font-black text-slate-700">
+                    Upload Surat Dokter / Lampiran
+                  </p>
+                  <p className="text-[10px] font-bold text-slate-400">
+                    Format: JPG, PNG, WEBP, PDF (Maks. 5MB)
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 5 * 1024 * 1024) {
+                        setPageAlert({
+                          type: "warning",
+                          title: "Ukuran file terlalu besar",
+                          message: "Maksimal ukuran file lampiran adalah 5MB.",
+                        });
+                        return;
+                      }
+                      setAttachmentFile(file);
+                    }}
+                  />
+                </label>
+              )}
+            </div>
 
             <button
               type="submit"
@@ -728,19 +758,19 @@ export default function LeaveRequestPage() {
                       {item.reason}
                     </p>
 
-                    {(item.documentUrl || item.document_url) && (
+                    {item.attachmentUrl ? (
                       <div className="mt-3">
                         <a
-                          href={item.documentUrl || item.document_url || "#"}
+                          href={item.attachmentUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3.5 py-2 text-xs font-black text-[#123c8c] ring-1 ring-blue-200 transition hover:bg-blue-100"
+                          className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-[#123c8c] hover:bg-blue-100 transition"
                         >
                           <FileText size={15} />
-                          Lihat Surat Dokter ({item.documentName || item.document_name || "Lampiran"})
+                          Lihat Surat Dokter / Lampiran
                         </a>
                       </div>
-                    )}
+                    ) : null}
 
                     {item.adminNote ? (
                       <p className="mt-3 rounded-2xl bg-blue-50 p-4 text-sm font-semibold leading-6 text-[#123c8c]">

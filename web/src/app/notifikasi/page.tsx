@@ -11,6 +11,8 @@ import {
   Megaphone,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
+import BottomNav from "@/components/BottomNav";
+import MobileShell from "@/components/MobileShell";
 import { AppLoadingState } from "@/components/ui/AppUI";
 import {
   getReadAnnouncementIds,
@@ -214,162 +216,173 @@ export default function EmployeeNotificationPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#f6f8ff] text-slate-950">
+    <MobileShell variant="employee" withBottomPadding={false}>
       <AppHeader title="Notifikasi" />
 
-      <section className="mx-auto max-w-5xl px-5 pb-10 pt-6 md:px-8">
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-blue-100">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
-                  Total Bulan Ini
-                </p>
-                <h2 className="mt-2 text-3xl font-black text-slate-950">
-                  {stats.total}
-                </h2>
-              </div>
-
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100">
-                <Bell size={22} strokeWidth={2.7} />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-orange-100">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
-                  Belum Dibaca
-                </p>
-                <h2 className="mt-2 text-3xl font-black text-orange-600">
-                  {stats.unread}
-                </h2>
-              </div>
-
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 ring-1 ring-orange-100">
-                <Bell size={22} strokeWidth={2.7} />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-emerald-100">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
-                  Periode
-                </p>
-                <h2 className="mt-2 text-xl font-black text-slate-950">
-                  {monthTitle}
-                </h2>
-              </div>
-
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
-                <CheckCircle2 size={22} strokeWidth={2.7} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-blue-100 md:p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h3 className="text-2xl font-black tracking-tight text-slate-950">
-                Notifikasi Karyawan
-              </h3>
-            </div>
-
-          </div>
-
-          {pageError ? (
-            <div className="mt-5 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700 ring-1 ring-rose-100">
-              {pageError}
-            </div>
-          ) : null}
-
-          <div className="mt-6">
-            {isLoading ? (
-              <AppLoadingState text="Mengambil notifikasi..." />
-            ) : notifications.length === 0 ? (
-              <div className="flex min-h-56 flex-col items-center justify-center rounded-[2rem] bg-slate-50 px-5 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white text-slate-400 shadow-sm ring-1 ring-slate-100">
-                  <Bell size={28} strokeWidth={2.5} />
+      <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff] pb-[calc(8rem+env(safe-area-inset-bottom))] text-slate-950 md:pb-28">
+        <section className="mx-auto max-w-5xl px-5 pb-10 pt-6 md:px-8">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-blue-100">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+                    Total Bulan Ini
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black text-slate-950">
+                    {stats.total}
+                  </h2>
                 </div>
-                <h4 className="mt-4 text-lg font-black text-slate-900">
-                  Belum ada notifikasi bulan ini
-                </h4>
+
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100">
+                  <Bell size={22} strokeWidth={2.7} />
+                </div>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {notifications.map((notification) => {
-                  const Icon = getNotificationIcon(notification.type);
-                  const style = getNotificationStyle(notification.type);
-                  const isActive = activeId === notification.id;
+            </div>
 
-                  return (
-                    <button
-                      key={notification.id}
-                      type="button"
-                      onClick={() => markAsRead(notification)}
-                      disabled={isActive}
-                      className={`group flex w-full items-start gap-4 rounded-[1.6rem] border p-4 text-left transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 ${notification.isRead
-                          ? "border-slate-100 bg-white hover:bg-slate-50"
-                          : "border-orange-100 bg-orange-50/60 hover:bg-orange-50"
+            <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-orange-100">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+                    Belum Dibaca
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black text-orange-600">
+                    {stats.unread}
+                  </h2>
+                </div>
+
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 ring-1 ring-orange-100">
+                  <Bell size={22} strokeWidth={2.7} />
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-emerald-100">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+                    Periode
+                  </p>
+                  <h2 className="mt-2 text-xl font-black text-slate-950">
+                    {monthTitle}
+                  </h2>
+                </div>
+
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+                  <CheckCircle2 size={22} strokeWidth={2.7} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-blue-100 md:p-6">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h3 className="text-2xl font-black tracking-tight text-slate-950">
+                  Notifikasi Karyawan
+                </h3>
+                <p className="mt-1 text-xs font-semibold text-slate-500">
+                  Riwayat pemberitahuan cuti, pengumuman, dan tukar shift.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2 rounded-3xl border border-blue-100 bg-[#f8fbff] p-8 text-sm font-black text-slate-500">
+                  <Loader2 size={18} className="animate-spin text-[#123c8c]" />
+                  Memuat notifikasi...
+                </div>
+              ) : pageError ? (
+                <div className="rounded-3xl border border-red-100 bg-red-50 p-5 text-sm font-black text-red-700">
+                  {pageError}
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="rounded-3xl border border-dashed border-blue-100 bg-[#f8fbff] px-5 py-12 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#123c8c] ring-1 ring-blue-100">
+                    <Bell size={26} strokeWidth={2.6} />
+                  </div>
+                  <p className="mt-4 text-base font-black text-slate-700">
+                    Tidak ada notifikasi
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-400">
+                    Belum ada pemberitahuan baru bulan ini.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {notifications.map((notification) => {
+                    const Icon = getNotificationIcon(notification.type);
+                    const style = getNotificationStyle(notification.type);
+                    const isActive = activeId === notification.id;
+
+                    return (
+                      <button
+                        key={notification.id}
+                        type="button"
+                        onClick={() => void markAsRead(notification)}
+                        disabled={isActive}
+                        className={`group flex w-full items-start gap-4 rounded-3xl border p-4 text-left transition duration-200 hover:-translate-y-0.5 md:p-5 ${
+                          notification.isRead
+                            ? "border-slate-100 bg-slate-50/70 hover:bg-slate-100/80"
+                            : "border-blue-200 bg-[#f8fbff] shadow-md shadow-blue-900/5 ring-1 ring-blue-200/60 hover:bg-white"
                         }`}
-                    >
-                      <div
-                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ${style.icon}`}
                       >
-                        <Icon size={22} strokeWidth={2.7} />
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span
-                            className={`rounded-full px-3 py-1 text-[11px] font-black ring-1 ${style.badge}`}
-                          >
-                            {notification.typeLabel}
-                          </span>
-
-                          {!notification.isRead ? (
-                            <span className="rounded-full bg-orange-500 px-3 py-1 text-[11px] font-black text-white">
-                              Baru
-                            </span>
-                          ) : (
-                            <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-black text-slate-500">
-                              Dibaca
-                            </span>
-                          )}
+                        <div
+                          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ${style.icon}`}
+                        >
+                          <Icon size={22} strokeWidth={2.6} />
                         </div>
 
-                        <h4 className="mt-2 text-base font-black leading-6 text-slate-950">
-                          {notification.title}
-                        </h4>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span
+                              className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] ring-1 ${style.badge}`}
+                            >
+                              {notification.typeLabel}
+                            </span>
 
-                        <p className="mt-1 line-clamp-2 text-sm font-semibold leading-6 text-slate-600">
-                          {notification.message}
-                        </p>
+                            {notification.isRead ? (
+                              <span className="rounded-full bg-slate-200/80 px-2.5 py-1 text-[10px] font-black text-slate-600">
+                                Dibaca
+                              </span>
+                            ) : (
+                              <span className="rounded-full bg-orange-100 px-2.5 py-1 text-[10px] font-black text-orange-700 ring-1 ring-orange-200">
+                                Belum Dibaca
+                              </span>
+                            )}
+                          </div>
 
-                        <p className="mt-2 text-xs font-black text-slate-400">
-                          {notification.dateText}
-                        </p>
-                      </div>
+                          <h4 className="mt-2 text-base font-black leading-6 text-slate-950">
+                            {notification.title}
+                          </h4>
 
-                      <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-400 ring-1 ring-slate-100 transition group-hover:text-[#123c8c]">
-                        {isActive ? (
-                          <Loader2 size={18} className="animate-spin" />
-                        ) : (
-                          <ChevronRight size={18} strokeWidth={2.7} />
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                          <p className="mt-1 line-clamp-2 text-sm font-semibold leading-6 text-slate-600">
+                            {notification.message}
+                          </p>
+
+                          <p className="mt-2 text-xs font-black text-slate-400">
+                            {notification.dateText}
+                          </p>
+                        </div>
+
+                        <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-400 ring-1 ring-slate-100 transition group-hover:text-[#123c8c]">
+                          {isActive ? (
+                            <Loader2 size={18} className="animate-spin" />
+                          ) : (
+                            <ChevronRight size={18} strokeWidth={2.7} />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
-    </main>
+        </section>
+
+        <BottomNav />
+      </main>
+    </MobileShell>
   );
 }
