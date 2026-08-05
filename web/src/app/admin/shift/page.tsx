@@ -373,31 +373,30 @@ export default function ShiftsPage() {
                 }
               />
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2">
                 {filteredShifts.map((item, index) => (
                   <div
                     key={item.id}
                     className="row-enter rounded-3xl border border-blue-50/50 bg-[#fbfdff] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-100 hover:bg-white hover:shadow-md hover:shadow-blue-900/5"
                     style={{ animationDelay: `${index * 40}ms` }}
                   >
-                    <div className="flex items-start justify-between">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c]">
                           <Clock3 size={20} />
                         </div>
                         <div>
-                          <h3 className="font-black text-slate-800 text-base">
+                          <h3 className="text-base font-black text-slate-800">
                             {item.name}
                           </h3>
-                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <div className="mt-0.5 flex items-center gap-1.5">
                             <span
-                              className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${statusClass(
-                                item.status,
-                              )}`}
+                              className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${statusClass(item.status)}`}
                             >
                               {formatStatus(item.status)}
                             </span>
-                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-500">
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">
                               {item._count?.users ?? 0} Karyawan
                             </span>
                           </div>
@@ -407,62 +406,46 @@ export default function ShiftsPage() {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => openEditModal(item)}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-50 bg-white text-[#123c8c] shadow-sm hover:bg-blue-50 transition"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-blue-50 bg-white text-[#123c8c] shadow-sm transition hover:bg-blue-50"
                           title="Ubah"
                         >
-                          <Edit size={16} />
+                          <Edit size={14} />
                         </button>
                         <button
                           onClick={() => handleDelete(item)}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-100 bg-rose-50/50 text-rose-600 hover:bg-rose-100 transition"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-100 bg-rose-50/50 text-rose-600 transition hover:bg-rose-100"
                           title="Hapus"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
 
-                    {/* Jam Info */}
-                    <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 rounded-2xl border border-blue-50 bg-blue-50/30 p-3">
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                          Check-in Buka
-                        </p>
-                        <p className="text-sm font-black text-[#123c8c]">
+                    {/* Time Info - Clean rows */}
+                    <div className="mt-4 space-y-2">
+                      <div className="flex items-center justify-between rounded-xl bg-blue-50/40 px-3 py-2">
+                        <span className="text-xs font-bold text-slate-500">Jam Kerja</span>
+                        <span className="text-sm font-black text-slate-800">
+                          {item.start_time || "08:00"} — {item.end_time || "17:00"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-xl bg-blue-50/40 px-3 py-2">
+                        <span className="text-xs font-bold text-slate-500">Check-in Buka</span>
+                        <span className="text-sm font-black text-[#123c8c]">
                           {item.check_in_open || "07:00"}
-                        </p>
+                        </span>
                       </div>
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                          Check-out Buka
-                        </p>
-                        <p className="text-sm font-black text-[#123c8c]">
+                      <div className="flex items-center justify-between rounded-xl bg-blue-50/40 px-3 py-2">
+                        <span className="text-xs font-bold text-slate-500">Check-out Buka</span>
+                        <span className="text-sm font-black text-[#123c8c]">
                           {item.check_out_open || "16:50"}
-                        </p>
+                        </span>
                       </div>
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                          Jam Masuk
-                        </p>
-                        <p className="text-sm font-bold text-slate-700">
-                          {item.start_time || "08:00"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                          Jam Pulang
-                        </p>
-                        <p className="text-sm font-bold text-slate-700">
-                          {item.end_time || "17:00"}
-                        </p>
-                      </div>
-                      <div className="col-span-2">
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                          Toleransi Telat
-                        </p>
-                        <p className="text-sm font-bold text-slate-700">
+                      <div className="flex items-center justify-between rounded-xl bg-blue-50/40 px-3 py-2">
+                        <span className="text-xs font-bold text-slate-500">Toleransi Telat</span>
+                        <span className="text-sm font-black text-slate-800">
                           {item.tolerance_minutes ?? 0} menit
-                        </p>
+                        </span>
                       </div>
                     </div>
                   </div>
