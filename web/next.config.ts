@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: [
     "192.168.10.6",
     "stopwatch-wriggly-pacify.ngrok-free.dev",
+    "*.ngrok-free.dev",
   ],
 };
 
