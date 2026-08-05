@@ -156,11 +156,11 @@ export default function EmployeeNotificationPage() {
         prev.map((item) =>
           item.id === notification.id
             ? {
-                ...item,
-                isRead: true,
-                status: "read",
-                statusText: "Dibaca",
-              }
+              ...item,
+              isRead: true,
+              status: "read",
+              statusText: "Dibaca",
+            }
             : item,
         ),
       );
@@ -245,15 +245,9 @@ export default function EmployeeNotificationPage() {
         <div className="mt-6 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-blue-100 md:p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
-                Notification Center
-              </p>
-              <h3 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
+              <h3 className="text-2xl font-black tracking-tight text-slate-950">
                 Notifikasi Karyawan
               </h3>
-              <p className="mt-1 text-sm font-semibold text-slate-500">
-                Daftar ini otomatis menampilkan notifikasi pada bulan berjalan.
-              </p>
             </div>
 
           </div>
@@ -275,10 +269,6 @@ export default function EmployeeNotificationPage() {
                 <h4 className="mt-4 text-lg font-black text-slate-900">
                   Belum ada notifikasi bulan ini
                 </h4>
-                <p className="mt-2 max-w-md text-sm font-semibold leading-6 text-slate-500">
-                  Notifikasi cuti, izin, sakit, dan pengumuman baru akan muncul
-                  di sini.
-                </p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -293,11 +283,10 @@ export default function EmployeeNotificationPage() {
                       type="button"
                       onClick={() => markAsRead(notification)}
                       disabled={isActive}
-                      className={`group flex w-full items-start gap-4 rounded-[1.6rem] border p-4 text-left transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 ${
-                        notification.isRead
+                      className={`group flex w-full items-start gap-4 rounded-[1.6rem] border p-4 text-left transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 ${notification.isRead
                           ? "border-slate-100 bg-white hover:bg-slate-50"
                           : "border-orange-100 bg-orange-50/60 hover:bg-orange-50"
-                      }`}
+                        }`}
                     >
                       <div
                         className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ${style.icon}`}

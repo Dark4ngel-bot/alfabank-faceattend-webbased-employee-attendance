@@ -516,7 +516,6 @@ function HistoryContent({
         <AppEmptyState
           icon={<CalendarDays size={28} strokeWidth={2.6} />}
           title="Belum ada data presensi"
-          description={`Data presensi untuk periode ${monthLabel} ${year} belum tersedia.`}
         />
       </div>
     );

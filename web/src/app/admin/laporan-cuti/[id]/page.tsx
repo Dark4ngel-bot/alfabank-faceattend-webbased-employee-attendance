@@ -422,25 +422,28 @@ export default function AdminLeaveRequestDetailPage() {
                   </div>
 
                   <div className="rounded-[1.5rem] border border-blue-100 bg-[#f8fbff] p-4 md:p-5">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-[#eaf1ff] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#123c8c]">
-                            {request.leaveTypeLabel}
-                          </span>
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between pr-2 sm:pr-4 md:pr-6">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="rounded-full bg-[#eaf1ff] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#123c8c]">
+                              {request.leaveTypeLabel}
+                            </span>
 
-                          <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-slate-500 ring-1 ring-blue-100">
-                            <CalendarDays size={14} strokeWidth={2.6} />
-                            {request.totalDays} hari
-                          </span>
+                            <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-slate-500 ring-1 ring-blue-100">
+                              <CalendarDays size={14} strokeWidth={2.6} />
+                              {request.totalDays} hari
+                            </span>
+                          </div>
+
+                          <p className="text-xs font-bold text-slate-400 sm:text-right">
+                            Diajukan {formatDateTimeDisplay(request.createdAt)}
+                          </p>
                         </div>
 
                         <h2 className="mt-3 text-xl font-black text-slate-950">
                           Detail Pengajuan
                         </h2>
-                        <p className="mt-1 text-sm font-bold text-slate-500">
-                          Diajukan {formatDateTimeDisplay(request.createdAt)}
-                        </p>
                       </div>
 
                       <div className="grid gap-2 rounded-3xl bg-white p-4 text-sm font-bold text-slate-600 sm:grid-cols-3 lg:min-w-[420px]">

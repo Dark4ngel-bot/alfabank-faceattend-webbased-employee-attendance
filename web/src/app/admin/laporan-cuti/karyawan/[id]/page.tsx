@@ -550,8 +550,8 @@ export default function AdminEmployeeLeaveDetailPage() {
                           key={request.id}
                           className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm shadow-slate-200/60"
                         >
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="min-w-0 space-y-2">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="min-w-0 space-y-1.5">
                               <div className="flex flex-wrap items-center gap-2">
                                 <h3 className="text-base font-black text-slate-950">
                                   {request.leaveTypeLabel}
@@ -572,10 +572,11 @@ export default function AdminEmployeeLeaveDetailPage() {
                                 {formatDateDisplay(request.endDate)} •{" "}
                                 {request.totalDays} hari
                               </p>
-                              <p className="text-xs font-bold text-slate-400">
-                                Diajukan {formatDateTimeDisplay(request.createdAt)}
-                              </p>
                             </div>
+
+                            <p className="text-xs font-bold text-slate-400 sm:text-right sm:shrink-0">
+                              Diajukan {formatDateTimeDisplay(request.createdAt)}
+                            </p>
                           </div>
 
                           <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">

@@ -944,7 +944,7 @@ export default function AdminCompanyMonitorPage() {
                 className="monitor-enter rounded-3xl border border-white/70 bg-white/95 p-5 shadow-xl shadow-slate-300/30"
                 style={{ animationDelay: "140ms" }}
               >
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h3 className="text-2xl font-black text-slate-950">
                       Grafik Kehadiran per Tanggal
@@ -956,10 +956,14 @@ export default function AdminCompanyMonitorPage() {
                         {formatMinutes(data.summary.totalLateMinutesMonth)}
                       </span>
                     </p>
+                  </div>
 
-                    <p className="mt-1 text-xs font-bold text-slate-400">
-                      Cuti hari ini: {data.summary.cuti} karyawan.
-                    </p>
+                  <div className="shrink-0 rounded-2xl bg-amber-50 px-4 py-2 text-xs font-bold text-amber-900 ring-1 ring-amber-200/70 sm:text-right">
+                    Cuti hari ini:{" "}
+                    <span className="rounded-lg bg-amber-400/30 px-2 py-0.5 font-black text-amber-950">
+                      {data.summary.cuti}
+                    </span>{" "}
+                    karyawan
                   </div>
                 </div>
 

@@ -81,32 +81,27 @@ const defaultAttendance: AttendanceToday = {
 const quickMenus = [
   {
     href: "/history",
-    label: "Laporan\nPresensi",
-    description: "Riwayat kehadiran",
+    label: "Riwayat Presensi",
     icon: History,
   },
   {
     href: "/presensi",
     label: "Presensi",
-    description: "Check-in/out",
     icon: ScanFace,
   },
   {
     href: "/tukar-shift",
-    label: "Tukar\nShift",
-    description: "Tukar shift",
+    label: "Tukar Shift",
     icon: ArrowLeftRight,
   },
   {
     href: "/cuti",
-    label: "Izin/Cuti",
-    description: "Ajukan izin",
+    label: "Ajukan Izin/Cuti",
     icon: FileText,
   },
   {
     href: "/profil",
-    label: "Profil",
-    description: "Data diri",
+    label: "Profil Data Diri",
     icon: UserRound,
   },
 ];
@@ -278,20 +273,18 @@ function ProfileAvatar({
         key={user.profile_photo}
         src={photoSrc}
         alt={user.name || "Profil"}
-        className={`home-icon-pop ${sizeClass} shrink-0 rounded-full object-cover ${
-          size === "desktop" ? "ring-4 ring-white/70" : "ring-4 ring-white"
-        }`}
+        className={`home-icon-pop ${sizeClass} shrink-0 rounded-full object-cover ${size === "desktop" ? "ring-4 ring-white/70" : "ring-4 ring-white"
+          }`}
       />
     );
   }
 
   return (
     <div
-      className={`home-icon-pop ${sizeClass} flex shrink-0 items-center justify-center rounded-full font-black ${
-        variant === "blue"
+      className={`home-icon-pop ${sizeClass} flex shrink-0 items-center justify-center rounded-full font-black ${variant === "blue"
           ? "bg-white/15 text-white ring-4 ring-white/20"
           : "bg-[#eaf1ff] text-[#123c8c] ring-4 ring-white"
-      }`}
+        }`}
     >
       {user.name ? getInitialName(user.name) : ""}
     </div>
@@ -313,17 +306,15 @@ function AnnouncementButton({
     <Link
       href={href}
       onClick={onClick}
-      className={`home-icon-pop relative flex shrink-0 items-center justify-center rounded-2xl ring-1 transition hover:-translate-y-0.5 active:scale-[0.96] ${
-        desktop ? "h-16 w-16" : "h-12 w-12"
-      } ${
-        unread
+      className={`home-icon-pop relative flex shrink-0 items-center justify-center rounded-2xl ring-1 transition hover:-translate-y-0.5 active:scale-[0.96] ${desktop ? "h-16 w-16" : "h-12 w-12"
+        } ${unread
           ? desktop
             ? "bg-white text-[#123c8c] ring-white"
             : "bg-[#123c8c] text-white ring-[#123c8c]"
           : desktop
             ? "bg-white/10 text-white/70 ring-white/20"
             : "bg-white text-slate-400 ring-blue-100"
-      }`}
+        }`}
       aria-label="Pengumuman"
     >
       <Bell
@@ -334,9 +325,8 @@ function AnnouncementButton({
 
       {unread ? (
         <span
-          className={`home-pulse-dot absolute rounded-full bg-red-500 ring-2 ring-white ${
-            desktop ? "right-3 top-3 h-4 w-4" : "right-2 top-2 h-3 w-3"
-          }`}
+          className={`home-pulse-dot absolute rounded-full bg-red-500 ring-2 ring-white ${desktop ? "right-3 top-3 h-4 w-4" : "right-2 top-2 h-3 w-3"
+            }`}
         />
       ) : null}
     </Link>
@@ -378,7 +368,7 @@ function RoleBadges({ items }: { items: Array<string | undefined | null> }) {
 function QuickMenuGrid() {
   return (
     <div className="grid grid-cols-5 gap-x-1.5 gap-y-3 md:grid-cols-5 md:gap-4">
-      {quickMenus.map(({ href, label, description, icon: Icon }, index) => (
+      {quickMenus.map(({ href, label, icon: Icon }, index) => (
         <Link
           key={href}
           href={href}
@@ -393,12 +383,8 @@ function QuickMenuGrid() {
             </div>
           </div>
 
-          <p className="mt-2 whitespace-pre-line text-[12px] font-bold leading-tight text-slate-600 md:mt-3 md:text-base">
+          <p className="mt-2 text-[12px] font-black leading-tight text-slate-800 md:mt-3 md:text-base">
             {label}
-          </p>
-
-          <p className="mt-2 hidden text-sm leading-6 text-slate-400 md:block">
-            {description}
           </p>
         </Link>
       ))}
@@ -423,13 +409,12 @@ function AttendanceButton({
       onClick={(event) => {
         if (disabled) event.preventDefault();
       }}
-      className={`flex h-14 items-center justify-center rounded-2xl text-sm font-black transition md:h-20 md:text-lg ${
-        disabled
+      className={`flex min-h-[48px] w-full flex-1 items-center justify-center rounded-2xl px-3 py-2.5 text-sm font-black transition md:h-20 md:min-h-0 md:px-6 md:py-0 md:text-lg ${disabled
           ? "cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300"
           : variant === "primary"
-            ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
+            ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20 hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
             : "border border-blue-100 bg-white text-[#123c8c] hover:-translate-y-0.5 hover:bg-[#eaf1ff] active:scale-[0.98]"
-      }`}
+        }`}
     >
       {label}
     </Link>
@@ -463,8 +448,8 @@ function AnnouncementList({
       onClick={onRead}
       className="home-card-enter block min-w-0 rounded-3xl border border-blue-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f8fbff] hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99] md:p-5"
     >
-      <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#eaf1ff] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#123c8c]">
-        <Megaphone size={14} />
+      <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-100 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-900 shadow-sm">
+        <Megaphone size={14} className="text-amber-700" />
         Pengumuman Terbaru
       </div>
 
@@ -771,27 +756,23 @@ export default function HomePage() {
                 animationDelay: "140ms",
               }}
             >
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-4xl font-black tracking-tight text-slate-950 md:text-6xl">
+              <div className="flex flex-row items-center justify-between gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                    <p className="text-2xl font-black tracking-tight text-slate-950 sm:text-4xl md:text-6xl">
                       {currentTime || "--:-- WIB"}
                     </p>
 
-                    <div className="rounded-full bg-[#eaf1ff] px-3 py-1 text-xs font-black text-[#123c8c] md:px-3 md:py-1.5">
-                      WIB
+                    <div className="rounded-xl bg-gradient-to-r from-[#123c8c] to-[#1e56b8] px-2 py-1 text-[10px] font-black text-white shadow-md shadow-blue-900/15 sm:rounded-2xl sm:px-4 sm:py-2 md:text-sm">
+                      {currentDate || "Memuat tanggal..."}
                     </div>
                   </div>
 
-                  <p className="mt-3 text-sm font-bold text-slate-500 md:text-base">
-                    {currentDate || "Memuat tanggal..."}
-                  </p>
-
-                  <p className="mt-3 text-sm font-semibold text-slate-500 md:mt-5 md:text-lg">
+                  <p className="mt-1.5 text-[11px] font-semibold text-slate-500 sm:text-sm md:mt-5 md:text-lg">
                     {workScheduleText}
                   </p>
 
-                  <p className="mt-1 text-sm font-semibold text-slate-500 md:mt-3 md:text-lg">
+                  <p className="mt-0.5 text-[11px] font-semibold text-slate-500 sm:text-sm md:mt-3 md:text-lg">
                     Status hari ini:{" "}
                     <span className="font-black text-[#123c8c]">
                       {attendanceToday.status}
@@ -799,7 +780,7 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 lg:w-[460px]">
+                <div className="flex w-[140px] shrink-0 flex-col gap-2.5 sm:w-[160px] md:w-[380px] md:flex-row md:gap-4 lg:w-[440px]">
                   <AttendanceButton
                     label="Masuk"
                     href="/presensi"

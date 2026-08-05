@@ -850,7 +850,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                   {attendanceItems.map((item) => (
                     <div
                       key={item.label}
-                      className={`rounded-2xl border p-5 ${item.className}`}
+                      className={`flex flex-col items-center justify-center text-center rounded-2xl border p-5 ${item.className}`}
                     >
                       <p className="text-xs font-bold uppercase tracking-wider opacity-80">
                         {item.label}

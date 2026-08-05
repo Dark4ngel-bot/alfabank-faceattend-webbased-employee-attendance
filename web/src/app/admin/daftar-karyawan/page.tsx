@@ -1255,7 +1255,7 @@ export default function AdminEmployeesPage() {
         </section>
 
         <section
-          className="employee-enter mt-6 rounded-[2rem] border border-white/70 bg-white/90 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl"
+          className="employee-enter mt-6 rounded-[1.75rem] border border-white/70 bg-white/90 p-3 sm:p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl"
           style={{ animationDelay: "120ms" }}
         >
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -1293,143 +1293,201 @@ export default function AdminEmployeesPage() {
             </div>
           </div>
 
-          <div className="mt-5 overflow-hidden rounded-3xl border border-blue-100 bg-white">
-            <div className="md:min-w-[1040px]">
-              <div className="hidden grid-cols-[1.25fr_minmax(210px,1.15fr)_1fr_0.75fr_0.65fr_0.7fr_0.85fr] items-center bg-[#f6f8ff] px-5 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
-                <p>Karyawan</p>
-                <p>Email</p>
-                <p>Kantor</p>
-                <p>Shift</p>
-                <p>WFH</p>
-                <p>Status</p>
-                <p className="text-center">Aksi</p>
+          <div className="mt-5 space-y-3 md:hidden">
+            {isLoading && (
+              <div className="rounded-3xl border border-blue-100 bg-white p-8 text-center font-black text-slate-700">
+                Loading employee data...
               </div>
+            )}
 
-              <div className="divide-y divide-blue-50">
-                {isLoading && (
-                  <div className="employee-row-enter px-5 py-10 text-center">
-                    <p className="font-black text-slate-700">
-                      Loading employee data...
-                    </p>
+            {!isLoading &&
+              filteredEmployees.map((employee, index) => (
+                <div
+                  key={employee.id}
+                  onClick={() =>
+                    router.push(`/admin/daftar-karyawan/${employee.id}`)
+                  }
+                  className="employee-row-enter rounded-3xl border border-blue-100 bg-white p-4 shadow-sm transition active:bg-blue-50"
+                  style={{ animationDelay: `${index * 45}ms` }}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <EmployeeAvatar employee={employee} />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black text-slate-950">
+                          {employee.name}
+                        </p>
+                        <p className="truncate text-xs font-bold text-slate-500">
+                          {employee.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`inline-flex shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black ${
+                        employee.status === "active"
+                          ? "bg-emerald-50 text-emerald-600"
+                          : "bg-slate-100 text-slate-500"
+                      }`}
+                    >
+                      {formatStatus(employee.status)}
+                    </span>
                   </div>
+
+                  <div className="mt-3 grid grid-cols-3 gap-2 rounded-2xl bg-[#f6f8ff] p-3 text-center">
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-slate-400">Kantor</p>
+                      <p className="mt-0.5 truncate text-xs font-black text-slate-700">
+                        {getRelationName(employee.registered_office)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-slate-400">Shift</p>
+                      <p className="mt-0.5 truncate text-xs font-black text-slate-700">
+                        {getRelationName(employee.shift)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-[#123c8c]">WFH</p>
+                      <p className="mt-0.5 text-xs font-black text-[#123c8c]">
+                        {formatWfhQuota(employee.wfh_quota_monthly)} Hari
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(employee);
+                      }}
+                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-blue-100 bg-white px-3 text-xs font-black text-[#123c8c]"
+                    >
+                      <Edit size={14} />
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteEmployee(employee);
+                      }}
+                      disabled={deletingId === employee.id}
+                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 text-xs font-black text-red-600"
+                    >
+                      <Trash2 size={14} />
+                      {deletingId === employee.id ? "..." : "Hapus"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          <div className="mt-5 hidden overflow-hidden rounded-3xl border border-blue-100 bg-white md:block">
+            <table className="w-full table-fixed border-collapse text-left">
+              <thead>
+                <tr className="bg-[#f6f8ff] text-[11px] font-black uppercase tracking-[0.18em] text-[#123c8c]">
+                  <th className="w-[22%] px-4 py-4">Karyawan</th>
+                  <th className="w-[20%] px-4 py-4">Email</th>
+                  <th className="w-[12%] px-3 py-4">Kantor</th>
+                  <th className="w-[11%] px-3 py-4">Shift</th>
+                  <th className="w-[7%] px-2 py-4 text-center">WFH</th>
+                  <th className="w-[8%] px-2 py-4 text-center">Status</th>
+                  <th className="w-[20%] px-2 py-4 text-center">Aksi</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-blue-50">
+                {isLoading && (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-10 text-center font-black text-slate-700">
+                      Loading employee data...
+                    </td>
+                  </tr>
                 )}
 
                 {!isLoading &&
                   filteredEmployees.map((employee, index) => (
-                    <div
+                    <tr
                       key={employee.id}
-                      role="button"
-                      tabIndex={0}
                       onClick={() =>
                         router.push(`/admin/daftar-karyawan/${employee.id}`)
                       }
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          router.push(`/admin/daftar-karyawan/${employee.id}`);
-                        }
-                      }}
-                      className="employee-row-enter cursor-pointer px-4 py-4 transition duration-200 hover:bg-[#f8fbff] active:bg-[#eef4ff] md:grid md:min-h-[78px] md:grid-cols-[1.25fr_minmax(210px,1.15fr)_1fr_0.75fr_0.65fr_0.7fr_0.85fr] md:items-center md:gap-3 md:px-5"
+                      className="employee-row-enter cursor-pointer transition duration-200 hover:bg-[#f8fbff] active:bg-[#eef4ff]"
                       style={{
                         animationDelay: `${index * 45}ms`,
                       }}
                     >
-                      <div className="md:hidden">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex min-w-0 items-center gap-3">
-                            <EmployeeAvatar employee={employee} />
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <EmployeeAvatar employee={employee} />
 
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-black text-slate-950">
-                                {employee.name}
-                              </p>
-                              <p className="mt-0.5 truncate text-[11px] font-black uppercase tracking-[0.12em] text-[#123c8c]">
-                                {employee.employee_code ? `${employee.employee_code} • ` : ""}
-                                {getRelationName(employee.department) !== "-"
-                                  ? getRelationName(employee.department)
-                                  : getRelationName(employee.jabatan)}
-                              </p>
-                              <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
-                                <p className="truncate text-xs font-bold text-slate-500">
-                                  {employee.email}
-                                </p>
-                                <span
-                                  className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                                    String(
-                                      employee.role || "",
-                                    ).toLowerCase() === "admin" ||
-                                    String(
-                                      employee.role || "",
-                                    ).toLowerCase() === "owner"
-                                      ? "bg-blue-50 text-[#123c8c]"
-                                      : "bg-slate-100 text-slate-500"
-                                  }`}
-                                >
-                                  {formatRole(employee.role)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <span
-                            className={`inline-flex shrink-0 rounded-full px-3 py-1 text-[11px] font-black ${
-                              employee.status === "active"
-                                ? "bg-emerald-50 text-emerald-600"
-                                : "bg-slate-100 text-slate-500"
-                            }`}
-                          >
-                            {formatStatus(employee.status)}
-                          </span>
-                        </div>
-
-                        <div className="mt-4 grid grid-cols-2 gap-2">
-                          <div className="rounded-2xl bg-[#f6f8ff] px-3 py-2">
-                            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-                              Kantor
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-black text-slate-950">
+                              {employee.name}
                             </p>
-                            <p className="mt-1 truncate text-xs font-black text-slate-700">
-                              {getRelationName(employee.registered_office)}
+                            <p className="mt-0.5 truncate text-[11px] font-black uppercase tracking-[0.12em] text-[#123c8c]">
+                              {employee.employee_code ? `${employee.employee_code} • ` : ""}
+                              {getRelationName(employee.department) !== "-"
+                                ? getRelationName(employee.department)
+                                : getRelationName(employee.jabatan)}
                             </p>
-                          </div>
-
-                          <div className="rounded-2xl bg-[#f6f8ff] px-3 py-2">
-                            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-                              Shift
-                            </p>
-                            <p className="mt-1 truncate text-xs font-black text-slate-700">
-                              {getRelationName(employee.shift)}
-                            </p>
-                          </div>
-
-                          <div className="rounded-2xl bg-[#f6f8ff] px-3 py-2">
-                            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-                              Kuota WFH
-                            </p>
-                            <p className="mt-1 truncate text-xs font-black text-slate-700">
-                              {formatWfhQuota(employee.wfh_quota_monthly)} Hari
-                            </p>
-                          </div>
-
-                          <div className="rounded-2xl bg-[#f6f8ff] px-3 py-2">
-                            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-                              Kuota Cuti
-                            </p>
-                            <p className="mt-1 truncate text-xs font-black text-[#123c8c]">
-                              {formatLeaveQuota(employee.annual_leave_quota)}
-                            </p>
+                            <span
+                              className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-black ${
+                                String(employee.role || "").toLowerCase() ===
+                                  "admin" ||
+                                String(employee.role || "").toLowerCase() ===
+                                  "owner"
+                                  ? "bg-blue-50 text-[#123c8c]"
+                                  : "bg-slate-100 text-slate-500"
+                              }`}
+                            >
+                              {formatRole(employee.role)}
+                            </span>
                           </div>
                         </div>
+                      </td>
 
-                        <div className="mt-3 grid grid-cols-2 gap-2">
+                      <td className="px-4 py-4 text-sm font-semibold text-slate-600">
+                        <p className="truncate">{employee.email}</p>
+                      </td>
+
+                      <td className="px-3 py-4 text-sm font-semibold text-slate-600">
+                        <p className="truncate">{getRelationName(employee.registered_office)}</p>
+                      </td>
+
+                      <td className="px-3 py-4 text-sm font-semibold text-slate-600">
+                        <p className="truncate">{getRelationName(employee.shift)}</p>
+                      </td>
+
+                      <td className="px-2 py-4 text-center text-sm font-black text-[#123c8c]">
+                        {formatWfhQuota(employee.wfh_quota_monthly)}
+                      </td>
+
+                      <td className="px-2 py-4 text-center">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-black ${
+                            employee.status === "active"
+                              ? "bg-emerald-50 text-emerald-600"
+                              : "bg-slate-100 text-slate-500"
+                          }`}
+                        >
+                          {formatStatus(employee.status)}
+                        </span>
+                      </td>
+
+                      <td className="px-2 py-4 text-center">
+                        <div className="inline-flex items-center justify-center gap-1.5">
                           <button
                             type="button"
                             onClick={(event) => {
                               event.stopPropagation();
                               openEditModal(employee);
                             }}
-                            className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 text-xs font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.97]"
+                            className="inline-flex h-9 items-center justify-center gap-1 rounded-xl border border-blue-100 bg-white px-2.5 text-xs font-black text-[#123c8c] shadow-none transition hover:bg-[#eaf1ff]"
                           >
-                            <Edit size={15} />
+                            <Edit size={14} />
                             Edit
                           </button>
 
@@ -1440,114 +1498,29 @@ export default function AdminEmployeesPage() {
                               handleDeleteEmployee(employee);
                             }}
                             disabled={deletingId === employee.id}
-                            className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 text-xs font-black text-red-600 transition hover:bg-red-100 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex h-9 items-center justify-center gap-1 rounded-xl border border-red-100 bg-red-50 px-2.5 text-xs font-black text-red-600 transition hover:bg-red-100 disabled:opacity-50"
                           >
-                            <Trash2 size={15} />
+                            <Trash2 size={14} />
                             {deletingId === employee.id ? "..." : "Hapus"}
                           </button>
                         </div>
-                      </div>
-
-                      <div className="hidden min-w-0 items-center gap-3 md:flex">
-                        <EmployeeAvatar employee={employee} />
-
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-black text-slate-950">
-                            {employee.name}
-                          </p>
-                          <p className="mt-0.5 truncate text-[11px] font-black uppercase tracking-[0.12em] text-[#123c8c]">
-                            {employee.employee_code ? `${employee.employee_code} • ` : ""}
-                            {getRelationName(employee.department) !== "-"
-                              ? getRelationName(employee.department)
-                              : getRelationName(employee.jabatan)}
-                          </p>
-                          <span
-                            className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-black ${
-                              String(employee.role || "").toLowerCase() ===
-                                "admin" ||
-                              String(employee.role || "").toLowerCase() ===
-                                "owner"
-                                ? "bg-blue-50 text-[#123c8c]"
-                                : "bg-slate-100 text-slate-500"
-                            }`}
-                          >
-                            {formatRole(employee.role)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <p className="hidden min-w-0 truncate text-sm font-semibold text-slate-600 md:block">
-                        {employee.email}
-                      </p>
-
-                      <div className="hidden min-w-0 text-sm font-semibold text-slate-600 md:block">
-                        <p className="truncate">
-                          {getRelationName(employee.registered_office)}
-                        </p>
-                      </div>
-
-                      <p className="hidden min-w-0 truncate text-sm font-semibold text-slate-600 md:block">
-                        {getRelationName(employee.shift)}
-                      </p>
-
-                      <p className="hidden min-w-0 truncate text-sm font-black text-[#123c8c] md:block">
-                        {formatWfhQuota(employee.wfh_quota_monthly)}
-                      </p>
-
-                      <div className="hidden md:flex md:justify-start">
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${
-                            employee.status === "active"
-                              ? "bg-emerald-50 text-emerald-600"
-                              : "bg-slate-100 text-slate-500"
-                          }`}
-                        >
-                          {formatStatus(employee.status)}
-                        </span>
-                      </div>
-
-                      <div className="hidden gap-2 md:flex md:justify-center">
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            openEditModal(employee);
-                          }}
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-blue-100 bg-white px-3 py-0 text-xs font-black text-[#123c8c] shadow-none transition hover:bg-[#eaf1ff] active:scale-[0.97]"
-                        >
-                          <Edit size={15} />
-                          Edit
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleDeleteEmployee(employee);
-                          }}
-                          disabled={deletingId === employee.id}
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-0 text-xs font-black text-red-600 transition hover:bg-red-100 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <Trash2 size={15} />
-                          {deletingId === employee.id ? "..." : "Hapus"}
-                        </button>
-                      </div>
-                    </div>
+                      </td>
+                    </tr>
                   ))}
-
-                {!isLoading && filteredEmployees.length === 0 && (
-                  <div className="employee-row-enter px-5 py-10 text-center">
-                    <p className="font-black text-slate-700">
-                      Data tidak ditemukan
-                    </p>
-                    <p className="mt-1 text-sm text-slate-400">
-                      Coba gunakan keyword pencarian lain.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
+
+            {!isLoading && filteredEmployees.length === 0 && (
+              <div className="employee-row-enter px-5 py-10 text-center">
+                <p className="font-black text-slate-700">
+                  Data tidak ditemukan
+                </p>
+                <p className="mt-1 text-sm text-slate-400">
+                  Coba gunakan keyword pencarian lain.
+                </p>
+              </div>
+            )}
         </section>
       </main>
 
@@ -1561,15 +1534,11 @@ export default function AdminEmployeesPage() {
                   {editingEmployee ? "Perbarui Karyawan" : "Tambah Karyawan"}
                 </div>
 
-                <h2 className="mt-4 text-2xl font-black text-slate-950">
+                <h2 className="mt-1 text-xl font-black text-slate-950 md:text-2xl">
                   {editingEmployee
                     ? "Perbarui Data Karyawan"
                     : "Tambah Karyawan Baru"}
                 </h2>
-
-                <p className="mt-1 text-sm leading-6 text-slate-500">
-                  Isi & perbarui data karyawan melalui 4 tab terstruktur di bawah.
-                </p>
               </div>
 
               <button

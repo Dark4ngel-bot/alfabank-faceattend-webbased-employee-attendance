@@ -299,11 +299,7 @@ export default function ShiftsPage() {
         <div className="page-enter rounded-[2rem] border border-white/70 bg-white/95 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl md:p-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
-                Master Data Admin Panel
-              </p>
-
-              <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
+              <h1 className="text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
                 SHIFT KERJA
               </h1>
             </div>

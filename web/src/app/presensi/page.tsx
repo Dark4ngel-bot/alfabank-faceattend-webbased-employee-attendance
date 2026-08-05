@@ -3121,9 +3121,21 @@ export default function AttendancePage() {
                 Presensi Wajah
               </h1>
 
-              <p className="mt-1 text-xs font-bold text-slate-500">
-                Mode: {getWorkModeLabel(workMode)}
-              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-slate-500">
+                <span>Mode: {getWorkModeLabel(workMode)}</span>
+                {currentUser?.shift?.start_time && (
+                  <>
+                    <span>•</span>
+                    <span className="text-[#123c8c]">
+                      Jam: {currentUser.shift.start_time}-{currentUser.shift.end_time || "17:00"}
+                    </span>
+                    <span>•</span>
+                    <span className="text-[#123c8c]">
+                      Tol: {currentUser.shift.tolerance_minutes ?? 5}m
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
 
             <CameraStatusIcon
@@ -3149,9 +3161,7 @@ export default function AttendancePage() {
                   Ambil Presensi
                 </h2>
 
-                <p className="mt-1 text-sm font-medium text-slate-500">
-                  Foto, GPS, dan mode presensi akan disimpan sebagai bukti.
-                </p>
+
               </div>
 
               <StatusPill
