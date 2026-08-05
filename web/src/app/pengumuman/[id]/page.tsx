@@ -12,6 +12,7 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import { markAnnouncementAsRead } from "@/lib/announcement-read";
 
 type Announcement = {
   id: string;
@@ -135,7 +136,11 @@ export default function EmployeeAnnouncementDetailPage() {
         return;
       }
 
-      setAnnouncement(data.announcement || data.data || null);
+      const targetAnnouncement = data.announcement || data.data || null;
+      setAnnouncement(targetAnnouncement);
+      if (targetAnnouncement?.id) {
+        markAnnouncementAsRead(targetAnnouncement.id);
+      }
     } catch (error) {
       setAnnouncement(null);
       setErrorMessage(
