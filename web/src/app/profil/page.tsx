@@ -1326,10 +1326,6 @@ export function ProfilPageContent({
               </button>
 
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
-                  Data Pribadi
-                </p>
-
                 <h1 className="mt-1 text-3xl font-black text-[#123456]">
                   Info Pribadi
                 </h1>
@@ -1472,7 +1468,6 @@ export function ProfilPageContent({
                 <SectionRow
                   icon={UserRound}
                   title="Info Pribadi"
-                  subtitle="Lihat detail data karyawan"
                   onClick={() => router.push(`/profil/${user.id}`)}
                   delay="120ms"
                 />
@@ -1532,7 +1527,6 @@ export function ProfilPageContent({
                 <SectionRow
                   icon={LockKeyhole}
                   title="Ubah Kata Sandi"
-                  subtitle="Perbarui password akun"
                   onClick={openPasswordModal}
                   delay="200ms"
                   isLast
