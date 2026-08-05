@@ -30,8 +30,8 @@ export async function PATCH(
     const swapRequest = await prisma.shiftSwapRequest.findUnique({
       where: { id: swapId },
       include: {
-        requester: { select: { id: true, name: true } },
-        target_user: { select: { id: true, name: true } },
+        requester: { select: { id: true, name: true, shift_id: true } },
+        target_user: { select: { id: true, name: true, shift_id: true } },
       },
     });
 
@@ -63,11 +63,44 @@ export async function PATCH(
       data: { status: newStatus },
     });
 
+    if (action === "approve") {
+      const reqShiftId = swapRequest.requester.shift_id;
+      const targetShiftId = swapRequest.target_user.shift_id;
+
+      if (reqShiftId && targetShiftId) {
+        await prisma.user.update({
+          where: { id: swapRequest.requester_id },
+          data: { shift_id: targetShiftId },
+        });
+        await prisma.user.update({
+          where: { id: swapRequest.target_user_id },
+          data: { shift_id: reqShiftId },
+        });
+      }
+    }
+
+    try {
+      await prisma.adminNotification.create({
+        data: {
+          user_id: swapRequest.requester_id,
+          type: "shift_swap",
+          title: action === "approve" ? "Tukar Shift Disetujui" : "Tukar Shift Ditolak",
+          message:
+            action === "approve"
+              ? `${swapRequest.target_user.name} menyetujui tukar shift (${swapRequest.requester_shift_name} ↔ ${swapRequest.target_shift_name}). Jadwal shift kamu otomatis disesuaikan.`
+              : `${swapRequest.target_user.name} menolak pengajuan tukar shift (${swapRequest.requester_shift_name} ↔ ${swapRequest.target_shift_name}).`,
+          status: "unread",
+        },
+      });
+    } catch {
+      // ignore
+    }
+
     return NextResponse.json({
       success: true,
       message:
         action === "approve"
-          ? `Permintaan tukar shift dari ${swapRequest.requester.name} telah kamu setujui. Jadwal shift pada tanggal yang dipilih otomatis disesuaikan.`
+          ? `Permintaan tukar shift dari ${swapRequest.requester.name} telah kamu setujui. Shift kalian berdua otomatis ditukar!`
           : `Permintaan tukar shift dari ${swapRequest.requester.name} telah kamu tolak.`,
       request: updatedSwap,
     });

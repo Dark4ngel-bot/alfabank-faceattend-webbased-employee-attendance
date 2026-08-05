@@ -216,6 +216,9 @@ export default function TukarShiftPage() {
       }
 
       setAlertState({ type: "success", message: json.message });
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("notification-count-changed"));
+      }
       await loadData();
     } catch (err) {
       console.error("SWAP_ACTION_ERROR:", err);
