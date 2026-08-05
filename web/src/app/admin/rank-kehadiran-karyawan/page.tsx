@@ -131,7 +131,7 @@ function getPositionStatusLabel(value?: string | null) {
 
   if (!text) return "-";
   if (normalized.includes("tetap") || normalized.includes("kartap")) {
-    return "Tetap (Kartap)";
+    return "Karyawan Tetap";
   }
   if (normalized.includes("magang")) return "Magang";
   if (normalized.includes("kontrak")) return "Kontrak";
@@ -500,22 +500,22 @@ export default function AdminAttendanceRankPage() {
                 <AppLoadingState text="Memuat rank kehadiran karyawan..." />
               </div>
             ) : rankedEmployees.length ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-[1100px] w-full border-collapse text-left">
+              <div className="w-full overflow-x-auto">
+                <table className="w-full border-collapse text-left">
                   <thead>
                     <tr className="bg-[#eef5ff] text-xs font-black uppercase tracking-[0.08em] text-slate-500">
-                      <th className="w-20 px-5 py-4">Rank</th>
+                      <th className="w-20 px-5 py-4 text-center">Rank</th>
                       <th className="px-5 py-4">{sortLabels.name}</th>
-                      <th className="px-5 py-4">{sortLabels.hadir}</th>
-                      <th className="px-5 py-4">Total Kerja</th>
-                      <th className="px-5 py-4 text-[#123c8c]">
+                      <th className="px-5 py-4 text-center">{sortLabels.hadir}</th>
+                      <th className="px-5 py-4 text-center">Total Kerja</th>
+                      <th className="px-5 py-4 text-center text-[#123c8c]">
                         {sortLabels.terlambat}
                       </th>
-                      <th className="px-5 py-4">Kerja Bersih</th>
-                      <th className="px-5 py-4">{sortLabels.izinSakit}</th>
-                      <th className="px-5 py-4">{sortLabels.cuti}</th>
-                      <th className="px-5 py-4">{sortLabels.sisaKontrak}</th>
-                      <th className="px-5 py-4">{sortLabels.statusPosisi}</th>
+                      <th className="px-5 py-4 text-center">Durasi Efektif</th>
+                      <th className="px-5 py-4 text-center">{sortLabels.izinSakit}</th>
+                      <th className="px-5 py-4 text-center">{sortLabels.cuti}</th>
+                      <th className="px-5 py-4 text-center">{sortLabels.sisaKontrak}</th>
+                      <th className="px-5 py-4 text-center">{sortLabels.statusPosisi}</th>
                     </tr>
                   </thead>
 
@@ -531,7 +531,7 @@ export default function AdminAttendanceRankPage() {
                           className="cursor-pointer transition hover:bg-[#f8fbff]"
                         >
                           <td className="px-5 py-4">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#eef5ff] text-sm font-black text-[#123c8c] ring-1 ring-blue-100">
+                            <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-[#eef5ff] text-sm font-black text-[#123c8c] ring-1 ring-blue-100">
                               {index + 1}
                             </div>
                           </td>
@@ -561,27 +561,27 @@ export default function AdminAttendanceRankPage() {
                             </div>
                           </td>
 
-                          <td className="px-5 py-4 text-sm font-black text-emerald-600">
+                          <td className="px-5 py-4 text-center text-sm font-black text-emerald-600">
                             {employee.summary.hadir}
                           </td>
-                          <td className="px-5 py-4 text-sm font-black text-[#123c8c]">
+                          <td className="px-5 py-4 text-center text-sm font-black text-[#123c8c]">
                             {formatMinutes(
                               Number(employee.summary.totalWorkMinutes || 0),
                             )}
                           </td>
-                          <td className="px-5 py-4 text-sm font-black text-orange-600">
+                          <td className="px-5 py-4 text-center text-sm font-black text-orange-600">
                             {employee.lateMinutes}
                           </td>
-                          <td className="px-5 py-4 text-sm font-black text-emerald-700">
+                          <td className="px-5 py-4 text-center text-sm font-black text-emerald-700">
                             {formatMinutes(employee.netWorkMinutes)}
                           </td>
-                          <td className="px-5 py-4 text-sm font-black text-orange-500">
+                          <td className="px-5 py-4 text-center text-sm font-black text-orange-500">
                             {employee.izinSakit}
                           </td>
-                          <td className="px-5 py-4 text-sm font-black text-[#123c8c]">
+                          <td className="px-5 py-4 text-center text-sm font-black text-[#123c8c]">
                             {employee.summary.cuti}
                           </td>
-                          <td className="px-5 py-4">
+                          <td className="px-5 py-4 text-center">
                             <span
                               className={`inline-flex rounded-full px-3 py-1.5 text-xs font-black ring-1 ${getContractBadgeClass(
                                 employee.remainingContractDays,
@@ -590,7 +590,7 @@ export default function AdminAttendanceRankPage() {
                               {employee.remainingContractLabel}
                             </span>
                           </td>
-                          <td className="px-5 py-4">
+                          <td className="px-5 py-4 text-center">
                             <span className="inline-flex items-center gap-2 text-sm font-black text-[#123456]">
                               {employee.positionStatusLabel}
                             </span>

@@ -245,15 +245,9 @@ export default function EmployeeNotificationPage() {
         <div className="mt-6 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-blue-100 md:p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
-                Notification Center
-              </p>
-              <h3 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
+              <h3 className="text-2xl font-black tracking-tight text-slate-950">
                 Notifikasi Karyawan
               </h3>
-              <p className="mt-1 text-sm font-semibold text-slate-500">
-                Daftar ini otomatis menampilkan notifikasi pada bulan berjalan.
-              </p>
             </div>
 
           </div>

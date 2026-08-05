@@ -369,7 +369,7 @@ function OfficeFormPanel({
             label="Nama Kantor"
             value={form.name}
             onChange={(event) => onChange("name", event.target.value)}
-            placeholder="Contoh: AlfaBank Pusat"
+            placeholder="Contoh: Creativemu Academy"
             className="office-field focus:ring-4 focus:ring-blue-100"
           />
         </div>
@@ -730,11 +730,6 @@ export default function AdminOfficePage() {
                     <h1 className="mt-2 break-words text-3xl font-black tracking-tight md:text-4xl">
                       Data Kantor
                     </h1>
-
-                    <p className="mt-3 max-w-2xl break-words text-sm font-semibold leading-7 text-blue-100">
-                      Titik lokasi kantor digunakan untuk menentukan apakah
-                      karyawan berada di dalam radius saat presensi.
-                    </p>
                   </div>
                 </div>
 

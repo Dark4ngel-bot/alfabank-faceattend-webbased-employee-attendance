@@ -772,9 +772,11 @@ export default function AdminEmployeeAttendanceRecapPage() {
                               .filter(Boolean)
                               .join(" / ") || employee.email}
                           </p>
-                          <p className="mt-2 text-xs font-black uppercase tracking-[0.1em] text-[#123c8c]">
-                            Kerja bersih {formatWorkDuration(netWorkMinutes)}
-                          </p>
+                          {netWorkMinutes > 0 ? (
+                            <p className="mt-2 text-xs font-black uppercase tracking-[0.1em] text-[#123c8c]">
+                              Kerja bersih {formatWorkDuration(netWorkMinutes)}
+                            </p>
+                          ) : null}
                         </div>
 
                         <span

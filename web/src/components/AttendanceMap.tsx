@@ -498,11 +498,7 @@ export default function AttendancePage() {
                 </div>
               </div>
 
-              <p className="relative mt-5 text-sm leading-7 text-blue-100">
-                Sistem akan menyimpan foto, waktu, koordinat GPS, akurasi GPS,
-                dan radius kantor sebagai bukti check-in atau check-out
-                karyawan.
-              </p>
+
             </div>
           </div>
 

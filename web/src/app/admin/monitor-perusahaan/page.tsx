@@ -26,6 +26,21 @@ type Summary = {
   activeEmployees: number;
   todayRecords: number;
 
+  monthPresent?: number;
+  monthOffice?: number;
+  monthLate?: number;
+  monthWfh?: number;
+  monthVisit?: number;
+  monthCuti?: number;
+  monthPending?: number;
+
+  monthPresentPercentage?: number;
+  monthLatePercentage?: number;
+  monthWfhPercentage?: number;
+  monthVisitPercentage?: number;
+  monthCutiPercentage?: number;
+  monthPendingPercentage?: number;
+
   present: number;
   office?: number;
   late: number;
@@ -462,31 +477,40 @@ function AnimatedHistogram({
 
 function AttendancePieChart({
   summary,
-  monthLabel,
+  month,
   year,
 }: {
   summary: Summary;
-  monthLabel: string;
+  month: number;
   year: number;
 }) {
   const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
   const totalEmployees = Math.max(toSafeNumber(summary.activeEmployees), 0);
-  const wfh = toSafeNumber(summary.wfh);
-  const visit = toSafeNumber(summary.visit);
-  const cuti = toSafeNumber(summary.cuti);
+
+  const wfh = toSafeNumber(summary.monthWfh ?? summary.wfh);
+  const visit = toSafeNumber(summary.monthVisit ?? summary.visit);
+  const cuti = toSafeNumber(summary.monthCuti ?? summary.cuti);
   const office = Math.max(
-    toSafeNumber(summary.office) || toSafeNumber(summary.present),
+    toSafeNumber(summary.monthOffice ?? summary.office) ||
+      toSafeNumber(summary.monthPresent ?? summary.present),
     0,
   );
-  const totalMonthPresensi = office + wfh + visit + cuti;
-  const base = Math.max(totalMonthPresensi > 0 ? totalMonthPresensi : totalEmployees, 1);
-  const chartItems = [
+  const pending = toSafeNumber(summary.monthPending ?? summary.pending);
+  const base = Math.max(office + wfh + visit + cuti + pending, 1);
+
+  const items = [
     { label: "Hadir", value: office, color: "#8b5cf6" },
     { label: "WFH", value: wfh, color: "#f59e0b" },
     { label: "Kunjungan", value: visit, color: "#ef4444" },
     { label: "Cuti", value: cuti, color: "#14b8a6" },
   ];
-  const hasAttendanceData = totalMonthPresensi > 0;
+  const chartItems = [
+    ...items,
+    { label: "Belum Hadir", value: pending, color: "#e2e8f0" },
+  ];
+  const selectedMonthOption = monthOptions.find((opt) => opt.value === month);
+  const monthLabel = selectedMonthOption ? selectedMonthOption.label : `Bulan ${month}`;
+  const hasAttendanceData = office + wfh + visit + cuti > 0;
   const chartSlices = chartItems.reduce<
     Array<
       (typeof chartItems)[number] & {
@@ -593,16 +617,14 @@ function AttendancePieChart({
           Komposisi Kehadiran
         </p>
         <h4 className="mt-2 text-2xl font-black text-slate-950">
-          {hasAttendanceData
-            ? `Total ${totalMonthPresensi} Presensi & Cuti`
-            : `Persentase dari ${totalEmployees} karyawan`}
+          Persentase dari {totalEmployees} karyawan
         </h4>
         <p className="mt-1 text-xs font-black text-[#123c8c]">
-          Data rekap bulan {monthLabel} {year}
+          Data rekap {monthLabel} {year}
         </p>
         {!hasAttendanceData ? (
           <p className="mt-2 text-sm font-semibold text-slate-500">
-            Belum ada presensi kantor, WFH, kunjungan, atau cuti pada bulan ini.
+            Belum ada presensi kantor, WFH, kunjungan, atau cuti hari ini.
           </p>
         ) : null}
 
@@ -922,7 +944,7 @@ export default function AdminCompanyMonitorPage() {
                 className="monitor-enter rounded-3xl border border-white/70 bg-white/95 p-5 shadow-xl shadow-slate-300/30"
                 style={{ animationDelay: "140ms" }}
               >
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h3 className="text-2xl font-black text-slate-950">
                       Grafik Kehadiran per Tanggal
@@ -934,10 +956,14 @@ export default function AdminCompanyMonitorPage() {
                         {formatMinutes(data.summary.totalLateMinutesMonth)}
                       </span>
                     </p>
+                  </div>
 
-                    <p className="mt-1 text-xs font-bold text-slate-400">
-                      Cuti hari ini: {data.summary.cuti} karyawan.
-                    </p>
+                  <div className="shrink-0 rounded-2xl bg-amber-50 px-4 py-2 text-xs font-bold text-amber-900 ring-1 ring-amber-200/70 sm:text-right">
+                    Cuti hari ini:{" "}
+                    <span className="rounded-lg bg-amber-400/30 px-2 py-0.5 font-black text-amber-950">
+                      {data.summary.cuti}
+                    </span>{" "}
+                    karyawan
                   </div>
                 </div>
 
@@ -954,9 +980,7 @@ export default function AdminCompanyMonitorPage() {
 
                     <AttendancePieChart
                       summary={data.summary}
-                      monthLabel={
-                        monthOptions.find((m) => m.value === month)?.label || ""
-                      }
+                      month={month}
                       year={year}
                     />
                   </>

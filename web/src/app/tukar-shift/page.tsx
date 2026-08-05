@@ -234,7 +234,7 @@ export default function TukarShiftPage() {
     <MobileShell variant="employee">
       <AppHeader title="Tukar Shift" rightLabel="Tukar Shift" />
 
-      <main className="mx-auto max-w-2xl space-y-5 px-4 pb-28 pt-5 sm:px-6">
+      <main className="mx-auto max-w-7xl space-y-6 px-4 pb-28 pt-5 sm:px-6 md:px-10 lg:px-16">
 
         {/* ── INCOMING REQUESTS ALERT ── */}
         {pendingIncoming.length > 0 && (
@@ -336,177 +336,185 @@ export default function TukarShiftPage() {
           </div>
         )}
 
-        {/* ── FORM ── */}
-        <form
-          onSubmit={handleSubmit}
-          className="overflow-hidden rounded-3xl border border-blue-100/80 bg-white shadow-md shadow-blue-100/30"
-        >
-          {/* Header */}
-          <div className="border-b border-blue-50 bg-gradient-to-r from-[#123c8c] to-[#1e56b8] p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-                <ArrowLeftRight size={20} className="text-white" strokeWidth={2.5} />
-              </div>
-              <div>
-                <h2 className="text-base font-black text-white">
-                  Ajukan Tukar Shift
-                </h2>
-                <p className="text-xs font-bold text-blue-200">
-                  Shift kamu: {currentShiftName}
-                </p>
+        {/* ── GRID LAYOUT: FORM (KIRI) & RIWAYAT (KANAN) ── */}
+        <div className="grid gap-6 md:grid-cols-2 md:items-start">
+          {/* ── FORM AJUKAN (KIRI) ── */}
+          <form
+            onSubmit={handleSubmit}
+            className="overflow-hidden rounded-3xl border border-blue-100/80 bg-white shadow-md shadow-blue-100/30"
+          >
+            {/* Header */}
+            <div className="border-b border-blue-50 bg-gradient-to-r from-[#123c8c] to-[#1e56b8] p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                    <ArrowLeftRight size={20} className="text-white" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-black text-white">
+                      Ajukan Tukar Shift
+                    </h2>
+                    <p className="text-xs font-semibold text-blue-200">
+                      Pilih rekan kerja & tanggal
+                    </p>
+                  </div>
+                </div>
+                <div className="rounded-xl bg-white/15 px-3 py-1.5 text-right backdrop-blur-md ring-1 ring-white/20">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-blue-200">Shift Kamu</p>
+                  <p className="text-xs font-black text-white">{currentShiftName}</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Form Fields */}
-          <div className="space-y-4 p-5">
-            {/* Rekan Kerja */}
-            <div>
-              <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
-                <Users size={12} />
-                Rekan Kerja Tujuan
-              </label>
-              <div className="relative">
-                <select
-                  value={targetUserId}
-                  onChange={(e) => setTargetUserId(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-3.5 pr-10 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
-                >
-                  <option value="">Pilih rekan kerja...</option>
-                  {colleagues.map((col) => (
-                    <option key={col.id} value={col.id}>
-                      {col.name} — {col.shiftName}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  size={16}
-                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+            {/* Form Fields */}
+            <div className="space-y-4 p-5">
+              {/* Rekan Kerja */}
+              <div>
+                <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
+                  <Users size={12} />
+                  Rekan Kerja Tujuan
+                </label>
+                <div className="relative">
+                  <select
+                    value={targetUserId}
+                    onChange={(e) => setTargetUserId(e.target.value)}
+                    className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-3.5 pr-10 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  >
+                    <option value="">Pilih rekan kerja...</option>
+                    {colleagues.map((col) => (
+                      <option key={col.id} value={col.id}>
+                        {col.name} — {col.shiftName}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    size={16}
+                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
+                </div>
+                {selectedColleague && (
+                  <p className="mt-1.5 text-[11px] font-bold text-blue-600">
+                    Tukar ke {selectedColleague.shiftName}
+                  </p>
+                )}
+              </div>
+
+              {/* Tanggal */}
+              <div>
+                <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
+                  <Calendar size={12} />
+                  Tanggal Tukar
+                </label>
+                <input
+                  type="date"
+                  value={swapDate}
+                  min={getTodayString()}
+                  onChange={(e) => setSwapDate(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
                 />
               </div>
-              {selectedColleague && (
-                <p className="mt-1.5 text-[11px] font-bold text-blue-600">
-                  Tukar ke {selectedColleague.shiftName}
+
+              {/* Alasan */}
+              <div>
+                <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
+                  <MessageSquare size={12} />
+                  Alasan (Opsional)
+                </label>
+                <textarea
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Contoh: Ada acara keluarga mendadak"
+                  rows={2}
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-300 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={isSubmitting || !targetUserId}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#123c8c] to-[#1e56b8] py-3.5 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:shadow-xl active:scale-[0.98] disabled:opacity-40 disabled:shadow-none"
+              >
+                {isSubmitting ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Send size={16} />
+                )}
+                Kirim Pengajuan
+              </button>
+            </div>
+          </form>
+
+          {/* ── RIWAYAT (KANAN) ── */}
+          <section>
+            <h3 className="mb-3 text-xs font-black uppercase tracking-widest text-slate-500">
+              Riwayat Tukar Shift
+            </h3>
+
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2 rounded-2xl border border-slate-100 bg-white p-8 text-xs font-bold text-slate-400">
+                <Loader2 size={16} className="animate-spin text-blue-500" />
+                Memuat...
+              </div>
+            ) : allHistory.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
+                <ArrowLeftRight size={28} className="mx-auto text-slate-300" />
+                <p className="mt-2 text-xs font-bold text-slate-400">
+                  Belum ada riwayat tukar shift.
                 </p>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {allHistory.map((req) => {
+                  const cfg = getStatusConfig(req.status);
+                  const isOut = req.direction === "out";
 
-            {/* Tanggal */}
-            <div>
-              <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
-                <Calendar size={12} />
-                Tanggal Tukar
-              </label>
-              <input
-                type="date"
-                value={swapDate}
-                min={getTodayString()}
-                onChange={(e) => setSwapDate(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
-              />
-              <p className="mt-1 text-[11px] font-bold text-slate-400">
-                <Clock size={11} className="mr-0.5 inline" />
-                {formatDateLabel(swapDate)} — bisa hari ini juga
-              </p>
-            </div>
-
-            {/* Alasan */}
-            <div>
-              <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
-                <MessageSquare size={12} />
-                Alasan (Opsional)
-              </label>
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Contoh: Ada acara keluarga mendadak"
-                rows={2}
-                className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-300 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isSubmitting || !targetUserId}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#123c8c] to-[#1e56b8] py-3.5 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:shadow-xl active:scale-[0.98] disabled:opacity-40 disabled:shadow-none"
-            >
-              {isSubmitting ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <Send size={16} />
-              )}
-              Kirim Pengajuan
-            </button>
-          </div>
-        </form>
-
-        {/* ── RIWAYAT ── */}
-        <section>
-          <h3 className="mb-3 text-xs font-black uppercase tracking-widest text-slate-500">
-            Riwayat Tukar Shift
-          </h3>
-
-          {isLoading ? (
-            <div className="flex items-center justify-center gap-2 rounded-2xl border border-slate-100 bg-white p-8 text-xs font-bold text-slate-400">
-              <Loader2 size={16} className="animate-spin text-blue-500" />
-              Memuat...
-            </div>
-          ) : allHistory.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
-              <ArrowLeftRight size={28} className="mx-auto text-slate-300" />
-              <p className="mt-2 text-xs font-bold text-slate-400">
-                Belum ada riwayat tukar shift.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {allHistory.map((req) => {
-                const cfg = getStatusConfig(req.status);
-                const isOut = req.direction === "out";
-
-                return (
-                  <div
-                    key={`${req.direction}-${req.id}`}
-                    className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-sm transition hover:shadow-md"
-                  >
+                  return (
                     <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
-                        isOut
-                          ? "bg-orange-50 text-orange-600"
-                          : "bg-blue-50 text-blue-600"
-                      }`}
+                      key={`${req.direction}-${req.id}`}
+                      className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-sm transition hover:shadow-md"
                     >
-                      {isOut ? "↑" : "↓"}
-                    </div>
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
+                          isOut
+                            ? "bg-orange-50 text-orange-600"
+                            : "bg-blue-50 text-blue-600"
+                        }`}
+                      >
+                        {isOut ? "↑" : "↓"}
+                      </div>
 
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-extrabold text-slate-800">
-                        {isOut
-                          ? `Ke: ${req.targetUser?.name || "-"}`
-                          : `Dari: ${req.requester?.name || "-"}`}
-                      </p>
-                      <p className="mt-0.5 text-[11px] font-bold text-slate-400">
-                        {isOut ? req.requesterShiftName : req.requesterShiftName}
-                        {" → "}
-                        {isOut ? req.targetShiftName : req.targetShiftName}
-                        {" · "}
-                        {formatDateLabel(req.swapDate)}
-                      </p>
-                    </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-extrabold text-slate-800">
+                          {isOut
+                            ? `Ke: ${req.targetUser?.name || "-"}`
+                            : `Dari: ${req.requester?.name || "-"}`}
+                        </p>
+                        <div className="mt-1">
+                          <span className="inline-block rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700">
+                            {req.requesterShiftName} → {req.targetShiftName}
+                          </span>
+                        </div>
+                      </div>
 
-                    <span
-                      className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black ring-1 ${cfg.bg} ${cfg.text} ${cfg.ring}`}
-                    >
-                      <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-                      {cfg.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <span className="text-[11px] font-bold text-slate-400">
+                          {formatDateLabel(req.swapDate)}
+                        </span>
+                        <span
+                          className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black ring-1 ${cfg.bg} ${cfg.text} ${cfg.ring}`}
+                        >
+                          <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+                          {cfg.label}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </div>
       </main>
 
       <BottomNav variant="employee" />

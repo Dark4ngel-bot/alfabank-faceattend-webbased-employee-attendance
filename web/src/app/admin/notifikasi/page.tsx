@@ -351,25 +351,21 @@ export default function AdminNotificationsPage() {
       label: "Total Notifikasi",
       value: stats.total,
       icon: Bell,
-      description: "Semua laporan masuk",
     },
     {
       label: "Belum Dibaca",
       value: stats.unread,
       icon: Clock3,
-      description: "Dari AdminNotification",
     },
     {
       label: "Cuti / Sakit / Izin",
       value: stats.leave + stats.sick + stats.permission,
       icon: FileClock,
-      description: "Dari CutiPengajuan",
     },
     {
       label: "WFH / Kunjungan",
       value: stats.wfh + stats.visit,
       icon: MapPin,
-      description: "Dari AdminNotification",
     },
   ];
 
@@ -417,10 +413,6 @@ export default function AdminNotificationsPage() {
                     <h3 className="mt-2 text-3xl font-black text-slate-950">
                       {isLoading ? "-" : item.value}
                     </h3>
-
-                    <p className="mt-1 text-xs font-semibold text-slate-400">
-                      {item.description}
-                    </p>
                   </div>
 
                   <div className="notification-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
