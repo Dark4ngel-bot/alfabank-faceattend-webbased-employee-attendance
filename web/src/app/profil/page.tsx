@@ -1468,7 +1468,6 @@ export function ProfilPageContent({
                 <SectionRow
                   icon={UserRound}
                   title="Info Pribadi"
-                  subtitle="Lihat detail data karyawan"
                   onClick={() => router.push(`/profil/${user.id}`)}
                   delay="120ms"
                 />
@@ -1528,7 +1527,6 @@ export function ProfilPageContent({
                 <SectionRow
                   icon={LockKeyhole}
                   title="Ubah Kata Sandi"
-                  subtitle="Perbarui password akun"
                   onClick={openPasswordModal}
                   delay="200ms"
                   isLast
