@@ -431,15 +431,6 @@ function getShiftEndTime(shiftName?: string | null) {
   return "17:00"; // Shift Utama
 }
 
-function getShiftCheckOutOpenTime(shiftName?: string | null) {
-  const name = String(shiftName || "").toUpperCase();
-
-  if (name.includes("SIANG")) return "20:50";
-  if (name.includes("PAGI")) return "15:20";
-
-  return "16:50"; // Shift Utama (10 menit sebelum 17.00)
-}
-
 function getJakartaDayOfWeek() {
   return new Intl.DateTimeFormat("en-US", {
     timeZone: "Asia/Jakarta",
@@ -568,10 +559,10 @@ function isLateCheckInNow(user: CurrentUser | null) {
 
 function getEarlyCheckoutMinutes(user: CurrentUser | null) {
   const nowMinutes = getJakartaMinutesNow();
-  const openTimeStr = getShiftCheckOutOpenTime(user?.shift?.name);
-  const openMinutes = timeToMinutes(openTimeStr);
+  const endTimeStr = getShiftEndTimeFromUser(user);
+  const endMinutes = timeToMinutes(endTimeStr);
 
-  return nowMinutes < openMinutes ? openMinutes - nowMinutes : 0;
+  return nowMinutes < endMinutes ? endMinutes - nowMinutes : 0;
 }
 
 function formatDurationHoursMinutes(totalMinutes: number) {
