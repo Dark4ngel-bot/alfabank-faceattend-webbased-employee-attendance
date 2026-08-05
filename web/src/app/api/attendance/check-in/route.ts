@@ -730,7 +730,34 @@ export async function POST(req: NextRequest) {
     const now = new Date();
     const today = getTodayDateOnly();
     const todayName = getDayOfWeekEnum(now);
-    const todaySchedule = user.shift?.work_schedules?.find((schedule) => {
+    const effectiveShiftName = await getEffectiveShiftNameForDate(
+      userId,
+      today,
+      user.shift?.name,
+    );
+    const effectiveShift =
+      effectiveShiftName && effectiveShiftName !== user.shift?.name
+        ? await prisma.shift.findFirst({
+            where: { name: effectiveShiftName },
+            select: {
+              id: true,
+              name: true,
+              tolerance_minutes: true,
+              start_time: true,
+              end_time: true,
+              check_in_open: true,
+              check_out_open: true,
+              work_schedules: {
+                select: {
+                  day_of_week: true,
+                  is_work_day: true,
+                  check_in_time: true,
+                },
+              },
+            },
+          })
+        : user.shift;
+    const todaySchedule = effectiveShift?.work_schedules?.find((schedule) => {
       return String(schedule.day_of_week).toUpperCase() === todayName;
     });
 
@@ -1039,20 +1066,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const effectiveShiftName = await getEffectiveShiftNameForDate(
-      userId,
-      today,
-      user.shift?.name,
-    );
-
     const startTime = shouldValidateLate
       ? normalizeScheduleTime(todaySchedule?.check_in_time) ||
-        user.shift?.start_time ||
+        effectiveShift?.start_time ||
         getShiftStartTime(effectiveShiftName)
       : null;
 
     const toleranceMinutes = shouldValidateLate
-      ? user.shift?.tolerance_minutes || 5
+      ? Number(effectiveShift?.tolerance_minutes ?? user.shift?.tolerance_minutes ?? 5)
       : 0;
 
     const lateMinutes =
@@ -1074,7 +1095,7 @@ export async function POST(req: NextRequest) {
             "Kamu sudah melewati batas toleransi. Alasan telat wajib diisi.",
           lateMinutes,
           schedule: {
-            shift: user.shift?.name || "Tanpa Shift",
+            shift: effectiveShiftName || user.shift?.name || "Tanpa Shift",
             startTime,
             toleranceMinutes,
           },
@@ -1218,12 +1239,12 @@ export async function POST(req: NextRequest) {
       isLateValidationSkipped: isVisitMode,
       schedule: shouldValidateLate
         ? {
-            shift: user.shift?.name || "Tanpa Shift",
+            shift: effectiveShiftName || user.shift?.name || "Tanpa Shift",
             startTime,
             toleranceMinutes,
           }
         : {
-            shift: user.shift?.name || "Tanpa Shift",
+            shift: effectiveShiftName || user.shift?.name || "Tanpa Shift",
             startTime: null,
             toleranceMinutes: 0,
             note: "Mode kunjungan tidak terikat jadwal shift dan toleransi keterlambatan.",

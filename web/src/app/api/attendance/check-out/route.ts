@@ -7,6 +7,7 @@ import { isPhoneAttendanceRequest } from "@/lib/attendance-device";
 import { requireAuth } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
+import { getEffectiveShiftNameForDate } from "@/lib/shift-swap-schema";
 import {
   findActiveLeaveForDate,
   formatJakartaDate,
@@ -924,8 +925,35 @@ export async function POST(req: NextRequest) {
     }
 
     const todayName = getDayOfWeekEnum(now);
+    const effectiveShiftName = await getEffectiveShiftNameForDate(
+      userId,
+      today,
+      user.shift?.name,
+    );
+    const effectiveShift =
+      effectiveShiftName && effectiveShiftName !== user.shift?.name
+        ? await prisma.shift.findFirst({
+            where: { name: effectiveShiftName },
+            select: {
+              id: true,
+              name: true,
+              start_time: true,
+              end_time: true,
+              check_in_open: true,
+              check_out_open: true,
+              work_schedules: {
+                select: {
+                  id: true,
+                  day_of_week: true,
+                  is_work_day: true,
+                  check_out_time: true,
+                },
+              },
+            },
+          })
+        : user.shift;
 
-    const todaySchedule = user.shift?.work_schedules?.find((schedule) => {
+    const todaySchedule = effectiveShift?.work_schedules?.find((schedule) => {
       return String(schedule.day_of_week).toUpperCase() === todayName;
     });
 
@@ -938,8 +966,8 @@ export async function POST(req: NextRequest) {
 
     const scheduledCheckOutTime =
       normalizeScheduleTime(todaySchedule?.check_out_time) ||
-      user.shift?.end_time ||
-      getShiftDefaultCheckOutTime(user.shift?.name);
+      effectiveShift?.end_time ||
+      getShiftDefaultCheckOutTime(effectiveShiftName);
 
     const diffMs = now.getTime() - attendance.check_in_time.getTime();
     const workMinutes = diffMs > 0 ? Math.ceil(diffMs / 60000) : 0;
@@ -1127,7 +1155,7 @@ export async function POST(req: NextRequest) {
         accuracy: Math.round(accuracy),
       },
       schedule: {
-        shift: user.shift?.name || "Tanpa Shift",
+        shift: effectiveShiftName || user.shift?.name || "Tanpa Shift",
         scheduledCheckOutTime,
       },
       workMinutes,

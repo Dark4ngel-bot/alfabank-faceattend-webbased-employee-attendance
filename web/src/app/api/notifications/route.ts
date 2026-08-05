@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
+import { formatShiftSwapDate } from "@/lib/shift-swap-schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -173,7 +174,7 @@ export async function GET(req: NextRequest) {
         type: "shift_swap",
         typeLabel: "Tukar Shift",
         title: "Permintaan Tukar Shift Masuk",
-        message: `${item.requester?.name || "Rekan kerja"} mengajukan tukar shift (${item.requester_shift_name} ↔ ${item.target_shift_name}) untuk tanggal ${item.swap_date.toISOString().slice(0, 10)}.`,
+        message: `${item.requester?.name || "Rekan kerja"} mengajukan tukar shift (${item.requester_shift_name} ↔ ${item.target_shift_name}) untuk tanggal ${formatShiftSwapDate(item.swap_date)}.`,
         status: "unread",
         statusText: "Belum Dibaca",
         isRead: false,
