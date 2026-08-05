@@ -48,6 +48,7 @@ type ParsedAttendanceBody = {
   visitClientName: string;
   visitAddress: string;
   visitNote: string;
+  earlyLeaveReason: string;
 };
 
 type StoredAttendancePhoto =
@@ -392,6 +393,13 @@ async function parseAttendanceBody(
       "visitNote",
       "visitPurpose",
     ]);
+    const earlyLeaveReason = getFormText(formData, [
+      "earlyLeaveReason",
+      "early_leave_reason",
+      "checkOutReason",
+      "checkoutReason",
+      "reason",
+    ]);
 
     if (photo instanceof File) {
       const result = await fileToBuffer(photo);
@@ -407,6 +415,7 @@ async function parseAttendanceBody(
         visitClientName,
         visitAddress,
         visitNote,
+        earlyLeaveReason,
       };
     }
 
@@ -424,6 +433,7 @@ async function parseAttendanceBody(
         visitClientName,
         visitAddress,
         visitNote,
+        earlyLeaveReason,
       };
     }
 
@@ -438,6 +448,7 @@ async function parseAttendanceBody(
       visitClientName,
       visitAddress,
       visitNote,
+      earlyLeaveReason,
     };
   }
 
@@ -492,6 +503,13 @@ async function parseAttendanceBody(
       body.visitNote ??
       body.visitPurpose,
   );
+  const earlyLeaveReason = getText(
+    body.earlyLeaveReason ??
+      body.early_leave_reason ??
+      body.checkOutReason ??
+      body.checkoutReason ??
+      body.reason,
+  );
 
   if (!photoDataUrl) {
     return {
@@ -505,6 +523,7 @@ async function parseAttendanceBody(
       visitClientName,
       visitAddress,
       visitNote,
+      earlyLeaveReason,
     };
   }
 
@@ -521,6 +540,7 @@ async function parseAttendanceBody(
     visitClientName,
     visitAddress,
     visitNote,
+    earlyLeaveReason,
   };
 }
 
@@ -549,6 +569,7 @@ export async function POST(req: NextRequest) {
       visitClientName,
       visitAddress,
       visitNote,
+      earlyLeaveReason,
     } = await parseAttendanceBody(req);
 
     if (!photoBuffer) {
@@ -616,6 +637,10 @@ export async function POST(req: NextRequest) {
           select: {
             id: true,
             name: true,
+            start_time: true,
+            end_time: true,
+            check_in_open: true,
+            check_out_open: true,
             work_schedules: {
               select: {
                 id: true,
@@ -757,10 +782,7 @@ export async function POST(req: NextRequest) {
 
       const activeOffices = await prisma.officeLocation.findMany({
         where: { status: "active" },
-        orderBy: [
-          { id: officeId ? "asc" : "desc" },
-          { name: "asc" },
-        ],
+        orderBy: [{ id: officeId ? "asc" : "desc" }, { name: "asc" }],
         select: {
           id: true,
           name: true,
@@ -839,7 +861,9 @@ export async function POST(req: NextRequest) {
 
       const sortedOfficeGeofences = [
         registeredOfficeGeofence,
-        ...officeGeofences.filter((office) => office.id !== registeredOffice.id),
+        ...officeGeofences.filter(
+          (office) => office.id !== registeredOffice.id,
+        ),
       ];
 
       matchedOffice = findNearestValidOffice(
@@ -914,6 +938,7 @@ export async function POST(req: NextRequest) {
 
     const scheduledCheckOutTime =
       normalizeScheduleTime(todaySchedule?.check_out_time) ||
+      user.shift?.end_time ||
       getShiftDefaultCheckOutTime(user.shift?.name);
 
     const diffMs = now.getTime() - attendance.check_in_time.getTime();
@@ -923,6 +948,20 @@ export async function POST(req: NextRequest) {
       now,
       scheduledCheckOutTime,
     );
+
+    if (earlyLeaveMinutes > 0 && !earlyLeaveReason) {
+      return NextResponse.json(
+        {
+          success: false,
+          requiresEarlyLeaveReason: true,
+          error:
+            "Checkout lebih awal membutuhkan alasan. Silakan isi alasan pulang cepat.",
+          message:
+            "Checkout lebih awal membutuhkan alasan. Silakan isi alasan pulang cepat.",
+        },
+        { status: 400 },
+      );
+    }
 
     const checkOutStatus =
       earlyLeaveMinutes > 0 ? ("EARLY" as const) : ("NORMAL" as const);
@@ -960,6 +999,7 @@ export async function POST(req: NextRequest) {
 
             work_minutes: workMinutes,
             early_leave_minutes: earlyLeaveMinutes,
+            early_leave_reason: earlyLeaveReason || null,
             check_out_status: checkOutStatus,
             activity_note: isFlexibleMode
               ? `Check-out: ${getWorkModeLabel(workMode)}`

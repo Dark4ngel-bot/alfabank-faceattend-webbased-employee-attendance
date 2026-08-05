@@ -92,10 +92,7 @@ export async function GET(req: NextRequest) {
       currentUser.status !== "active" ||
       !VIEW_ROLES.includes(currentUser.role as AllowedRole)
     ) {
-      return NextResponse.json(
-        { message: "Akses ditolak." },
-        { status: 403 },
-      );
+      return NextResponse.json({ message: "Akses ditolak." }, { status: 403 });
     }
 
     await ensureDefaultShifts();
@@ -145,15 +142,17 @@ export async function POST(req: NextRequest) {
       currentUser.status !== "active" ||
       !MANAGE_ROLES.includes(currentUser.role as AllowedRole)
     ) {
-      return NextResponse.json(
-        { message: "Akses ditolak." },
-        { status: 403 },
-      );
+      return NextResponse.json({ message: "Akses ditolak." }, { status: 403 });
     }
 
     const body = await req.json();
     const name = String(body.name || "").trim();
     const status = String(body.status || "active");
+    const toleranceMinutes = Number(body.tolerance_minutes ?? 5);
+    const startTime = String(body.start_time || "08:00");
+    const endTime = String(body.end_time || "17:00");
+    const checkInOpen = String(body.check_in_open || "07:00");
+    const checkOutOpen = String(body.check_out_open || "16:50");
 
     if (!name) {
       return NextResponse.json(
@@ -166,11 +165,14 @@ export async function POST(req: NextRequest) {
       data: {
         name,
         status,
-        tolerance_minutes: 5,
-        start_time: "08:00",
-        end_time: "17:00",
-        check_in_open: "07:00",
-        check_out_open: "16:50",
+        tolerance_minutes:
+          Number.isFinite(toleranceMinutes) && toleranceMinutes >= 0
+            ? toleranceMinutes
+            : 5,
+        start_time: startTime || "08:00",
+        end_time: endTime || "17:00",
+        check_in_open: checkInOpen || "07:00",
+        check_out_open: checkOutOpen || "16:50",
       },
     });
 
@@ -184,9 +186,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         message:
-          error instanceof Error
-            ? error.message
-            : "Gagal menambahkan shift.",
+          error instanceof Error ? error.message : "Gagal menambahkan shift.",
       },
       { status: 500 },
     );
@@ -210,12 +210,22 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
 
     const id = String(body.id || "");
-    const name = body.name !== undefined ? String(body.name || "").trim() : undefined;
-    const toleranceMinutes = body.tolerance_minutes !== undefined ? Number(body.tolerance_minutes) : undefined;
-    const startTime = body.start_time !== undefined ? String(body.start_time) : undefined;
-    const endTime = body.end_time !== undefined ? String(body.end_time) : undefined;
-    const checkInOpen = body.check_in_open !== undefined ? String(body.check_in_open) : undefined;
-    const checkOutOpen = body.check_out_open !== undefined ? String(body.check_out_open) : undefined;
+    const name =
+      body.name !== undefined ? String(body.name || "").trim() : undefined;
+    const toleranceMinutes =
+      body.tolerance_minutes !== undefined
+        ? Number(body.tolerance_minutes)
+        : undefined;
+    const startTime =
+      body.start_time !== undefined ? String(body.start_time) : undefined;
+    const endTime =
+      body.end_time !== undefined ? String(body.end_time) : undefined;
+    const checkInOpen =
+      body.check_in_open !== undefined ? String(body.check_in_open) : undefined;
+    const checkOutOpen =
+      body.check_out_open !== undefined
+        ? String(body.check_out_open)
+        : undefined;
     const status = body.status !== undefined ? String(body.status) : undefined;
 
     if (!id) {
@@ -225,7 +235,10 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    if (toleranceMinutes !== undefined && (Number.isNaN(toleranceMinutes) || toleranceMinutes < 0)) {
+    if (
+      toleranceMinutes !== undefined &&
+      (Number.isNaN(toleranceMinutes) || toleranceMinutes < 0)
+    ) {
       return NextResponse.json(
         { message: "Toleransi telat tidak valid." },
         { status: 400 },
@@ -253,7 +266,8 @@ export async function PATCH(req: NextRequest) {
 
     const updateData: Record<string, unknown> = {};
     if (name !== undefined) updateData.name = name;
-    if (toleranceMinutes !== undefined) updateData.tolerance_minutes = toleranceMinutes;
+    if (toleranceMinutes !== undefined)
+      updateData.tolerance_minutes = toleranceMinutes;
     if (startTime !== undefined) updateData.start_time = startTime;
     if (endTime !== undefined) updateData.end_time = endTime;
     if (checkInOpen !== undefined) updateData.check_in_open = checkInOpen;
@@ -304,10 +318,7 @@ export async function DELETE(req: NextRequest) {
       currentUser.status !== "active" ||
       !MANAGE_ROLES.includes(currentUser.role as AllowedRole)
     ) {
-      return NextResponse.json(
-        { message: "Akses ditolak." },
-        { status: 403 },
-      );
+      return NextResponse.json({ message: "Akses ditolak." }, { status: 403 });
     }
 
     const url = new URL(req.url);
@@ -333,9 +344,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json(
       {
         message:
-          error instanceof Error
-            ? error.message
-            : "Gagal menghapus shift.",
+          error instanceof Error ? error.message : "Gagal menghapus shift.",
       },
       { status: 500 },
     );

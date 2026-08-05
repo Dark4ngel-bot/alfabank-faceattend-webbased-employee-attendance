@@ -154,14 +154,16 @@ export default function ShiftsPage() {
       const data = await readJsonResponse(response);
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Gagal mengambil data shift.");
+        throw new Error(
+          data.error || data.message || "Gagal mengambil data shift.",
+        );
       }
 
       setShifts(data.shifts || data.data || []);
     } catch (error) {
       console.error("LOAD_SHIFTS_ERROR:", error);
       setErrorMessage(
-        error instanceof Error ? error.message : "Gagal mengambil data shift."
+        error instanceof Error ? error.message : "Gagal mengambil data shift.",
       );
     } finally {
       setIsLoading(false);
@@ -177,7 +179,8 @@ export default function ShiftsPage() {
 
     return shifts.filter((item) => {
       const nameMatch = item.name.toLowerCase().includes(keyword);
-      const statusMatch = statusFilter === "all" || item.status === statusFilter;
+      const statusMatch =
+        statusFilter === "all" || item.status === statusFilter;
       return nameMatch && statusMatch;
     });
   }, [shifts, search, statusFilter]);
@@ -222,18 +225,16 @@ export default function ShiftsPage() {
 
       const url = "/api/admin/shifts";
       const method = editingShift ? "PATCH" : "POST";
-      const bodyPayload = editingShift
-        ? {
-            id: editingShift.id,
-            name,
-            status: form.status,
-            tolerance_minutes: form.tolerance_minutes,
-            start_time: form.start_time,
-            end_time: form.end_time,
-            check_in_open: form.check_in_open,
-            check_out_open: form.check_out_open,
-          }
-        : { name, status: form.status };
+      const bodyPayload = {
+        ...(editingShift ? { id: editingShift.id } : {}),
+        name,
+        status: form.status,
+        tolerance_minutes: form.tolerance_minutes,
+        start_time: form.start_time,
+        end_time: form.end_time,
+        check_in_open: form.check_in_open,
+        check_out_open: form.check_out_open,
+      };
 
       const response = await fetch(url, {
         method,
@@ -261,7 +262,7 @@ export default function ShiftsPage() {
 
   async function handleDelete(item: Shift) {
     const confirmed = confirm(
-      `Apakah Anda yakin ingin menghapus shift "${item.name}"?`
+      `Apakah Anda yakin ingin menghapus shift "${item.name}"?`,
     );
 
     if (!confirmed) return;
@@ -391,7 +392,7 @@ export default function ShiftsPage() {
                           <div className="mt-1 flex flex-wrap items-center gap-1.5">
                             <span
                               className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${statusClass(
-                                item.status
+                                item.status,
                               )}`}
                             >
                               {formatStatus(item.status)}
@@ -424,24 +425,44 @@ export default function ShiftsPage() {
                     {/* Jam Info */}
                     <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 rounded-2xl border border-blue-50 bg-blue-50/30 p-3">
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Check-in Buka</p>
-                        <p className="text-sm font-black text-[#123c8c]">{item.check_in_open || "07:00"}</p>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                          Check-in Buka
+                        </p>
+                        <p className="text-sm font-black text-[#123c8c]">
+                          {item.check_in_open || "07:00"}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Check-out Buka</p>
-                        <p className="text-sm font-black text-[#123c8c]">{item.check_out_open || "16:50"}</p>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                          Check-out Buka
+                        </p>
+                        <p className="text-sm font-black text-[#123c8c]">
+                          {item.check_out_open || "16:50"}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Jam Masuk</p>
-                        <p className="text-sm font-bold text-slate-700">{item.start_time || "08:00"}</p>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                          Jam Masuk
+                        </p>
+                        <p className="text-sm font-bold text-slate-700">
+                          {item.start_time || "08:00"}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Jam Pulang</p>
-                        <p className="text-sm font-bold text-slate-700">{item.end_time || "17:00"}</p>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                          Jam Pulang
+                        </p>
+                        <p className="text-sm font-bold text-slate-700">
+                          {item.end_time || "17:00"}
+                        </p>
                       </div>
                       <div className="col-span-2">
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Toleransi Telat</p>
-                        <p className="text-sm font-bold text-slate-700">{item.tolerance_minutes ?? 0} menit</p>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                          Toleransi Telat
+                        </p>
+                        <p className="text-sm font-bold text-slate-700">
+                          {item.tolerance_minutes ?? 0} menit
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -507,92 +528,97 @@ export default function ShiftsPage() {
                 </AppSelect>
               </div>
 
-              {editingShift && (
-                <>
-                  <hr className="border-slate-100" />
+              <hr className="border-slate-100" />
 
-                  <p className="text-xs font-black uppercase tracking-widest text-[#123c8c]">
-                    Pengaturan Waktu Absensi
-                  </p>
+              <p className="text-xs font-black uppercase tracking-widest text-[#123c8c]">
+                Pengaturan Waktu Absensi
+              </p>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="mb-1.5 block text-xs font-black text-slate-600">
-                        Jam Masuk
-                      </label>
-                      <input
-                        type="time"
-                        value={form.start_time}
-                        onChange={(e) =>
-                          setForm((prev) => ({ ...prev, start_time: e.target.value }))
-                        }
-                        className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-xs font-black text-slate-600">
-                        Jam Pulang
-                      </label>
-                      <input
-                        type="time"
-                        value={form.end_time}
-                        onChange={(e) =>
-                          setForm((prev) => ({ ...prev, end_time: e.target.value }))
-                        }
-                        className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
-                      />
-                    </div>
-                  </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1.5 block text-xs font-black text-slate-600">
+                    Jam Masuk
+                  </label>
+                  <input
+                    type="time"
+                    value={form.start_time}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        start_time: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-black text-slate-600">
+                    Jam Pulang
+                  </label>
+                  <input
+                    type="time"
+                    value={form.end_time}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, end_time: e.target.value }))
+                    }
+                    className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+              </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="mb-1.5 block text-xs font-black text-slate-600">
-                        Check-in Dibuka
-                      </label>
-                      <input
-                        type="time"
-                        value={form.check_in_open}
-                        onChange={(e) =>
-                          setForm((prev) => ({ ...prev, check_in_open: e.target.value }))
-                        }
-                        className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-xs font-black text-slate-600">
-                        Check-out Dibuka
-                      </label>
-                      <input
-                        type="time"
-                        value={form.check_out_open}
-                        onChange={(e) =>
-                          setForm((prev) => ({ ...prev, check_out_open: e.target.value }))
-                        }
-                        className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
-                      />
-                    </div>
-                  </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1.5 block text-xs font-black text-slate-600">
+                    Check-in Dibuka
+                  </label>
+                  <input
+                    type="time"
+                    value={form.check_in_open}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        check_in_open: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-black text-slate-600">
+                    Check-out Dibuka
+                  </label>
+                  <input
+                    type="time"
+                    value={form.check_out_open}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        check_out_open: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+              </div>
 
-                  <div>
-                    <label className="mb-1.5 block text-xs font-black text-slate-600">
-                      Toleransi Keterlambatan (menit)
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={60}
-                      value={form.tolerance_minutes}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          tolerance_minutes: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
-                    />
-                  </div>
-                </>
-              )}
+              <div>
+                <label className="mb-1.5 block text-xs font-black text-slate-600">
+                  Toleransi Keterlambatan (menit)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={60}
+                  value={form.tolerance_minutes}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      tolerance_minutes: parseInt(e.target.value) || 0,
+                    }))
+                  }
+                  className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
 
               <div className="pt-2 flex justify-end gap-3">
                 <AppButton

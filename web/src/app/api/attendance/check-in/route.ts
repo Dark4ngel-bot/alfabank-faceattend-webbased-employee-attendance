@@ -643,6 +643,10 @@ export async function POST(req: NextRequest) {
             id: true,
             name: true,
             tolerance_minutes: true,
+            start_time: true,
+            end_time: true,
+            check_in_open: true,
+            check_out_open: true,
           },
         },
       },
@@ -703,10 +707,7 @@ export async function POST(req: NextRequest) {
           },
         },
       });
-      const remainingWfhQuota = Math.max(
-        0,
-        wfhQuotaMonthly - usedWfhThisMonth,
-      );
+      const remainingWfhQuota = Math.max(0, wfhQuotaMonthly - usedWfhThisMonth);
 
       if (wfhQuotaMonthly > 0 && remainingWfhQuota <= 0) {
         return NextResponse.json(
@@ -857,7 +858,9 @@ export async function POST(req: NextRequest) {
 
       const sortedOfficeGeofences = [
         registeredOfficeGeofence,
-        ...officeGeofences.filter((office) => office.id !== registeredOffice.id),
+        ...officeGeofences.filter(
+          (office) => office.id !== registeredOffice.id,
+        ),
       ];
 
       matchedOffice = findNearestValidOffice(
@@ -966,11 +969,11 @@ export async function POST(req: NextRequest) {
     );
 
     const startTime = shouldValidateLate
-      ? getShiftStartTime(effectiveShiftName)
+      ? user.shift?.start_time || getShiftStartTime(effectiveShiftName)
       : null;
 
     const toleranceMinutes = shouldValidateLate
-      ? user.shift?.tolerance_minutes || 5
+      ? Number(user.shift?.tolerance_minutes ?? 5)
       : 0;
 
     const lateMinutes =
@@ -1042,65 +1045,65 @@ export async function POST(req: NextRequest) {
 
       attendance = await prisma.$transaction(async (tx) => {
         const savedAttendance = existingAttendance
-        ? await tx.attendance.update({
-            where: {
-              id: existingAttendance.id,
-            },
-            data: {
-              ...checkInData,
-              work_minutes: existingAttendance.work_minutes ?? 0,
-            },
-          })
-        : await tx.attendance.create({
+          ? await tx.attendance.update({
+              where: {
+                id: existingAttendance.id,
+              },
+              data: {
+                ...checkInData,
+                work_minutes: existingAttendance.work_minutes ?? 0,
+              },
+            })
+          : await tx.attendance.create({
+              data: {
+                user_id: userId,
+                attendance_date: today,
+                ...checkInData,
+                work_minutes: 0,
+              },
+            });
+
+        if (isVisitMode) {
+          await tx.employeeVisit.create({
             data: {
               user_id: userId,
-              attendance_date: today,
-              ...checkInData,
-              work_minutes: 0,
+              attendance_id: savedAttendance.id,
+              visit_date: today,
+              title: visitTitle,
+              client_name: visitClientName || null,
+              address: visitAddress,
+              latitude,
+              longitude,
+              accuracy,
+              start_time: now,
+              note: visitNote,
+              status: "ongoing",
             },
           });
+        }
 
-      if (isVisitMode) {
-        await tx.employeeVisit.create({
-          data: {
-            user_id: userId,
-            attendance_id: savedAttendance.id,
-            visit_date: today,
-            title: visitTitle,
-            client_name: visitClientName || null,
-            address: visitAddress,
-            latitude,
-            longitude,
-            accuracy,
-            start_time: now,
-            note: visitNote,
-            status: "ongoing",
-          },
-        });
-      }
+        if (isFlexibleMode) {
+          const modeLabel = getWorkModeLabel(workMode);
+          const employeeName = user.name || "Karyawan";
 
-      if (isFlexibleMode) {
-        const modeLabel = getWorkModeLabel(workMode);
-        const employeeName = user.name || "Karyawan";
-
-        await tx.adminNotification.create({
-          data: {
-            attendance_id: savedAttendance.id,
-            user_id: userId,
-            type: workMode,
-            title:
-              workMode === "visit"
-                ? "Karyawan melakukan kunjungan"
-                : `Karyawan ${modeLabel}`,
-            message:
-              workMode === "visit"
-                ? `${employeeName} check-in kunjungan di ${visitTitle}. Alamat: ${visitAddress || nearestLocationLabel}. Keperluan: ${visitNote}.`
-                : `${employeeName} check-in dengan mode ${modeLabel}. Lokasi: ${nearestLocationLabel}.`,
-            status: "unread",
-            is_read: false,
-          },
-        });
-      }
+          await tx.adminNotification.create({
+            data: {
+              attendance_id: savedAttendance.id,
+              user_id: userId,
+              type: workMode,
+              title:
+                workMode === "visit"
+                  ? "Karyawan melakukan kunjungan"
+                  : `Karyawan ${modeLabel}`,
+              message:
+                workMode === "visit"
+                  ? `${employeeName} check-in kunjungan di ${visitTitle}. Alamat: ${visitAddress || nearestLocationLabel}. Keperluan: ${visitNote}.`
+                  : `${employeeName} check-in dengan mode ${modeLabel}. Lokasi: ${nearestLocationLabel}.`,
+              status: "unread",
+              is_read: false,
+            },
+          });
+        }
 
         return savedAttendance;
       });
