@@ -153,6 +153,7 @@ export async function GET(req: NextRequest) {
     });
 
     let swapNotifications: typeof mappedNotifications = [];
+    let announcementNotifications: typeof mappedNotifications = [];
 
     try {
       const pendingShiftSwaps = await prisma.shiftSwapRequest.findMany({
@@ -187,7 +188,35 @@ export async function GET(req: NextRequest) {
       // ignore if table doesn't exist yet
     }
 
-    const allNotifications = [...swapNotifications, ...mappedNotifications];
+    try {
+      const publishedAnnouncements = await prisma.announcement.findMany({
+        where: {
+          status: "published",
+        },
+        orderBy: { created_at: "desc" },
+        take: 50,
+      });
+
+      announcementNotifications = publishedAnnouncements.map((item) => ({
+        id: `announcement-${item.id}`,
+        rawId: item.id,
+        type: "announcement",
+        typeLabel: "Pengumuman",
+        title: item.title || "Pengumuman Baru",
+        message: item.content || "Ada pengumuman baru dari perusahaan.",
+        status: "unread",
+        statusText: "Belum Dibaca",
+        isRead: false,
+        createdAt: toIsoDate(item.created_at),
+        updatedAt: toIsoDate(item.updated_at),
+        dateText: formatDate(item.created_at),
+        href: `/pengumuman/${item.id}`,
+      }));
+    } catch {
+      // ignore if table doesn't exist yet
+    }
+
+    const allNotifications = [...swapNotifications, ...announcementNotifications, ...mappedNotifications];
 
     return NextResponse.json({
       success: true,

@@ -25,6 +25,7 @@ export function markAnnouncementAsRead(id: string): void {
       );
     }
     window.localStorage.setItem("presensi_read_announcement_id", id);
+    window.dispatchEvent(new Event("notification-count-changed"));
   } catch {
     // ignore
   }

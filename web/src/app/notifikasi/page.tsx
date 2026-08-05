@@ -12,6 +12,10 @@ import {
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import { AppLoadingState } from "@/components/ui/AppUI";
+import {
+  getReadAnnouncementIds,
+  markAnnouncementAsRead,
+} from "@/lib/announcement-read";
 
 type NotificationItem = {
   id: string;
@@ -110,13 +114,29 @@ export default function EmployeeNotificationPage() {
         throw new Error(data.message || "Gagal mengambil notifikasi.");
       }
 
-      setNotifications(data.notifications || []);
-      setStats(
-        data.stats || {
-          total: 0,
-          unread: 0,
-        },
-      );
+      const readAnnIds = getReadAnnouncementIds();
+      const list = (data.notifications || []).map((item) => {
+        if (
+          item.type === "announcement" &&
+          readAnnIds.includes(item.rawId || item.id.replace("announcement-", ""))
+        ) {
+          return {
+            ...item,
+            isRead: true,
+            status: "read",
+            statusText: "Dibaca",
+          };
+        }
+        return item;
+      });
+
+      const unreadCount = list.filter((i) => !i.isRead).length;
+
+      setNotifications(list);
+      setStats({
+        total: list.length,
+        unread: unreadCount,
+      });
     } catch (error) {
       setPageError(
         error instanceof Error ? error.message : "Gagal mengambil notifikasi.",
@@ -127,6 +147,13 @@ export default function EmployeeNotificationPage() {
   }
 
   async function markAsRead(notification: NotificationItem) {
+    if (notification.type === "announcement") {
+      const annId = notification.rawId || notification.id.replace("announcement-", "");
+      markAnnouncementAsRead(annId);
+      router.push(notification.href);
+      return;
+    }
+
     if (notification.isRead) {
       router.push(notification.href);
       return;
@@ -170,6 +197,7 @@ export default function EmployeeNotificationPage() {
         unread: Math.max(0, prev.unread - 1),
       }));
 
+      window.dispatchEvent(new Event("notification-count-changed"));
       router.push(notification.href);
     } catch (error) {
       setPageError(
