@@ -105,6 +105,10 @@ export async function GET(req: NextRequest) {
             id: true,
             name: true,
             tolerance_minutes: true,
+            start_time: true,
+            end_time: true,
+            check_in_open: true,
+            check_out_open: true,
             work_schedules: {
               select: {
                 day_of_week: true,

@@ -643,6 +643,10 @@ export async function POST(req: NextRequest) {
             id: true,
             name: true,
             tolerance_minutes: true,
+            start_time: true,
+            end_time: true,
+            check_in_open: true,
+            check_out_open: true,
           },
         },
       },
@@ -966,7 +970,7 @@ export async function POST(req: NextRequest) {
     );
 
     const startTime = shouldValidateLate
-      ? getShiftStartTime(effectiveShiftName)
+      ? user.shift?.start_time || getShiftStartTime(effectiveShiftName)
       : null;
 
     const toleranceMinutes = shouldValidateLate
