@@ -185,6 +185,9 @@ export default function TukarShiftPage() {
       setAlertState({ type: "success", message: json.message || "Pengajuan berhasil dikirim!" });
       setTargetUserId("");
       setReason("");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("notification-count-changed"));
+      }
       await loadData();
     } catch (err) {
       console.error("SUBMIT_SWAP_ERROR:", err);

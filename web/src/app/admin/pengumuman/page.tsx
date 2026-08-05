@@ -342,6 +342,9 @@ export default function AdminAnnouncementsPage() {
       }
 
       await loadAnnouncements();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("notification-count-changed"));
+      }
       closeModal();
     } catch (error) {
       console.error("SAVE_ANNOUNCEMENT_ERROR:", error);

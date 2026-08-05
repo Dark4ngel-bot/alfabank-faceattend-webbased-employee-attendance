@@ -356,6 +356,10 @@ export default function LeaveRequestPage() {
           "Pengajuan berhasil dikirim dan menunggu persetujuan admin.",
       });
 
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("notification-count-changed"));
+      }
+
       await getLeaveRequests();
     } catch (error) {
       console.error("SUBMIT_LEAVE_REQUEST_ERROR:", error);

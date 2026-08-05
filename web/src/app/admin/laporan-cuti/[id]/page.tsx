@@ -301,6 +301,9 @@ export default function AdminLeaveRequestDetailPage() {
       }
 
       closeAnswerModal();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("notification-count-changed"));
+      }
       await getLeaveRequest();
     } catch (error) {
       console.error("UPDATE_LEAVE_REQUEST_DETAIL_STATUS_ERROR:", error);

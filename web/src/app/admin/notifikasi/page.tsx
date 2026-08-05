@@ -525,14 +525,18 @@ export default function AdminNotificationsPage() {
             ) : (
               filteredNotifications.map((item, index) => {
                 const Icon = getTypeIcon(item.type);
+                const isUnread = item.status === "unread";
                 const canMarkRead =
-                  item.source === "AdminNotification" &&
-                  item.status === "unread";
+                  item.source === "AdminNotification" && isUnread;
 
                 return (
                   <div
                     key={item.id}
-                    className="notification-row-enter rounded-[1.7rem] border border-blue-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-200/70"
+                    className={`notification-row-enter rounded-[1.7rem] p-5 transition duration-200 hover:-translate-y-0.5 ${
+                      isUnread
+                        ? "border-2 border-blue-300 bg-[#f4f8ff] shadow-lg shadow-blue-900/10 ring-2 ring-blue-400/30 hover:bg-white"
+                        : "border border-slate-200/80 bg-slate-50/70 shadow-none opacity-85 hover:bg-slate-100/80"
+                    }`}
                     style={{
                       animationDelay: `${index * 55}ms`,
                     }}
@@ -557,20 +561,27 @@ export default function AdminNotificationsPage() {
                               {getTypeLabel(item.type)}
                             </span>
 
-                            <span
-                              className={`rounded-full px-3 py-1 text-xs font-black ${getStatusClass(
-                                item.status,
-                              )}`}
-                            >
-                              {item.statusText}
-                            </span>
+                            {isUnread ? (
+                              <span className="flex items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1 text-xs font-black text-orange-700 ring-1 ring-orange-200">
+                                <span className="h-2 w-2 rounded-full bg-orange-600 animate-pulse" />
+                                Belum Dibaca
+                              </span>
+                            ) : (
+                              <span className="rounded-full bg-slate-200/80 px-3 py-1 text-xs font-black text-slate-600">
+                                ✓ Sudah Dibaca
+                              </span>
+                            )}
 
                             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">
                               {item.source}
                             </span>
                           </div>
 
-                          <h3 className="mt-3 text-lg font-black text-slate-950">
+                          <h3
+                            className={`mt-3 text-lg font-black ${
+                              isUnread ? "text-[#123c8c]" : "text-slate-800"
+                            }`}
+                          >
                             {item.title}
                           </h3>
 

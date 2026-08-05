@@ -353,15 +353,17 @@ export default function AppHeader({
 
     window.addEventListener("notification-count-changed", handleCountChange);
     window.addEventListener("storage", handleCountChange);
+    window.addEventListener("focus", handleCountChange);
 
     const intervalId = window.setInterval(() => {
       void loadNotificationCount();
-    }, 4000);
+    }, 2000);
 
     return () => {
       isMounted = false;
       window.removeEventListener("notification-count-changed", handleCountChange);
       window.removeEventListener("storage", handleCountChange);
+      window.removeEventListener("focus", handleCountChange);
       window.clearInterval(intervalId);
     };
   }, [isAdmin, pathname]);
