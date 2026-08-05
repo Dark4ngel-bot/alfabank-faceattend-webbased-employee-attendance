@@ -295,31 +295,7 @@ export default function AppHeader({
 
           if (response.ok) {
             const data = (await readJsonResponse(response)) as NotificationResponse;
-            count += getAdminNotificationCount(data.stats);
-          }
-
-          try {
-            const swapRes = await fetch("/api/shift-swaps", { cache: "no-store" });
-            if (swapRes.ok) {
-              const swapData = await swapRes.json();
-              count += Number(swapData.pendingCount || swapData.pendingIncomingCount || 0);
-            }
-          } catch {
-            // ignore error
-          }
-
-          try {
-            const annRes = await fetch("/api/announcements?audience=admin", {
-              cache: "no-store",
-            });
-            if (annRes.ok) {
-              const annData = await annRes.json();
-              const list = annData.announcements || annData.data || [];
-              const unreadAnn = list.filter((item: any) => !readAnnouncementIds.includes(item.id));
-              count += unreadAnn.length;
-            }
-          } catch {
-            // ignore error
+            count = getAdminNotificationCount(data.stats);
           }
         } else {
           const response = await fetch("/api/notifications", {
