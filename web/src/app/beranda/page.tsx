@@ -103,6 +103,12 @@ const quickMenus = [
     description: "Ajukan izin",
     icon: FileText,
   },
+  {
+    href: "/profil",
+    label: "Profil",
+    description: "Data diri",
+    icon: UserRound,
+  },
 ];
 
 function getFirstName(name: string) {
@@ -371,7 +377,7 @@ function RoleBadges({ items }: { items: Array<string | undefined | null> }) {
 
 function QuickMenuGrid() {
   return (
-    <div className="grid grid-cols-4 gap-x-2 gap-y-3 md:grid-cols-4 md:gap-5">
+    <div className="grid grid-cols-5 gap-x-1.5 gap-y-3 md:grid-cols-5 md:gap-4">
       {quickMenus.map(({ href, label, description, icon: Icon }, index) => (
         <Link
           key={href}
