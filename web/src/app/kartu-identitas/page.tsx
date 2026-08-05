@@ -514,11 +514,8 @@ export default function KartuIdentitasPage() {
 
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#123c8c] md:text-xs">
-                  Identitas Digital
+                  Kembali
                 </p>
-                <h1 className="text-base font-bold tracking-tight text-[#123456] md:text-2xl">
-                  Kartu Identitas
-                </h1>
               </div>
             </div>
 
@@ -527,22 +524,20 @@ export default function KartuIdentitasPage() {
               <button
                 type="button"
                 onClick={() => setActiveSide("front")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition duration-200 ${
-                  activeSide === "front"
-                    ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
+                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition duration-200 ${activeSide === "front"
+                  ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
+                  : "text-slate-600 hover:text-slate-900"
+                  }`}
               >
                 Sisi Depan
               </button>
               <button
                 type="button"
                 onClick={() => setActiveSide("back")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition duration-200 ${
-                  activeSide === "back"
-                    ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
+                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition duration-200 ${activeSide === "back"
+                  ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
+                  : "text-slate-600 hover:text-slate-900"
+                  }`}
               >
                 Sisi Belakang
               </button>
@@ -638,12 +633,12 @@ export default function KartuIdentitasPage() {
                           <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-[#123c8c] md:text-[9px]">
                             {activeSide === "front"
                               ? "Kartu Karyawan"
-                              : "Detail Personal"}
+                              : "Kartu Karyawan"}
                           </p>
                           <h2 className="text-xs md:text-lg font-bold tracking-tight text-[#123456]">
                             {activeSide === "front"
                               ? "Identitas Pegawai"
-                              : "Detail Personal & Bank"}
+                              : "Detail Personal"}
                           </h2>
                         </div>
 
