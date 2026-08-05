@@ -248,10 +248,13 @@ export async function GET(req: NextRequest) {
     );
 
     const employees = await prisma.user.findMany({
-      where: {
-        role: "employee",
-        ...(employeeId ? { id: employeeId } : {}),
-      },
+      where: employeeId
+        ? { id: employeeId }
+        : {
+            role: {
+              in: ["employee", "user", "EMPLOYEE", "USER"],
+            },
+          },
       select: {
         id: true,
         name: true,
@@ -404,6 +407,17 @@ export async function GET(req: NextRequest) {
         summary.hadir += 1;
         if (attendanceCategory === "wfh") summary.wfh += 1;
         if (attendanceCategory === "kunjungan") summary.kunjungan += 1;
+        summary.totalWorkMinutes +=
+          attendance.check_in_time && attendance.check_out_time
+            ? Math.max(
+                Number(attendance.work_minutes || 0),
+                calculateWorkMinutes(
+                  attendance.check_in_time,
+                  attendance.check_out_time,
+                ),
+              )
+            : 0;
+        const dateKey = toDateKey(attendance.attendance_date);
         const computedWorkMinutes =
           attendance.check_in_time && attendance.check_out_time
             ? Math.max(
@@ -414,8 +428,6 @@ export async function GET(req: NextRequest) {
                 ),
               )
             : 0;
-        summary.totalWorkMinutes += computedWorkMinutes;
-        const dateKey = toDateKey(attendance.attendance_date);
 
         employeeDailyRecords.get(attendance.user_id)?.set(dateKey, {
           id: attendance.id,
