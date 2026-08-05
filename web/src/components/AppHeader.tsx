@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 
 import { useSiteLogo } from "@/hooks/useSiteLogo";
+import { getReadAnnouncementIds, isAnnouncementToday } from "@/lib/announcement-read";
 
 type AppHeaderProps = {
   title: string;
@@ -283,27 +284,54 @@ export default function AppHeader({
 
     async function loadNotificationCount() {
       try {
-        const endpoint = isAdmin
-          ? "/api/admin/notifications"
-          : "/api/notifications";
+        let count = 0;
+        const readAnnouncementIds = getReadAnnouncementIds();
 
-        const response = await fetch(endpoint, {
-          method: "GET",
-          cache: "no-store",
-        });
+        if (isAdmin) {
+          const response = await fetch("/api/admin/notifications", {
+            method: "GET",
+            cache: "no-store",
+          });
 
-        if (!response.ok) {
-          if (isMounted) setNotificationCount(0);
-          return;
-        }
+          if (response.ok) {
+            const data = (await readJsonResponse(response)) as NotificationResponse;
+            count += getAdminNotificationCount(data.stats);
+          }
 
-        const data = (await readJsonResponse(response)) as NotificationResponse;
+          try {
+            const swapRes = await fetch("/api/shift-swaps", { cache: "no-store" });
+            if (swapRes.ok) {
+              const swapData = await swapRes.json();
+              count += Number(swapData.pendingCount || swapData.pendingIncomingCount || 0);
+            }
+          } catch {
+            // ignore error
+          }
 
-        let count = isAdmin
-          ? getAdminNotificationCount(data.stats)
-          : getEmployeeNotificationCount(data.stats);
+          try {
+            const annRes = await fetch("/api/announcements?audience=admin", {
+              cache: "no-store",
+            });
+            if (annRes.ok) {
+              const annData = await annRes.json();
+              const list = annData.announcements || annData.data || [];
+              const unreadAnn = list.filter((item: any) => !readAnnouncementIds.includes(item.id));
+              count += unreadAnn.length;
+            }
+          } catch {
+            // ignore error
+          }
+        } else {
+          const response = await fetch("/api/notifications", {
+            method: "GET",
+            cache: "no-store",
+          });
 
-        if (!isAdmin) {
+          if (response.ok) {
+            const data = (await readJsonResponse(response)) as NotificationResponse;
+            count += getEmployeeNotificationCount(data.stats);
+          }
+
           try {
             const swapRes = await fetch("/api/shift-swaps", { cache: "no-store" });
             if (swapRes.ok) {
@@ -311,6 +339,20 @@ export default function AppHeader({
               const pCount = Number(swapData.pendingIncomingCount || 0);
               count += pCount;
               if (isMounted) setPendingShiftSwapCount(pCount);
+            }
+          } catch {
+            // ignore error
+          }
+
+          try {
+            const annRes = await fetch("/api/announcements?audience=employee", {
+              cache: "no-store",
+            });
+            if (annRes.ok) {
+              const annData = await annRes.json();
+              const list = annData.announcements || annData.data || [];
+              const unreadAnn = list.filter((item: any) => !readAnnouncementIds.includes(item.id));
+              count += unreadAnn.length;
             }
           } catch {
             // ignore error
@@ -461,7 +503,7 @@ export default function AppHeader({
                 <Bell size={20} strokeWidth={2.7} />
 
                 {hasNewNotification ? (
-                  <span className="absolute -right-2 -top-2 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white">
+                  <span className="absolute -right-2.5 -top-2.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white shadow-md animate-pulse">
                     {formatNotificationCount(notificationCount)}
                   </span>
                 ) : null}
@@ -479,7 +521,7 @@ export default function AppHeader({
               <Bell size={19} strokeWidth={2.7} />
 
               {hasNewNotification ? (
-                <span className="absolute right-1.5 top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white">
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white shadow-md animate-pulse">
                   {formatNotificationCount(notificationCount)}
                 </span>
               ) : null}

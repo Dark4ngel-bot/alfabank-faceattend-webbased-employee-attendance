@@ -2,10 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, FileText, Loader2, Megaphone } from "lucide-react";
+import { CalendarDays, FileText, Loader2, Megaphone, Sparkles } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import {
+  getReadAnnouncementIds,
+  isAnnouncementToday,
+  markAnnouncementAsRead,
+} from "@/lib/announcement-read";
 
 type Announcement = {
   id: string;
@@ -126,6 +131,16 @@ export default function AnnouncementPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [readIds, setReadIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setReadIds(getReadAnnouncementIds());
+  }, []);
+
+  const handleRead = (id: string) => {
+    markAnnouncementAsRead(id);
+    setReadIds(getReadAnnouncementIds());
+  };
 
   async function getAnnouncements() {
     try {
@@ -241,39 +256,64 @@ export default function AnnouncementPage() {
               {announcements.map((announcement, index) => {
                 const dateValue =
                   announcement.created_at || announcement.createdAt;
+                const isToday = isAnnouncementToday(dateValue);
+                const isRead = readIds.includes(announcement.id);
+                const isYellowHighlighted = isToday || !isRead;
 
                 return (
                   <article
                     key={announcement.id}
-                    className="announcement-row-enter min-w-0 rounded-[2rem] border border-blue-100 bg-white p-5 shadow-lg shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:bg-[#f8fbff] hover:shadow-xl hover:shadow-slate-300/40 md:p-6"
+                    className={`announcement-row-enter min-w-0 rounded-[2rem] p-5 transition duration-200 hover:-translate-y-0.5 md:p-6 ${
+                      isYellowHighlighted
+                        ? "border-2 border-amber-300 bg-[#fffbeb] shadow-xl shadow-amber-100/70 ring-2 ring-amber-400/40 hover:bg-[#fff9e6]"
+                        : "border border-blue-100 bg-white shadow-lg shadow-slate-200/50 hover:bg-[#f8fbff] hover:shadow-xl hover:shadow-slate-300/40"
+                    }`}
                     style={{
                       animationDelay: `${index * 55}ms`,
                     }}
                   >
                     <Link
                       href={`/pengumuman/${announcement.id}`}
+                      onClick={() => handleRead(announcement.id)}
                       className="block min-w-0"
                     >
                       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                         <div className="min-w-0">
-                          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#eaf1ff] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#123c8c]">
-                            <Megaphone size={14} />
-                            Pengumuman
-                          </div>
+                          {isYellowHighlighted ? (
+                            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-500 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm">
+                              <Sparkles size={14} className="animate-pulse" />
+                              {isToday ? "Pengumuman Hari Ini" : "Pengumuman Baru"}
+                            </div>
+                          ) : (
+                            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#eaf1ff] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#123c8c]">
+                              <Megaphone size={14} />
+                              Pengumuman
+                            </div>
+                          )}
 
-                          <h2 className="break-words text-xl font-black leading-8 text-slate-950 [overflow-wrap:anywhere] md:text-2xl md:leading-9">
+                          <h2 className={`break-words text-xl font-black leading-8 [overflow-wrap:anywhere] md:text-2xl md:leading-9 ${
+                            isYellowHighlighted ? "text-amber-950" : "text-slate-950"
+                          }`}>
                             {announcement.title}
                           </h2>
                         </div>
 
-                        <div className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#f8fbff] px-3 py-2 text-xs font-black text-slate-500 ring-1 ring-blue-100">
+                        <div className={`inline-flex w-fit shrink-0 items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${
+                          isYellowHighlighted
+                            ? "bg-amber-200/80 text-amber-950 ring-1 ring-amber-300"
+                            : "bg-[#f8fbff] text-slate-500 ring-1 ring-blue-100"
+                        }`}>
                           <CalendarDays size={14} strokeWidth={2.6} />
                           {formatDate(dateValue)}
                         </div>
                       </div>
 
                       {announcement.content ? (
-                        <p className="mt-5 line-clamp-3 whitespace-pre-wrap break-words rounded-3xl bg-[#f8fbff] p-4 text-sm font-semibold leading-7 text-slate-600 [overflow-wrap:anywhere] md:p-5 md:text-base md:leading-8">
+                        <p className={`mt-5 line-clamp-3 whitespace-pre-wrap break-words rounded-3xl p-4 text-sm font-semibold leading-7 [overflow-wrap:anywhere] md:p-5 md:text-base md:leading-8 ${
+                          isYellowHighlighted
+                            ? "bg-amber-100/60 text-slate-900 border border-amber-200/70"
+                            : "bg-[#f8fbff] text-slate-600"
+                        }`}>
                           {announcement.content}
                         </p>
                       ) : (
