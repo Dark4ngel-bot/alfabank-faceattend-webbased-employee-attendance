@@ -13,8 +13,6 @@ const defaultShifts = [
   {
     name: "UTAMA",
     tolerance_minutes: 5,
-    start_time: "08:00",
-    end_time: "17:00",
     check_in_open: "07:00",
     check_out_open: "16:50",
     status: "active",
@@ -22,8 +20,6 @@ const defaultShifts = [
   {
     name: "MAGANG",
     tolerance_minutes: 0,
-    start_time: "08:00",
-    end_time: "17:00",
     check_in_open: "07:00",
     check_out_open: "16:50",
     status: "active",
@@ -31,8 +27,6 @@ const defaultShifts = [
   {
     name: "SHIFT PAGI",
     tolerance_minutes: 5,
-    start_time: "07:30",
-    end_time: "15:30",
     check_in_open: "06:30",
     check_out_open: "15:20",
     status: "active",
@@ -40,8 +34,6 @@ const defaultShifts = [
   {
     name: "SHIFT SIANG",
     tolerance_minutes: 5,
-    start_time: "13:00",
-    end_time: "21:00",
     check_in_open: "11:00",
     check_out_open: "20:50",
     status: "active",
@@ -102,8 +94,6 @@ export async function GET(req: NextRequest) {
         id: true,
         name: true,
         tolerance_minutes: true,
-        start_time: true,
-        end_time: true,
         check_in_open: true,
         check_out_open: true,
         status: true,
@@ -149,8 +139,6 @@ export async function POST(req: NextRequest) {
     const name = String(body.name || "").trim();
     const status = String(body.status || "active");
     const toleranceMinutes = Number(body.tolerance_minutes ?? 5);
-    const startTime = String(body.start_time || "08:00");
-    const endTime = String(body.end_time || "17:00");
     const checkInOpen = String(body.check_in_open || "07:00");
     const checkOutOpen = String(body.check_out_open || "16:50");
 
@@ -169,8 +157,6 @@ export async function POST(req: NextRequest) {
           Number.isFinite(toleranceMinutes) && toleranceMinutes >= 0
             ? toleranceMinutes
             : 5,
-        start_time: startTime || "08:00",
-        end_time: endTime || "17:00",
         check_in_open: checkInOpen || "07:00",
         check_out_open: checkOutOpen || "16:50",
       },
@@ -216,10 +202,6 @@ export async function PATCH(req: NextRequest) {
       body.tolerance_minutes !== undefined
         ? Number(body.tolerance_minutes)
         : undefined;
-    const startTime =
-      body.start_time !== undefined ? String(body.start_time) : undefined;
-    const endTime =
-      body.end_time !== undefined ? String(body.end_time) : undefined;
     const checkInOpen =
       body.check_in_open !== undefined ? String(body.check_in_open) : undefined;
     const checkOutOpen =
@@ -268,8 +250,6 @@ export async function PATCH(req: NextRequest) {
     if (name !== undefined) updateData.name = name;
     if (toleranceMinutes !== undefined)
       updateData.tolerance_minutes = toleranceMinutes;
-    if (startTime !== undefined) updateData.start_time = startTime;
-    if (endTime !== undefined) updateData.end_time = endTime;
     if (checkInOpen !== undefined) updateData.check_in_open = checkInOpen;
     if (checkOutOpen !== undefined) updateData.check_out_open = checkOutOpen;
     if (status !== undefined) updateData.status = status;
@@ -281,8 +261,6 @@ export async function PATCH(req: NextRequest) {
         id: true,
         name: true,
         tolerance_minutes: true,
-        start_time: true,
-        end_time: true,
         check_in_open: true,
         check_out_open: true,
         status: true,
