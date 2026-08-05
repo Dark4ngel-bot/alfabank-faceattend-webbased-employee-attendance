@@ -258,7 +258,7 @@ export default function AnnouncementPage() {
                   announcement.created_at || announcement.createdAt;
                 const isToday = isAnnouncementToday(dateValue);
                 const isRead = readIds.includes(announcement.id);
-                const isYellowHighlighted = isToday || !isRead;
+                const isYellowHighlighted = !isRead;
 
                 return (
                   <article
