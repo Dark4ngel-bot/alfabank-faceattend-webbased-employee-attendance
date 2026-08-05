@@ -67,7 +67,7 @@ export async function PATCH(
       success: true,
       message:
         action === "approve"
-          ? `Permintaan tukar shift dari ${swapRequest.requester.name} telah kamu setujui. Jadwal shift besok/tanggal tersebut otomatis disesuaikan.`
+          ? `Permintaan tukar shift dari ${swapRequest.requester.name} telah kamu setujui. Jadwal shift pada tanggal yang dipilih otomatis disesuaikan.`
           : `Permintaan tukar shift dari ${swapRequest.requester.name} telah kamu tolak.`,
       request: updatedSwap,
     });
