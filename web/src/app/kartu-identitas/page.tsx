@@ -502,32 +502,29 @@ export default function KartuIdentitasPage() {
       <main className="flex h-dvh max-h-dvh flex-col justify-between overflow-hidden bg-white pb-16 text-slate-950 md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff]">
         <section className="flex flex-1 flex-col overflow-hidden px-3 pt-2 md:px-8 md:pt-4">
           {/* Header Controls */}
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-100/80 pb-2.5">
-            <div className="flex items-center gap-3">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-slate-100/80 pb-2.5">
+            <div className="order-1 flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200/80 transition hover:bg-[#f8fbff] active:scale-[0.96]"
+                className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200/80 transition hover:bg-[#f8fbff] active:scale-[0.96] sm:h-10 sm:w-10"
               >
                 <ArrowLeft size={19} strokeWidth={2.5} />
               </button>
 
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#123c8c] md:text-xs">
-                  Identitas Digital
+                  Kembali
                 </p>
-                <h1 className="text-base font-bold tracking-tight text-[#123456] md:text-2xl">
-                  Kartu Identitas
-                </h1>
               </div>
             </div>
 
             {/* Side Switcher Toggle */}
-            <div className="flex items-center gap-1 rounded-2xl border border-slate-200/60 bg-slate-100/80 p-1">
+            <div className="order-3 flex w-full items-center justify-center gap-1 rounded-2xl border border-slate-200/60 bg-slate-100/80 p-1 sm:order-2 sm:w-auto">
               <button
                 type="button"
                 onClick={() => setActiveSide("front")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition duration-200 ${
+                className={`flex-1 rounded-xl px-3 py-1.5 text-[11px] font-bold transition duration-200 sm:flex-initial sm:px-3.5 sm:text-xs ${
                   activeSide === "front"
                     ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
                     : "text-slate-600 hover:text-slate-900"
@@ -538,7 +535,7 @@ export default function KartuIdentitasPage() {
               <button
                 type="button"
                 onClick={() => setActiveSide("back")}
-                className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition duration-200 ${
+                className={`flex-1 rounded-xl px-3 py-1.5 text-[11px] font-bold transition duration-200 sm:flex-initial sm:px-3.5 sm:text-xs ${
                   activeSide === "back"
                     ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
                     : "text-slate-600 hover:text-slate-900"
@@ -553,10 +550,12 @@ export default function KartuIdentitasPage() {
                 type="button"
                 disabled={isDownloading}
                 onClick={handleDownloadPNG}
-                className="inline-flex items-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-900/20 transition duration-200 hover:bg-[#0f3274] active:scale-95 disabled:opacity-50"
+                className="order-2 inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-2xl bg-[#123c8c] px-3 py-2 text-[11px] font-bold text-white shadow-md shadow-blue-900/20 transition duration-200 hover:bg-[#0f3274] active:scale-95 disabled:opacity-50 sm:order-3 sm:gap-2 sm:px-4 sm:text-xs"
               >
                 <Download size={15} strokeWidth={2.5} />
-                <span>Download Kartu (PNG)</span>
+                <span>
+                  Download <span className="hidden sm:inline">Kartu (PNG)</span>
+                </span>
               </button>
             )}
           </div>
@@ -638,12 +637,12 @@ export default function KartuIdentitasPage() {
                           <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-[#123c8c] md:text-[9px]">
                             {activeSide === "front"
                               ? "Kartu Karyawan"
-                              : "Detail Personal"}
+                              : "Kartu Karyawan"}
                           </p>
                           <h2 className="text-xs md:text-lg font-bold tracking-tight text-[#123456]">
                             {activeSide === "front"
                               ? "Identitas Pegawai"
-                              : "Detail Personal & Bank"}
+                              : "Detail Personal"}
                           </h2>
                         </div>
 
@@ -705,7 +704,7 @@ export default function KartuIdentitasPage() {
                       {/* Footer Badge */}
                       <div className="flex shrink-0 items-center justify-between rounded-xl bg-gradient-to-r from-[#123c8c] to-[#0f3478] px-3 py-1.5 shadow-sm">
                         <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-blue-100 md:text-[10px]">
-                          AlfaBank
+                          Creativemu
                         </p>
                         <BadgeCheck
                           size={14}

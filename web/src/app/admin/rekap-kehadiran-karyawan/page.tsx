@@ -743,12 +743,12 @@ export default function AdminEmployeeAttendanceRecapPage() {
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="truncate text-base font-black text-slate-950">
+                            <h3 className="text-sm font-black text-slate-950 leading-snug break-words sm:text-base">
                               {employee.name}
                             </h3>
 
                             <span
-                              className={`rounded-full px-2.5 py-1 text-[11px] font-black ring-1 ${getStatusStyle(
+                              className={`rounded-full px-2.5 py-1 text-[10px] font-black ring-1 sm:text-[11px] ${getStatusStyle(
                                 employee.status,
                               )}`}
                             >
@@ -756,21 +756,20 @@ export default function AdminEmployeeAttendanceRecapPage() {
                             </span>
 
                             {hasPendingLeave ? (
-                              <span className="rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-black text-orange-700 ring-1 ring-orange-200">
+                              <span className="rounded-full bg-orange-100 px-2.5 py-1 text-[10px] font-black text-orange-700 ring-1 ring-orange-200 sm:text-[11px]">
                                 {pendingLeaveCount} pengajuan cuti baru
                               </span>
                             ) : null}
                           </div>
 
-                          <p className="mt-1 line-clamp-1 text-sm font-semibold text-slate-500">
+                          <p className="mt-1 text-[11px] font-semibold leading-snug text-slate-500 break-words sm:text-xs">
                             {[
                               employee.employee_code,
                               employee.department?.name,
-                              employee.jabatan?.name,
-                              employee.position?.name,
+                              employee.jabatan?.name || employee.position?.name,
                             ]
                               .filter(Boolean)
-                              .join(" / ") || employee.email}
+                              .join(" / ")}
                           </p>
                           {netWorkMinutes > 0 ? (
                             <p className="mt-2 text-xs font-black uppercase tracking-[0.1em] text-[#123c8c]">

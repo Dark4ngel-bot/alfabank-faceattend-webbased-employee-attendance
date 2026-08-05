@@ -1313,11 +1313,11 @@ export default function AdminEmployeesPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">
                       <EmployeeAvatar employee={employee} />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-black text-slate-950">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-black text-slate-950 leading-snug break-words sm:text-sm">
                           {employee.name}
                         </p>
-                        <p className="truncate text-xs font-bold text-slate-500">
+                        <p className="mt-0.5 text-[11px] font-bold text-slate-500 leading-snug break-all sm:text-xs">
                           {employee.email}
                         </p>
                       </div>
