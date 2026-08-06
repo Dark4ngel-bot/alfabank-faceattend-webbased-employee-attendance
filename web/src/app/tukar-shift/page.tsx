@@ -2,17 +2,11 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import {
-  AlertTriangle,
   ArrowLeftRight,
-  Calendar,
+  AlertTriangle,
   CheckCircle2,
-  ChevronDown,
-  Clock,
   Loader2,
-  MessageSquare,
   Send,
-  Sparkles,
-  Users,
   X,
   XCircle,
 } from "lucide-react";
@@ -28,16 +22,8 @@ type Colleague = {
   shiftName: string;
 };
 
-type AvailableShift = {
-  id: string;
-  name: string;
-  startTime?: string | null;
-  endTime?: string | null;
-};
-
 type SwapRequest = {
   id: string;
-  isSelfShift?: boolean;
   targetUser?: {
     id: string;
     name: string;
@@ -59,72 +45,103 @@ type SwapRequest = {
 };
 
 function getTodayString() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
-function formatDateLabel(dateStr: string) {
-  try {
-    const [y, m, d] = dateStr.split("-").map(Number);
-    const date = new Date(y, m - 1, d);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+function TukarShiftMotionStyles() {
+  return (
+    <style>{`
+      @keyframes tukarShiftEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(18px);
+        }
 
-    if (date.getTime() === today.getTime()) return "Hari ini";
-    if (date.getTime() === tomorrow.getTime()) return "Besok";
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-    return date.toLocaleDateString("id-ID", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
+      @keyframes tukarShiftAlertIn {
+        0% {
+          opacity: 0;
+          transform: translateX(28px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .tukar-shift-enter {
+        animation: tukarShiftEnter 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      .tukar-shift-alert {
+        animation: tukarShiftAlertIn 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .tukar-shift-enter,
+        .tukar-shift-alert {
+          animation: none;
+        }
+      }
+    `}</style>
+  );
 }
 
-function getStatusConfig(status: string) {
-  switch (status) {
-    case "approved":
-      return {
-        label: "Disetujui",
-        bg: "bg-emerald-50",
-        text: "text-emerald-700",
-        ring: "ring-emerald-200",
-        dot: "bg-emerald-500",
-      };
-    case "rejected":
-      return {
-        label: "Ditolak",
-        bg: "bg-red-50",
-        text: "text-red-700",
-        ring: "ring-red-200",
-        dot: "bg-red-500",
-      };
-    default:
-      return {
-        label: "Menunggu",
-        bg: "bg-amber-50",
-        text: "text-amber-700",
-        ring: "ring-amber-200",
-        dot: "bg-amber-500",
-      };
+function getShiftSwapAlertTheme(type: "success" | "error" | "warning") {
+  if (type === "success") {
+    return {
+      shell: "from-emerald-50 via-white to-blue-50",
+      iconWrap: "bg-emerald-100 text-emerald-600",
+      badge: "text-emerald-600 bg-white/70",
+      button: "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20",
+      icon: CheckCircle2,
+      label: "BERHASIL",
+      title: "Pengajuan berhasil",
+    };
   }
+
+  if (type === "error") {
+    return {
+      shell: "from-red-50 via-white to-blue-50",
+      iconWrap: "bg-red-100 text-red-600",
+      badge: "text-red-600 bg-white/70",
+      button: "bg-red-600 hover:bg-red-700 shadow-red-900/20",
+      icon: XCircle,
+      label: "GAGAL",
+      title: "Tukar shift gagal",
+    };
+  }
+
+  return {
+    shell: "from-orange-50 via-white to-blue-50",
+    iconWrap: "bg-orange-100 text-orange-600",
+    badge: "text-orange-600 bg-white/70",
+    button: "bg-[#526fae] hover:bg-[#46629d] shadow-blue-900/20",
+    icon: AlertTriangle,
+    label: "PERHATIAN",
+    title: "Tukar shift tidak bisa",
+  };
 }
 
 export default function TukarShiftPage() {
-  const [formMode, setFormMode] = useState<"swap" | "self">("self");
-  const [currentShiftName, setCurrentShiftName] = useState("UTAMA");
+  const [currentShiftName, setCurrentShiftName] = useState("Shift Utama");
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
-  const [availableShifts, setAvailableShifts] = useState<AvailableShift[]>([]);
+
   const [sentRequests, setSentRequests] = useState<SwapRequest[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<SwapRequest[]>([]);
 
   const [targetUserId, setTargetUserId] = useState("");
-  const [targetShiftName, setTargetShiftName] = useState("SHIFT SIANG");
   const [swapDate, setSwapDate] = useState(() => getTodayString());
   const [reason, setReason] = useState("");
 
@@ -150,23 +167,20 @@ export default function TukarShiftPage() {
       const colJson = await colRes.json();
 
       if (dataJson.success) {
-        setCurrentShiftName(dataJson.currentShiftName || "UTAMA");
+        setCurrentShiftName(dataJson.currentShiftName || "Shift Utama");
         setSentRequests(dataJson.sentRequests || []);
         setIncomingRequests(dataJson.incomingRequests || []);
       }
 
       if (colJson.success) {
         setColleagues(colJson.colleagues || []);
-        const shifts: AvailableShift[] = colJson.availableShifts || [];
-        setAvailableShifts(shifts);
-
-        if (shifts.length > 0) {
-          setTargetShiftName(shifts[0].name);
-        }
       }
     } catch (err) {
       console.error("LOAD_SWAP_DATA_ERROR:", err);
-      setAlertState({ type: "error", message: "Gagal memuat data tukar shift." });
+      setAlertState({
+        type: "error",
+        message: "Gagal memuat data tukar shift.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -179,13 +193,11 @@ export default function TukarShiftPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    if (formMode === "swap" && (!targetUserId || !swapDate)) {
-      setAlertState({ type: "warning", message: "Pilih rekan kerja dan tanggal tukar shift." });
-      return;
-    }
-
-    if (formMode === "self" && (!targetShiftName || !swapDate)) {
-      setAlertState({ type: "warning", message: "Pilih shift tujuan dan tanggal geser shift." });
+    if (!targetUserId || !swapDate) {
+      setAlertState({
+        type: "warning",
+        message: "Pilih rekan kerja dan tanggal tukar shift.",
+      });
       return;
     }
 
@@ -193,34 +205,40 @@ export default function TukarShiftPage() {
       setIsSubmitting(true);
       setAlertState(null);
 
-      const payload =
-        formMode === "self"
-          ? { mode: "self", targetShiftName, swapDate, reason }
-          : { mode: "swap", targetUserId, swapDate, reason };
-
       const res = await fetch("/api/shift-swaps", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          targetUserId,
+          swapDate,
+          reason,
+        }),
       });
 
       const json = await res.json();
 
       if (!res.ok || !json.success) {
-        setAlertState({ type: "error", message: json.error || "Gagal mengirimkan pengajuan." });
+        setAlertState({
+          type: "error",
+          message: json.error || "Gagal mengirimkan pengajuan tukar shift.",
+        });
         return;
       }
 
-      setAlertState({ type: "success", message: json.message || "Pengajuan berhasil diproses!" });
+      setAlertState({
+        type: "success",
+        message: json.message || "Pengajuan tukar shift berhasil dikirim.",
+      });
+
       setTargetUserId("");
       setReason("");
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("notification-count-changed"));
-      }
       await loadData();
     } catch (err) {
       console.error("SUBMIT_SWAP_ERROR:", err);
-      setAlertState({ type: "error", message: "Terjadi kesalahan saat membuat pengajuan." });
+      setAlertState({
+        type: "error",
+        message: "Terjadi kesalahan saat membuat pengajuan tukar shift.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -240,119 +258,88 @@ export default function TukarShiftPage() {
       const json = await res.json();
 
       if (!res.ok || !json.success) {
-        setAlertState({ type: "error", message: json.error || "Gagal memproses." });
+        setAlertState({
+          type: "error",
+          message: json.error || "Gagal memproses permintaan tukar shift.",
+        });
         return;
       }
 
-      setAlertState({ type: "success", message: json.message });
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("notification-count-changed"));
-      }
+      setAlertState({
+        type: "success",
+        message: json.message,
+      });
+
       await loadData();
     } catch (err) {
       console.error("SWAP_ACTION_ERROR:", err);
-      setAlertState({ type: "error", message: "Terjadi kesalahan saat memproses." });
+      setAlertState({
+        type: "error",
+        message: "Terjadi kesalahan saat memproses tanggapan.",
+      });
     } finally {
       setProcessingId(null);
     }
   }
 
-  const pendingIncoming = incomingRequests.filter((r) => r.status === "pending");
-  const allHistory = [
-    ...sentRequests.map((r) => ({ ...r, direction: "out" as const })),
-    ...incomingRequests.map((r) => ({ ...r, direction: "in" as const })),
-  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-  const selectedColleague = colleagues.find((c) => c.id === targetUserId);
+  const pendingIncoming = incomingRequests.filter(
+    (r) => r.status === "pending",
+  );
+  const alertTheme = alertState
+    ? getShiftSwapAlertTheme(alertState.type)
+    : null;
+  const ShiftSwapAlertIcon = alertTheme?.icon || AlertTriangle;
 
   return (
     <MobileShell variant="employee">
-      <div className="hidden md:block">
-        <AppHeader title="Kelola Shift" rightLabel="Shift Kerja" />
-      </div>
+      <TukarShiftMotionStyles />
+      <AppHeader title="Tukar Shift" rightLabel="Tukar Shift" />
 
-      <section className="mx-auto max-w-7xl px-5 pt-7 md:hidden">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">
-              Presensi
-            </p>
-
-            <h1 className="mt-1 text-3xl font-black tracking-tight text-[#073456]">
-              Tukar Shift
-            </h1>
-          </div>
-        </div>
-      </section>
-
-      {alertState ? (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/20 px-5 backdrop-blur-[2px]">
+      {alertState && alertTheme ? (
+        <div className="pointer-events-none fixed right-4 top-4 z-[120] w-[calc(100vw-2rem)] max-w-md sm:right-7 sm:top-7">
           <div
-            className={`relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-2xl shadow-slate-900/25 ${alertState.type === "success"
-              ? "ring-1 ring-emerald-100"
-              : alertState.type === "error"
-                ? "ring-1 ring-red-100"
-                : "ring-1 ring-amber-100"
-              }`}
+            className={`tukar-shift-alert pointer-events-auto overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br ${alertTheme.shell} shadow-2xl shadow-slate-900/20 backdrop-blur-xl`}
           >
-            <button
-              type="button"
-              onClick={() => setAlertState(null)}
-              className="absolute right-5 top-5 z-10 flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-white text-slate-500 shadow-lg shadow-slate-900/10 ring-1 ring-slate-100 transition hover:bg-slate-50 hover:text-slate-800"
-              aria-label="Tutup alert"
-            >
-              <X size={28} strokeWidth={2.8} />
-            </button>
-
-            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-r from-amber-100/80 via-orange-50/70 to-transparent" />
-
-            <div className="relative grid gap-5 p-8 pt-9 sm:grid-cols-[116px_1fr] sm:p-10">
-              <div
-                className={`flex h-28 w-28 items-center justify-center rounded-[1.8rem] ${alertState.type === "success"
-                  ? "bg-emerald-50 text-emerald-600"
-                  : alertState.type === "error"
-                    ? "bg-orange-50 text-orange-600"
-                    : "bg-amber-50 text-amber-600"
-                  }`}
-              >
-                {alertState.type === "success" ? (
-                  <CheckCircle2 size={56} strokeWidth={2.8} />
-                ) : alertState.type === "error" ? (
-                  <XCircle size={56} strokeWidth={2.8} />
-                ) : (
-                  <AlertTriangle size={56} strokeWidth={2.8} />
-                )}
-              </div>
-
-              <div className="min-w-0 pr-16">
-                <span
-                  className={`inline-flex rounded-full bg-white px-7 py-3 text-sm font-black uppercase tracking-[0.32em] shadow-sm ${alertState.type === "success"
-                    ? "text-emerald-700"
-                    : alertState.type === "error"
-                      ? "text-orange-700"
-                      : "text-amber-700"
-                    }`}
+            <div className="relative p-5">
+              <div className="relative flex items-start gap-4">
+                <div
+                  className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.35rem] ${alertTheme.iconWrap} shadow-lg shadow-slate-300/40`}
                 >
-                  {alertState.type === "success" ? "Berhasil" : "Perhatian"}
-                </span>
+                  <ShiftSwapAlertIcon size={29} strokeWidth={3} />
+                </div>
 
-                <h2 className="mt-6 text-3xl font-black leading-tight text-slate-950">
-                  {alertState.type === "success"
-                    ? "Proses Berhasil"
-                    : "Tidak Dapat Diproses"}
-                </h2>
+                <div className="min-w-0 flex-1">
+                  <div
+                    className={`inline-flex rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] ${alertTheme.badge}`}
+                  >
+                    {alertTheme.label}
+                  </div>
 
-                <p className="mt-5 text-lg font-bold leading-8 text-slate-500">
-                  {alertState.message}
-                </p>
+                  <h3 className="mt-3 text-lg font-black leading-tight text-slate-950">
+                    {alertTheme.title}
+                  </h3>
+
+                  <p className="mt-2 line-clamp-4 text-sm font-bold leading-6 text-slate-600">
+                    {alertState.message}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setAlertState(null)}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-slate-500 shadow-sm transition hover:bg-white hover:text-slate-800 active:scale-[0.96]"
+                  aria-label="Tutup alert"
+                >
+                  <X size={20} strokeWidth={2.8} />
+                </button>
               </div>
             </div>
 
-            <div className="px-8 pb-8 sm:px-10 sm:pb-10">
+            <div className="border-t border-white/60 bg-white/70 p-4">
               <button
                 type="button"
                 onClick={() => setAlertState(null)}
-                className="flex min-h-[64px] w-full items-center justify-center rounded-[1.6rem] bg-[#123c8c] px-6 text-xl font-bold text-white shadow-xl shadow-blue-900/20 transition hover:bg-[#0e2f70] active:scale-[0.99]"
+                className={`w-full rounded-2xl px-6 py-3.5 text-sm font-black text-white shadow-lg transition active:scale-[0.98] ${alertTheme.button}`}
               >
                 Mengerti
               </button>
@@ -361,355 +348,266 @@ export default function TukarShiftPage() {
         </div>
       ) : null}
 
-      <main className="mx-auto max-w-7xl space-y-6 px-4 pb-28 pt-5 sm:px-6 md:px-10 lg:px-16">
+      <main className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
+        {/* NOTIFIKASI PERMINTAAN SHIFT MASUK */}
+        {pendingIncoming.length > 0 ? (
+          <div className="tukar-shift-enter space-y-3">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#123c8c]">
+              Permintaan Tukar Shift Masuk
+            </h3>
 
-        {/* ── INCOMING REQUESTS ALERT ── */}
-        {pendingIncoming.length > 0 && (
-          <section className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-600" />
-              </span>
-              <h3 className="text-xs font-black uppercase tracking-widest text-blue-700">
-                {pendingIncoming.length} Permintaan Masuk
-              </h3>
-            </div>
-
-            {pendingIncoming.map((req) => (
+            {pendingIncoming.map((req, index) => (
               <div
                 key={req.id}
-                className="overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-white to-blue-50/50 shadow-sm"
+                className="tukar-shift-enter flex flex-col gap-3 rounded-3xl border border-blue-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                style={{ animationDelay: `${index * 60}ms` }}
               >
-                <div className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 shadow-sm">
-                      <ArrowLeftRight size={20} strokeWidth={2.5} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-extrabold text-slate-900">
-                        {req.requester?.name}
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#123c8c]">
+                    <ArrowLeftRight size={20} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-extrabold text-slate-900">
+                      {req.requester?.name} ({req.requesterShiftName})
+                    </p>
+                    <p className="text-xs font-bold text-slate-500">
+                      Tanggal:{" "}
+                      <span className="text-[#123c8c]">{req.swapDate}</span>
+                    </p>
+                    {req.reason ? (
+                      <p className="mt-0.5 text-xs font-medium italic text-slate-600">
+                        &quot;{req.reason}&quot;
                       </p>
-                      <p className="mt-0.5 text-xs font-bold text-slate-500">
-                        <span className="text-blue-600">{req.requesterShiftName}</span>
-                        {" → "}
-                        <span className="text-blue-600">{req.targetShiftName}</span>
-                      </p>
-                      <div className="mt-1 flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
-                        <Calendar size={12} />
-                        {formatDateLabel(req.swapDate)}
-                      </div>
-                      {req.reason && (
-                        <p className="mt-1.5 text-xs font-medium italic text-slate-500">
-                          &quot;{req.reason}&quot;
-                        </p>
-                      )}
-                    </div>
+                    ) : null}
                   </div>
                 </div>
 
-                <div className="flex border-t border-blue-100">
-                  <button
-                    type="button"
-                    disabled={processingId === req.id}
-                    onClick={() => handleAction(req.id, "reject")}
-                    className="flex flex-1 items-center justify-center gap-1.5 border-r border-blue-100 px-4 py-3 text-xs font-extrabold text-red-600 transition hover:bg-red-50 active:bg-red-100 disabled:opacity-40"
-                  >
-                    {processingId === req.id ? (
-                      <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                      <XCircle size={15} />
-                    )}
-                    Tolak
-                  </button>
+                <div className="flex items-center gap-2 pt-2 sm:pt-0">
                   <button
                     type="button"
                     disabled={processingId === req.id}
                     onClick={() => handleAction(req.id, "approve")}
-                    className="flex flex-1 items-center justify-center gap-1.5 px-4 py-3 text-xs font-extrabold text-emerald-600 transition hover:bg-emerald-50 active:bg-emerald-100 disabled:opacity-40"
+                    className="flex flex-1 items-center justify-center gap-1 rounded-2xl bg-emerald-600 px-3.5 py-2 text-xs font-extrabold text-white transition hover:bg-emerald-700 active:scale-95 disabled:opacity-50 sm:flex-none"
                   >
                     {processingId === req.id ? (
                       <Loader2 size={14} className="animate-spin" />
                     ) : (
-                      <CheckCircle2 size={15} />
+                      <CheckCircle2 size={16} />
                     )}
                     Setuju
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={processingId === req.id}
+                    onClick={() => handleAction(req.id, "reject")}
+                    className="flex flex-1 items-center justify-center gap-1 rounded-2xl bg-red-500 px-3.5 py-2 text-xs font-extrabold text-white transition hover:bg-red-600 active:scale-95 disabled:opacity-50 sm:flex-none"
+                  >
+                    {processingId === req.id ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <XCircle size={16} />
+                    )}
+                    Tolak
                   </button>
                 </div>
               </div>
             ))}
-          </section>
-        )}
+          </div>
+        ) : null}
 
-        {/* ── GRID LAYOUT: FORM (KIRI) & RIWAYAT (KANAN) ── */}
-        <div className="grid gap-6 md:grid-cols-2 md:items-start">
-          {/* ── FORM AJUKAN (KIRI) ── */}
+        <div className="grid items-start gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          {/* FORM BUAT PENGAJUAN TUKAR SHIFT */}
           <form
             onSubmit={handleSubmit}
-            className="overflow-hidden rounded-3xl border border-blue-100/80 bg-white shadow-md shadow-blue-100/30"
+            className="tukar-shift-enter h-fit rounded-3xl border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/60 sm:p-6"
           >
-            {/* Header */}
-            <div className="border-b border-blue-50 bg-gradient-to-r from-[#123c8c] to-[#1e56b8] p-4 sm:p-5">
-              <div className="flex items-start justify-between gap-2.5 sm:gap-3">
-                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm text-white">
-                    {formMode === "self" ? (
-                      <Clock size={20} strokeWidth={2.5} />
-                    ) : (
-                      <ArrowLeftRight size={20} strokeWidth={2.5} />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-sm sm:text-base font-black text-white truncate">
-                      {formMode === "self" ? "Geser Shift Mandiri" : "Tukar Shift Rekan"}
-                    </h2>
-                    <p className="text-[10px] sm:text-xs font-semibold text-blue-200 truncate">
-                      {formMode === "self"
-                        ? ""
-                        : "Request"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="shrink-0 rounded-xl bg-white/15 px-2.5 py-1 sm:px-3 sm:py-1.5 text-right backdrop-blur-md ring-1 ring-white/20">
-                  <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-blue-200">Shift Kamu</p>
-                  <p className="text-xs sm:text-sm font-black text-white">{currentShiftName}</p>
-                </div>
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+                <ArrowLeftRight size={24} strokeWidth={2.6} />
               </div>
-
-              {/* Mode Selector Tabs */}
-              <div className="mt-4 flex rounded-2xl bg-black/20 p-1 backdrop-blur-md">
-                <button
-                  type="button"
-                  onClick={() => setFormMode("self")}
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-black transition ${formMode === "self"
-                    ? "bg-white text-[#123c8c] shadow-md"
-                    : "text-blue-100 hover:text-white"
-                    }`}
-                >
-                  <Clock size={14} className="shrink-0" />
-                  <span>Geser Mandiri</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormMode("swap")}
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-black transition ${formMode === "swap"
-                    ? "bg-white text-[#123c8c] shadow-md"
-                    : "text-blue-100 hover:text-white"
-                    }`}
-                >
-                  <Users size={14} className="shrink-0" />
-                  <span>Tukar Rekan</span>
-                </button>
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
+                  Form Tukar Shift
+                </p>
+                <h2 className="mt-1 text-2xl font-black text-slate-950">
+                  Buat Pengajuan
+                </h2>
+                <p className="mt-1 text-sm font-bold text-slate-400">
+                  Shift kamu saat ini:{" "}
+                  <span className="text-[#123c8c]">{currentShiftName}</span>
+                </p>
               </div>
             </div>
 
-            {/* Form Fields */}
-            <div className="space-y-4 p-5">
-              {formMode === "self" ? (
-                /* Mode Geser Shift Mandiri */
-                <div className="space-y-4">
-                  <div className="rounded-2xl border border-purple-100 bg-purple-50/60 p-3.5 text-xs font-semibold text-purple-900">
-                    <div className="flex items-center gap-2 font-bold text-purple-950">
-                      <Sparkles size={15} className="text-purple-600" />
-                      Khusus Karyawan Utama
-                    </div>
-                    <p className="mt-1 text-[11px] leading-relaxed text-purple-700">
-                      Jika ada keperluan di pagi hari, kamu dapat menggeser jam kerja hari itu ke <strong>Shift Siang</strong> tanpa harus bertukar jadwal dengan karyawan lain.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
-                      <Clock size={12} />
-                      Pilih Shift Tujuan
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={targetShiftName}
-                        onChange={(e) => setTargetShiftName(e.target.value)}
-                        className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-3.5 pr-10 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
-                      >
-                        {availableShifts.length > 0 ? (
-                          availableShifts.map((s) => (
-                            <option key={s.id} value={s.name}>
-                              {s.name} {s.startTime && s.endTime ? `(${s.startTime} - ${s.endTime})` : ""}
-                            </option>
-                          ))
-                        ) : (
-                          <option value="SHIFT SIANG">SHIFT SIANG (13:00 - 21:00)</option>
-                        )}
-                      </select>
-                      <ChevronDown
-                        size={16}
-                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* Mode Tukar Shift Rekan */
-                <div>
-                  <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
-                    <Users size={12} />
-                    Rekan Kerja Tujuan
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={targetUserId}
-                      onChange={(e) => setTargetUserId(e.target.value)}
-                      className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-3.5 pr-10 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
-                    >
-                      <option value="">Pilih rekan kerja...</option>
-                      {colleagues.map((col) => (
-                        <option key={col.id} value={col.id}>
-                          {col.name} — {col.shiftName}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown
-                      size={16}
-                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                  </div>
-                  {selectedColleague && (
-                    <p className="mt-1.5 text-[11px] font-bold text-blue-600">
-                      Tukar ke {selectedColleague.shiftName}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Tanggal */}
+            <div className="mt-5 space-y-4">
               <div>
-                <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
-                  <Calendar size={12} />
-                  {formMode === "self" ? "Tanggal Geser Shift" : "Tanggal Tukar Shift"}
+                <label className="text-sm font-black text-slate-700">
+                  Pilih Rekan Kerja
+                </label>
+                <select
+                  value={targetUserId}
+                  onChange={(e) => setTargetUserId(e.target.value)}
+                  className="mt-2 min-h-[52px] w-full rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                >
+                  <option value="">-- Pilih Rekan Kerja --</option>
+                  {colleagues.map((col) => (
+                    <option key={col.id} value={col.id}>
+                      {col.name} ({col.shiftName})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-black text-slate-700">
+                  Tanggal Tukar Shift
                 </label>
                 <input
                   type="date"
                   value={swapDate}
                   min={getTodayString()}
                   onChange={(e) => setSwapDate(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  className="mt-2 min-h-[52px] w-full rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                 />
               </div>
 
-              {/* Alasan */}
               <div>
-                <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
-                  <MessageSquare size={12} />
+                <label className="text-sm font-black text-slate-700">
                   Alasan (Opsional)
                 </label>
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder={
-                    formMode === "self"
-                      ? "Contoh: Ada urusan keluarga di pagi hari"
-                      : "Contoh: Ada acara keluarga mendadak"
-                  }
-                  rows={2}
-                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-300 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  placeholder="Alasan singkat tukar shift..."
+                  className="mt-2 min-h-28 w-full resize-none rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                 />
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
-                disabled={isSubmitting || (formMode === "swap" && !targetUserId) || (formMode === "self" && !targetShiftName)}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#123c8c] to-[#1e56b8] py-3.5 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:shadow-xl active:scale-[0.98] disabled:opacity-40 disabled:shadow-none"
+                disabled={isSubmitting}
+                className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-3xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0e2f70] active:scale-[0.98] disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : formMode === "self" ? (
-                  <Clock size={16} />
+                  <Loader2 size={18} className="animate-spin" />
                 ) : (
-                  <Send size={16} />
+                  <Send size={18} />
                 )}
-                {formMode === "self" ? "Simpan Geser Shift" : "Kirim Pengajuan Tukar"}
+                Kirim Pengajuan
               </button>
             </div>
           </form>
 
-          {/* ── RIWAYAT (KANAN) ── */}
-          <section>
-            <h3 className="mb-3 text-xs font-black uppercase tracking-widest text-slate-500">
-              Riwayat Perubahan & Tukar Shift
-            </h3>
+          {/* RIWAYAT SHIFT SWAP */}
+          <div
+            className="tukar-shift-enter min-w-0 space-y-4"
+            style={{ animationDelay: "90ms" }}
+          >
+            <div className="rounded-3xl bg-[#123c8c] p-5 text-white shadow-xl shadow-blue-900/20">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+                  <ArrowLeftRight size={25} strokeWidth={2.6} />
+                </div>
+
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-100">
+                    Riwayat
+                  </p>
+                  <h2 className="mt-1 text-2xl font-black">Tukar Shift Saya</h2>
+                </div>
+              </div>
+            </div>
 
             {isLoading ? (
-              <div className="flex items-center justify-center gap-2 rounded-2xl border border-slate-100 bg-white p-8 text-xs font-bold text-slate-400">
-                <Loader2 size={16} className="animate-spin text-blue-500" />
-                Memuat...
+              <div className="tukar-shift-enter flex items-center justify-center gap-2 rounded-3xl border border-blue-100 bg-white p-8 text-sm font-bold text-slate-400">
+                <Loader2 size={16} className="animate-spin text-[#123c8c]" />
+                Memuat data...
               </div>
-            ) : allHistory.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
-                <ArrowLeftRight size={28} className="mx-auto text-slate-300" />
-                <p className="mt-2 text-xs font-bold text-slate-400">
-                  Belum ada riwayat pergeseran atau tukar shift.
-                </p>
+            ) : sentRequests.length === 0 && incomingRequests.length === 0 ? (
+              <div className="tukar-shift-enter rounded-3xl border border-blue-100 bg-white p-8 text-center text-sm font-bold text-slate-400">
+                Belum ada riwayat tukar shift.
               </div>
             ) : (
-              <div className="space-y-2">
-                {allHistory.map((req) => {
-                  const cfg = getStatusConfig(req.status);
-                  const isOut = req.direction === "out";
-                  const isSelf = Boolean(req.isSelfShift || req.targetUser?.id === req.requester?.id);
-
-                  return (
-                    <div
-                      key={`${req.direction}-${req.id}`}
-                      className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-sm transition hover:shadow-md"
-                    >
-                      <div
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black ${isSelf
-                          ? "bg-purple-50 text-purple-600"
-                          : isOut
-                            ? "bg-orange-50 text-orange-600"
-                            : "bg-blue-50 text-blue-600"
-                          }`}
-                      >
-                        {isSelf ? <Clock size={16} /> : isOut ? "↑" : "↓"}
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-extrabold text-slate-800">
-                          {isSelf
-                            ? "Geser Shift Mandiri"
-                            : isOut
-                              ? `Ke: ${req.targetUser?.name || "-"}`
-                              : `Dari: ${req.requester?.name || "-"}`}
-                        </p>
-                        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-                          <span className="inline-block rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700">
-                            {req.requesterShiftName} → {req.targetShiftName}
-                          </span>
-                          {isSelf && (
-                            <span className="rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-700">
-                              Mandiri
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex shrink-0 flex-col items-end gap-1">
-                        <span className="text-[11px] font-bold text-slate-400">
-                          {formatDateLabel(req.swapDate)}
-                        </span>
-                        <span
-                          className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black ring-1 ${cfg.bg} ${cfg.text} ${cfg.ring}`}
-                        >
-                          <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-                          {cfg.label}
-                        </span>
-                      </div>
+              <div className="space-y-2.5">
+                {sentRequests.map((req, index) => (
+                  <div
+                    key={req.id}
+                    className="tukar-shift-enter flex items-center justify-between rounded-3xl border border-blue-100 bg-white p-3.5 shadow-sm"
+                    style={{ animationDelay: `${index * 45}ms` }}
+                  >
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                        Tukar Keluar
+                      </p>
+                      <p className="text-xs font-black text-slate-900">
+                        Ke: {req.targetUser?.name} ({req.targetShiftName})
+                      </p>
+                      <p className="text-[11px] font-bold text-slate-500">
+                        Tanggal:{" "}
+                        <span className="text-[#123c8c]">{req.swapDate}</span>
+                      </p>
                     </div>
-                  );
-                })}
+
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
+                        req.status === "approved"
+                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                          : req.status === "rejected"
+                            ? "bg-red-50 text-red-700 ring-1 ring-red-200"
+                            : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                      }`}
+                    >
+                      {req.status === "approved"
+                        ? "Disetujui"
+                        : req.status === "rejected"
+                          ? "Ditolak"
+                          : "Menunggu"}
+                    </span>
+                  </div>
+                ))}
+
+                {incomingRequests.map((req, index) => (
+                  <div
+                    key={req.id}
+                    className="tukar-shift-enter flex items-center justify-between rounded-3xl border border-blue-100 bg-white p-3.5 shadow-sm"
+                    style={{
+                      animationDelay: `${(sentRequests.length + index) * 45}ms`,
+                    }}
+                  >
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                        Tukar Masuk
+                      </p>
+                      <p className="text-xs font-black text-slate-900">
+                        Dari: {req.requester?.name} ({req.requesterShiftName})
+                      </p>
+                      <p className="text-[11px] font-bold text-slate-500">
+                        Tanggal:{" "}
+                        <span className="text-[#123c8c]">{req.swapDate}</span>
+                      </p>
+                    </div>
+
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
+                        req.status === "approved"
+                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                          : req.status === "rejected"
+                            ? "bg-red-50 text-red-700 ring-1 ring-red-200"
+                            : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                      }`}
+                    >
+                      {req.status === "approved"
+                        ? "Disetujui"
+                        : req.status === "rejected"
+                          ? "Ditolak"
+                          : "Menunggu"}
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
-          </section>
+          </div>
         </div>
       </main>
 
