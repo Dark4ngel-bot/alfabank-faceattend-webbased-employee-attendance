@@ -436,12 +436,12 @@ function AttendanceRecordCard({
   return (
     <Link
       href={`/history/${item.id}`}
-      className="history-row-enter block rounded-3xl border border-blue-100 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:bg-[#f8fbff] hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99]"
+      className="history-row-enter block rounded-3xl border border-red-100 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:bg-[#fff5f5] hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99]"
       style={{ animationDelay: delay }}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 gap-4">
-          <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+          <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#fef2f2] text-[#b91c1c]">
             <p className="text-lg font-black leading-none">{shortDate[0]}</p>
             <p className="mt-1 text-[10px] font-black uppercase leading-none">
               {shortDate[1]}

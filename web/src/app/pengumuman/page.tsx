@@ -194,16 +194,16 @@ export default function AnnouncementPage() {
         <AppHeader title="Pengumuman" rightLabel="Info" variant="employee" />
       </div>
 
-      <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff] pb-[calc(8rem+env(safe-area-inset-bottom))] text-slate-950 md:pb-28">
+      <main className="min-h-dvh bg-gradient-to-br from-[#fff5f5] via-white to-[#fef2f2] pb-[calc(8rem+env(safe-area-inset-bottom))] text-slate-950 md:pb-28">
         <section className="mx-auto max-w-5xl px-5 pt-7 md:hidden">
-          <div className="announcement-enter relative overflow-hidden rounded-[2rem] bg-[#123c8c] p-5 text-white shadow-xl shadow-blue-900/20">
+          <div className="announcement-enter relative overflow-hidden rounded-[2rem] bg-[#b91c1c] p-5 text-white shadow-xl shadow-red-900/20">
             <div className="relative z-10 flex items-center gap-3">
               <div className="announcement-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
                 <Megaphone size={25} strokeWidth={2.6} />
               </div>
 
               <div className="min-w-0">
-                <p className="announcement-row-enter text-xs font-black uppercase tracking-[0.24em] text-blue-100">
+                <p className="announcement-row-enter text-xs font-black uppercase tracking-[0.24em] text-red-100">
                   Presensi
                 </p>
 
@@ -215,7 +215,7 @@ export default function AnnouncementPage() {
                 </h1>
 
                 <p
-                  className="announcement-row-enter mt-1 text-sm font-semibold text-blue-100"
+                  className="announcement-row-enter mt-1 text-sm font-semibold text-red-100"
                   style={{ animationDelay: "100ms" }}
                 >
                   Informasi terbaru dari perusahaan.
@@ -233,13 +233,13 @@ export default function AnnouncementPage() {
           ) : null}
 
           {isLoading ? (
-            <div className="announcement-row-enter flex items-center justify-center gap-2 rounded-3xl border border-blue-100 bg-white p-8 text-sm font-black text-slate-500 shadow-lg shadow-slate-200/50">
-              <Loader2 size={18} className="animate-spin text-[#123c8c]" />
+            <div className="announcement-row-enter flex items-center justify-center gap-2 rounded-3xl border border-red-100 bg-white p-8 text-sm font-black text-slate-500 shadow-lg shadow-slate-200/50">
+              <Loader2 size={18} className="animate-spin text-[#b91c1c]" />
               Memuat pengumuman...
             </div>
           ) : announcements.length === 0 ? (
-            <div className="announcement-row-enter rounded-3xl border border-dashed border-blue-100 bg-white px-5 py-14 text-center shadow-lg shadow-slate-200/50">
-              <div className="announcement-icon-pop mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+            <div className="announcement-row-enter rounded-3xl border border-dashed border-red-100 bg-white px-5 py-14 text-center shadow-lg shadow-slate-200/50">
+              <div className="announcement-icon-pop mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fef2f2] text-[#b91c1c]">
                 <Megaphone size={26} strokeWidth={2.6} />
               </div>
 
@@ -266,7 +266,7 @@ export default function AnnouncementPage() {
                     className={`announcement-row-enter min-w-0 rounded-[2rem] p-5 transition duration-200 hover:-translate-y-0.5 md:p-6 ${
                       isYellowHighlighted
                         ? "border-2 border-amber-300 bg-[#fffbeb] shadow-xl shadow-amber-100/70 ring-2 ring-amber-400/40 hover:bg-[#fff9e6]"
-                        : "border border-blue-100 bg-white shadow-lg shadow-slate-200/50 hover:bg-[#f8fbff] hover:shadow-xl hover:shadow-slate-300/40"
+                        : "border border-red-100 bg-white shadow-lg shadow-slate-200/50 hover:bg-[#fff5f5] hover:shadow-xl hover:shadow-slate-300/40"
                     }`}
                     style={{
                       animationDelay: `${index * 55}ms`,
@@ -285,7 +285,7 @@ export default function AnnouncementPage() {
                               {isToday ? "Pengumuman Hari Ini" : "Pengumuman Baru"}
                             </div>
                           ) : (
-                            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#eaf1ff] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#123c8c]">
+                            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#fef2f2] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#b91c1c]">
                               <Megaphone size={14} />
                               Pengumuman
                             </div>
@@ -301,7 +301,7 @@ export default function AnnouncementPage() {
                         <div className={`inline-flex w-fit shrink-0 items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${
                           isYellowHighlighted
                             ? "bg-amber-200/80 text-amber-950 ring-1 ring-amber-300"
-                            : "bg-[#f8fbff] text-slate-500 ring-1 ring-blue-100"
+                            : "bg-[#fff5f5] text-slate-500 ring-1 ring-red-100"
                         }`}>
                           <CalendarDays size={14} strokeWidth={2.6} />
                           {formatDate(dateValue)}
@@ -312,12 +312,12 @@ export default function AnnouncementPage() {
                         <p className={`mt-5 line-clamp-3 whitespace-pre-wrap break-words rounded-3xl p-4 text-sm font-semibold leading-7 [overflow-wrap:anywhere] md:p-5 md:text-base md:leading-8 ${
                           isYellowHighlighted
                             ? "bg-amber-100/60 text-slate-900 border border-amber-200/70"
-                            : "bg-[#f8fbff] text-slate-600"
+                            : "bg-[#fff5f5] text-slate-600"
                         }`}>
                           {announcement.content}
                         </p>
                       ) : (
-                        <p className="mt-5 rounded-3xl bg-[#f8fbff] p-4 text-sm font-semibold text-slate-400">
+                        <p className="mt-5 rounded-3xl bg-[#fff5f5] p-4 text-sm font-semibold text-slate-400">
                           Tidak ada isi pengumuman.
                         </p>
                       )}
@@ -332,7 +332,7 @@ export default function AnnouncementPage() {
                         }
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-4 inline-flex max-w-full items-center gap-3 rounded-2xl border border-blue-100 bg-[#eaf1ff] px-4 py-3 text-sm font-black text-[#123c8c] transition hover:-translate-y-0.5 hover:bg-blue-100 active:scale-[0.98]"
+                        className="mt-4 inline-flex max-w-full items-center gap-3 rounded-2xl border border-red-100 bg-[#fef2f2] px-4 py-3 text-sm font-black text-[#b91c1c] transition hover:-translate-y-0.5 hover:bg-red-100 active:scale-[0.98]"
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white">
                           <FileText size={20} strokeWidth={2.6} />

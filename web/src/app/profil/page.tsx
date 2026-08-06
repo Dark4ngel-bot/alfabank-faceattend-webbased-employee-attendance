@@ -279,20 +279,20 @@ function getProfileAlertTheme(type: NonNullable<ProfileAlert>["type"]) {
 
   if (type === "info") {
     return {
-      shell: "from-blue-50 via-white to-blue-50",
-      iconWrap: "bg-blue-100 text-[#123c8c]",
-      badge: "text-[#123c8c] bg-white/70",
-      button: "bg-[#123c8c] hover:bg-[#0f3274] shadow-blue-900/20",
+      shell: "from-red-50 via-white to-red-50",
+      iconWrap: "bg-red-100 text-[#b91c1c]",
+      badge: "text-[#b91c1c] bg-white/70",
+      button: "bg-[#b91c1c] hover:bg-[#991b1b] shadow-red-900/20",
       icon: ShieldCheck,
       label: "INFO",
     };
   }
 
   return {
-    shell: "from-orange-50 via-white to-blue-50",
+    shell: "from-orange-50 via-white to-red-50",
     iconWrap: "bg-orange-100 text-orange-600",
     badge: "text-orange-600 bg-white/70",
-    button: "bg-[#526fae] hover:bg-[#46629d] shadow-blue-900/20",
+    button: "bg-[#b91c1c] hover:bg-[#991b1b] shadow-red-900/20",
     icon: AlertTriangle,
     label: "PERHATIAN",
   };
@@ -474,7 +474,7 @@ function ProfileAvatar({ user, initials, size = "md" }: ProfileAvatarProps) {
 
   return (
     <div
-      className={`profile-avatar-pop flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#eaf1ff] font-black text-[#123c8c] ring-4 ring-blue-100 ${sizeClass}`}
+      className={`profile-avatar-pop flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fef2f2] font-black text-[#b91c1c] ring-4 ring-red-100 ${sizeClass}`}
     >
       {photoSrc ? (
         <img
@@ -511,11 +511,11 @@ function SectionRow({
     <button
       type="button"
       onClick={onClick}
-      className={`profile-row-enter w-full transition hover:bg-[#f8fbff] active:scale-[0.99] ${isLast ? "" : "border-b border-slate-100"}`}
+      className={`profile-row-enter w-full transition hover:bg-[#fff5f5] active:scale-[0.99] ${isLast ? "" : "border-b border-slate-100"}`}
       style={{ animationDelay: delay }}
     >
       <div className="flex w-full items-center gap-4 px-5 py-5 sm:px-6">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eef5ff] text-[#123c8c]">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fef2f2] text-[#b91c1c]">
           <Icon size={24} strokeWidth={2.7} />
         </div>
 
@@ -534,7 +534,7 @@ function SectionRow({
         <ChevronRight
           size={24}
           strokeWidth={2.8}
-          className="shrink-0 text-[#123c8c]"
+          className="shrink-0 text-[#b91c1c]"
         />
       </div>
     </button>
@@ -558,12 +558,12 @@ function DetailItem({
 }: DetailItemProps) {
   return (
     <div
-      className="profile-row-enter rounded-3xl border border-blue-100 bg-white p-5 shadow-sm shadow-slate-200/40 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40 md:p-6"
+      className="profile-row-enter rounded-3xl border border-red-100 bg-white p-5 shadow-sm shadow-slate-200/40 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40 md:p-6"
       style={{ animationDelay: delay }}
     >
       <div className="flex items-start gap-4">
         {Icon ? (
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#eef5ff] text-[#123c8c]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fef2f2] text-[#b91c1c]">
             <Icon size={22} strokeWidth={2.7} />
           </div>
         ) : null}
@@ -608,13 +608,13 @@ function PasswordInput({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
-          className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+          className="profile-field w-full rounded-2xl border border-red-100 bg-[#fff5f5] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
         />
 
         <button
           type="button"
           onClick={onToggleShow}
-          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#b91c1c]"
           aria-label={show ? "Sembunyikan password" : "Tampilkan password"}
         >
           {show ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -1353,7 +1353,7 @@ export function ProfilPageContent({
               <button
                 type="button"
                 onClick={openEditProfileModal}
-                className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
+                className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-red-900/20 transition hover:-translate-y-0.5 hover:bg-[#991b1b] active:scale-[0.98]"
               >
                 <Pencil size={17} strokeWidth={2.7} />
                 Edit Detail
@@ -1366,9 +1366,9 @@ export function ProfilPageContent({
                 return (
                   <div
                     key={section.title}
-                    className="rounded-3xl border border-blue-100/80 bg-white/90 p-5 shadow-lg shadow-blue-950/5 backdrop-blur-md md:p-6"
+                    className="rounded-3xl border border-red-100/80 bg-white/90 p-5 shadow-lg shadow-red-950/5 backdrop-blur-md md:p-6"
                   >
-                    <div className="mb-4 flex items-center gap-2.5 text-xs font-black uppercase tracking-wider text-[#123c8c]">
+                    <div className="mb-4 flex items-center gap-2.5 text-xs font-black uppercase tracking-wider text-[#b91c1c]">
                       <SectionIcon size={16} strokeWidth={2.5} />
                       {section.title}
                     </div>
@@ -1393,7 +1393,7 @@ export function ProfilPageContent({
         ) : (
           <section className="profile-enter mx-auto max-w-5xl px-5 pt-5 md:px-10 md:pt-8">
             <div className="flex flex-col items-center justify-center text-center">
-              <div className="profile-avatar-pop flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#123c8c] text-white shadow-xl shadow-blue-900/30">
+              <div className="profile-avatar-pop flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#b91c1c] text-white shadow-xl shadow-red-900/30">
                 <UserRound size={30} strokeWidth={2.7} />
               </div>
 
@@ -1405,7 +1405,7 @@ export function ProfilPageContent({
             <button
               type="button"
               onClick={() => router.push("/kartu-identitas")}
-              className="profile-row-enter mt-6 flex w-full items-center gap-5 rounded-[2rem] border border-blue-100 bg-white p-5 text-left shadow-xl shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/60 active:scale-[0.99] sm:p-6"
+              className="profile-row-enter mt-6 flex w-full items-center gap-5 rounded-[2rem] border border-red-100 bg-white p-5 text-left shadow-xl shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/60 active:scale-[0.99] sm:p-6"
               style={{ animationDelay: "60ms" }}
             >
               <ProfileAvatar user={user} initials={initials} size="sm" />
@@ -1423,15 +1423,15 @@ export function ProfilPageContent({
               <ChevronRight
                 size={26}
                 strokeWidth={2.8}
-                className="shrink-0 text-[#123c8c]"
+                className="shrink-0 text-[#b91c1c]"
               />
             </button>
 
             <div
-              className="profile-row-enter mt-5 grid grid-cols-3 overflow-hidden rounded-[1.8rem] border border-blue-100 bg-white text-center shadow-xl shadow-slate-200/50"
+              className="profile-row-enter mt-5 grid grid-cols-3 overflow-hidden rounded-[1.8rem] border border-red-100 bg-white text-center shadow-xl shadow-slate-200/50"
               style={{ animationDelay: "85ms" }}
             >
-              <div className="flex flex-col items-center justify-center border-r border-blue-50 px-4 py-4 text-center">
+              <div className="flex flex-col items-center justify-center border-r border-red-50 px-4 py-4 text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Kuota WFH
                 </p>
@@ -1442,7 +1442,7 @@ export function ProfilPageContent({
                 </p>
               </div>
 
-              <div className="flex flex-col items-center justify-center border-r border-blue-50 px-4 py-4 text-center">
+              <div className="flex flex-col items-center justify-center border-r border-red-50 px-4 py-4 text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Terpakai
                 </p>
@@ -1455,7 +1455,7 @@ export function ProfilPageContent({
                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Sisa
                 </p>
-                <p className="mt-1 text-lg font-black text-[#123c8c]">
+                <p className="mt-1 text-lg font-black text-[#b91c1c]">
                   {formatWfhQuota(user.wfh_quota_remaining_monthly)}
                 </p>
               </div>
@@ -1594,8 +1594,8 @@ export function ProfilPageContent({
                 className="mt-6 space-y-5"
               >
                 {/* GRUP 1: INFORMASI UTAMA */}
-                <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 space-y-4">
-                  <div className="text-xs font-black uppercase tracking-wider text-[#123c8c] flex items-center gap-2">
+                <div className="rounded-2xl border border-red-100 bg-[#fff5f5] p-4 space-y-4">
+                  <div className="text-xs font-black uppercase tracking-wider text-[#b91c1c] flex items-center gap-2">
                     <UserRound size={15} />
                     Informasi Utama & Foto Profil
                   </div>
@@ -1604,12 +1604,12 @@ export function ProfilPageContent({
                     <label className="mb-2 block text-xs font-black text-slate-700">
                       Foto Profil
                     </label>
-                    <div className="flex items-center gap-4 rounded-2xl border border-blue-100 bg-white p-3">
+                    <div className="flex items-center gap-4 rounded-2xl border border-red-100 bg-white p-3">
                       {user ? (
                         <ProfileAvatar user={user} initials={initials} size="sm" />
                       ) : null}
                       <div className="min-w-0 flex-1">
-                        <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#123c8c] px-4 py-2.5 text-xs font-black text-white transition hover:bg-[#0f3274] active:scale-[0.97]">
+                        <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#b91c1c] px-4 py-2.5 text-xs font-black text-white transition hover:bg-[#991b1b] active:scale-[0.97]">
                           {isUploadingPhoto ? (
                             <>
                               <Loader2 size={15} className="animate-spin" />
@@ -1660,7 +1660,7 @@ export function ProfilPageContent({
                           }))
                         }
                         placeholder="Masukkan nama lengkap"
-                        className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                        className="profile-field w-full rounded-2xl border border-red-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                       />
                     </div>
                   </div>
@@ -1694,15 +1694,15 @@ export function ProfilPageContent({
                         pattern="[0-9]*"
                         maxLength={13}
                         placeholder="Contoh: 081234567890"
-                        className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                        className="profile-field w-full rounded-2xl border border-red-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* GRUP 2: KELAHIRAN & IDENTITAS */}
-                <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 space-y-4">
-                  <div className="text-xs font-black uppercase tracking-wider text-[#123c8c] flex items-center gap-2">
+                <div className="rounded-2xl border border-red-100 bg-[#fff5f5] p-4 space-y-4">
+                  <div className="text-xs font-black uppercase tracking-wider text-[#b91c1c] flex items-center gap-2">
                     <IdCard size={15} />
                     Kelahiran & NIK
                   </div>
@@ -1726,7 +1726,7 @@ export function ProfilPageContent({
                             }))
                           }
                           placeholder="Contoh: Jakarta"
-                          className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                          className="profile-field w-full rounded-2xl border border-red-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -1749,7 +1749,7 @@ export function ProfilPageContent({
                               birth_date: event.target.value,
                             }))
                           }
-                          className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                          className="profile-field w-full rounded-2xl border border-red-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -1776,15 +1776,15 @@ export function ProfilPageContent({
                         pattern="[0-9]*"
                         maxLength={16}
                         placeholder="Masukkan NIK"
-                        className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                        className="profile-field w-full rounded-2xl border border-red-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* GRUP 3: REKENING & BANK */}
-                <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 space-y-4">
-                  <div className="text-xs font-black uppercase tracking-wider text-[#123c8c] flex items-center gap-2">
+                <div className="rounded-2xl border border-red-100 bg-[#fff5f5] p-4 space-y-4">
+                  <div className="text-xs font-black uppercase tracking-wider text-[#b91c1c] flex items-center gap-2">
                     <CreditCard size={15} />
                     Rekening Payroll & Bank
                   </div>
@@ -1822,7 +1822,7 @@ export function ProfilPageContent({
                           pattern="[0-9]*"
                           maxLength={16}
                           placeholder="Masukkan no rekening"
-                          className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                          className="profile-field w-full rounded-2xl border border-red-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -1844,7 +1844,7 @@ export function ProfilPageContent({
                   <button
                     type="submit"
                     disabled={isUpdatingProfile}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 py-3 text-sm font-black text-white transition hover:bg-[#991b1b] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isUpdatingProfile ? (
                       <>
@@ -1869,7 +1869,7 @@ export function ProfilPageContent({
             <div className="profile-modal-panel max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                     Keamanan Akun
                   </p>
 
@@ -1930,7 +1930,7 @@ export function ProfilPageContent({
                   }
                 />
 
-                <div className="profile-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 text-xs font-semibold leading-6 text-slate-500">
+                <div className="profile-row-enter rounded-2xl border border-red-100 bg-[#fff5f5] p-4 text-xs font-semibold leading-6 text-slate-500">
                   Setelah kata sandi berhasil diubah, gunakan kata sandi baru
                   untuk login berikutnya.
                 </div>
@@ -1947,7 +1947,7 @@ export function ProfilPageContent({
                   <button
                     type="submit"
                     disabled={isChangingPassword}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 py-3 text-sm font-black text-white transition hover:bg-[#991b1b] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isChangingPassword ? (
                       <>

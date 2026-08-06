@@ -803,18 +803,18 @@ function CameraStatusIcon({
   return (
     <div
       className={cn(
-        "attendance-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-lg shadow-blue-100/50 ring-1",
+        "attendance-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-lg shadow-red-100/50 ring-1",
         laptopBlocked && "bg-orange-50 text-orange-600 ring-orange-100",
         !laptopBlocked &&
           cameraReady &&
-          "bg-[#123c8c] text-white ring-[#123c8c]",
+          "bg-[#b91c1c] text-white ring-[#b91c1c]",
         !laptopBlocked &&
           cameraStarting &&
           "bg-amber-50 text-amber-700 ring-amber-100",
         !laptopBlocked &&
           !cameraReady &&
           !cameraStarting &&
-          "bg-white text-slate-400 ring-blue-100",
+          "bg-white text-slate-400 ring-red-100",
       )}
     >
       {cameraStarting ? (
@@ -1004,8 +1004,8 @@ function ActionButton({
         disabled
           ? "border border-slate-200 bg-slate-200 text-slate-400 shadow-none hover:translate-y-0"
           : primary
-            ? "bg-[#123c8c] text-white shadow-blue-900/25"
-            : "border border-blue-200 bg-white text-[#123c8c] shadow-slate-200/70 md:bg-[#f8fbff]",
+            ? "bg-[#b91c1c] text-white shadow-red-900/25"
+            : "border border-red-200 bg-white text-[#b91c1c] shadow-slate-200/70 md:bg-[#fff5f5]",
       )}
     >
       <span className="flex w-full items-center justify-center gap-1.5 sm:gap-2 md:gap-3">
@@ -1019,7 +1019,7 @@ function ActionButton({
                 ? "bg-slate-300/70"
                 : primary
                   ? "bg-white/15"
-                  : "bg-blue-50",
+                  : "bg-red-50",
             )}
           >
             {icon}
@@ -1033,7 +1033,7 @@ function ActionButton({
               disabled
                 ? "text-slate-400"
                 : primary
-                  ? "text-blue-100"
+                  ? "text-red-100"
                   : "text-slate-400",
             )}
           >
@@ -1053,9 +1053,9 @@ function LastPhoto({ url }: { url: string | null }) {
   if (!url) return null;
 
   return (
-    <div className="attendance-row-enter mt-5 hidden rounded-3xl border border-blue-100 bg-[#f6f8ff] p-4 md:block">
+    <div className="attendance-row-enter mt-5 hidden rounded-3xl border border-red-100 bg-[#fff5f5] p-4 md:block">
       <div className="mb-3 flex items-center gap-2">
-        <ImageUp size={18} className="text-[#123c8c]" />
+        <ImageUp size={18} className="text-[#b91c1c]" />
         <p className="text-sm font-black text-slate-950">Foto Terakhir</p>
       </div>
 
@@ -1076,10 +1076,10 @@ function ProofCard({
   workMode: WorkMode;
 }) {
   return (
-    <div className="attendance-card-enter overflow-hidden rounded-[2rem] bg-[#123c8c] text-white shadow-2xl shadow-blue-900/20">
+    <div className="attendance-card-enter overflow-hidden rounded-[2rem] bg-[#b91c1c] text-white shadow-2xl shadow-red-900/20">
       <div className="relative p-6 md:p-8">
         <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-white/10" />
-        <div className="absolute -bottom-20 right-10 h-40 w-40 rounded-full bg-blue-300/10" />
+        <div className="absolute -bottom-20 right-10 h-40 w-40 rounded-full bg-red-300/10" />
 
         <div className="relative flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
@@ -1087,7 +1087,7 @@ function ProofCard({
           </div>
 
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-blue-100">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-red-100">
               Bukti Presensi
             </p>
 
@@ -1095,7 +1095,7 @@ function ProofCard({
               {cameraReady ? "Ready to Capture" : "Camera Standby"}
             </h2>
 
-            <p className="mt-2 text-sm font-bold text-blue-100">
+            <p className="mt-2 text-sm font-bold text-red-100">
               Mode: {getWorkModeLabel(workMode)}
             </p>
           </div>
@@ -1115,7 +1115,7 @@ function InfoTile({
   children: ReactNode;
 }) {
   return (
-    <div className="attendance-row-enter rounded-3xl border border-blue-100 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60">
+    <div className="attendance-row-enter rounded-3xl border border-red-100 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60">
       {icon}
       <p className="mt-3 text-sm font-black text-slate-950">{title}</p>
       <div className="mt-1 text-sm text-slate-500">{children}</div>
@@ -1625,12 +1625,12 @@ function EarlyCheckinConfirmModal({
           <div className="p-5">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#123c8c] ring-1 ring-blue-100">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-[#b91c1c] ring-1 ring-red-100">
                   <Clock3 size={24} strokeWidth={2.7} />
                 </div>
 
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                     Check-in Lebih Awal
                   </p>
 
@@ -1656,8 +1656,8 @@ function EarlyCheckinConfirmModal({
               </button>
             </div>
 
-            <div className="mt-5 rounded-3xl border border-blue-100 bg-blue-50/70 p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#123c8c]">
+            <div className="mt-5 rounded-3xl border border-red-100 bg-red-50/70 p-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#b91c1c]">
                 Lebih awal
               </p>
 
@@ -1665,7 +1665,7 @@ function EarlyCheckinConfirmModal({
                 {confirm.earlyLabel}
               </p>
 
-              <p className="mt-1 text-xs font-bold text-[#123c8c]/75">
+              <p className="mt-1 text-xs font-bold text-[#b91c1c]/75">
                 Waktu kerja tetap akan dihitung dari jam check-in yang dikirim.
               </p>
             </div>
@@ -3423,14 +3423,14 @@ export default function AttendancePage() {
               padding="md"
               className="attendance-card-enter rounded-[2rem] border-white/80 bg-white/95 p-5 shadow-2xl shadow-slate-300/30 backdrop-blur-xl md:p-6"
             >
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#b91c1c]">
                 Status Verifikasi
               </p>
 
-              <div className="attendance-row-enter mt-4 flex items-start gap-4 rounded-3xl border border-blue-100 bg-[#f6f8ff] p-5">
+              <div className="attendance-row-enter mt-4 flex items-start gap-4 rounded-3xl border border-red-100 bg-[#fff5f5] p-5">
                 <CheckCircle2
                   size={24}
-                  className="mt-0.5 shrink-0 text-[#123c8c]"
+                  className="mt-0.5 shrink-0 text-[#b91c1c]"
                 />
 
                 <div>
@@ -3445,7 +3445,7 @@ export default function AttendancePage() {
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <InfoTile
                   title="Jam Kerja"
-                  icon={<Clock3 size={22} className="text-[#123c8c]" />}
+                  icon={<Clock3 size={22} className="text-[#b91c1c]" />}
                 >
                   {workMode === "visit" ? (
                     <div className="space-y-1">
@@ -3474,7 +3474,7 @@ export default function AttendancePage() {
                 <InfoTile
                   title="Menit Kerja"
                   icon={
-                    <BriefcaseBusiness size={22} className="text-[#123c8c]" />
+                    <BriefcaseBusiness size={22} className="text-[#b91c1c]" />
                   }
                 >
                   <div className="space-y-1">
@@ -3491,7 +3491,7 @@ export default function AttendancePage() {
 
                 <InfoTile
                   title="Lokasi GPS"
-                  icon={<MapPin size={22} className="text-[#123c8c]" />}
+                  icon={<MapPin size={22} className="text-[#b91c1c]" />}
                 >
                   {lastLatitude !== null && lastLongitude !== null ? (
                     <div className="space-y-1">

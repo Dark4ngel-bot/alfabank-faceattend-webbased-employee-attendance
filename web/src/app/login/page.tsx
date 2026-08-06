@@ -208,7 +208,7 @@ function LoginMotionStyles() {
 
       .login-presence-title {
         background: none;
-        color: #123c8c;
+        color: #b91c1c;
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -333,7 +333,7 @@ function FloatingAlert({
             <button
               type="button"
               onClick={onClose}
-              className="mt-5 flex min-h-12 w-full items-center justify-center rounded-2xl border border-white/35 bg-[#123c8c]/75 px-5 text-sm font-black text-white shadow-xl shadow-blue-900/15 backdrop-blur-xl transition hover:bg-[#123c8c]/90 active:scale-[0.98]"
+              className="mt-5 flex min-h-12 w-full items-center justify-center rounded-2xl border border-white/35 bg-[#b91c1c]/75 px-5 text-sm font-black text-white shadow-xl shadow-red-900/15 backdrop-blur-xl transition hover:bg-[#b91c1c]/90 active:scale-[0.98]"
             >
               Mengerti
             </button>
@@ -658,7 +658,7 @@ export default function LoginPage() {
           <div className="login-enter relative flex flex-col justify-between px-6 pb-8 pt-28 md:px-12 lg:px-20 lg:pb-14 lg:pt-36">
             <div className="relative z-10 my-auto max-w-2xl text-center lg:text-left">
               <p
-                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#123c8c] md:text-sm"
+                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#b91c1c] md:text-sm"
                 style={{
                   animationDelay: "120ms",
                 }}
@@ -678,7 +678,7 @@ export default function LoginPage() {
               </h2>
 
               <p
-                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#123c8c] md:text-2xl"
+                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#b91c1c] md:text-2xl"
                 style={{
                   animationDelay: "240ms",
                 }}
@@ -726,7 +726,7 @@ export default function LoginPage() {
                       placeholder={CREATIVEMU_EMAIL_EXAMPLE}
                       autoComplete="email"
                       disabled={formIsBusy}
-                      className="border-blue-100 bg-[#f8fbff] text-slate-700 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-blue-100/50 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
+                      className="border-red-100 bg-[#fff5f5] text-slate-700 placeholder:text-slate-400 focus:border-[#b91c1c] focus:bg-white focus:ring-red-100/50 dark:border-red-100 dark:bg-[#fff5f5] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#b91c1c] dark:focus:bg-white dark:focus:ring-red-100/50"
                     />
                   </div>
 
@@ -750,14 +750,14 @@ export default function LoginPage() {
                           placeholder="••••••••"
                           autoComplete="current-password"
                           disabled={formIsBusy}
-                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
+                          className="min-h-12 w-full rounded-2xl border border-red-100 bg-[#fff5f5] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-100 dark:bg-[#fff5f5] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#b91c1c] dark:focus:bg-white dark:focus:ring-red-100/50"
                         />
 
                         <button
                           type="button"
                           onClick={() => setShowPassword((prev) => !prev)}
                           disabled={formIsBusy}
-                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#b91c1c] disabled:cursor-not-allowed disabled:opacity-50"
                           aria-label={
                             showPassword
                               ? "Sembunyikan password"

@@ -401,11 +401,11 @@ function MetricCard({
 }) {
   return (
     <div
-      className="history-detail-row-enter rounded-3xl border border-blue-100 bg-white p-5 shadow-lg shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40"
+      className="history-detail-row-enter rounded-3xl border border-red-100 bg-white p-5 shadow-lg shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40"
       style={{ animationDelay: delay }}
     >
       <div className="flex items-center gap-4">
-        <div className="history-detail-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+        <div className="history-detail-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fef2f2] text-[#b91c1c]">
           <Icon size={22} strokeWidth={2.6} />
         </div>
 
@@ -443,12 +443,12 @@ function PhotoCard({
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="history-detail-icon-pop flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+          <div className="history-detail-icon-pop flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#fef2f2] text-[#b91c1c]">
             <Camera size={23} strokeWidth={2.6} />
           </div>
 
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#b91c1c]">
               {title}
             </p>
 
@@ -565,7 +565,7 @@ function LocationCard({
               href={mapsUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#123c8c] px-4 py-3 text-sm font-black text-white shadow-md shadow-blue-900/15 transition hover:bg-[#0f3274] active:scale-[0.98] sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#b91c1c] px-4 py-3 text-sm font-black text-white shadow-md shadow-red-900/15 transition hover:bg-[#991b1b] active:scale-[0.98] sm:w-auto"
             >
               <Navigation size={17} strokeWidth={2.6} />
               Buka Lokasi di Google Maps
@@ -674,7 +674,7 @@ export default function HistoryDetailPage() {
       <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
         <Link
           href="/history"
-          className="history-detail-row-enter inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#123c8c] shadow-lg shadow-slate-200/60 transition hover:-translate-y-0.5 hover:bg-[#f8fbff] active:scale-[0.98]"
+          className="history-detail-row-enter inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#b91c1c] shadow-lg shadow-slate-200/60 transition hover:-translate-y-0.5 hover:bg-[#fff5f5] active:scale-[0.98]"
         >
           <ArrowLeft size={18} strokeWidth={2.7} />
           Kembali ke History
@@ -706,10 +706,10 @@ export default function HistoryDetailPage() {
           </div>
         ) : (
           <>
-            <div className="history-detail-enter relative overflow-hidden rounded-[2rem] bg-[#123c8c] p-6 text-white shadow-2xl shadow-blue-900/25 md:p-8">
+            <div className="history-detail-enter relative overflow-hidden rounded-[2rem] bg-[#b91c1c] p-6 text-white shadow-2xl shadow-red-900/25 md:p-8">
               <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                  <div className="history-detail-row-enter inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-blue-100 ring-1 ring-white/15">
+                  <div className="history-detail-row-enter inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-red-100 ring-1 ring-white/15">
                     <ShieldCheck size={16} />
                     Catatan Presensi
                   </div>
@@ -736,7 +736,7 @@ export default function HistoryDetailPage() {
 	                    className="history-detail-row-enter rounded-3xl bg-white/10 p-5 ring-1 ring-white/15"
 	                    style={{ animationDelay: "160ms" }}
 	                  >
-	                    <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-100">
+	                    <p className="text-xs font-black uppercase tracking-[0.2em] text-red-100">
 	                      Check-in {attendance.checkInWorkModeLabel || "Kantor"}
 	                    </p>
 
@@ -749,7 +749,7 @@ export default function HistoryDetailPage() {
 	                    className="history-detail-row-enter rounded-3xl bg-white/10 p-5 ring-1 ring-white/15"
 	                    style={{ animationDelay: "200ms" }}
 	                  >
-	                    <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-100">
+	                    <p className="text-xs font-black uppercase tracking-[0.2em] text-red-100">
 	                      Check-out {attendance.checkOutWorkModeLabel || "-"}
 	                    </p>
 
@@ -795,7 +795,7 @@ export default function HistoryDetailPage() {
               shouldShowVisitNote(attendance)) ? (
               <section className="history-detail-row-enter rounded-[1.75rem] bg-white p-5 shadow-lg shadow-slate-200/50">
                 <div className="flex flex-col gap-1 border-b border-slate-100 pb-4">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#b91c1c]">
                     Keterangan Karyawan
                   </p>
                   <h3 className="text-xl font-black text-slate-950">
@@ -878,7 +878,7 @@ export default function HistoryDetailPage() {
 
             <section className="history-detail-row-enter rounded-[1.75rem] bg-white p-5 shadow-lg shadow-slate-200/50">
               <div className="flex flex-col gap-1 border-b border-slate-100 pb-4">
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#b91c1c]">
                   Dokumentasi
                 </p>
                 <h3 className="text-xl font-black text-slate-950">
@@ -907,7 +907,7 @@ export default function HistoryDetailPage() {
 
             <section className="history-detail-row-enter rounded-2xl bg-white p-4 shadow-md shadow-slate-200/40 md:p-5">
               <div className="flex flex-col gap-1 border-b border-slate-100 pb-3">
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#b91c1c]">
                   GPS
                 </p>
                 <h3 className="text-lg font-black text-slate-950">

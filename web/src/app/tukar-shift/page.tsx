@@ -310,7 +310,7 @@ export default function TukarShiftPage() {
               <button
                 type="button"
                 onClick={() => setAlertState(null)}
-                className="flex min-h-[64px] w-full items-center justify-center rounded-[1.6rem] bg-[#123c8c] px-6 text-xl font-bold text-white shadow-xl shadow-blue-900/20 transition hover:bg-[#0e2f70] active:scale-[0.99]"
+                className="flex min-h-[64px] w-full items-center justify-center rounded-[1.6rem] bg-[#b91c1c] px-6 text-xl font-bold text-white shadow-xl shadow-red-900/20 transition hover:bg-[#991b1b] active:scale-[0.99]"
               >
                 Mengerti
               </button>
@@ -326,10 +326,10 @@ export default function TukarShiftPage() {
           <section className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-600" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-600" />
               </span>
-              <h3 className="text-xs font-black uppercase tracking-widest text-blue-700">
+              <h3 className="text-xs font-black uppercase tracking-widest text-red-700">
                 {pendingIncoming.length} Permintaan Masuk
               </h3>
             </div>
@@ -337,11 +337,11 @@ export default function TukarShiftPage() {
             {pendingIncoming.map((req) => (
               <div
                 key={req.id}
-                className="overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-white to-blue-50/50 shadow-sm"
+                className="overflow-hidden rounded-2xl border border-red-100 bg-gradient-to-br from-white to-red-50/50 shadow-sm"
               >
                 <div className="p-4">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 shadow-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-red-100 to-red-200 text-red-700 shadow-sm">
                       <ArrowLeftRight size={20} strokeWidth={2.5} />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -349,9 +349,9 @@ export default function TukarShiftPage() {
                         {req.requester?.name}
                       </p>
                       <p className="mt-0.5 text-xs font-bold text-slate-500">
-                        <span className="text-blue-600">{req.requesterShiftName}</span>
+                        <span className="text-red-600">{req.requesterShiftName}</span>
                         {" → "}
-                        <span className="text-blue-600">{req.targetShiftName}</span>
+                        <span className="text-red-600">{req.targetShiftName}</span>
                       </p>
                       <div className="mt-1 flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
                         <Calendar size={12} />
@@ -366,12 +366,12 @@ export default function TukarShiftPage() {
                   </div>
                 </div>
 
-                <div className="flex border-t border-blue-100">
+                <div className="flex border-t border-red-100">
                   <button
                     type="button"
                     disabled={processingId === req.id}
                     onClick={() => handleAction(req.id, "reject")}
-                    className="flex flex-1 items-center justify-center gap-1.5 border-r border-blue-100 px-4 py-3 text-xs font-extrabold text-red-600 transition hover:bg-red-50 active:bg-red-100 disabled:opacity-40"
+                    className="flex flex-1 items-center justify-center gap-1.5 border-r border-red-100 px-4 py-3 text-xs font-extrabold text-rose-600 transition hover:bg-rose-50 active:bg-rose-100 disabled:opacity-40"
                   >
                     {processingId === req.id ? (
                       <Loader2 size={14} className="animate-spin" />
@@ -404,10 +404,10 @@ export default function TukarShiftPage() {
           {/* ── FORM AJUKAN (KIRI) ── */}
           <form
             onSubmit={handleSubmit}
-            className="overflow-hidden rounded-3xl border border-blue-100/80 bg-white shadow-md shadow-blue-100/30"
+            className="overflow-hidden rounded-3xl border border-red-100/80 bg-white shadow-md shadow-red-100/30"
           >
             {/* Header */}
-            <div className="border-b border-blue-50 bg-gradient-to-r from-[#123c8c] to-[#1e56b8] p-5">
+            <div className="border-b border-red-50 bg-gradient-to-r from-[#b91c1c] to-[#dc2626] p-5">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
@@ -417,13 +417,13 @@ export default function TukarShiftPage() {
                     <h2 className="text-base font-black text-white">
                       Ajukan Tukar Shift
                     </h2>
-                    <p className="text-xs font-semibold text-blue-200">
+                    <p className="text-xs font-semibold text-red-200">
                       Pilih rekan kerja & tanggal
                     </p>
                   </div>
                 </div>
                 <div className="rounded-xl bg-white/15 px-3 py-1.5 text-right backdrop-blur-md ring-1 ring-white/20">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-blue-200">Shift Kamu</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-red-200">Shift Kamu</p>
                   <p className="text-xs font-black text-white">{currentShiftName}</p>
                 </div>
               </div>
@@ -441,7 +441,7 @@ export default function TukarShiftPage() {
                   <select
                     value={targetUserId}
                     onChange={(e) => setTargetUserId(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-3.5 pr-10 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                    className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-3.5 pr-10 text-sm font-bold text-slate-800 outline-none transition focus:border-red-400 focus:bg-white focus:ring-2 focus:ring-red-100"
                   >
                     <option value="">Pilih rekan kerja...</option>
                     {colleagues.map((col) => (
@@ -456,7 +456,7 @@ export default function TukarShiftPage() {
                   />
                 </div>
                 {selectedColleague && (
-                  <p className="mt-1.5 text-[11px] font-bold text-blue-600">
+                  <p className="mt-1.5 text-[11px] font-bold text-red-600">
                     Tukar ke {selectedColleague.shiftName}
                   </p>
                 )}
@@ -473,7 +473,7 @@ export default function TukarShiftPage() {
                   value={swapDate}
                   min={getTodayString()}
                   onChange={(e) => setSwapDate(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-red-400 focus:bg-white focus:ring-2 focus:ring-red-100"
                 />
               </div>
 
@@ -488,7 +488,7 @@ export default function TukarShiftPage() {
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Contoh: Ada acara keluarga mendadak"
                   rows={2}
-                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-300 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-300 outline-none transition focus:border-red-400 focus:bg-white focus:ring-2 focus:ring-red-100"
                 />
               </div>
 
@@ -496,7 +496,7 @@ export default function TukarShiftPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || !targetUserId}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#123c8c] to-[#1e56b8] py-3.5 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:shadow-xl active:scale-[0.98] disabled:opacity-40 disabled:shadow-none"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#b91c1c] to-[#dc2626] py-3.5 text-sm font-black text-white shadow-lg shadow-red-900/20 transition hover:shadow-xl active:scale-[0.98] disabled:opacity-40 disabled:shadow-none"
               >
                 {isSubmitting ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -516,7 +516,7 @@ export default function TukarShiftPage() {
 
             {isLoading ? (
               <div className="flex items-center justify-center gap-2 rounded-2xl border border-slate-100 bg-white p-8 text-xs font-bold text-slate-400">
-                <Loader2 size={16} className="animate-spin text-blue-500" />
+                <Loader2 size={16} className="animate-spin text-red-500" />
                 Memuat...
               </div>
             ) : allHistory.length === 0 ? (

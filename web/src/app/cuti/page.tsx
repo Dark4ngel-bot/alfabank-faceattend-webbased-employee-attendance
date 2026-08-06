@@ -452,7 +452,7 @@ export default function LeaveRequestPage() {
                 suppressHydrationWarning
                 value={leaveType}
                 onChange={(event) => setLeaveType(event.target.value)}
-                className="mt-2 min-h-[52px] w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 min-h-[52px] w-full rounded-2xl border border-red-100 bg-[#fff5f5] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
               >
                 <option value="annual">Cuti Tahunan</option>
                 <option value="permission">Izin</option>
@@ -476,7 +476,7 @@ export default function LeaveRequestPage() {
                       setStartDate(event.target.value);
                       setEndDate(event.target.value);
                     }}
-                    className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                    className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-red-100 bg-[#fff5f5] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                   />
                 </div>
 
@@ -489,7 +489,7 @@ export default function LeaveRequestPage() {
                       type="time"
                       value={startTimeOvertime}
                       onChange={(e) => setStartTimeOvertime(e.target.value)}
-                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-red-100 bg-[#fff5f5] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                     />
                   </div>
 
@@ -501,7 +501,7 @@ export default function LeaveRequestPage() {
                       type="time"
                       value={endTimeOvertime}
                       onChange={(e) => setEndTimeOvertime(e.target.value)}
-                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-red-100 bg-[#fff5f5] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                     />
                   </div>
                 </div>
@@ -541,7 +541,7 @@ export default function LeaveRequestPage() {
                           setEndDate(nextStartDate);
                         }
                       }}
-                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-1 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-red-100 bg-[#fff5f5] px-1 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                     />
                   </div>
 
@@ -555,13 +555,13 @@ export default function LeaveRequestPage() {
                       value={endDate}
                       min={startDate || todayDate}
                       onChange={(event) => setEndDate(event.target.value)}
-                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-1 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 min-h-[52px] w-full min-w-0 rounded-2xl border border-red-100 bg-[#fff5f5] px-1 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                     />
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4">
-                  <p className="text-sm font-black text-[#123c8c]">Total Hari</p>
+                <div className="rounded-2xl border border-red-100 bg-[#fff5f5] p-4">
+                  <p className="text-sm font-black text-[#b91c1c]">Total Hari</p>
                   <p className="mt-1 text-2xl font-black text-slate-950">
                     {totalDays} hari
                   </p>
@@ -579,7 +579,7 @@ export default function LeaveRequestPage() {
                 value={reason}
                 onChange={(event) => setReason(event.target.value)}
                 placeholder="Contoh: Mengajukan cuti karena keperluan keluarga."
-                className="mt-2 min-h-28 w-full resize-none rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                className="mt-2 min-h-28 w-full resize-none rounded-2xl border border-red-100 bg-[#fff5f5] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
               />
             </div>
 
@@ -594,9 +594,9 @@ export default function LeaveRequestPage() {
               </div>
 
               {attachmentFile ? (
-                <div className="mt-2 flex items-center justify-between rounded-2xl border border-blue-100 bg-[#f8fbff] p-3">
+                <div className="mt-2 flex items-center justify-between rounded-2xl border border-red-100 bg-[#fff5f5] p-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c]">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-[#b91c1c]">
                       <FileText size={20} />
                     </div>
                     <div className="min-w-0">
@@ -617,8 +617,8 @@ export default function LeaveRequestPage() {
                   </button>
                 </div>
               ) : (
-                <label className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-200 bg-[#f8fbff] p-4 text-center transition hover:border-[#123c8c] hover:bg-blue-50/50">
-                  <Upload size={24} className="text-[#123c8c]" />
+                <label className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-red-200 bg-[#fff5f5] p-4 text-center transition hover:border-[#b91c1c] hover:bg-red-50/50">
+                  <Upload size={24} className="text-[#b91c1c]" />
                   <p className="mt-1 text-xs font-black text-slate-700">
                     Upload Surat Dokter / Lampiran
                   </p>
@@ -650,7 +650,7 @@ export default function LeaveRequestPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-red-900/20 transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 <>
@@ -668,14 +668,14 @@ export default function LeaveRequestPage() {
         </form>
 
         <div className="min-w-0 space-y-4">
-          <div className="rounded-[2rem] bg-[#123c8c] p-5 text-white shadow-xl shadow-blue-900/20">
+          <div className="rounded-[2rem] bg-[#b91c1c] p-5 text-white shadow-xl shadow-red-900/20">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
                 <FileText size={25} strokeWidth={2.6} />
               </div>
 
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-100">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-red-100">
                   Riwayat
                 </p>
 
@@ -685,7 +685,7 @@ export default function LeaveRequestPage() {
           </div>
 
           <div className="grid gap-3 md:grid-cols-3">
-            <div className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
+            <div className="rounded-2xl border border-red-100 bg-white p-4 shadow-sm">
               <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">
                 Total
               </p>
@@ -716,7 +716,7 @@ export default function LeaveRequestPage() {
           {isLoading ? (
             <AppLoadingState text="Memuat pengajuan cuti..." />
           ) : requests.length === 0 ? (
-            <div className="rounded-[2rem] border border-blue-100 bg-white p-5 text-sm font-black text-slate-500 shadow-lg shadow-slate-200/60">
+            <div className="rounded-[2rem] border border-red-100 bg-white p-5 text-sm font-black text-slate-500 shadow-lg shadow-slate-200/60">
               Belum ada pengajuan cuti.
             </div>
           ) : (
@@ -727,11 +727,11 @@ export default function LeaveRequestPage() {
                 return (
                   <div
                     key={item.id}
-                    className="rounded-[2rem] border border-blue-100 bg-white p-5 shadow-lg shadow-slate-200/60"
+                    className="rounded-[2rem] border border-red-100 bg-white p-5 shadow-lg shadow-slate-200/60"
                   >
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-[#b91c1c]">
                           {item.leaveTypeLabel}
                         </p>
 
@@ -754,7 +754,7 @@ export default function LeaveRequestPage() {
                       </div>
                     </div>
 
-                    <p className="mt-4 rounded-2xl bg-[#f8fbff] p-4 text-sm font-semibold leading-6 text-slate-600">
+                    <p className="mt-4 rounded-2xl bg-[#fff5f5] p-4 text-sm font-semibold leading-6 text-slate-600">
                       {item.reason}
                     </p>
 
@@ -764,7 +764,7 @@ export default function LeaveRequestPage() {
                           href={item.attachmentUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-[#123c8c] hover:bg-blue-100 transition"
+                          className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-[#b91c1c] hover:bg-red-100 transition"
                         >
                           <FileText size={15} />
                           Lihat Surat Dokter / Lampiran
@@ -773,7 +773,7 @@ export default function LeaveRequestPage() {
                     ) : null}
 
                     {item.adminNote ? (
-                      <p className="mt-3 rounded-2xl bg-blue-50 p-4 text-sm font-semibold leading-6 text-[#123c8c]">
+                      <p className="mt-3 rounded-2xl bg-red-50 p-4 text-sm font-semibold leading-6 text-[#b91c1c]">
                         Catatan admin: {item.adminNote}
                       </p>
                     ) : null}

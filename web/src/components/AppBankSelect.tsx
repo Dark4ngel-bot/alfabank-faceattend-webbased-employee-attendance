@@ -82,7 +82,7 @@ export function AppBankSelect({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full flex items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-left text-sm font-bold text-slate-800 outline-none transition hover:border-blue-300 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/70 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full flex items-center justify-between gap-3 rounded-2xl border border-red-100 bg-[#fff5f5] px-4 py-3 text-left text-sm font-bold text-slate-800 outline-none transition hover:border-red-300 focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100/70 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <div className="flex items-center gap-3 min-w-0">
           {currentBank ? (
@@ -99,7 +99,7 @@ export function AppBankSelect({
             </>
           ) : value ? (
             <>
-              <span className="flex h-7 px-2.5 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white text-xs font-black uppercase shadow-sm">
+              <span className="flex h-7 px-2.5 shrink-0 items-center justify-center rounded-lg bg-red-600 text-white text-xs font-black uppercase shadow-sm">
                 BANK
               </span>
               <span className="truncate font-bold text-slate-900">{value}</span>
@@ -117,7 +117,7 @@ export function AppBankSelect({
         <ChevronDown
           size={18}
           className={`text-slate-400 transition-transform duration-200 shrink-0 ${
-            isOpen ? "rotate-180 text-[#123c8c]" : ""
+            isOpen ? "rotate-180 text-[#b91c1c]" : ""
           }`}
         />
       </button>
@@ -138,7 +138,7 @@ export function AppBankSelect({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Ketik nama bank..."
-                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-8 text-xs font-bold text-slate-800 placeholder-slate-400 outline-none transition focus:border-[#123c8c] focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-8 text-xs font-bold text-slate-800 placeholder-slate-400 outline-none transition focus:border-[#b91c1c] focus:ring-2 focus:ring-red-100"
               />
               {searchQuery ? (
                 <button
@@ -170,7 +170,7 @@ export function AppBankSelect({
                   }}
                   className={`w-full flex items-center justify-between gap-3 rounded-xl p-2.5 text-left transition ${
                     isSelected
-                      ? "bg-blue-50 text-[#123c8c] font-black"
+                      ? "bg-red-50 text-[#b91c1c] font-black"
                       : "hover:bg-slate-100 text-slate-700"
                   }`}
                 >

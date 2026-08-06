@@ -139,10 +139,10 @@ export default function GpsAttendanceBox() {
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-100 bg-white p-5 shadow-sm">
+    <section className="rounded-[2rem] border border-red-100 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-blue-800">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-red-800">
             Presensi GPS
           </p>
           <h2 className="mt-2 text-xl font-black text-slate-950">
@@ -157,7 +157,7 @@ export default function GpsAttendanceBox() {
           type="button"
           onClick={getCurrentLocation}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 rounded-2xl bg-blue-900 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-900/20 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-2xl bg-[#b91c1c] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-red-900/20 disabled:cursor-not-allowed disabled:opacity-60 hover:bg-[#991b1b]"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -177,7 +177,7 @@ export default function GpsAttendanceBox() {
 
       {location ? (
         <div className="mb-4 grid gap-3 md:grid-cols-3">
-          <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
+          <div className="rounded-2xl border border-red-100 bg-red-50/50 p-4">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
               Latitude
             </p>
@@ -186,7 +186,7 @@ export default function GpsAttendanceBox() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
+          <div className="rounded-2xl border border-red-100 bg-red-50/50 p-4">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
               Longitude
             </p>
@@ -195,7 +195,7 @@ export default function GpsAttendanceBox() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
+          <div className="rounded-2xl border border-red-100 bg-red-50/50 p-4">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
               Accuracy
             </p>
