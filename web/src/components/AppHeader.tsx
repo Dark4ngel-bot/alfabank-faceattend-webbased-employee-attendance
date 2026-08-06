@@ -22,6 +22,7 @@ import {
   Megaphone,
   Menu,
   Network,
+  Palette,
   PhoneCall,
   Settings,
   Trophy,
@@ -179,6 +180,11 @@ const operationalMenus = [
     href: "/admin/logo-aplikasi",
     label: "Logo Aplikasi",
     icon: Settings,
+  },
+  {
+    href: "/admin/warna-aplikasi",
+    label: "Warna Aplikasi",
+    icon: Palette,
   },
 ];
 

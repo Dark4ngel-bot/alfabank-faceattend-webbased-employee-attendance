@@ -709,3 +709,14 @@ model ShiftSwapRequest {
   @@index([status])
   @@map("shift_swap_requests")
 }
+
+model AppSetting {
+  setting_key   String   @id @db.VarChar(100)
+  setting_value String   @db.Text
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+  setting_file  Bytes?
+  setting_mime  String?  @db.VarChar(100)
+
+  @@map("app_settings")
+}
