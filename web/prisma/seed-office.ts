@@ -17,45 +17,26 @@ const prisma = new PrismaClient({
 async function main() {
   await prisma.officeLocation.upsert({
     where: {
-      name: "Kantor Utama",
+      name: "Alfabank",
     },
     update: {
-      address: "Alamat kantor utama",
-      latitude: -6.917464,
-      longitude: 107.619123,
+      address:
+        "Jl. Glagahsari No.46C, Warungboto, Kec. Umbulharjo, Kota Yogyakarta, Daerah Istimewa Yogyakarta 55164, Indonesia",
+      latitude: -7.810501,
+      longitude: 110.391257,
       radius_meters: 100,
       status: "active",
     },
     create: {
-      name: "Kantor Utama",
-      address: "Alamat kantor utama",
-      latitude: -6.917464,
-      longitude: 107.619123,
+      name: "Alfabank",
+      address:
+        "Jl. Glagahsari No.46C, Warungboto, Kec. Umbulharjo, Kota Yogyakarta, Daerah Istimewa Yogyakarta 55164, Indonesia",
+      latitude: -7.810501,
+      longitude: 110.391257,
       radius_meters: 100,
       status: "active",
     },
   });
-
-  await prisma.officeLocation.upsert({
-  where: {
-    name: "Creativemu Academy",
-  },
-  update: {
-    address: "Jogja",
-    latitude: -7.812201,
-    longitude: 110.2685415,
-    radius_meters: 100,
-    status: "active",
-  },
-  create: {
-    name: "Creativemu Academy",
-    address: "Jogja",
-    latitude: -7.812201,
-    longitude: 110.2685415,
-    radius_meters: 100,
-    status: "active",
-  },
-});
 
   console.log("Data kantor berhasil dibuat.");
 }

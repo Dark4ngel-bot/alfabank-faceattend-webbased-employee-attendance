@@ -1,12 +1,8 @@
 import { Buffer } from "node:buffer";
-import fs from "node:fs";
-import path from "node:path";
 
-import type { UploadApiResponse } from "cloudinary";
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/api-auth";
-import { getCloudinary } from "@/lib/cloudinary";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -145,67 +141,6 @@ async function parsePhotoBody(req: NextRequest): Promise<ParsedPhotoBody> {
   return dataUrlToBuffer(photoDataUrl.trim());
 }
 
-function saveLocalProfilePhoto(
-  buffer: Buffer,
-  userId: string,
-  mime: string,
-): { url: string; publicId: string | null } {
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "profiles");
-
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-
-  const ext = mime.includes("png")
-    ? "png"
-    : mime.includes("webp")
-      ? "webp"
-      : "jpg";
-
-  const filename = `user-${userId}-${Date.now()}.${ext}`;
-  const filePath = path.join(uploadDir, filename);
-
-  fs.writeFileSync(filePath, buffer);
-
-  return {
-    url: `/uploads/profiles/${filename}`,
-    publicId: null,
-  };
-}
-
-async function uploadProfilePhoto(
-  buffer: Buffer,
-  userId: string,
-): Promise<UploadApiResponse> {
-  const cloudinary = getCloudinary();
-
-  return new Promise<UploadApiResponse>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: "presensi/profiles",
-        public_id: `user-${userId}-${Date.now()}`,
-        resource_type: "image",
-        overwrite: false,
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        if (!result) {
-          reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
-          return;
-        }
-
-        resolve(result);
-      },
-    );
-
-    uploadStream.end(buffer);
-  });
-}
-
 async function getSafeUser(userId: string) {
   return prisma.user.findUnique({
     where: {
@@ -264,7 +199,48 @@ function errorResponse(error: unknown, fallbackMessage: string) {
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = await getUserIdFromRequest(req);
+    const authUser = await requireAuth(req);
+    const { searchParams } = new URL(req.url);
+    const requestedUserId = searchParams.get("userId") || authUser.id;
+    const wantsRawPhoto =
+      searchParams.get("raw") === "1" || searchParams.has("userId");
+
+    if (
+      requestedUserId !== authUser.id &&
+      !["admin", "owner"].includes(String(authUser.role || "").toLowerCase())
+    ) {
+      throw new ApiError(403, "Akses ditolak.");
+    }
+
+    if (wantsRawPhoto) {
+      const photoUser = await prisma.user.findUnique({
+        where: {
+          id: requestedUserId,
+        },
+        select: {
+          profile_photo_data: true,
+          profile_photo_mime: true,
+          profile_photo: true,
+        },
+      });
+
+      if (!photoUser) {
+        throw new ApiError(404, "Data user tidak ditemukan.");
+      }
+
+      if (photoUser.profile_photo_data) {
+        return new NextResponse(new Uint8Array(photoUser.profile_photo_data), {
+          headers: {
+            "Content-Type": photoUser.profile_photo_mime || "image/jpeg",
+            "Cache-Control": "private, no-store",
+          },
+        });
+      }
+
+      throw new ApiError(404, "Foto profil belum tersedia.");
+    }
+
+    const userId = authUser.id;
     const user = await getSafeUser(userId);
 
     if (!user) {
@@ -320,34 +296,10 @@ export async function PATCH(req: NextRequest) {
       throw new ApiError(400, "Ukuran foto maksimal 5MB.");
     }
 
-    let photoUrl: string;
-    let photoPublicId: string | null = null;
-
-    const hasCloudinary = Boolean(
-      process.env.CLOUDINARY_CLOUD_NAME &&
-        process.env.CLOUDINARY_API_KEY &&
-        process.env.CLOUDINARY_API_SECRET,
-    );
-
-    if (hasCloudinary) {
-      try {
-        const uploadResult = await uploadProfilePhoto(buffer, userId);
-        photoUrl = uploadResult.secure_url;
-        photoPublicId = uploadResult.public_id;
-      } catch (cloudinaryError) {
-        console.warn(
-          "Cloudinary upload failed, falling back to local storage:",
-          cloudinaryError,
-        );
-        const localResult = saveLocalProfilePhoto(buffer, userId, mime);
-        photoUrl = localResult.url;
-        photoPublicId = localResult.publicId;
-      }
-    } else {
-      const localResult = saveLocalProfilePhoto(buffer, userId, mime);
-      photoUrl = localResult.url;
-      photoPublicId = localResult.publicId;
-    }
+    const photoUrl = `/api/profil/photo?userId=${encodeURIComponent(
+      userId,
+    )}&raw=1`;
+    const photoPublicId = null;
 
     const updatedUser = await prisma.user.update({
       where: {
@@ -356,6 +308,8 @@ export async function PATCH(req: NextRequest) {
       data: {
         profile_photo: photoUrl,
         profile_photo_public_id: photoPublicId,
+        profile_photo_data: Uint8Array.from(buffer),
+        profile_photo_mime: mime,
       },
       select: {
         id: true,

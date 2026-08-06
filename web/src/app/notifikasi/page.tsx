@@ -82,8 +82,8 @@ function getNotificationStyle(type: string) {
   }
 
   return {
-    badge: "bg-red-50 text-red-700 ring-red-100",
-    icon: "bg-red-50 text-red-700 ring-red-100",
+    badge: "bg-blue-50 text-blue-700 ring-blue-100",
+    icon: "bg-blue-50 text-blue-700 ring-blue-100",
   };
 }
 
@@ -211,7 +211,7 @@ export default function EmployeeNotificationPage() {
       <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff] pb-[calc(8rem+env(safe-area-inset-bottom))] text-slate-950 md:pb-28">
         <section className="mx-auto max-w-5xl px-5 pb-10 pt-6 md:px-8">
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-red-100">
+            <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-blue-100">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
@@ -222,7 +222,7 @@ export default function EmployeeNotificationPage() {
                   </h2>
                 </div>
 
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-700 ring-1 ring-red-100">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100">
                   <Bell size={22} strokeWidth={2.7} />
                 </div>
               </div>
@@ -263,7 +263,7 @@ export default function EmployeeNotificationPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-red-100 md:p-6">
+          <div className="mt-6 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-blue-100 md:p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <h3 className="text-2xl font-black tracking-tight text-slate-950">
@@ -277,8 +277,8 @@ export default function EmployeeNotificationPage() {
 
             <div className="mt-6">
               {isLoading ? (
-                <div className="flex items-center justify-center gap-2 rounded-3xl border border-red-100 bg-[#fff5f5] p-8 text-sm font-black text-slate-500">
-                  <Loader2 size={18} className="animate-spin text-[#b91c1c]" />
+                <div className="flex items-center justify-center gap-2 rounded-3xl border border-blue-100 bg-[#f8fbff] p-8 text-sm font-black text-slate-500">
+                  <Loader2 size={18} className="animate-spin text-[#123c8c]" />
                   Memuat notifikasi...
                 </div>
               ) : pageError ? (
@@ -286,8 +286,8 @@ export default function EmployeeNotificationPage() {
                   {pageError}
                 </div>
               ) : notifications.length === 0 ? (
-                <div className="rounded-3xl border border-dashed border-red-100 bg-[#fff5f5] px-5 py-12 text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#b91c1c] ring-1 ring-red-100">
+                <div className="rounded-3xl border border-dashed border-blue-100 bg-[#f8fbff] px-5 py-12 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#123c8c] ring-1 ring-blue-100">
                     <Bell size={26} strokeWidth={2.6} />
                   </div>
                   <p className="mt-4 text-base font-black text-slate-700">
@@ -313,7 +313,7 @@ export default function EmployeeNotificationPage() {
                         className={`group flex w-full items-start gap-4 rounded-3xl border p-4 text-left transition duration-200 hover:-translate-y-0.5 md:p-5 ${
                           notification.isRead
                             ? "border-slate-100 bg-slate-50/70 opacity-80 hover:bg-slate-100/80"
-                            : "border-2 border-red-300 bg-[#fff5f5] shadow-md shadow-red-900/10 ring-2 ring-red-400/30 hover:bg-white"
+                            : "border-2 border-blue-300 bg-[#f4f8ff] shadow-md shadow-blue-900/10 ring-2 ring-blue-400/30 hover:bg-white"
                         }`}
                       >
                         <div
@@ -344,7 +344,7 @@ export default function EmployeeNotificationPage() {
 
                           <h4
                             className={`mt-2 text-base font-black leading-6 ${
-                              notification.isRead ? "text-slate-800" : "text-[#b91c1c]"
+                              notification.isRead ? "text-slate-800" : "text-[#123c8c]"
                             }`}
                           >
                             {notification.title}
@@ -359,7 +359,7 @@ export default function EmployeeNotificationPage() {
                           </p>
                         </div>
 
-                        <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-400 ring-1 ring-slate-100 transition group-hover:text-[#b91c1c]">
+                        <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-400 ring-1 ring-slate-100 transition group-hover:text-[#123c8c]">
                           {isActive ? (
                             <Loader2 size={18} className="animate-spin" />
                           ) : (

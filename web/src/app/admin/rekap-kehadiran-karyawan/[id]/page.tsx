@@ -9,8 +9,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  FileSpreadsheet,
+  ListChecks,
   Loader2,
+  Table2,
   UserRound,
+  X,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MobileShell from "@/components/MobileShell";
@@ -45,19 +49,28 @@ type DailyAttendanceCategory =
 type DailyAttendanceRecord = {
   date: string;
   category: DailyAttendanceCategory;
-};
-
-type AttendanceLogItem = {
-  id: string;
-  date: string;
-  checkInTime: string | null;
-  checkOutTime: string | null;
-  lateMinutes: number;
-  workMinutes: number;
-  status: string | null;
-  checkInStatus: string | null;
-  workMode: string | null;
-  checkOutWorkMode: string | null;
+  checkInTime?: string | null;
+  checkOutTime?: string | null;
+  scheduledCheckIn?: string | null;
+  scheduledCheckOut?: string | null;
+  lateMinutes?: number;
+  earlyLeaveMinutes?: number;
+  workMinutes?: number;
+  workMode?: string | null;
+  checkOutWorkMode?: string | null;
+  checkInStatus?: string | null;
+  checkOutStatus?: string | null;
+  status?: string | null;
+  note?: string | null;
+  lateReason?: string | null;
+  earlyLeaveReason?: string | null;
+  checkInLatitude?: number | null;
+  checkInLongitude?: number | null;
+  checkOutLatitude?: number | null;
+  checkOutLongitude?: number | null;
+  registeredOfficeName?: string | null;
+  checkInOfficeName?: string | null;
+  checkOutOfficeName?: string | null;
 };
 
 type EmployeeRecap = {
@@ -71,9 +84,10 @@ type EmployeeRecap = {
   employmentStatus?: string | null;
   status?: string | null;
   shiftName?: string | null;
+  departmentName?: string | null;
+  registeredOfficeName?: string | null;
   summary: EmployeeAttendanceSummary;
   dailyRecords?: DailyAttendanceRecord[];
-  logs?: AttendanceLogItem[];
 };
 
 type EmployeeAttendanceRecapResponse = {
@@ -178,14 +192,28 @@ function escapeExcelCell(value: string | number | null | undefined) {
     .replace(/"/g, "&quot;");
 }
 
-function getExcelFileName(employeeName: string, startDate: string, endDate: string) {
+function getSafeEmployeeName(employeeName: string) {
   const safeName = employeeName
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+  return safeName || "karyawan";
+}
+
+function getExcelFileName(employeeName: string, startDate: string, endDate: string) {
+  const safeName = getSafeEmployeeName(employeeName);
+
   return `rekap-kehadiran-${safeName || "karyawan"}-${startDate}-${endDate}.xls`;
+}
+
+function getAttendanceListExcelFileName(
+  employeeName: string,
+  startDate: string,
+  endDate: string,
+) {
+  return `presensi-absensi-${getSafeEmployeeName(employeeName)}-${startDate}-${endDate}.xls`;
 }
 
 function getEmployeePhoto(employee?: EmployeeRecap | null) {
@@ -229,6 +257,120 @@ function formatCalendarMonth(date: Date) {
     month: "long",
     year: "numeric",
   }).format(date);
+}
+
+function formatExcelDate(value?: string | null) {
+  if (!value) return "-";
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return date.toISOString().slice(0, 10);
+}
+
+function formatExcelTime(value?: string | null) {
+  if (!value) return "-";
+
+  if (/^\d{2}:\d{2}/.test(value)) return value.length === 5 ? `${value}:00` : value;
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  })
+    .format(date)
+    .replaceAll(".", ":");
+}
+
+function getDayName(value?: string | null) {
+  if (!value) return "-";
+
+  const date = new Date(`${formatExcelDate(value)}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return new Intl.DateTimeFormat("id-ID", { weekday: "long" }).format(date);
+}
+
+function formatExcelWorkMode(value?: string | null) {
+  const normalized = String(value || "").toLowerCase();
+
+  if (normalized === "office") return "Kantor";
+  if (normalized === "wfh") return "WFH";
+  if (normalized === "visit" || normalized === "kunjungan") return "Kunjungan";
+
+  return value || "-";
+}
+
+function formatExcelStatus(record: DailyAttendanceRecord) {
+  if (record.category === "cuti") return "Cuti";
+  if (record.category === "izin_sakit") return "Izin/Sakit";
+  if (record.category === "wfh") return "WFH";
+  if (record.category === "kunjungan") return "Kunjungan";
+  if (record.category === "terlambat") return "Terlambat";
+
+  const normalized = String(record.status || "").toLowerCase();
+
+  if (normalized === "present") return "Hadir";
+  if (normalized === "late") return "Terlambat";
+  if (normalized === "pending") return "Menunggu";
+
+  return "Hadir";
+}
+
+function getRecordNote(record: DailyAttendanceRecord) {
+  const notes = [
+    record.lateReason,
+    record.earlyLeaveReason,
+    record.note,
+  ].filter(Boolean);
+
+  if (notes.length > 0) return notes.join(" | ");
+  if (record.category === "terlambat") return "Terlambat";
+  if (record.category === "cuti") return "Cuti";
+  if (record.category === "izin_sakit") return "Izin/Sakit";
+
+  return "-";
+}
+
+function createExcelDocument(tableHtml: string) {
+  return `<!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <style>
+          table { border-collapse: collapse; font-family: Arial, sans-serif; }
+          th, td { border: 1px solid #cbd5e1; padding: 6px 8px; mso-number-format:"\\@"; }
+          th { background: #123c8c; color: #ffffff; font-weight: 700; text-align: left; }
+          td:first-child { font-weight: 700; }
+        </style>
+      </head>
+      <body>${tableHtml}</body>
+    </html>`;
+}
+
+function downloadExcelFile(html: string, fileName: string) {
+  const blob = new Blob([html], {
+    type: "application/vnd.ms-excel;charset=utf-8;",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function isDateInRange(dateKey: string, startDate: string, endDate: string) {
@@ -276,8 +418,8 @@ const calendarCategoryStyles: Record<
   },
   wfh: {
     label: "WFH",
-    dot: "bg-sky-500",
-    tile: "bg-sky-500 text-white shadow-lg shadow-sky-200",
+    dot: "bg-blue-500",
+    tile: "bg-blue-500 text-white shadow-lg shadow-blue-200",
   },
   kunjungan: {
     label: "Kunjungan",
@@ -324,6 +466,36 @@ function RecapDetailMotionStyles() {
         animation: recapDetailEnter 320ms ease-out both;
       }
 
+      @keyframes exportModeOverlayIn {
+        0% {
+          opacity: 0;
+        }
+
+        100% {
+          opacity: 1;
+        }
+      }
+
+      @keyframes exportModePanelIn {
+        0% {
+          opacity: 0;
+          transform: translateY(18px) scale(0.98);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .export-mode-overlay {
+        animation: exportModeOverlayIn 260ms ease-out both;
+      }
+
+      .export-mode-panel {
+        animation: exportModePanelIn 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
       .recap-detail-field {
         transition:
           border-color 180ms ease,
@@ -359,6 +531,10 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
   const [calendarMonth, setCalendarMonth] = useState(() =>
     getMonthDate(getInitialDate(searchParams, "startDate")),
   );
+  const [isExportModeOpen, setIsExportModeOpen] = useState(false);
+  const [selectedExportMode, setSelectedExportMode] = useState<
+    "summary" | "list"
+  >("summary");
 
   const getRecap = useCallback(async () => {
     if (startDate && endDate && startDate > endDate) {
@@ -448,10 +624,13 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
     );
   }, [employee]);
 
-  const backHref = `/admin/rekap-kehadiran-karyawan?startDate=${startDate}&endDate=${endDate}`;
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const cameFromDashboard = searchParams.get("from") === "dashboard";
+  const backHref = cameFromDashboard
+    ? "/admin/dasbor"
+    : `/admin/rekap-kehadiran-karyawan?startDate=${startDate}&endDate=${endDate}`;
+  const backLabel = cameFromDashboard ? "Kembali ke Dasbor" : "Kembali ke daftar";
 
-  const handleDownloadExcelSummary = () => {
+  const downloadSummaryExcel = () => {
     if (!employee) return;
 
     const rows = [
@@ -480,204 +659,158 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
           `<tr><td>${escapeExcelCell(label)}</td><td>${escapeExcelCell(value)}</td></tr>`,
       )
       .join("");
-    const html = `<!doctype html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <style>
-            table { border-collapse: collapse; font-family: Arial, sans-serif; }
-            th, td { border: 1px solid #cbd5e1; padding: 8px 12px; }
-            th { background: #b91c1c; color: #ffffff; text-align: left; }
-            td:first-child { font-weight: 700; background: #fef2f2; }
-          </style>
-        </head>
-        <body>
-          <table>
-            <thead><tr><th>Info Rekap</th><th>Nilai</th></tr></thead>
-            <tbody>${tableRows}</tbody>
-          </table>
-        </body>
-      </html>`;
-    const blob = new Blob([html], {
-      type: "application/vnd.ms-excel;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const html = createExcelDocument(`
+      <table>
+        <thead><tr><th>Info Rekap</th><th>Nilai</th></tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    `);
 
-    link.href = url;
-    link.download = getExcelFileName(employee.name, startDate, endDate);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-    setIsExportModalOpen(false);
+    downloadExcelFile(html, getExcelFileName(employee.name, startDate, endDate));
   };
 
-  const handleDownloadExcelDetailList = () => {
+  const downloadAttendanceListExcel = () => {
     if (!employee) return;
 
-    const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-    const logsMap = new Map((employee.logs || []).map((log) => [log.date, log]));
+    const headers = [
+      "Tanggal Absen",
+      "Karyawan",
+      "Nomor Induk",
+      "Divisi",
+      "Lokasi Absen",
+      "Shift",
+      "Hari Absen",
+      "Jam Masuk Jadwal",
+      "Jam Pulang Jadwal",
+      "Jam Masuk Real",
+      "Istirahat Mulai",
+      "Istirahat Selesai",
+      "Jam Pulang Real",
+      "Keterlambatan",
+      "Jam Kerja",
+      "Total Jam Kerja",
+      "Total Jam Real",
+      "Keterlambatan Pulang",
+      "Latitude Presensi",
+      "Longitude Presensi",
+      "Mode",
+      "Status",
+      "Keterangan",
+    ];
+    const records = [...(employee.dailyRecords || [])].sort((first, second) =>
+      first.date.localeCompare(second.date),
+    );
+    const tableHeaders = headers
+      .map((header) => `<th>${escapeExcelCell(header)}</th>`)
+      .join("");
+    const tableRows = records
+      .map((record) => {
+        const scheduledIn = formatExcelTime(record.scheduledCheckIn);
+        const scheduledOut = formatExcelTime(record.scheduledCheckOut);
+        const workMinutes = Number(record.workMinutes || 0);
+        const totalWorkMinutes =
+          record.scheduledCheckIn && record.scheduledCheckOut
+            ? Math.max(
+                Math.ceil(
+                  (new Date(record.scheduledCheckOut).getTime() -
+                    new Date(record.scheduledCheckIn).getTime()) /
+                    60000,
+                ),
+                0,
+              )
+            : 0;
+        const row = [
+          formatExcelDate(record.date),
+          employee.name,
+          employee.employeeCode || "-",
+          employee.departmentName || "-",
+          record.checkInOfficeName ||
+            record.registeredOfficeName ||
+            employee.registeredOfficeName ||
+            "-",
+          employee.shiftName || "-",
+          getDayName(record.date),
+          scheduledIn,
+          scheduledOut,
+          formatExcelTime(record.checkInTime),
+          "-",
+          "-",
+          formatExcelTime(record.checkOutTime),
+          Number(record.lateMinutes || 0),
+          workMinutes,
+          totalWorkMinutes,
+          workMinutes,
+          Number(record.earlyLeaveMinutes || 0),
+          record.checkInLatitude ?? record.checkOutLatitude ?? "-",
+          record.checkInLongitude ?? record.checkOutLongitude ?? "-",
+          formatExcelWorkMode(record.checkOutWorkMode || record.workMode),
+          formatExcelStatus(record),
+          getRecordNote(record),
+        ];
 
-    const datesInRange: string[] = [];
-    if (startDate && endDate) {
-      const cur = new Date(`${startDate}T00:00:00`);
-      const end = new Date(`${endDate}T00:00:00`);
-      while (cur <= end) {
-        datesInRange.push(cur.toISOString().slice(0, 10));
-        cur.setDate(cur.getDate() + 1);
-      }
-    } else {
-      (employee.logs || []).forEach((log) => datesInRange.push(log.date));
-    }
-
-    const tableRows = datesInRange
-      .map((dateStr) => {
-        const dateObj = new Date(`${dateStr}T00:00:00`);
-        const dayName = dayNames[dateObj.getDay()] || "-";
-        const log = logsMap.get(dateStr);
-
-        const checkIn = log?.checkInTime
-          ? new Date(log.checkInTime).toLocaleTimeString("id-ID", {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            })
-          : "-";
-
-        const checkOut = log?.checkOutTime
-          ? new Date(log.checkOutTime).toLocaleTimeString("id-ID", {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            })
-          : "-";
-
-        const workMode = log?.workMode
-          ? log.workMode.toUpperCase()
-          : log?.checkInTime
-          ? "OFFICE"
-          : "-";
-
-        let statusText = "Tidak Hadir";
-        if (log?.checkInTime) {
-          if (log.lateMinutes > 0) {
-            statusText = `Terlambat (${log.lateMinutes} mnt)`;
-          } else {
-            statusText = "Hadir Tepat Waktu";
-          }
-        }
-
-        return `<tr>
-          <td>${escapeExcelCell(dateStr)}</td>
-          <td>${escapeExcelCell(dayName)}</td>
-          <td>${escapeExcelCell(employee.name)}</td>
-          <td>${escapeExcelCell(employee.employeeCode || "-")}</td>
-          <td>${escapeExcelCell(employee.shiftName || "-")}</td>
-          <td>${escapeExcelCell(checkIn)}</td>
-          <td>${escapeExcelCell(checkOut)}</td>
-          <td>${escapeExcelCell(log?.lateMinutes || 0)}</td>
-          <td>${escapeExcelCell(formatWorkDuration(log?.workMinutes || 0))}</td>
-          <td>${escapeExcelCell(workMode)}</td>
-          <td>${escapeExcelCell(statusText)}</td>
-        </tr>`;
+        return `<tr>${row
+          .map((value) => `<td>${escapeExcelCell(value)}</td>`)
+          .join("")}</tr>`;
       })
       .join("");
+    const html = createExcelDocument(`
+      <table>
+        <thead><tr>${tableHeaders}</tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    `);
 
-    const html = `<!doctype html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <style>
-            table { border-collapse: collapse; font-family: Arial, sans-serif; width: 100%; }
-            th, td { border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 13px; }
-            th { background: #b91c1c; color: #ffffff; text-align: left; font-weight: bold; }
-            tr:nth-child(even) { background-color: #fef2f2; }
-          </style>
-        </head>
-        <body>
-          <h3>Laporan List Kehadiran Harian - ${escapeExcelCell(employee.name)}</h3>
-          <p>Periode: ${escapeExcelCell(formatDateRange(startDate, endDate))}</p>
-          <table>
-            <thead>
-              <tr>
-                <th>Tanggal</th>
-                <th>Hari</th>
-                <th>Nama Karyawan</th>
-                <th>NIK/Kode</th>
-                <th>Shift</th>
-                <th>Jam Masuk</th>
-                <th>Jam Pulang</th>
-                <th>Terlambat (Menit)</th>
-                <th>Durasi Kerja</th>
-                <th>Mode Absen (WFH/Office)</th>
-                <th>Status Kehadiran</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tableRows}
-            </tbody>
-          </table>
-        </body>
-      </html>`;
+    downloadExcelFile(
+      html,
+      getAttendanceListExcelFileName(employee.name, startDate, endDate),
+    );
+  };
 
-    const blob = new Blob([html], {
-      type: "application/vnd.ms-excel;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+  const handleDownloadExcel = () => {
+    if (selectedExportMode === "list") {
+      downloadAttendanceListExcel();
+    } else {
+      downloadSummaryExcel();
+    }
 
-    link.href = url;
-    link.download = `list-kehadiran-${employee.name.toLowerCase().replace(/\s+/g, "-")}-${startDate}-${endDate}.xls`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-    setIsExportModalOpen(false);
+    setIsExportModeOpen(false);
   };
 
   const attendanceItems = [
     {
-      label: "Total Hadir",
+      label: "Hadir",
       value: summary.hadir,
-      className: "border-emerald-100 bg-emerald-50/70 text-emerald-900",
-      valueClassName: "text-emerald-700",
+      className: "border-emerald-100 bg-emerald-50 text-emerald-700",
     },
     {
       label: "Terlambat (Menit)",
       value: summary.terlambat,
-      className: "border-amber-100 bg-amber-50 text-amber-900",
-      valueClassName: "text-amber-800",
+      className: "border-amber-100 bg-amber-50 text-amber-700",
     },
     {
       label: "WFH",
       value: summary.wfh || 0,
-      className: "border-sky-100 bg-sky-50/70 text-sky-900",
-      valueClassName: "text-sky-700",
+      className: "border-sky-100 bg-sky-50 text-sky-700",
     },
     {
       label: "Kunjungan",
       value: summary.kunjungan || 0,
-      className: "border-teal-100 bg-teal-50/70 text-teal-900",
-      valueClassName: "text-teal-700",
+      className: "border-teal-100 bg-teal-50 text-teal-700",
     },
     {
       label: "Total Kerja",
       value: formatWorkDuration(summary.totalWorkMinutes),
-      className: "border-slate-200 bg-slate-100 text-slate-800",
-      valueClassName: "text-slate-950",
+      className: "border-blue-100 bg-blue-50 text-[#123c8c]",
     },
     {
       label: "Sakit",
       value: summary.sakit,
-      className: "border-amber-100 bg-amber-50/60 text-amber-900",
-      valueClassName: "text-amber-800",
+      className: "border-rose-100 bg-rose-50 text-rose-700",
     },
     {
       label: "Cuti",
       value: summary.cuti,
-      className: "border-violet-100 bg-violet-50/70 text-violet-900",
-      valueClassName: "text-violet-700",
+      className: "border-sky-100 bg-sky-50 text-sky-700",
     },
   ];
   const employeePhoto = getEmployeePhoto(employee);
@@ -708,83 +841,26 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
           <div className="recap-detail-enter flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link
               href={backHref}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-slate-800 shadow-lg shadow-slate-300/30 ring-1 ring-slate-200 transition hover:bg-slate-100 hover:text-slate-950"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#123c8c] shadow-lg shadow-slate-300/30 ring-1 ring-blue-100 transition hover:bg-[#f8fbff]"
             >
               <ArrowLeft size={17} strokeWidth={2.8} />
-              Kembali ke daftar
+              {backLabel}
             </Link>
 
             <button
               type="button"
-              onClick={() => setIsExportModalOpen(true)}
+              onClick={() => setIsExportModeOpen(true)}
               disabled={isLoading || !employee}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/20 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-950/20 transition hover:bg-[#0f3274] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
             >
               <Download size={17} strokeWidth={2.8} />
               Download Excel
             </button>
           </div>
 
-          {isExportModalOpen ? (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-              <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-                <h3 className="text-xl font-black text-slate-900">
-                  Pilihan Mode Export Excel
-                </h3>
-                <p className="mt-1 text-xs font-semibold text-slate-500">
-                  Pilih format laporan Excel yang ingin diunduh untuk {employee?.name}:
-                </p>
-
-                <div className="mt-6 space-y-3">
-                  <button
-                    type="button"
-                    onClick={handleDownloadExcelSummary}
-                    className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-slate-300 hover:bg-slate-100"
-                  >
-                    <div>
-                      <p className="text-sm font-black text-slate-950">
-                        1. Mode Rekap Total (Summary)
-                      </p>
-                      <p className="mt-0.5 text-xs font-medium text-slate-500">
-                        Ringkasan total hari kerja, total hadir, terlambat, WFH & total jam kerja.
-                      </p>
-                    </div>
-                    <Download size={18} className="shrink-0 text-slate-700" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleDownloadExcelDetailList}
-                    className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-slate-300 hover:bg-slate-100"
-                  >
-                    <div>
-                      <p className="text-sm font-black text-slate-950">
-                        2. Mode List Kehadiran (Detail Harian)
-                      </p>
-                      <p className="mt-0.5 text-xs font-medium text-slate-500">
-                        Rincian log absen per baris tanggal (Jam Masuk, Jam Pulang, WFH & Keterangan).
-                      </p>
-                    </div>
-                    <Download size={18} className="shrink-0 text-slate-700" />
-                  </button>
-                </div>
-
-                <div className="mt-6 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setIsExportModalOpen(false)}
-                    className="rounded-xl bg-slate-100 px-4 py-2 text-xs font-black text-slate-600 transition hover:bg-slate-200"
-                  >
-                    Batal
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : null}
-
-          <div className="recap-detail-enter overflow-hidden rounded-[2.25rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
+          <div className="recap-detail-enter overflow-hidden rounded-[2.25rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="bg-[#b91c1c] p-8 text-white md:p-12">
+              <div className="bg-[#123c8c] p-8 text-white md:p-12">
                 <div className="flex items-center gap-5">
                   <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-white/15 ring-1 ring-white/20">
                     {employeePhoto ? (
@@ -799,14 +875,14 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                   </div>
 
                   <div>
-                    <p className="text-sm font-black uppercase tracking-[0.16em] text-red-100">
+                    <p className="text-sm font-black uppercase tracking-[0.16em] text-blue-100">
                       Rekap karyawan
                     </p>
                     <h2 className="mt-2 text-4xl font-black tracking-tight md:text-5xl">
                       {employee?.name ||
                         (isLoading ? "Memuat..." : "Data tidak tersedia")}
                     </h2>
-                    <p className="mt-3 text-base font-semibold text-red-100">
+                    <p className="mt-3 text-base font-semibold text-blue-100">
                       {formatDateRange(startDate, endDate)}
                     </p>
                   </div>
@@ -814,11 +890,11 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-5 p-7 sm:grid-cols-2 md:p-10">
-                <div className="min-h-36 rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                <div className="min-h-36 rounded-3xl border border-blue-100 bg-[#f8fbff] p-6">
                   <p className="text-sm font-bold text-slate-500">
                     Masa Kerja
                   </p>
-                  <h3 className="mt-4 text-xl font-black leading-snug text-slate-950">
+                  <h3 className="mt-4 text-xl font-black leading-snug text-[#123c8c]">
                     {formatEmploymentPeriod(employee)}
                   </h3>
                 </div>
@@ -855,7 +931,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                     type="date"
                     value={startDate}
                     onChange={(event) => setStartDate(event.target.value)}
-                    className="recap-detail-field h-16 w-full rounded-3xl border border-slate-200 bg-slate-50 py-4 pl-14 pr-5 text-base font-bold text-slate-800 outline-none transition focus:border-slate-900 focus:bg-white focus:ring-4 focus:ring-slate-100"
+                    className="recap-detail-field h-16 w-full rounded-3xl border border-blue-100 bg-[#f8fbff] py-4 pl-14 pr-5 text-base font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                   />
                 </div>
               </label>
@@ -875,7 +951,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                     type="date"
                     value={endDate}
                     onChange={(event) => setEndDate(event.target.value)}
-                    className="recap-detail-field h-16 w-full rounded-3xl border border-slate-200 bg-slate-50 py-4 pl-14 pr-5 text-base font-bold text-slate-800 outline-none transition focus:border-slate-900 focus:bg-white focus:ring-4 focus:ring-slate-100"
+                    className="recap-detail-field h-16 w-full rounded-3xl border border-blue-100 bg-[#f8fbff] py-4 pl-14 pr-5 text-base font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                   />
                 </div>
               </label>
@@ -889,9 +965,9 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
           ) : null}
 
           {isLoading ? (
-            <div className="recap-detail-enter flex min-h-56 flex-col items-center justify-center gap-3 rounded-[2rem] border border-red-100 bg-white p-8 text-center shadow-xl shadow-slate-300/30">
+            <div className="recap-detail-enter flex min-h-56 flex-col items-center justify-center gap-3 rounded-[2rem] border border-blue-100 bg-white p-8 text-center shadow-xl shadow-slate-300/30">
               <Loader2
-                className="h-8 w-8 animate-spin text-[#b91c1c]"
+                className="h-8 w-8 animate-spin text-[#123c8c]"
                 strokeWidth={2.7}
               />
               <p className="text-sm font-bold text-slate-500">
@@ -910,20 +986,18 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                     className={`min-h-36 rounded-3xl border p-6 ${item.className}`}
                   >
                     <p className="text-sm font-black">{item.label}</p>
-                    <p className={`mt-5 text-4xl font-black ${item.valueClassName || ""}`}>
-                      {item.value}
-                    </p>
+                    <p className="mt-5 text-4xl font-black">{item.value}</p>
                   </div>
                 ))}
               </div>
 
               <div
-                className="recap-detail-enter overflow-hidden rounded-[2.25rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30"
+                className="recap-detail-enter overflow-hidden rounded-[2.25rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30"
                 style={{ animationDelay: "160ms" }}
               >
                 <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 md:flex-row md:items-center md:justify-between md:px-8">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-900">
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[#123c8c]">
                       Kalender Kehadiran
                     </p>
                     <h3 className="mt-2 text-2xl font-black capitalize text-slate-950">
@@ -938,7 +1012,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                         setCalendarMonth((current) => addMonths(current, -1))
                       }
                       disabled={!canOpenPreviousMonth}
-                      className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-100 hover:text-slate-950 disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-300"
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl border border-blue-100 bg-white text-[#123c8c] shadow-sm transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-300"
                     >
                       <ChevronLeft size={22} strokeWidth={2.8} />
                     </button>
@@ -949,7 +1023,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                         setCalendarMonth((current) => addMonths(current, 1))
                       }
                       disabled={!canOpenNextMonth}
-                      className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-100 hover:text-slate-950 disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-300"
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl border border-blue-100 bg-white text-[#123c8c] shadow-sm transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-300"
                     >
                       <ChevronRight size={22} strokeWidth={2.8} />
                     </button>
@@ -997,7 +1071,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                               ? "bg-slate-50 text-slate-300"
                               : categoryStyle
                                 ? categoryStyle.tile
-                                : "bg-slate-100/70 text-slate-800"
+                                : "bg-[#f8fbff] text-slate-700"
                           }`}
                           title={
                             categoryStyle
@@ -1034,6 +1108,115 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
           )}
         </section>
       </main>
+
+      {isExportModeOpen ? (
+        <div className="export-mode-overlay fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-4 py-6">
+          <div className="export-mode-panel w-full max-w-2xl rounded-[1.75rem] bg-white p-7 shadow-2xl shadow-slate-950/20">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#123c8c]">
+                  <FileSpreadsheet size={25} strokeWidth={2.7} />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-slate-950">
+                    Pilih Mode Export Excel
+                  </h3>
+                  <p className="mt-1 text-sm font-bold text-slate-500">
+                    Unduh format rekap kehadiran karyawan
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsExportModeOpen(false)}
+                className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Tutup pilihan export"
+              >
+                <X size={24} strokeWidth={2.6} />
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <button
+                type="button"
+                onClick={() => setSelectedExportMode("summary")}
+                className={`flex w-full items-center gap-5 rounded-3xl border p-5 text-left transition ${
+                  selectedExportMode === "summary"
+                    ? "border-[#123c8c] bg-blue-50 shadow-[0_0_0_2px_rgba(18,60,140,0.12)]"
+                    : "border-slate-200 bg-white hover:border-blue-100 hover:bg-[#f8fbff]"
+                }`}
+              >
+                <span
+                  className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${
+                    selectedExportMode === "summary"
+                      ? "bg-[#123c8c] text-white"
+                      : "bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  <Table2 size={27} strokeWidth={2.7} />
+                </span>
+                <span>
+                  <span className="block text-lg font-black text-slate-950">
+                    Mode Rekap Total (Summary)
+                  </span>
+                  <span className="mt-2 block text-sm font-bold leading-6 text-slate-500">
+                    Format bawaan berisi ringkasan total hari kerja, hadir,
+                    terlambat, WFH, cuti, dan total jam kerja.
+                  </span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedExportMode("list")}
+                className={`flex w-full items-center gap-5 rounded-3xl border p-5 text-left transition ${
+                  selectedExportMode === "list"
+                    ? "border-[#123c8c] bg-blue-50 shadow-[0_0_0_2px_rgba(18,60,140,0.12)]"
+                    : "border-slate-200 bg-white hover:border-blue-100 hover:bg-[#f8fbff]"
+                }`}
+              >
+                <span
+                  className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${
+                    selectedExportMode === "list"
+                      ? "bg-[#123c8c] text-white"
+                      : "bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  <ListChecks size={27} strokeWidth={2.7} />
+                </span>
+                <span>
+                  <span className="block text-lg font-black text-slate-950">
+                    Mode List Kehadiran (Detail Harian)
+                  </span>
+                  <span className="mt-2 block text-sm font-bold leading-6 text-slate-500">
+                    Format rincian log per tanggal seperti Excel presensi:
+                    tanggal, shift, jam real, telat, durasi, mode, dan status.
+                  </span>
+                </span>
+              </button>
+            </div>
+
+            <div className="mt-7 flex justify-end gap-3 border-t border-slate-100 pt-6">
+              <button
+                type="button"
+                onClick={() => setIsExportModeOpen(false)}
+                className="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-50"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadExcel}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-6 py-3 text-sm font-black text-white shadow-lg shadow-blue-950/20 transition hover:bg-[#0f3274]"
+              >
+                <Download size={17} strokeWidth={2.8} />
+                Unduh Excel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </MobileShell>
   );
 }

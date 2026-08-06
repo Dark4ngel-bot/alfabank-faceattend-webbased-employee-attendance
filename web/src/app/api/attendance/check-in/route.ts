@@ -1,8 +1,6 @@
-import type { UploadApiResponse } from "cloudinary";
 import { Buffer } from "node:buffer";
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCloudinary } from "@/lib/cloudinary";
 import { isPhoneAttendanceRequest } from "@/lib/attendance-device";
 import { requireAuth } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
@@ -58,18 +56,11 @@ type ParsedAttendanceBody = {
 };
 
 type StoredAttendancePhoto =
-  | {
-      storage: "cloudinary";
-      data: null;
-      secureUrl: string;
-      publicId: string;
-    }
-  | {
-      storage: "database";
-      data: Uint8Array<ArrayBuffer>;
-      secureUrl: null;
-      publicId: null;
-    };
+  {
+    data: Uint8Array<ArrayBuffer>;
+    secureUrl: null;
+    publicId: null;
+  };
 
 async function getUserIdFromRequest(req: NextRequest) {
   const authUser = await requireAuth(req);
@@ -251,82 +242,14 @@ async function fileToBuffer(file: File) {
   };
 }
 
-async function uploadCheckInPhoto(
-  photoBuffer: Uint8Array<ArrayBuffer>,
-  userId: string,
-): Promise<UploadApiResponse | null> {
-  let cloudinary: ReturnType<typeof getCloudinary>;
-
-  try {
-    cloudinary = getCloudinary();
-  } catch (error) {
-    console.warn("CHECK_IN_CLOUDINARY_UNAVAILABLE:", error);
-    return null;
-  }
-
-  return new Promise<UploadApiResponse>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: "presensi/attendance/check-in",
-        public_id: `user-${userId}-${Date.now()}`,
-        resource_type: "image",
-        overwrite: false,
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        if (!result) {
-          reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
-          return;
-        }
-
-        resolve(result);
-      },
-    );
-
-    uploadStream.end(Buffer.from(photoBuffer));
-  });
-}
-
 async function storeCheckInPhoto(
   photoBuffer: Uint8Array<ArrayBuffer>,
-  userId: string,
 ): Promise<StoredAttendancePhoto> {
-  const uploadedPhoto = await uploadCheckInPhoto(photoBuffer, userId);
-
-  if (uploadedPhoto) {
-    return {
-      storage: "cloudinary",
-      data: null,
-      secureUrl: uploadedPhoto.secure_url,
-      publicId: uploadedPhoto.public_id,
-    };
-  }
-
   return {
-    storage: "database",
     data: photoBuffer,
     secureUrl: null,
     publicId: null,
   };
-}
-
-async function deleteCloudinaryPhoto(publicId: string | null | undefined) {
-  if (!publicId) return;
-
-  try {
-    const cloudinary = getCloudinary();
-
-    await cloudinary.uploader.destroy(publicId, {
-      resource_type: "image",
-      invalidate: true,
-    });
-  } catch (error) {
-    console.warn("DELETE_CHECK_IN_PHOTO_WARNING:", error);
-  }
 }
 
 function getFormText(formData: FormData, keys: string[]) {
@@ -762,32 +685,6 @@ export async function POST(req: NextRequest) {
     });
 
     if (isWfhMode) {
-      const todayWfhCount = await prisma.attendance.count({
-        where: {
-          attendance_date: today,
-          work_mode: "wfh",
-          check_in_time: {
-            not: null,
-          },
-          NOT: {
-            user_id: userId,
-          },
-        },
-      });
-
-      if (todayWfhCount >= 2) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              "Kuota WFH harian kantor sudah penuh (Maksimal 2 karyawan per hari). Silakan pilih mode Kantor atau hubungi admin.",
-            message:
-              "Kuota WFH harian kantor sudah penuh (Maksimal 2 karyawan per hari). Silakan pilih mode Kantor atau hubungi admin.",
-          },
-          { status: 400 },
-        );
-      }
-
       const hasWfhQuotaColumn = await ensureWfhQuotaColumn();
       let quotaRows: Array<{ wfh_quota_monthly: number | null }> = [];
 
@@ -825,10 +722,7 @@ export async function POST(req: NextRequest) {
           },
         },
       });
-      const remainingWfhQuota = Math.max(
-        0,
-        wfhQuotaMonthly - usedWfhThisMonth,
-      );
+      const remainingWfhQuota = Math.max(0, wfhQuotaMonthly - usedWfhThisMonth);
 
       if (wfhQuotaMonthly > 0 && remainingWfhQuota <= 0) {
         return NextResponse.json(
@@ -843,6 +737,32 @@ export async function POST(req: NextRequest) {
               used: usedWfhThisMonth,
               remaining: 0,
             },
+          },
+          { status: 400 },
+        );
+      }
+
+      // Max 2 Karyawan WFH per hari
+      const MAX_DAILY_WFH = 2;
+      const todayWfhCount = await prisma.attendance.count({
+        where: {
+          attendance_date: today,
+          work_mode: "wfh",
+          check_in_time: {
+            not: null,
+          },
+          NOT: {
+            user_id: userId,
+          },
+        },
+      });
+
+      if (todayWfhCount >= MAX_DAILY_WFH) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Kuota WFH harian kantor sudah penuh (Maksimal ${MAX_DAILY_WFH} karyawan per hari). Silakan absensi mode Kantor atau Kunjungan.`,
+            message: `Kuota WFH harian kantor sudah penuh (Maksimal ${MAX_DAILY_WFH} karyawan per hari). Silakan absensi mode Kantor atau Kunjungan.`,
           },
           { status: 400 },
         );
@@ -953,7 +873,9 @@ export async function POST(req: NextRequest) {
 
       const sortedOfficeGeofences = [
         registeredOfficeGeofence,
-        ...officeGeofences.filter((office) => office.id !== registeredOffice.id),
+        ...officeGeofences.filter(
+          (office) => office.id !== registeredOffice.id,
+        ),
       ];
 
       matchedOffice = findNearestValidOffice(
@@ -1065,7 +987,6 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-
     const startTime = shouldValidateLate
       ? normalizeScheduleTime(todaySchedule?.check_in_time) ||
         effectiveShift?.start_time ||
@@ -1104,7 +1025,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const storedPhoto = await storeCheckInPhoto(photoBuffer, userId);
+    const storedPhoto = await storeCheckInPhoto(photoBuffer);
 
     const checkInData = {
       check_in_time: now,
@@ -1145,78 +1066,70 @@ export async function POST(req: NextRequest) {
 
       attendance = await prisma.$transaction(async (tx) => {
         const savedAttendance = existingAttendance
-        ? await tx.attendance.update({
-            where: {
-              id: existingAttendance.id,
-            },
-            data: {
-              ...checkInData,
-              work_minutes: existingAttendance.work_minutes ?? 0,
-            },
-          })
-        : await tx.attendance.create({
+          ? await tx.attendance.update({
+              where: {
+                id: existingAttendance.id,
+              },
+              data: {
+                ...checkInData,
+                work_minutes: existingAttendance.work_minutes ?? 0,
+              },
+            })
+          : await tx.attendance.create({
+              data: {
+                user_id: userId,
+                attendance_date: today,
+                ...checkInData,
+                work_minutes: 0,
+              },
+            });
+
+        if (isVisitMode) {
+          await tx.employeeVisit.create({
             data: {
               user_id: userId,
-              attendance_date: today,
-              ...checkInData,
-              work_minutes: 0,
+              attendance_id: savedAttendance.id,
+              visit_date: today,
+              title: visitTitle,
+              client_name: visitClientName || null,
+              address: visitAddress,
+              latitude,
+              longitude,
+              accuracy,
+              start_time: now,
+              note: visitNote,
+              status: "ongoing",
             },
           });
+        }
 
-      if (isVisitMode) {
-        await tx.employeeVisit.create({
-          data: {
-            user_id: userId,
-            attendance_id: savedAttendance.id,
-            visit_date: today,
-            title: visitTitle,
-            client_name: visitClientName || null,
-            address: visitAddress,
-            latitude,
-            longitude,
-            accuracy,
-            start_time: now,
-            note: visitNote,
-            status: "ongoing",
-          },
-        });
-      }
+        if (isFlexibleMode) {
+          const modeLabel = getWorkModeLabel(workMode);
+          const employeeName = user.name || "Karyawan";
 
-      if (isFlexibleMode) {
-        const modeLabel = getWorkModeLabel(workMode);
-        const employeeName = user.name || "Karyawan";
-
-        await tx.adminNotification.create({
-          data: {
-            attendance_id: savedAttendance.id,
-            user_id: userId,
-            type: workMode,
-            title:
-              workMode === "visit"
-                ? "Karyawan melakukan kunjungan"
-                : `Karyawan ${modeLabel}`,
-            message:
-              workMode === "visit"
-                ? `${employeeName} check-in kunjungan di ${visitTitle}. Alamat: ${visitAddress || nearestLocationLabel}. Keperluan: ${visitNote}.`
-                : `${employeeName} check-in dengan mode ${modeLabel}. Lokasi: ${nearestLocationLabel}.`,
-            status: "unread",
-            is_read: false,
-          },
-        });
-      }
+          await tx.adminNotification.create({
+            data: {
+              attendance_id: savedAttendance.id,
+              user_id: userId,
+              type: workMode,
+              title:
+                workMode === "visit"
+                  ? "Karyawan melakukan kunjungan"
+                  : `Karyawan ${modeLabel}`,
+              message:
+                workMode === "visit"
+                  ? `${employeeName} check-in kunjungan di ${visitTitle}. Alamat: ${visitAddress || nearestLocationLabel}. Keperluan: ${visitNote}.`
+                  : `${employeeName} check-in dengan mode ${modeLabel}. Lokasi: ${nearestLocationLabel}.`,
+              status: "unread",
+              is_read: false,
+            },
+          });
+        }
 
         return savedAttendance;
       });
     } catch (databaseError) {
-      await deleteCloudinaryPhoto(storedPhoto.publicId);
       throw databaseError;
-    }
-
-    if (
-      existingAttendance?.check_in_photo_public_id &&
-      existingAttendance.check_in_photo_public_id !== storedPhoto.publicId
-    ) {
-      await deleteCloudinaryPhoto(existingAttendance.check_in_photo_public_id);
     }
 
     return NextResponse.json({

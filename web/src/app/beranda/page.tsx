@@ -99,11 +99,6 @@ const quickMenus = [
     label: "Ajukan Izin/Cuti",
     icon: FileText,
   },
-  {
-    href: "/profil",
-    label: "Profil Data Diri",
-    icon: UserRound,
-  },
 ];
 
 function getFirstName(name: string) {
@@ -266,25 +261,24 @@ function ProfileAvatar({
     size === "desktop" ? "h-24 w-24 text-2xl" : "h-12 w-12 text-sm";
 
   if (user.profile_photo) {
-    const photoSrc = `${user.profile_photo}${user.profile_photo.includes("?") ? "&" : "?"}v=${Date.now()}`;
-
     return (
       <img
-        key={user.profile_photo}
-        src={photoSrc}
+        src={user.profile_photo}
         alt={user.name || "Profil"}
-        className={`home-icon-pop ${sizeClass} shrink-0 rounded-full object-cover ${size === "desktop" ? "ring-4 ring-white/70" : "ring-4 ring-white"
-          }`}
+        className={`home-icon-pop ${sizeClass} shrink-0 rounded-full object-cover ${
+          size === "desktop" ? "ring-4 ring-white/70" : "ring-4 ring-white"
+        }`}
       />
     );
   }
 
   return (
     <div
-      className={`home-icon-pop ${sizeClass} flex shrink-0 items-center justify-center rounded-full font-black ${variant === "blue"
+      className={`home-icon-pop ${sizeClass} flex shrink-0 items-center justify-center rounded-full font-black ${
+        variant === "blue"
           ? "bg-white/15 text-white ring-4 ring-white/20"
-          : "bg-slate-100 text-slate-800 ring-4 ring-white"
-        }`}
+          : "bg-[#eaf1ff] text-[#123c8c] ring-4 ring-white"
+      }`}
     >
       {user.name ? getInitialName(user.name) : ""}
     </div>
@@ -306,27 +300,30 @@ function AnnouncementButton({
     <Link
       href={href}
       onClick={onClick}
-      className={`home-icon-pop relative flex shrink-0 items-center justify-center rounded-2xl ring-1 transition hover:-translate-y-0.5 active:scale-[0.96] ${desktop ? "h-16 w-16" : "h-12 w-12"
-        } ${unread
+      className={`home-icon-pop relative flex shrink-0 items-center justify-center rounded-2xl ring-1 transition hover:-translate-y-0.5 active:scale-[0.96] ${
+        desktop ? "h-16 w-16" : "h-12 w-12"
+      } ${
+        unread
           ? desktop
-            ? "bg-white text-slate-900 ring-white"
-            : "bg-slate-900 text-white ring-slate-900"
+            ? "bg-white text-[#123c8c] ring-white"
+            : "bg-[#123c8c] text-white ring-[#123c8c]"
           : desktop
             ? "bg-white/10 text-white/70 ring-white/20"
-            : "bg-white text-slate-400 ring-slate-200"
-        }`}
+            : "bg-white text-slate-400 ring-blue-100"
+      }`}
       aria-label="Pengumuman"
     >
       <Bell
         size={desktop ? 28 : 24}
-        fill={unread ? (desktop ? "#0f172a" : "white") : "transparent"}
+        fill={unread ? (desktop ? "#123c8c" : "white") : "transparent"}
         strokeWidth={2.2}
       />
 
       {unread ? (
         <span
-          className={`home-pulse-dot absolute rounded-full bg-red-500 ring-2 ring-white ${desktop ? "right-3 top-3 h-4 w-4" : "right-2 top-2 h-3 w-3"
-            }`}
+          className={`home-pulse-dot absolute rounded-full bg-red-500 ring-2 ring-white ${
+            desktop ? "right-3 top-3 h-4 w-4" : "right-2 top-2 h-3 w-3"
+          }`}
         />
       ) : null}
     </Link>
@@ -367,18 +364,18 @@ function RoleBadges({ items }: { items: Array<string | undefined | null> }) {
 
 function QuickMenuGrid() {
   return (
-    <div className="grid grid-cols-5 gap-x-1.5 gap-y-3 md:grid-cols-5 md:gap-4">
+    <div className="grid grid-cols-4 gap-x-1.5 gap-y-3 md:grid-cols-4 md:gap-4">
       {quickMenus.map(({ href, label, icon: Icon }, index) => (
         <Link
           key={href}
           href={href}
-          className="home-card-enter group flex flex-col items-center rounded-3xl text-center transition hover:-translate-y-0.5 active:scale-[0.98] md:border md:border-slate-200 md:bg-slate-50/80 md:p-6 md:hover:-translate-y-1 md:hover:bg-white md:hover:shadow-xl md:hover:shadow-slate-200/60"
+          className="home-card-enter group flex flex-col items-center rounded-3xl text-center transition hover:-translate-y-0.5 active:scale-[0.98] md:border md:border-blue-100 md:bg-[#f8fbff] md:p-6 md:hover:-translate-y-1 md:hover:bg-white md:hover:shadow-xl md:hover:shadow-slate-200/60"
           style={{
             animationDelay: `${index * 70}ms`,
           }}
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 transition group-hover:scale-105 md:h-20 md:w-20">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg shadow-slate-950/20 transition group-hover:rotate-[-2deg] md:h-14 md:w-14">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#eaf1ff] transition group-hover:scale-105 md:h-20 md:w-20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 transition group-hover:rotate-[-2deg] md:h-14 md:w-14">
               <Icon size={22} strokeWidth={2.6} />
             </div>
           </div>
@@ -409,12 +406,13 @@ function AttendanceButton({
       onClick={(event) => {
         if (disabled) event.preventDefault();
       }}
-      className={`flex min-h-[48px] w-full flex-1 items-center justify-center rounded-2xl px-3 py-2.5 text-sm font-black transition md:h-20 md:min-h-0 md:px-6 md:py-0 md:text-lg ${disabled
+      className={`flex h-14 items-center justify-center rounded-2xl text-sm font-black transition md:h-20 md:text-lg ${
+        disabled
           ? "cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300"
           : variant === "primary"
-            ? "bg-emerald-600 text-white shadow-md shadow-emerald-950/20 hover:-translate-y-0.5 hover:bg-emerald-700 active:scale-[0.98]"
-            : "border border-slate-200 bg-white text-slate-800 hover:-translate-y-0.5 hover:bg-slate-100 active:scale-[0.98]"
-        }`}
+            ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
+            : "border border-blue-100 bg-white text-[#123c8c] hover:-translate-y-0.5 hover:bg-[#eaf1ff] active:scale-[0.98]"
+      }`}
     >
       {label}
     </Link>
@@ -432,7 +430,7 @@ function AnnouncementList({
 }) {
   if (!hasAnnouncement) {
     return (
-      <div className="home-card-enter rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-6 text-center shadow-sm md:py-14">
+      <div className="home-card-enter rounded-3xl border border-dashed border-blue-100 bg-white px-5 py-6 text-center shadow-sm md:py-14">
         <p className="text-sm font-bold text-slate-400 md:text-base">
           Pengumuman Kosong
         </p>
@@ -446,10 +444,10 @@ function AnnouncementList({
     <Link
       href="/pengumuman"
       onClick={onRead}
-      className="home-card-enter block min-w-0 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50/80 hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99] md:p-5"
+      className="home-card-enter block min-w-0 rounded-3xl border border-blue-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f8fbff] hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99] md:p-5"
     >
-      <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-100 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-900 shadow-sm">
-        <Megaphone size={14} className="text-amber-700" />
+      <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#eaf1ff] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#123c8c]">
+        <Megaphone size={14} />
         Pengumuman Terbaru
       </div>
 
@@ -464,7 +462,7 @@ function AnnouncementList({
       ) : null}
 
       {topAnnouncement.document_url || topAnnouncement.documentUrl ? (
-        <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-800">
+        <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-2xl bg-[#eaf1ff] px-3 py-2 text-xs font-black text-[#123c8c]">
           <FileText size={14} strokeWidth={2.6} />
           <span className="truncate">
             {topAnnouncement.document_name ||
@@ -631,10 +629,10 @@ export default function HomePage() {
             <div className="mx-auto w-full max-w-7xl px-5 pt-6">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="home-icon-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-slate-200">
+                  <div className="home-icon-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-blue-100">
                     <Image
                       src={logoSrc}
-                      alt="AlfaBank Logo"
+                      alt="Creativemu Logo"
                       width={64}
                       height={59}
                       className="h-full w-full object-contain"
@@ -645,12 +643,12 @@ export default function HomePage() {
                   <ProfileAvatar user={user} />
 
                   <div className="min-w-0">
-                    <p className="home-text-reveal text-[10px] font-black uppercase tracking-[0.24em] text-slate-800">
+                    <p className="home-text-reveal text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c]">
                       Presensi
                     </p>
 
                     <h1
-                      className="home-text-reveal mt-1 truncate text-base font-black text-slate-950"
+                      className="home-text-reveal mt-1 truncate text-base font-black text-[#073456]"
                       style={{
                         animationDelay: "60ms",
                       }}
@@ -684,7 +682,7 @@ export default function HomePage() {
 
               <div className="py-7 text-center">
                 <p
-                  className="home-text-reveal text-xs font-black uppercase tracking-[0.24em] text-slate-800"
+                  className="home-text-reveal text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]"
                   style={{
                     animationDelay: "120ms",
                   }}
@@ -693,7 +691,7 @@ export default function HomePage() {
                 </p>
 
                 <h2
-                  className="home-text-reveal mt-3 text-4xl font-black tracking-tight text-slate-950"
+                  className="home-text-reveal mt-3 text-4xl font-black tracking-tight text-[#073456]"
                   style={{
                     animationDelay: "170ms",
                   }}
@@ -714,7 +712,7 @@ export default function HomePage() {
           </section>
 
           <section className="mx-auto hidden max-w-7xl px-10 pt-8 md:block lg:px-16">
-            <div className="home-enter relative overflow-hidden rounded-[2.2rem] bg-[#b91c1c] bg-gradient-to-br from-[#b91c1c] via-[#a81818] to-[#7f1d1d] p-8 text-white shadow-2xl shadow-red-950/30">
+            <div className="home-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-8 text-white shadow-2xl shadow-blue-900/25">
               <div className="relative z-10 flex items-center justify-between gap-8">
                 <div className="flex items-center gap-5">
                   <ProfileAvatar user={user} size="desktop" variant="blue" />
@@ -751,36 +749,40 @@ export default function HomePage() {
 
             <AppCard
               padding="md"
-              className="home-card-enter rounded-[1.8rem] border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-xl hover:shadow-slate-200/60 md:p-8"
+              className="home-card-enter rounded-[1.8rem] border-blue-100 bg-white p-5 shadow-sm transition hover:shadow-xl hover:shadow-slate-200/60 md:p-8"
               style={{
                 animationDelay: "140ms",
               }}
             >
-              <div className="flex flex-row items-center justify-between gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                    <p className="text-2xl font-black tracking-tight text-slate-950 sm:text-4xl md:text-6xl">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-4xl font-black tracking-tight text-slate-950 md:text-6xl">
                       {currentTime || "--:-- WIB"}
                     </p>
 
-                    <div className="rounded-xl bg-slate-100 border border-slate-200 px-2 py-1 text-[10px] font-black text-slate-800 shadow-sm sm:rounded-2xl sm:px-4 sm:py-2 md:text-sm">
-                      {currentDate || "Memuat tanggal..."}
+                    <div className="rounded-full bg-[#eaf1ff] px-3 py-1 text-xs font-black text-[#123c8c] md:px-3 md:py-1.5">
+                      WIB
                     </div>
                   </div>
 
-                  <p className="mt-1.5 text-[11px] font-semibold text-slate-500 sm:text-sm md:mt-5 md:text-lg">
+                  <p className="mt-3 text-sm font-bold text-slate-500 md:text-base">
+                    {currentDate || "Memuat tanggal..."}
+                  </p>
+
+                  <p className="mt-3 text-sm font-semibold text-slate-500 md:mt-5 md:text-lg">
                     {workScheduleText}
                   </p>
 
-                  <p className="mt-0.5 text-[11px] font-semibold text-slate-500 sm:text-sm md:mt-3 md:text-lg">
+                  <p className="mt-1 text-sm font-semibold text-slate-500 md:mt-3 md:text-lg">
                     Status hari ini:{" "}
-                    <span className="font-black text-amber-700">
+                    <span className="font-black text-[#123c8c]">
                       {attendanceToday.status}
                     </span>
                   </p>
                 </div>
 
-                <div className="flex w-[140px] shrink-0 flex-col gap-2.5 sm:w-[160px] md:w-[380px] md:flex-row md:gap-4 lg:w-[440px]">
+                <div className="grid grid-cols-2 gap-3 lg:w-[460px]">
                   <AttendanceButton
                     label="Masuk"
                     href="/presensi"
@@ -813,7 +815,7 @@ export default function HomePage() {
               <Link
                 href="/pengumuman"
                 onClick={markAnnouncementsAsRead}
-                className="text-lg font-black text-slate-900 transition hover:text-slate-700 active:scale-[0.98] md:text-base"
+                className="text-lg font-black text-[#123c8c] transition hover:text-[#0f3274] active:scale-[0.98] md:text-base"
               >
                 Lihat Lainnya
               </Link>

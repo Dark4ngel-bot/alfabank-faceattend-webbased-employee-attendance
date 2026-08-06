@@ -146,21 +146,6 @@ function formatDateRange(startDate: string, endDate: string) {
   return `${formatter.format(start)} - ${formatter.format(end)}`;
 }
 
-function formatWorkDuration(minutes: number) {
-  if (!minutes || minutes <= 0) return "0 menit";
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-
-  if (hours > 0 && remainingMinutes > 0) {
-    return `${hours}j ${remainingMinutes}m`;
-  }
-
-  if (hours > 0) return `${hours}j`;
-
-  return `${remainingMinutes}m`;
-}
-
 function getNetWorkMinutes(summary?: EmployeeAttendanceSummary | null) {
   if (!summary) return 0;
 
@@ -486,11 +471,6 @@ export default function AdminEmployeeAttendanceRecapPage() {
       className: "border-teal-100 bg-teal-50 text-teal-700",
     },
     {
-      label: "Kerja Bersih",
-      value: formatWorkDuration(getNetWorkMinutes(selectedSummary)),
-      className: "border-red-100 bg-red-50 text-[#b91c1c]",
-    },
-    {
       label: "Sakit",
       value: selectedSummary.sakit,
       className: "border-red-100 bg-red-50 text-red-700",
@@ -510,9 +490,9 @@ export default function AdminEmployeeAttendanceRecapPage() {
 
       <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff]">
         <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
-          <div className="attendance-recap-enter overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xl shadow-slate-300/30">
+          <div className="attendance-recap-enter overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="bg-[#b91c1c] p-6 text-white md:p-8">
+              <div className="bg-[#123c8c] p-6 text-white md:p-8">
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
                     <ClipboardList size={25} strokeWidth={2.6} />
@@ -528,23 +508,23 @@ export default function AdminEmployeeAttendanceRecapPage() {
 
               <div className="grid grid-cols-2 gap-3 p-5 md:p-6">
                 <div
-                  className="attendance-recap-row-enter rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                  className="attendance-recap-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4"
                   style={{ animationDelay: "60ms" }}
                 >
                   <p className="text-xs font-bold text-slate-500">
                     Total Karyawan
                   </p>
-                  <h3 className="mt-3 text-3xl font-black text-slate-950">
+                  <h3 className="mt-3 text-3xl font-black text-[#123c8c]">
                     {employees.length}
                   </h3>
                 </div>
 
                 <div
-                  className="attendance-recap-row-enter rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4"
+                  className="attendance-recap-row-enter rounded-2xl border border-emerald-100 bg-emerald-50 p-4"
                   style={{ animationDelay: "100ms" }}
                 >
-                  <p className="text-xs font-bold text-emerald-800">Aktif</p>
-                  <h3 className="mt-3 text-3xl font-black text-slate-950">
+                  <p className="text-xs font-bold text-emerald-700">Aktif</p>
+                  <h3 className="mt-3 text-3xl font-black text-emerald-700">
                     {activeEmployees}
                   </h3>
                 </div>
@@ -572,7 +552,7 @@ export default function AdminEmployeeAttendanceRecapPage() {
                     type="date"
                     value={startDate}
                     onChange={(event) => setStartDate(event.target.value)}
-                    className="attendance-recap-field h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
+                    className="attendance-recap-field h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                   />
                 </div>
               </label>
@@ -592,7 +572,7 @@ export default function AdminEmployeeAttendanceRecapPage() {
                     type="date"
                     value={endDate}
                     onChange={(event) => setEndDate(event.target.value)}
-                    className="attendance-recap-field h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
+                    className="attendance-recap-field h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                   />
                 </div>
               </label>
@@ -612,7 +592,7 @@ export default function AdminEmployeeAttendanceRecapPage() {
                     value={searchKeyword}
                     onChange={(event) => setSearchKeyword(event.target.value)}
                     placeholder="Cari nama karyawan..."
-                    className="attendance-recap-field h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
+                    className="attendance-recap-field h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                   />
                 </div>
               </label>
@@ -633,12 +613,12 @@ export default function AdminEmployeeAttendanceRecapPage() {
 
           {selectedEmployee ? (
             <div
-              className="attendance-recap-enter rounded-[2rem] border border-red-100 bg-white p-5 shadow-xl shadow-slate-300/30 md:p-6"
+              className="attendance-recap-enter rounded-[2rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-300/30 md:p-6"
               style={{ animationDelay: "120ms" }}
             >
               <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[#b91c1c]">
+                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[#123c8c]">
                     Rekap Terpilih
                   </p>
 
@@ -652,7 +632,7 @@ export default function AdminEmployeeAttendanceRecapPage() {
                 </div>
 
                 {isRecapLoading ? (
-                  <div className="inline-flex items-center gap-2 rounded-2xl bg-[#fef2f2] px-4 py-3 text-sm font-black text-[#b91c1c] ring-1 ring-red-100">
+                  <div className="inline-flex items-center gap-2 rounded-2xl bg-[#f8fbff] px-4 py-3 text-sm font-black text-[#123c8c] ring-1 ring-blue-100">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Memuat rekap
                   </div>
@@ -673,20 +653,18 @@ export default function AdminEmployeeAttendanceRecapPage() {
             </div>
           ) : null}
 
-          <div className="attendance-recap-enter overflow-hidden rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
+          <div className="attendance-recap-enter overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
             {isLoading ? (
               <div className="p-5">
                 <AppLoadingState text="Memuat rekap karyawan..." />
               </div>
             ) : rankedEmployees.length ? (
-              <div className="divide-y divide-red-100">
+              <div className="divide-y divide-blue-50">
                 {rankedEmployees.map((employee, index) => {
                   const pendingLeaveCount =
                     pendingLeaveCountByEmployeeId.get(employee.id) || 0;
                   const hasPendingLeave = pendingLeaveCount > 0;
                   const employeePhoto = getEmployeePhoto(employee);
-                  const summary = recapByEmployeeId.get(employee.id)?.summary;
-                  const netWorkMinutes = getNetWorkMinutes(summary);
                   const detailParams = new URLSearchParams({
                     startDate,
                     endDate,
@@ -697,12 +675,12 @@ export default function AdminEmployeeAttendanceRecapPage() {
                       key={employee.id}
                       href={`/admin/rekap-kehadiran-karyawan/${employee.id}?${detailParams.toString()}`}
                       onClick={() => setSelectedEmployeeId(employee.id)}
-                      className={`group attendance-recap-row-enter flex w-full items-center gap-4 border-l-4 p-4 text-left transition hover:bg-[#fef2f2] md:p-5 ${
+                      className={`group attendance-recap-row-enter flex w-full items-center gap-4 border-l-4 p-4 text-left transition hover:bg-[#f8fbff] md:p-5 ${
                         hasPendingLeave
                           ? "border-l-orange-400 bg-orange-50/35"
                           : "border-l-transparent"
                       } ${
-                        selectedEmployeeId === employee.id ? "bg-[#fef2f2]" : ""
+                        selectedEmployeeId === employee.id ? "bg-[#f8fbff]" : ""
                       }`}
                       style={{
                         animationDelay: `${Math.min(index, 12) * 35}ms`,
@@ -712,17 +690,17 @@ export default function AdminEmployeeAttendanceRecapPage() {
                           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-black ${
                             hasPendingLeave
                               ? "bg-orange-100 text-orange-700"
-                              : "bg-[#fee2e2] text-[#b91c1c]"
+                              : "bg-[#eaf1ff] text-[#123c8c]"
                           }`}
                         >
                           {index + 1}
                         </div>
 
                         <div
-                          className={`relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-[#b91c1c] ring-1 ${
+                          className={`relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-[#123c8c] ring-1 ${
                             hasPendingLeave
                               ? "bg-orange-50 ring-orange-100"
-                              : "bg-[#f1f5ff] ring-red-100"
+                              : "bg-[#f1f5ff] ring-blue-100"
                           }`}
                         >
                           {employeePhoto ? (
@@ -756,11 +734,6 @@ export default function AdminEmployeeAttendanceRecapPage() {
                               .filter(Boolean)
                               .join(" / ")}
                           </p>
-                          {netWorkMinutes > 0 ? (
-                            <p className="mt-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#b91c1c] sm:text-xs">
-                              Kerja bersih {formatWorkDuration(netWorkMinutes)}
-                            </p>
-                          ) : null}
                         </div>
 
                         <div className="flex shrink-0 items-center gap-2 ml-auto">
@@ -780,7 +753,7 @@ export default function AdminEmployeeAttendanceRecapPage() {
                             </span>
                           </div>
 
-                          <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition group-hover:bg-slate-900 group-hover:text-white sm:h-10 sm:w-10">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100 transition group-hover:bg-[#123c8c] group-hover:text-white sm:h-10 sm:w-10">
                             <ChevronRight size={18} strokeWidth={2.8} className="transition-transform group-hover:translate-x-0.5" />
                           </div>
                         </div>
@@ -790,7 +763,7 @@ export default function AdminEmployeeAttendanceRecapPage() {
               </div>
             ) : (
               <div className="flex min-h-64 flex-col items-center justify-center p-8 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
                   <ClipboardList size={26} strokeWidth={2.6} />
                 </div>
 

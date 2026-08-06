@@ -26,6 +26,7 @@ function AuthStatusGuard({ enabled }: { enabled: boolean }) {
         const response = await fetch("/api/auth/me", {
           method: "GET",
           cache: "no-store",
+          credentials: "same-origin",
         });
 
         if (!isMounted || response.ok) return;
@@ -34,6 +35,7 @@ function AuthStatusGuard({ enabled }: { enabled: boolean }) {
           await fetch("/api/auth/logout", {
             method: "POST",
             cache: "no-store",
+            credentials: "same-origin",
           }).catch(() => null);
 
           window.localStorage.removeItem("presensi_read_announcement_id");
@@ -41,7 +43,6 @@ function AuthStatusGuard({ enabled }: { enabled: boolean }) {
 
           const reason = response.status === 403 ? "inactive" : "expired";
           router.replace(`/login?reason=${reason}&redirect=${pathname}`);
-          router.refresh();
         }
       } catch {
         // Keep the current page if the network is temporarily unavailable.

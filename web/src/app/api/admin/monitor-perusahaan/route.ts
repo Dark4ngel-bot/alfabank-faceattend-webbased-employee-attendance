@@ -18,6 +18,7 @@ function getLeaveTypeLabel(type?: string | null) {
 
   if (normalized === "permission") return "Izin";
   if (normalized === "sick") return "Sakit";
+  if (normalized === "overtime" || normalized === "lembur") return "Lembur";
   if (normalized === "other") return "Lainnya";
 
   return "Cuti";
@@ -29,12 +30,17 @@ function mapChartEmployee(user?: {
   employee_code?: string | null;
   profile_photo?: string | null;
 }) {
+  const profilePhoto =
+    user?.id && user.profile_photo
+      ? `/api/profil/photo?userId=${encodeURIComponent(user.id)}&raw=1`
+      : null;
+
   return {
     id: user?.id || "",
     name: user?.name || "Tanpa Nama",
     employeeCode: user?.employee_code || null,
-    profilePhoto: user?.profile_photo || null,
-    profile_photo: user?.profile_photo || null,
+    profilePhoto,
+    profile_photo: profilePhoto,
   };
 }
 
@@ -80,6 +86,7 @@ function formatTime(date?: Date | null) {
   if (!date) return "-";
 
   return date.toLocaleTimeString("id-ID", {
+    timeZone: "Asia/Jakarta",
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -361,56 +368,6 @@ export async function GET(req: NextRequest) {
 
     const totalActiveEmployees = activeEmployees.length;
 
-    const isSelectedCurrentMonth = year === nowParts.year && month === nowParts.month;
-    const todayApprovedLeaveEmployees = isSelectedCurrentMonth
-      ? new Set(
-          approvedLeaveThisMonth
-            .filter((leave) => {
-              const startKey = formatDateKey(normalizeDate(leave.start_date));
-              const endKey = formatDateKey(normalizeDate(leave.end_date));
-
-              return startKey <= todayKey && endKey >= todayKey;
-            })
-            .map((leave) => leave.user_id),
-        )
-      : new Set<string>();
-
-    const todayRecordUserIds = new Set(
-      todayRecords
-        .filter((record) => Boolean(record.check_in_time))
-        .map((record) => record.user.id),
-    );
-
-    const todayPresent = isSelectedCurrentMonth
-      ? todayRecords.filter((record) => isAttendanceRecord(record)).length
-      : 0;
-
-    const todayLate = isSelectedCurrentMonth
-      ? todayRecords.filter((record) => isLateOfficeRecord(record)).length
-      : 0;
-
-    const todayWfh = isSelectedCurrentMonth
-      ? todayRecords.filter((record) => isWfhRecord(record)).length
-      : 0;
-
-    const todayVisit = isSelectedCurrentMonth
-      ? todayRecords.filter((record) => isVisitRecord(record)).length
-      : 0;
-
-    const todayOffice = isSelectedCurrentMonth
-      ? todayRecords.filter((record) => isOfficeRecord(record)).length
-      : 0;
-
-    const todayCuti = todayApprovedLeaveEmployees.size;
-
-    const todayPending = isSelectedCurrentMonth
-      ? activeEmployees.filter(
-          (employee) =>
-            !todayRecordUserIds.has(employee.id) &&
-            !todayApprovedLeaveEmployees.has(employee.id),
-        ).length
-      : 0;
-
     const totalLateMinutesMonth = monthRecords.reduce(
       (sum, record) => sum + Number(record.late_minutes || 0),
       0,
@@ -420,11 +377,6 @@ export async function GET(req: NextRequest) {
       (sum, record) => sum + Number(record.work_minutes || 0),
       0,
     );
-
-    const dayPercent = (value: number) => {
-      if (totalActiveEmployees === 0) return 0;
-      return Math.round((value / totalActiveEmployees) * 100);
-    };
 
     const departmentBucket = new Map<string, number>();
 
@@ -445,7 +397,13 @@ export async function GET(req: NextRequest) {
 
     const leaveUserIdsByDate = new Map<string, Set<string>>();
 
-    for (const leave of approvedLeaveThisMonth) {
+    const approvedBlockingLeaveThisMonth = approvedLeaveThisMonth.filter(
+      (leave) => !["overtime", "lembur"].includes(
+        String(leave.leave_type || "").toLowerCase(),
+      ),
+    );
+
+    for (const leave of approvedBlockingLeaveThisMonth) {
       const startDate = normalizeDate(leave.start_date);
       const endDate = normalizeDate(leave.end_date);
 
@@ -500,7 +458,7 @@ export async function GET(req: NextRequest) {
           .filter((record) => Boolean(record.check_in_time))
           .map((record) => record.user.id),
       );
-      const leaveEmployees = approvedLeaveThisMonth
+      const leaveEmployees = approvedBlockingLeaveThisMonth
         .filter((leave) => {
           const startKey = formatDateKey(normalizeDate(leave.start_date));
           const endKey = formatDateKey(normalizeDate(leave.end_date));
@@ -558,6 +516,29 @@ export async function GET(req: NextRequest) {
       };
     });
 
+    const monthlyPresent = dailyChart.reduce(
+      (sum, point) => sum + point.present,
+      0,
+    );
+    const monthlyOffice = dailyChart.reduce(
+      (sum, point) => sum + point.office,
+      0,
+    );
+    const monthlyLate = dailyChart.reduce((sum, point) => sum + point.late, 0);
+    const monthlyWfh = dailyChart.reduce((sum, point) => sum + point.wfh, 0);
+    const monthlyVisit = dailyChart.reduce(
+      (sum, point) => sum + point.visit,
+      0,
+    );
+    const monthlyCuti = dailyChart.reduce((sum, point) => sum + point.cuti, 0);
+    const monthlyPending = dailyChart.reduce(
+      (sum, point) => sum + point.pending,
+      0,
+    );
+    const monthlyBase = Math.max(totalActiveEmployees * chartDaysInMonth, 1);
+    const monthPercent = (value: number) =>
+      Math.round((value / monthlyBase) * 100);
+
     const alerts = todayRecords
       .filter(
         (record) =>
@@ -573,7 +554,7 @@ export async function GET(req: NextRequest) {
         checkIn: formatTime(record.check_in_time),
       }));
 
-    const lateReasons = todayRecords
+    const lateReasons = monthRecords
       .filter(
         (record) =>
           isLateOfficeRecord(record) ||
@@ -589,17 +570,6 @@ export async function GET(req: NextRequest) {
         reason: record.late_reason || "Belum ada alasan",
       }));
 
-    const monthOffice = monthRecords.filter((record) => isOfficeRecord(record)).length;
-    const monthWfh = monthRecords.filter((record) => isWfhRecord(record)).length;
-    const monthVisit = monthRecords.filter((record) => isVisitRecord(record)).length;
-    const monthPresent = monthRecords.filter((record) => isAttendanceRecord(record)).length;
-    const monthLate = monthRecords.filter((record) => isLateOfficeRecord(record)).length;
-
-    let monthCuti = 0;
-    for (const point of dailyChart) {
-      monthCuti += point.cuti;
-    }
-
     return NextResponse.json({
       month,
       year,
@@ -607,29 +577,24 @@ export async function GET(req: NextRequest) {
       generatedAt: new Date().toISOString(),
       summary: {
         activeEmployees: totalActiveEmployees,
-        todayRecords: isSelectedCurrentMonth ? todayRecords.length : 0,
+        periodDays: chartDaysInMonth,
+        monthlyBase,
+        todayRecords: monthRecords.length,
 
-        present: monthPresent,
-        office: monthOffice,
-        late: monthLate,
-        wfh: monthWfh,
-        visit: monthVisit,
-        cuti: monthCuti,
-        pending: todayPending,
+        present: monthlyPresent,
+        office: monthlyOffice,
+        late: monthlyLate,
+        wfh: monthlyWfh,
+        visit: monthlyVisit,
+        cuti: monthlyCuti,
+        pending: monthlyPending,
 
-        todayPresent,
-        todayOffice,
-        todayLate,
-        todayWfh,
-        todayVisit,
-        todayCuti,
-
-        presentPercentage: dayPercent(todayPresent),
-        latePercentage: dayPercent(todayLate),
-        wfhPercentage: dayPercent(todayWfh),
-        visitPercentage: dayPercent(todayVisit),
-        cutiPercentage: dayPercent(todayCuti),
-        pendingPercentage: dayPercent(todayPending),
+        presentPercentage: monthPercent(monthlyPresent),
+        latePercentage: monthPercent(monthlyLate),
+        wfhPercentage: monthPercent(monthlyWfh),
+        visitPercentage: monthPercent(monthlyVisit),
+        cutiPercentage: monthPercent(monthlyCuti),
+        pendingPercentage: monthPercent(monthlyPending),
 
         totalLateMinutesMonth,
         totalWorkMinutesMonth,

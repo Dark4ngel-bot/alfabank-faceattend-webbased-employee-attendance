@@ -54,6 +54,9 @@ export async function findActiveLeaveForDate(params: {
       status: {
         in: ["pending", "approved"],
       },
+      leave_type: {
+        notIn: ["overtime", "lembur"],
+      },
       start_date: {
         lte: params.date,
       },

@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  ArrowLeftRight,
   BarChart3,
   Bell,
   Building2,
@@ -22,6 +21,7 @@ import {
   Megaphone,
   Menu,
   Network,
+  Palette,
   PhoneCall,
   Settings,
   Trophy,
@@ -32,11 +32,6 @@ import {
 } from "lucide-react";
 
 import { useSiteLogo } from "@/hooks/useSiteLogo";
-import {
-  getReadAnnouncementIds,
-  getReadNotificationIds,
-  isAnnouncementToday,
-} from "@/lib/announcement-read";
 
 type AppHeaderProps = {
   title: string;
@@ -61,13 +56,6 @@ type NotificationResponse = {
   success?: boolean;
   stats?: NotificationStats;
   message?: string;
-  notifications?: Array<{
-    id: string;
-    rawId?: string;
-    type?: string;
-    isRead?: boolean;
-    status?: string;
-  }>;
 };
 
 type AdminContactNumberResponse = {
@@ -81,7 +69,6 @@ type AdminContactNumberResponse = {
 const employeeNav = [
   { href: "/beranda", label: "Beranda", icon: Home },
   { href: "/presensi", label: "Presensi", icon: CalendarCheck },
-  { href: "/tukar-shift", label: "Tukar Shift", icon: ArrowLeftRight },
   { href: "/pengumuman", label: "Pengumuman", icon: Megaphone },
   { href: "/history", label: "Riwayat", icon: History },
   { href: "/cuti", label: "Cuti", icon: CalendarDays },
@@ -180,6 +167,11 @@ const operationalMenus = [
     label: "Logo Aplikasi",
     icon: Settings,
   },
+  {
+    href: "/admin/warna-aplikasi",
+    label: "Warna Aplikasi",
+    icon: Palette,
+  },
 ];
 
 const WHATSAPP_LINK = "https://wa.me/6282123459565";
@@ -259,10 +251,7 @@ export default function AppHeader({
   }, [pathname, variant]);
 
   const isAdmin = resolvedVariant === "admin";
-  const [pendingShiftSwapCount, setPendingShiftSwapCount] = useState(0);
-
   const notificationHref = isAdmin ? "/admin/notifikasi" : "/notifikasi";
-
   const isNotificationPage = isActivePath(pathname, notificationHref);
   const hasNewNotification = notificationCount > 0;
 
@@ -291,52 +280,26 @@ export default function AppHeader({
 
     async function loadNotificationCount() {
       try {
-        let count = 0;
+        const endpoint = isAdmin
+          ? "/api/admin/notifications"
+          : "/api/notifications";
 
-        if (isAdmin) {
-          const response = await fetch("/api/admin/notifications", {
-            method: "GET",
-            cache: "no-store",
-          });
+        const response = await fetch(endpoint, {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+        });
 
-          if (response.ok) {
-            const data = (await readJsonResponse(response)) as NotificationResponse;
-            count = getAdminNotificationCount(data.stats);
-          }
-        } else {
-          const response = await fetch("/api/notifications", {
-            method: "GET",
-            cache: "no-store",
-          });
-
-          if (response.ok) {
-            const data = (await readJsonResponse(response)) as NotificationResponse;
-            const list = data.notifications || [];
-            const readAnnIds = getReadAnnouncementIds();
-            const readNotifIds = getReadNotificationIds();
-
-            const unreadItems = list.filter((item: any) => {
-              const itemId = item.rawId || item.id;
-              const cleanId = String(itemId).replace("announcement-", "").replace("swap-", "");
-
-              if (
-                readAnnIds.includes(cleanId) ||
-                readNotifIds.includes(cleanId) ||
-                readNotifIds.includes(item.id)
-              ) {
-                return false;
-              }
-
-              if (item.type === "announcement") {
-                return true;
-              }
-
-              return !item.isRead;
-            });
-
-            count = unreadItems.length;
-          }
+        if (!response.ok) {
+          if (isMounted) setNotificationCount(0);
+          return;
         }
+
+        const data = (await readJsonResponse(response)) as NotificationResponse;
+
+        const count = isAdmin
+          ? getAdminNotificationCount(data.stats)
+          : getEmployeeNotificationCount(data.stats);
 
         if (isMounted) {
           setNotificationCount(count);
@@ -350,23 +313,12 @@ export default function AppHeader({
 
     void loadNotificationCount();
 
-    function handleCountChange() {
-      void loadNotificationCount();
-    }
-
-    window.addEventListener("notification-count-changed", handleCountChange);
-    window.addEventListener("storage", handleCountChange);
-    window.addEventListener("focus", handleCountChange);
-
     const intervalId = window.setInterval(() => {
       void loadNotificationCount();
-    }, 2000);
+    }, 30000);
 
     return () => {
       isMounted = false;
-      window.removeEventListener("notification-count-changed", handleCountChange);
-      window.removeEventListener("storage", handleCountChange);
-      window.removeEventListener("focus", handleCountChange);
       window.clearInterval(intervalId);
     };
   }, [isAdmin, pathname]);
@@ -379,6 +331,7 @@ export default function AppHeader({
         const response = await fetch("/api/admin-contact-number", {
           method: "GET",
           cache: "no-store",
+          credentials: "same-origin",
         });
 
         if (!response.ok) {
@@ -386,8 +339,9 @@ export default function AppHeader({
           return;
         }
 
-        const data =
-          (await readJsonResponse(response)) as AdminContactNumberResponse;
+        const data = (await readJsonResponse(
+          response,
+        )) as AdminContactNumberResponse;
 
         if (isMounted) {
           setWhatsappLink(getWhatsappLink(data.number?.phone_number));
@@ -429,71 +383,72 @@ export default function AppHeader({
       await fetch("/api/auth/logout", {
         method: "POST",
         cache: "no-store",
+        credentials: "same-origin",
       });
     } finally {
       window.localStorage.removeItem("presensi_read_announcement_id");
       window.sessionStorage.clear();
       router.replace("/login");
-      router.refresh();
     }
   }
 
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-40 overflow-hidden border-b px-3.5 py-3 backdrop-blur-2xl transition-all duration-300 sm:px-6 md:px-10 lg:px-16 ${hasScrolled
-            ? "border-red-100/80 bg-white/95 shadow-lg shadow-slate-300/30"
+        className={`fixed inset-x-0 top-0 z-40 overflow-hidden border-b px-5 py-4 backdrop-blur-2xl transition-all duration-300 md:px-10 lg:px-16 ${
+          hasScrolled
+            ? "border-blue-100/80 bg-white/95 shadow-lg shadow-slate-300/30"
             : "border-white/60 bg-white/90 shadow-sm shadow-slate-200/40"
-          }`}
+        }`}
       >
-        <div className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-2.5 sm:gap-4">
-          <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-4">
+        <div className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
             <button
               type="button"
               onClick={() => setIsSidebarOpen(true)}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-800 shadow-md shadow-slate-200/70 ring-1 ring-slate-200 transition hover:bg-slate-200 active:scale-[0.96] sm:h-12 sm:w-12"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] shadow-lg shadow-slate-200/70 ring-1 ring-blue-100 transition hover:bg-blue-50 active:scale-[0.96]"
               aria-label="Buka menu"
             >
-              <Menu size={22} strokeWidth={3} className="sm:hidden" />
-              <Menu size={25} strokeWidth={3} className="hidden sm:block" />
+              <Menu size={25} strokeWidth={3} />
             </button>
 
-            <div className="min-w-0 flex-1">
-              <h1 className="mt-0.5 text-base font-black tracking-tight text-slate-950 sm:text-xl md:text-2xl lg:text-3xl leading-snug break-words">
+            <div className="min-w-0">
+              <h1 className="mt-1 truncate text-2xl font-black tracking-tight text-slate-950 md:text-2xl lg:text-3xl">
                 {title}
               </h1>
 
               {subtitle ? (
-                <p className="mt-0.5 line-clamp-1 max-w-xl text-xs font-semibold leading-4 text-slate-500 sm:text-sm sm:leading-5">
+                <p className="mt-1 line-clamp-1 max-w-xl text-sm font-semibold leading-5 text-slate-500">
                   {subtitle}
                 </p>
               ) : null}
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
+          <div className="flex shrink-0 items-center justify-end gap-3">
             <a
               href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Hubungi via WhatsApp"
-              className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-[#ecfff5] text-[#00a884] shadow-sm ring-1 ring-[#baf7dc] transition hover:bg-[#dcfce7] active:scale-[0.96] sm:h-12 sm:w-12"
+              className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ecfff5] text-[#00a884] shadow-sm ring-1 ring-[#baf7dc] transition hover:bg-[#dcfce7] active:scale-[0.96]"
             >
-              <PhoneCall className="h-4.5 w-4.5 sm:h-5 sm:w-5" strokeWidth={2.7} />
+              <PhoneCall className="h-5 w-5" strokeWidth={2.7} />
             </a>
 
             <Link
               href={notificationHref}
-              className={`relative hidden h-12 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-black shadow-sm ring-1 transition active:scale-[0.96] sm:inline-flex ${isNotificationPage
-                  ? "bg-slate-100 text-slate-950 ring-2 ring-slate-950 shadow-md"
-                  : "bg-white text-slate-800 ring-slate-200 hover:bg-slate-100 hover:text-slate-950"
-                }`}
+              className={`relative hidden h-12 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-black shadow-sm ring-1 transition active:scale-[0.96] sm:inline-flex ${
+                isNotificationPage
+                  ? "bg-[#123c8c] text-white ring-[#123c8c] shadow-lg shadow-blue-900/20"
+                  : "bg-white text-[#123c8c] ring-blue-100 hover:bg-[#eaf1ff]"
+              }`}
             >
               <span className="relative">
                 <Bell size={20} strokeWidth={2.7} />
 
                 {hasNewNotification ? (
-                  <span className="absolute -right-2.5 -top-2.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white shadow-md animate-pulse">
+                  <span className="absolute -right-2 -top-2 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white">
                     {formatNotificationCount(notificationCount)}
                   </span>
                 ) : null}
@@ -503,25 +458,26 @@ export default function AppHeader({
             <Link
               href={notificationHref}
               aria-label="Buka notifikasi"
-              className={`relative flex h-10 w-10 items-center justify-center rounded-2xl shadow-sm ring-1 transition active:scale-[0.96] sm:hidden ${isNotificationPage
-                  ? "bg-slate-100 text-slate-950 ring-2 ring-slate-950"
-                  : "bg-white text-slate-800 ring-slate-200 hover:bg-slate-100 hover:text-slate-950"
-                }`}
+              className={`relative flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm ring-1 transition active:scale-[0.96] sm:hidden ${
+                isNotificationPage
+                  ? "bg-[#123c8c] text-white ring-[#123c8c]"
+                  : "bg-white text-[#123c8c] ring-blue-100 hover:bg-[#eaf1ff]"
+              }`}
             >
-              <Bell size={19} strokeWidth={2.7} />
+              <Bell size={21} strokeWidth={2.7} />
 
               {hasNewNotification ? (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white shadow-md animate-pulse">
+                <span className="absolute right-1.5 top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white">
                   {formatNotificationCount(notificationCount)}
                 </span>
               ) : null}
             </Link>
 
-            {/* Full Logo Badge Box on the far right next to Bell */}
-            <div className="relative hidden h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-4 py-2.5 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100 active:scale-[0.96] sm:flex">
+            {/* Full Creativemu Logo Badge Box on the far right next to Bell */}
+            <div className="relative hidden h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-4 py-2.5 shadow-sm ring-1 ring-blue-100/90 transition hover:bg-[#eaf1ff] active:scale-[0.96] sm:flex">
               <Image
                 src={logoSrc}
-                alt="Logo Alfabank"
+                alt="Logo AlfaBank"
                 width={140}
                 height={35}
                 className="h-full w-auto object-contain object-center"
@@ -529,7 +485,7 @@ export default function AppHeader({
             </div>
 
             {rightLabel ? (
-              <span className="hidden rounded-2xl bg-white px-4 py-2 text-xs font-black text-slate-600 shadow-sm ring-1 ring-slate-200 md:inline-flex">
+              <span className="hidden rounded-2xl bg-white px-4 py-2 text-xs font-black text-slate-600 shadow-sm ring-1 ring-blue-100 md:inline-flex">
                 {rightLabel}
               </span>
             ) : null}
@@ -544,21 +500,22 @@ export default function AppHeader({
           type="button"
           aria-label="Tutup menu"
           onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 z-50 bg-slate-900/10 backdrop-blur-md transition-all duration-300"
+          className="fixed inset-0 z-50 bg-transparent"
         />
       ) : null}
 
       <aside
-        className={`fixed left-0 top-0 z-[60] h-dvh w-[82vw] max-w-80 border-r border-slate-200 bg-white shadow-2xl shadow-slate-950/20 transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+        className={`fixed left-0 top-0 z-[60] h-dvh w-[82vw] max-w-80 border-r border-blue-100 bg-white shadow-2xl shadow-slate-950/20 transition-transform duration-300 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-5">
+          <div className="flex items-center justify-between gap-3 border-b border-blue-50 px-5 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-slate-300/50 ring-1 ring-slate-200">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-slate-300/50 ring-1 ring-blue-100">
                 <Image
                   src={logoSrc}
-                  alt="Alfabank Logo"
+                  alt="Logo AlfaBank"
                   width={64}
                   height={59}
                   className="h-full w-full object-contain"
@@ -567,8 +524,8 @@ export default function AppHeader({
               </div>
 
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-800">
-                  Alfabank
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c]">
+                  AlfaBank
                 </p>
 
                 <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">
@@ -590,6 +547,9 @@ export default function AppHeader({
           <div className="flex-1 overflow-y-auto px-4 py-5">
             {isAdmin ? (
               <>
+                <p className="px-3 text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
+                  Menu Utama
+                </p>
 
                 <nav className="mt-3 space-y-2">
                   {adminMenus.map((menu) => {
@@ -601,10 +561,11 @@ export default function AppHeader({
                         key={menu.href}
                         type="button"
                         onClick={() => handleNavigate(menu.href)}
-                        className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${active
-                            ? "bg-[#b91c1c] text-white shadow-lg shadow-red-950/20"
-                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
-                          }`}
+                        className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${
+                          active
+                            ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
+                            : "text-slate-600 hover:bg-[#eaf1ff] hover:text-[#123c8c]"
+                        }`}
                       >
                         <Icon size={18} strokeWidth={2.5} />
                         {menu.label}
@@ -614,12 +575,12 @@ export default function AppHeader({
                 </nav>
 
                 <div className="mt-6">
-                  <div className="flex items-center gap-3 rounded-2xl bg-slate-100 px-4 py-3 text-sm font-black text-slate-900">
+                  <div className="flex items-center gap-3 rounded-2xl bg-[#f6f8ff] px-4 py-3 text-sm font-black text-[#123c8c]">
                     <Settings size={18} strokeWidth={2.5} />
                     Master Data
                   </div>
 
-                  <div className="mt-2 space-y-1 border-l-2 border-slate-200 pl-4">
+                  <div className="mt-2 space-y-1 border-l-2 border-blue-100 pl-4">
                     {masterDataMenus.map((menu) => {
                       const Icon = menu.icon;
                       const active = isActivePath(pathname, menu.href);
@@ -629,10 +590,11 @@ export default function AppHeader({
                           key={menu.href}
                           type="button"
                           onClick={() => handleNavigate(menu.href)}
-                          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold transition ${active
-                              ? "bg-slate-100 text-slate-950 font-black"
-                              : "text-slate-500 hover:bg-slate-50 hover:text-slate-950"
-                            }`}
+                          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold transition ${
+                            active
+                              ? "bg-[#eaf1ff] text-[#123c8c]"
+                              : "text-slate-500 hover:bg-slate-50 hover:text-[#123c8c]"
+                          }`}
                         >
                           <Icon size={15} strokeWidth={2.5} />
                           {menu.label}
@@ -657,10 +619,11 @@ export default function AppHeader({
                           key={menu.href}
                           type="button"
                           onClick={() => handleNavigate(menu.href)}
-                          className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${active
-                              ? "bg-[#b91c1c] text-white shadow-lg shadow-red-950/20"
-                              : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
-                            }`}
+                          className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${
+                            active
+                              ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
+                              : "text-slate-600 hover:bg-[#eaf1ff] hover:text-[#123c8c]"
+                          }`}
                         >
                           <Icon size={18} strokeWidth={2.5} />
                           {menu.label}
@@ -672,7 +635,11 @@ export default function AppHeader({
               </>
             ) : (
               <>
-                <nav className="space-y-2">
+                <p className="px-3 text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
+                  Menu Karyawan
+                </p>
+
+                <nav className="mt-3 space-y-2">
                   {employeeNav.map((menu) => {
                     const Icon = menu.icon;
                     const active = isActivePath(pathname, menu.href);
@@ -682,10 +649,11 @@ export default function AppHeader({
                         key={menu.href}
                         type="button"
                         onClick={() => handleNavigate(menu.href)}
-                        className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${active
-                            ? "bg-[#b91c1c] text-white shadow-lg shadow-red-950/20"
-                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
-                          }`}
+                        className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${
+                          active
+                            ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
+                            : "text-slate-600 hover:bg-[#eaf1ff] hover:text-[#123c8c]"
+                        }`}
                       >
                         <Icon size={18} strokeWidth={2.5} />
                         {menu.label}
@@ -698,7 +666,7 @@ export default function AppHeader({
           </div>
 
           {isAdmin ? (
-            <div className="border-t border-red-50 p-4">
+            <div className="border-t border-blue-50 p-4">
               <button
                 type="button"
                 onClick={handleLogout}

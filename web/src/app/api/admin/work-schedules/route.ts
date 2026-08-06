@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/api-auth";
+import type { Prisma } from "@/generated/prisma/client";
 
 export const runtime = "nodejs";
 
@@ -56,8 +57,8 @@ function getDefaultTimeByShift(shiftName: string) {
 
   if (name.includes("PAGI")) {
     return {
-      checkIn: "07:30",
-      checkOut: "15:30",
+      checkIn: "07:00",
+      checkOut: "15:00",
     };
   }
 
@@ -106,15 +107,17 @@ function getCurrentUser(req: NextRequest) {
 }
 
 async function ensureDefaultShifts() {
-  for (const shift of defaultShifts) {
-    await prisma.shift.upsert({
-      where: {
-        name: shift.name,
-      },
-      update: {},
-      create: shift,
-    });
-  }
+  await Promise.all(
+    defaultShifts.map((shift) =>
+      prisma.shift.upsert({
+        where: {
+          name: shift.name,
+        },
+        update: {},
+        create: shift,
+      }),
+    ),
+  );
 }
 
 async function ensureDefaultWorkSchedules() {
@@ -125,30 +128,36 @@ async function ensureDefaultWorkSchedules() {
     },
   });
 
+  const operations: Prisma.PrismaPromise<unknown>[] = [];
+
   for (const shift of shifts) {
     const defaultTime = getDefaultTimeByShift(shift.name);
 
     for (const day of dayOrder) {
       const isWeekend = day === "SATURDAY" || day === "SUNDAY";
 
-      await prisma.workSchedule.upsert({
-        where: {
-          shift_id_day_of_week: {
+      operations.push(
+        prisma.workSchedule.upsert({
+          where: {
+            shift_id_day_of_week: {
+              shift_id: shift.id,
+              day_of_week: day,
+            },
+          },
+          update: {},
+          create: {
             shift_id: shift.id,
             day_of_week: day,
+            is_work_day: !isWeekend,
+            check_in_time: defaultTime.checkIn,
+            check_out_time: defaultTime.checkOut,
           },
-        },
-        update: {},
-        create: {
-          shift_id: shift.id,
-          day_of_week: day,
-          is_work_day: !isWeekend,
-          check_in_time: defaultTime.checkIn,
-          check_out_time: defaultTime.checkOut,
-        },
-      });
+        }),
+      );
     }
   }
+
+  await Promise.all(operations);
 }
 
 export async function GET(req: NextRequest) {
@@ -236,7 +245,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const operations: any[] = [];
+    const operations: Prisma.PrismaPromise<unknown>[] = [];
 
     for (const scheduleGroup of schedules) {
       const shiftId = String(scheduleGroup.shift_id || "");
@@ -316,28 +325,32 @@ export async function PATCH(req: NextRequest) {
           );
         }
 
-        await prisma.workSchedule.upsert({
-          where: {
-            shift_id_day_of_week: {
+        operations.push(
+          prisma.workSchedule.upsert({
+            where: {
+              shift_id_day_of_week: {
+                shift_id: shiftId,
+                day_of_week: day.day_of_week,
+              },
+            },
+            update: {
+              is_work_day: isWorkDay,
+              check_in_time: checkInTime,
+              check_out_time: checkOutTime,
+            },
+            create: {
               shift_id: shiftId,
               day_of_week: day.day_of_week,
+              is_work_day: isWorkDay,
+              check_in_time: checkInTime,
+              check_out_time: checkOutTime,
             },
-          },
-          update: {
-            is_work_day: isWorkDay,
-            check_in_time: checkInTime,
-            check_out_time: checkOutTime,
-          },
-          create: {
-            shift_id: shiftId,
-            day_of_week: day.day_of_week,
-            is_work_day: isWorkDay,
-            check_in_time: checkInTime,
-            check_out_time: checkOutTime,
-          },
-        });
+          }),
+        );
       }
     }
+
+    await prisma.$transaction(operations);
 
     return NextResponse.json({
       message: "Jadwal kerja berhasil disimpan.",

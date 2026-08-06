@@ -1,83 +1,146 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import {
-  BadgeCheck,
-  Clock3,
-  Edit,
-  Loader2,
-  Plus,
-  Search,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Edit, Loader2, Search, X } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
-import {
-  AppButton,
-  AppEmptyState,
-  AppInput,
-  AppSelect,
-} from "@/components/ui/AppUI";
 
 type Shift = {
   id: string;
   name: string;
-  tolerance_minutes?: number;
-  start_time?: string;
-  end_time?: string;
+  tolerance_minutes: number;
   check_in_open?: string;
   check_out_open?: string;
   status: string;
   created_at?: string;
   updated_at?: string;
-  _count?: {
-    users?: number;
-    work_schedules?: number;
-  };
 };
 
 type ShiftForm = {
-  name: string;
-  status: string;
-  tolerance_minutes: number;
-  start_time: string;
-  end_time: string;
+  tolerance_minutes: string;
   check_in_open: string;
   check_out_open: string;
+  status: string;
 };
 
 const initialForm: ShiftForm = {
-  name: "",
-  status: "active",
-  tolerance_minutes: 5,
-  start_time: "08:00",
-  end_time: "17:00",
+  tolerance_minutes: "0",
   check_in_open: "07:00",
   check_out_open: "16:50",
+  status: "active",
 };
 
-const filterOptions = [
-  { value: "all", label: "Semua Status" },
-  { value: "active", label: "Status Aktif" },
-  { value: "inactive", label: "Status Nonaktif" },
+const presetShifts: Shift[] = [
+  {
+    id: "preset-utama",
+    name: "UTAMA",
+    tolerance_minutes: 3,
+    check_in_open: "07:00",
+    check_out_open: "16:50",
+    status: "active",
+  },
+  {
+    id: "preset-magang",
+    name: "MAGANG",
+    tolerance_minutes: 0,
+    check_in_open: "07:00",
+    check_out_open: "16:50",
+    status: "active",
+  },
+  {
+    id: "preset-shift-pagi",
+    name: "SHIFT PAGI",
+    tolerance_minutes: 5,
+    check_in_open: "06:30",
+    check_out_open: "15:20",
+    status: "active",
+  },
+  {
+    id: "preset-shift-siang",
+    name: "SHIFT SIANG",
+    tolerance_minutes: 5,
+    check_in_open: "11:00",
+    check_out_open: "20:50",
+    status: "active",
+  },
 ];
+
+const shiftFilterOptions = [
+  {
+    value: "all",
+    label: "Semua Shift",
+  },
+  {
+    value: "UTAMA",
+    label: "Utama",
+  },
+  {
+    value: "MAGANG",
+    label: "Magang",
+  },
+  {
+    value: "SHIFT PAGI",
+    label: "Shift Pagi",
+  },
+  {
+    value: "SHIFT SIANG",
+    label: "Shift Siang",
+  },
+  {
+    value: "active",
+    label: "Status Aktif",
+  },
+  {
+    value: "inactive",
+    label: "Status Nonaktif",
+  },
+];
+
+function sortShifts(shifts: Shift[]) {
+  const order = ["UTAMA", "MAGANG", "SHIFT PAGI", "SHIFT SIANG"];
+
+  return [...shifts].sort((a, b) => {
+    const aIndex = order.indexOf(a.name.toUpperCase());
+    const bIndex = order.indexOf(b.name.toUpperCase());
+
+    if (aIndex === -1 && bIndex === -1) {
+      return a.name.localeCompare(b.name);
+    }
+
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+
+    return aIndex - bIndex;
+  });
+}
+
+function mergePresetShifts(apiShifts: Shift[]) {
+  const merged = [...apiShifts];
+
+  for (const preset of presetShifts) {
+    const exists = merged.some(
+      (shift) => shift.name.toLowerCase() === preset.name.toLowerCase(),
+    );
+
+    if (!exists) {
+      merged.push(preset);
+    }
+  }
+
+  return sortShifts(merged);
+}
 
 function formatStatus(status: string) {
   if (status === "active") return "Aktif";
   if (status === "inactive") return "Nonaktif";
-  return status;
-}
 
-function statusClass(status: string) {
-  return status === "active"
-    ? "bg-emerald-50 text-emerald-700"
-    : "bg-slate-100 text-slate-600";
+  return status;
 }
 
 async function readJsonResponse(response: Response) {
   const text = await response.text();
+
   try {
     return text ? JSON.parse(text) : {};
   } catch {
@@ -85,41 +148,85 @@ async function readJsonResponse(response: Response) {
   }
 }
 
-function MotionStyles() {
+function ShiftMotionStyles() {
   return (
     <style>{`
-      @keyframes enter {
-        0% { opacity: 0; transform: translateY(14px); }
-        100% { opacity: 1; transform: translateY(0); }
+      @keyframes shiftEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
-      @keyframes rowEnter {
-        0% { opacity: 0; transform: translateY(10px); }
-        100% { opacity: 1; transform: translateY(0); }
+
+      @keyframes shiftRowEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
-      @keyframes backdrop {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
+
+      @keyframes shiftModalBackdrop {
+        0% {
+          opacity: 0;
+        }
+
+        100% {
+          opacity: 1;
+        }
       }
-      @keyframes panel {
-        0% { opacity: 0; transform: translateY(16px) scale(0.985); }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
+
+      @keyframes shiftModalPanel {
+        0% {
+          opacity: 0;
+          transform: translateY(16px) scale(0.985);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
       }
-      .page-enter {
-        animation: enter 320ms ease-out both;
+
+      .shift-enter {
+        animation: shiftEnter 320ms ease-out both;
       }
-      .row-enter {
+
+      .shift-row-enter {
         opacity: 0;
-        animation: rowEnter 300ms ease-out both;
+        animation: shiftRowEnter 300ms ease-out both;
       }
-      .modal-backdrop {
-        animation: backdrop 180ms ease-out both;
+
+      .shift-modal-backdrop {
+        animation: shiftModalBackdrop 180ms ease-out both;
       }
-      .modal-panel {
-        animation: panel 260ms ease-out both;
+
+      .shift-modal-panel {
+        animation: shiftModalPanel 260ms ease-out both;
         transform-origin: center bottom;
       }
+
+      .shift-field {
+        transition:
+          border-color 180ms ease,
+          background-color 180ms ease,
+          box-shadow 180ms ease;
+      }
+
       @media (prefers-reduced-motion: reduce) {
-        .page-enter, .row-enter, .modal-backdrop, .modal-panel {
+        .shift-enter,
+        .shift-row-enter,
+        .shift-modal-backdrop,
+        .shift-modal-panel {
           animation: none !important;
           opacity: 1 !important;
           transform: none !important;
@@ -130,9 +237,9 @@ function MotionStyles() {
 }
 
 export default function ShiftsPage() {
-  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [shifts, setShifts] = useState<Shift[]>(presetShifts);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [shiftFilter, setShiftFilter] = useState("all");
   const [form, setForm] = useState<ShiftForm>(initialForm);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -154,16 +261,17 @@ export default function ShiftsPage() {
       const data = await readJsonResponse(response);
 
       if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Gagal mengambil data shift.",
-        );
+        throw new Error(data.error || data.message || "Gagal mengambil shift.");
       }
 
-      setShifts(data.shifts || data.data || []);
+      const apiShifts = data.shifts || data.data || [];
+      setShifts(mergePresetShifts(apiShifts));
     } catch (error) {
       console.error("LOAD_SHIFTS_ERROR:", error);
+
+      setShifts(presetShifts);
       setErrorMessage(
-        error instanceof Error ? error.message : "Gagal mengambil data shift.",
+        "Data API shift belum terbaca. Menampilkan data default.",
       );
     } finally {
       setIsLoading(false);
@@ -177,30 +285,33 @@ export default function ShiftsPage() {
   const filteredShifts = useMemo(() => {
     const keyword = search.toLowerCase().trim();
 
-    return shifts.filter((item) => {
-      const nameMatch = item.name.toLowerCase().includes(keyword);
-      const statusMatch =
-        statusFilter === "all" || item.status === statusFilter;
-      return nameMatch && statusMatch;
+    return shifts.filter((shift) => {
+      const shiftName = shift.name.toLowerCase();
+      const shiftStatus = shift.status.toLowerCase();
+
+      if (keyword && !shiftName.includes(keyword)) {
+        return false;
+      }
+
+      if (shiftFilter === "active" || shiftFilter === "inactive") {
+        return shiftStatus === shiftFilter;
+      }
+
+      if (shiftFilter !== "all" && shiftName !== shiftFilter.toLowerCase()) {
+        return false;
+      }
+
+      return true;
     });
-  }, [shifts, search, statusFilter]);
+  }, [search, shiftFilter, shifts]);
 
-  function openAddModal() {
-    setEditingShift(null);
-    setForm(initialForm);
-    setIsModalOpen(true);
-  }
-
-  function openEditModal(item: Shift) {
-    setEditingShift(item);
+  function openEditModal(shift: Shift) {
+    setEditingShift(shift);
     setForm({
-      name: item.name,
-      status: item.status,
-      tolerance_minutes: item.tolerance_minutes ?? 5,
-      start_time: item.start_time || "08:00",
-      end_time: item.end_time || "17:00",
-      check_in_open: item.check_in_open || "07:00",
-      check_out_open: item.check_out_open || "16:50",
+      tolerance_minutes: String(shift.tolerance_minutes || 0),
+      check_in_open: shift.check_in_open || "07:00",
+      check_out_open: shift.check_out_open || "16:50",
+      status: shift.status || "active",
     });
     setIsModalOpen(true);
   }
@@ -214,129 +325,109 @@ export default function ShiftsPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const name = form.name.trim();
-    if (!name) {
-      alert("Nama shift wajib diisi.");
+    if (!editingShift) {
+      alert("Pilih shift yang ingin diedit.");
+      return;
+    }
+
+    const toleranceMinutes = Number(form.tolerance_minutes || 0);
+
+    if (Number.isNaN(toleranceMinutes) || toleranceMinutes < 0) {
+      alert("Toleransi telat tidak valid.");
+      return;
+    }
+
+    if (!["active", "inactive"].includes(form.status)) {
+      alert("Status shift tidak valid.");
+      return;
+    }
+
+    if (editingShift.id.startsWith("preset-")) {
+      setShifts((prev) =>
+        prev.map((shift) =>
+          shift.id === editingShift.id
+            ? {
+                ...shift,
+                tolerance_minutes: toleranceMinutes,
+                check_in_open: form.check_in_open,
+                check_out_open: form.check_out_open,
+                status: form.status,
+              }
+            : shift,
+        ),
+      );
+
+      closeModal();
       return;
     }
 
     try {
       setIsSubmitting(true);
 
-      const url = "/api/admin/shifts";
-      const method = editingShift ? "PATCH" : "POST";
-      const bodyPayload = {
-        ...(editingShift ? { id: editingShift.id } : {}),
-        name,
-        status: form.status,
-        tolerance_minutes: form.tolerance_minutes,
-        start_time: form.start_time,
-        end_time: form.end_time,
-        check_in_open: form.check_in_open,
-        check_out_open: form.check_out_open,
-      };
-
-      const response = await fetch(url, {
-        method,
+      const response = await fetch("/api/admin/shifts", {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(bodyPayload),
+        body: JSON.stringify({
+          id: editingShift.id,
+          tolerance_minutes: toleranceMinutes,
+          check_in_open: form.check_in_open,
+          check_out_open: form.check_out_open,
+          status: form.status,
+        }),
       });
 
       const data = await readJsonResponse(response);
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Gagal menyimpan data.");
+        throw new Error(data.error || data.message || "Gagal menyimpan shift.");
       }
 
       await loadShifts();
       closeModal();
     } catch (error) {
       console.error("SAVE_SHIFT_ERROR:", error);
-      alert(error instanceof Error ? error.message : "Gagal menyimpan data.");
+
+      alert(error instanceof Error ? error.message : "Gagal menyimpan shift.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function handleDelete(item: Shift) {
-    const confirmed = confirm(
-      `Apakah Anda yakin ingin menghapus shift "${item.name}"?`,
-    );
-
-    if (!confirmed) return;
-
-    try {
-      setIsLoading(true);
-
-      const response = await fetch(`/api/admin/shifts?id=${item.id}`, {
-        method: "DELETE",
-      });
-
-      const data = await readJsonResponse(response);
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || "Gagal menghapus data.");
-      }
-
-      await loadShifts();
-    } catch (error) {
-      console.error("DELETE_SHIFT_ERROR:", error);
-      alert(error instanceof Error ? error.message : "Gagal menghapus data.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   return (
     <MobileShell variant="admin">
-      <MotionStyles />
+      <ShiftMotionStyles />
 
-      <AppHeader title="Shift Kerja" variant="admin" />
+      <AppHeader title="Daftar Shift" variant="admin" />
 
       <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
-        <div className="page-enter rounded-[2rem] border border-white/70 bg-white/95 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl md:p-8">
+        <div className="shift-enter rounded-[2rem] border border-white/70 bg-white/95 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl md:p-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
-                SHIFT KERJA
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
+                Presensi Admin Panel
+              </p>
+
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
+                DAFTAR SHIFT
               </h1>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row md:items-center">
-              <AppButton
-                onClick={openAddModal}
-                leftIcon={<Plus size={18} />}
-                className="w-full sm:w-auto shrink-0 whitespace-nowrap"
-              >
-                Tambah Shift
-              </AppButton>
-            </div>
-          </div>
+            <div
+              className="shift-row-enter w-full md:w-72"
+              style={{ animationDelay: "70ms" }}
+            >
+              <label className="mb-2 block text-sm font-black text-slate-500">
+                Filter Shift
+              </label>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
-            <div className="relative">
-              <Search
-                size={20}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-              />
-
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Cari shift kerja..."
-                className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
-              />
-            </div>
-
-            <div>
               <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
+                value={shiftFilter}
+                onChange={(event) => setShiftFilter(event.target.value)}
+                className="shift-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
               >
-                {filterOptions.map((item) => (
+                {shiftFilterOptions.map((item) => (
                   <option key={item.value} value={item.value}>
                     {item.label}
                   </option>
@@ -345,254 +436,342 @@ export default function ShiftsPage() {
             </div>
           </div>
 
+          <div
+            className="shift-row-enter mt-8"
+            style={{ animationDelay: "110ms" }}
+          >
+            <label className="text-sm font-black text-slate-500">
+              Nama Shift
+            </label>
+
+            <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto]">
+              <div className="relative">
+                <Search
+                  size={20}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Cari nama shift..."
+                  className="shift-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                />
+              </div>
+            </div>
+          </div>
+
           {errorMessage ? (
-            <div className="mt-5 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm font-bold text-amber-700">
+            <div className="shift-row-enter mt-5 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm font-black text-amber-700">
               {errorMessage}
             </div>
           ) : null}
 
-          <div className="mt-8">
-            {isLoading ? (
-              <div className="flex min-h-[200px] flex-col items-center justify-center gap-3">
-                <Loader2 size={36} className="animate-spin text-[#b91c1c]" />
-                <p className="text-sm font-bold text-slate-500">
-                  Memuat data shift...
-                </p>
-              </div>
-            ) : filteredShifts.length === 0 ? (
-              <AppEmptyState
-                title="Tidak Ada Data"
-                description={
-                  search
-                    ? "Tidak ada shift kerja yang cocok dengan pencarian Anda."
-                    : "Belum ada data shift kerja yang ditambahkan."
-                }
-              />
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
-                {filteredShifts.map((item, index) => (
+          <div
+            className="shift-row-enter mt-8 overflow-hidden rounded-2xl border border-blue-100"
+            style={{ animationDelay: "150ms" }}
+          >
+            <div className="hidden grid-cols-[0.3fr_1.3fr_1fr_1fr_1fr_0.8fr_0.8fr] bg-[#f6f8ff] px-5 py-4 text-xs font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
+              <p>#</p>
+              <p>Shift</p>
+              <p>Toleransi Telat</p>
+              <p>Check-in Dibuka</p>
+              <p>Check-out Dibuka</p>
+              <p>Status</p>
+              <p className="text-center">Aksi</p>
+            </div>
+
+            <div className="divide-y divide-blue-50 bg-white">
+              {isLoading ? (
+                <div className="shift-row-enter px-5 py-10 text-center">
+                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#123c8c]" />
+                  <p className="mt-3 text-sm font-black text-slate-600">
+                    Mengambil data shift...
+                  </p>
+                </div>
+              ) : filteredShifts.length === 0 ? (
+                <div className="shift-row-enter px-5 py-10 text-center">
+                  <p className="font-black text-slate-700">
+                    Data shift tidak ditemukan.
+                  </p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Coba ubah filter pencarian.
+                  </p>
+                </div>
+              ) : (
+                filteredShifts.map((shift, index) => (
                   <div
-                    key={item.id}
-                    className="row-enter rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
-                    style={{ animationDelay: `${index * 40}ms` }}
+                    key={shift.id}
+                    className="shift-row-enter grid gap-4 px-4 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] md:grid-cols-[0.3fr_1.3fr_1fr_1fr_1fr_0.8fr_0.8fr] md:items-center md:px-5 md:py-6"
+                    style={{
+                      animationDelay: `${index * 55}ms`,
+                    }}
                   >
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-start justify-between gap-3 md:block">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-800">
-                          <Clock3 size={20} />
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-xs font-black text-[#123c8c] md:h-auto md:w-auto md:bg-transparent md:text-sm md:text-slate-500">
+                          {index + 1}
                         </div>
-                        <div>
-                          <h3 className="text-base font-black text-slate-800">
-                            {item.name}
-                          </h3>
-                          <div className="mt-0.5 flex items-center gap-1.5">
-                            <span
-                              className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${statusClass(item.status)}`}
-                            >
-                              {formatStatus(item.status)}
-                            </span>
-                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">
-                              {item._count?.users ?? 0} Karyawan
-                            </span>
-                          </div>
-                        </div>
+
+                        <div className="md:hidden">
+                          <p className="font-black uppercase text-slate-950">
+                            {shift.name}
+                          </p>
+                        <p className="mt-1 text-xs font-semibold text-slate-400">
+                          Toleransi {shift.tolerance_minutes || 0} menit
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-slate-400">
+                          Check-in dibuka {shift.check_in_open || "07:00"}
+                        </p>
+                      </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => openEditModal(item)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-100 hover:text-slate-950"
-                          title="Ubah"
+                      <span
+                        className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black md:hidden ${
+                          shift.status === "active"
+                            ? "bg-blue-50 text-[#123c8c]"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {formatStatus(shift.status)}
+                      </span>
+                    </div>
+
+                    <div className="hidden md:block">
+                      <p className="font-black uppercase text-slate-950">
+                        {shift.name}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 md:contents">
+                      <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-3 md:border-0 md:bg-transparent md:p-0">
+                        <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400 md:hidden">
+                          Toleransi
+                        </p>
+                        <p className="mt-1 font-black text-slate-600 md:mt-0">
+                          {shift.tolerance_minutes || 0} Menit
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-3 md:border-0 md:bg-transparent md:p-0">
+                        <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400 md:hidden">
+                          Check-in Dibuka
+                        </p>
+                        <p className="mt-1 font-black text-[#123c8c] md:mt-0">
+                          {shift.check_in_open || "07:00"}
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-3 md:border-0 md:bg-transparent md:p-0">
+                        <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400 md:hidden">
+                          Check-out Dibuka
+                        </p>
+                        <p className="mt-1 font-black text-[#123c8c] md:mt-0">
+                          {shift.check_out_open || "16:50"}
+                        </p>
+                      </div>
+
+                      <div className="hidden md:block">
+                        <span
+                          className={`w-fit rounded-full px-4 py-2 text-xs font-black ${
+                            shift.status === "active"
+                              ? "bg-blue-50 text-[#123c8c]"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
                         >
-                          <Edit size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-100 bg-rose-50/50 text-rose-600 transition hover:bg-rose-100"
-                          title="Hapus"
+                          {formatStatus(shift.status)}
+                        </span>
+                      </div>
+
+                      <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-3 md:hidden">
+                        <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
+                          Status
+                        </p>
+                        <p
+                          className={`mt-1 font-black ${
+                            shift.status === "active"
+                              ? "text-[#123c8c]"
+                              : "text-slate-600"
+                          }`}
                         >
-                          <Trash2 size={14} />
-                        </button>
+                          {formatStatus(shift.status)}
+                        </p>
                       </div>
                     </div>
 
-                    {/* Time Info - Clean rows */}
-                    <div className="mt-4 space-y-2">
-                      <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
-                        <span className="text-xs font-bold text-slate-500">Jam Kerja</span>
-                        <span className="text-sm font-black text-slate-800">
-                          {item.start_time || "08:00"} — {item.end_time || "17:00"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
-                        <span className="text-xs font-bold text-slate-500">Check-in Buka</span>
-                        <span className="text-sm font-black text-slate-900">
-                          {item.check_in_open || "07:00"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
-                        <span className="text-xs font-bold text-slate-500">Check-out Buka</span>
-                        <span className="text-sm font-black text-slate-900">
-                          {item.check_out_open || "16:50"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
-                        <span className="text-xs font-bold text-slate-500">Toleransi Telat</span>
-                        <span className="text-sm font-black text-slate-800">
-                          {item.tolerance_minutes ?? 0} menit
-                        </span>
-                      </div>
+                    <div className="md:flex md:justify-center">
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(shift)}
+                        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.97] md:h-auto md:w-fit md:rounded-xl md:border md:border-blue-100 md:bg-white md:px-4 md:py-2 md:text-xs md:text-[#123c8c] md:shadow-none md:hover:bg-[#eaf1ff]"
+                      >
+                        <Edit size={16} className="md:h-3.5 md:w-3.5" />
+                        Edit Shift
+                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                ))
+              )}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Modal Dialog Form */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="modal-backdrop absolute inset-0 bg-slate-900/60"
-            onClick={closeModal}
-          />
+      {isModalOpen && editingShift ? (
+        <div className="shift-modal-backdrop fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 px-4 pb-4 md:items-center md:pb-0">
+          <div className="shift-modal-panel max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                  Edit Shift
+                </p>
 
-          <div className="modal-panel relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[2.5rem] border border-white bg-white p-6 shadow-2xl md:p-8">
-            <button
-              onClick={closeModal}
-              className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 transition"
-            >
-              <X size={20} />
-            </button>
+                <h2 className="mt-2 text-2xl font-black text-slate-950">
+                  Edit Status & Toleransi
+                </h2>
 
-            <h2 className="text-2xl font-black text-slate-950">
-              {editingShift ? "Ubah Shift Kerja" : "Tambah Shift Kerja"}
-            </h2>
-            <p className="mt-1 text-sm font-semibold text-slate-500">
-              {editingShift
-                ? "Perbarui pengaturan shift terpilih."
-                : "Masukkan nama shift kerja baru untuk disimpan."}
-            </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Nama shift tidak dapat diubah.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeModal}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 active:scale-[0.96]"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <div>
+              <div className="shift-row-enter">
                 <label className="mb-2 block text-sm font-black text-slate-700">
-                  Nama Shift Kerja
+                  Nama Shift
                 </label>
-                <AppInput
-                  value={form.name}
-                  onChange={(event) =>
-                    setForm((prev) => ({ ...prev, name: event.target.value }))
-                  }
-                  placeholder="Contoh: Utama, Magang, Shift Pagi"
-                  required
-                />
-              </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-black text-slate-700">
-                  Status
-                </label>
-                <AppSelect
-                  value={form.status}
-                  onChange={(event) =>
-                    setForm((prev) => ({ ...prev, status: event.target.value }))
-                  }
-                >
-                  <option value="active">Aktif</option>
-                  <option value="inactive">Nonaktif</option>
-                </AppSelect>
-              </div>
-
-              <hr className="border-slate-100" />
-
-              <p className="text-xs font-black uppercase tracking-widest text-[#b91c1c]">
-                Pengaturan Waktu Absensi
-              </p>
-
-
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1.5 block text-xs font-black text-slate-600">
-                    Check-in Dibuka
-                  </label>
-                  <input
-                    type="time"
-                    value={form.check_in_open}
-                    onChange={(e) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        check_in_open: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-red-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:bg-white focus:ring-2 focus:ring-red-100"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-black text-slate-600">
-                    Check-out Dibuka
-                  </label>
-                  <input
-                    type="time"
-                    value={form.check_out_open}
-                    onChange={(e) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        check_out_open: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-red-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:bg-white focus:ring-2 focus:ring-red-100"
-                  />
+                <div className="rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-black uppercase text-slate-700">
+                  {editingShift.name}
                 </div>
               </div>
 
-              <div>
-                <label className="mb-1.5 block text-xs font-black text-slate-600">
-                  Toleransi Keterlambatan (menit)
+              <div
+                className="shift-row-enter"
+                style={{ animationDelay: "40ms" }}
+              >
+                <label className="mb-2 block text-sm font-black text-slate-700">
+                  Toleransi Telat
                 </label>
+
                 <input
                   type="number"
                   min={0}
-                  max={60}
                   value={form.tolerance_minutes}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setForm((prev) => ({
                       ...prev,
-                      tolerance_minutes: parseInt(e.target.value) || 0,
+                      tolerance_minutes: event.target.value,
                     }))
                   }
-                  className="w-full rounded-xl border border-red-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:bg-white focus:ring-2 focus:ring-red-100"
+                  placeholder="0"
+                  className="shift-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-3">
-                <AppButton
+              <div
+                className="shift-row-enter"
+                style={{ animationDelay: "80ms" }}
+              >
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-2 block text-sm font-black text-slate-700">
+                      Check-in Dibuka
+                    </label>
+
+                    <input
+                      type="time"
+                      value={form.check_in_open}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          check_in_open: event.target.value,
+                        }))
+                      }
+                      className="shift-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-black text-slate-700">
+                      Check-out Dibuka
+                    </label>
+
+                    <input
+                      type="time"
+                      value={form.check_out_open}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          check_out_open: event.target.value,
+                        }))
+                      }
+                      className="shift-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="shift-row-enter"
+                style={{ animationDelay: "120ms" }}
+              >
+                <label className="mb-2 block text-sm font-black text-slate-700">
+                  Status Shift
+                </label>
+
+                <select
+                  value={form.status}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      status: event.target.value,
+                    }))
+                  }
+                  className="shift-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                >
+                  <option value="active">Aktif</option>
+                  <option value="inactive">Nonaktif</option>
+                </select>
+
+                <p className="mt-2 text-xs font-semibold text-slate-400">
+                  Pilih Nonaktif jika shift tidak ingin digunakan sementara.
+                </p>
+              </div>
+
+              <div
+                className="shift-row-enter flex flex-col-reverse gap-3 pt-2 md:flex-row md:justify-end"
+                style={{ animationDelay: "160ms" }}
+              >
+                <button
                   type="button"
-                  variant="secondary"
                   onClick={closeModal}
-                  disabled={isSubmitting}
+                  className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-200 active:scale-[0.98]"
                 >
                   Batal
-                </AppButton>
-                <AppButton type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 size={16} className="mr-2 animate-spin" />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    "Simpan"
-                  )}
-                </AppButton>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSubmitting ? "Menyimpan..." : "Update Shift"}
+                </button>
               </div>
             </form>
           </div>
         </div>
-      )}
+      ) : null}
 
       <BottomNav variant="admin" />
     </MobileShell>
