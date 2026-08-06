@@ -474,7 +474,7 @@ function ProfileAvatar({ user, initials, size = "md" }: ProfileAvatarProps) {
 
   return (
     <div
-      className={`profile-avatar-pop flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fef2f2] font-black text-[#b91c1c] ring-4 ring-red-100 ${sizeClass}`}
+      className={`profile-avatar-pop flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 font-black text-slate-800 ring-4 ring-slate-200 ${sizeClass}`}
     >
       {photoSrc ? (
         <img
@@ -511,11 +511,11 @@ function SectionRow({
     <button
       type="button"
       onClick={onClick}
-      className={`profile-row-enter w-full transition hover:bg-[#fff5f5] active:scale-[0.99] ${isLast ? "" : "border-b border-slate-100"}`}
+      className={`profile-row-enter w-full transition hover:bg-slate-50 active:scale-[0.99] ${isLast ? "" : "border-b border-slate-100"}`}
       style={{ animationDelay: delay }}
     >
       <div className="flex w-full items-center gap-4 px-5 py-5 sm:px-6">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fef2f2] text-[#b91c1c]">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-800">
           <Icon size={24} strokeWidth={2.7} />
         </div>
 
@@ -534,7 +534,7 @@ function SectionRow({
         <ChevronRight
           size={24}
           strokeWidth={2.8}
-          className="shrink-0 text-[#b91c1c]"
+          className="shrink-0 text-slate-400"
         />
       </div>
     </button>
@@ -558,12 +558,12 @@ function DetailItem({
 }: DetailItemProps) {
   return (
     <div
-      className="profile-row-enter rounded-3xl border border-red-100 bg-white p-5 shadow-sm shadow-slate-200/40 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40 md:p-6"
+      className="profile-row-enter rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/40 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40 md:p-6"
       style={{ animationDelay: delay }}
     >
       <div className="flex items-start gap-4">
         {Icon ? (
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fef2f2] text-[#b91c1c]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-800">
             <Icon size={22} strokeWidth={2.7} />
           </div>
         ) : null}
@@ -608,7 +608,7 @@ function PasswordInput({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
-          className="profile-field w-full rounded-2xl border border-red-100 bg-[#fff5f5] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
+          className="profile-field w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-slate-900 focus:bg-white focus:ring-4 focus:ring-slate-100"
         />
 
         <button
@@ -1353,7 +1353,7 @@ export function ProfilPageContent({
               <button
                 type="button"
                 onClick={openEditProfileModal}
-                className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-red-900/20 transition hover:-translate-y-0.5 hover:bg-[#991b1b] active:scale-[0.98]"
+                className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-700 active:scale-[0.98]"
               >
                 <Pencil size={17} strokeWidth={2.7} />
                 Edit Detail
@@ -1366,9 +1366,9 @@ export function ProfilPageContent({
                 return (
                   <div
                     key={section.title}
-                    className="rounded-3xl border border-red-100/80 bg-white/90 p-5 shadow-lg shadow-red-950/5 backdrop-blur-md md:p-6"
+                    className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-lg shadow-slate-200/50 backdrop-blur-md md:p-6"
                   >
-                    <div className="mb-4 flex items-center gap-2.5 text-xs font-black uppercase tracking-wider text-[#b91c1c]">
+                    <div className="mb-4 flex items-center gap-2.5 text-xs font-black uppercase tracking-wider text-slate-800">
                       <SectionIcon size={16} strokeWidth={2.5} />
                       {section.title}
                     </div>
@@ -1393,7 +1393,7 @@ export function ProfilPageContent({
         ) : (
           <section className="profile-enter mx-auto max-w-5xl px-5 pt-5 md:px-10 md:pt-8">
             <div className="flex flex-col items-center justify-center text-center">
-              <div className="profile-avatar-pop flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#b91c1c] text-white shadow-xl shadow-red-900/30">
+              <div className="profile-avatar-pop flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-xl shadow-slate-950/20">
                 <UserRound size={30} strokeWidth={2.7} />
               </div>
 
@@ -1405,7 +1405,7 @@ export function ProfilPageContent({
             <button
               type="button"
               onClick={() => router.push("/kartu-identitas")}
-              className="profile-row-enter mt-6 flex w-full items-center gap-5 rounded-[2rem] border border-red-100 bg-white p-5 text-left shadow-xl shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/60 active:scale-[0.99] sm:p-6"
+              className="profile-row-enter mt-6 flex w-full items-center gap-5 rounded-[2rem] border border-slate-200 bg-white p-5 text-left shadow-xl shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/60 active:scale-[0.99] sm:p-6"
               style={{ animationDelay: "60ms" }}
             >
               <ProfileAvatar user={user} initials={initials} size="sm" />
@@ -1423,15 +1423,15 @@ export function ProfilPageContent({
               <ChevronRight
                 size={26}
                 strokeWidth={2.8}
-                className="shrink-0 text-[#b91c1c]"
+                className="shrink-0 text-slate-400"
               />
             </button>
 
             <div
-              className="profile-row-enter mt-5 grid grid-cols-3 overflow-hidden rounded-[1.8rem] border border-red-100 bg-white text-center shadow-xl shadow-slate-200/50"
+              className="profile-row-enter mt-5 grid grid-cols-3 overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white text-center shadow-xl shadow-slate-200/50"
               style={{ animationDelay: "85ms" }}
             >
-              <div className="flex flex-col items-center justify-center border-r border-red-50 px-4 py-4 text-center">
+              <div className="flex flex-col items-center justify-center border-r border-slate-100 px-4 py-4 text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Kuota WFH
                 </p>
@@ -1442,7 +1442,7 @@ export function ProfilPageContent({
                 </p>
               </div>
 
-              <div className="flex flex-col items-center justify-center border-r border-red-50 px-4 py-4 text-center">
+              <div className="flex flex-col items-center justify-center border-r border-slate-100 px-4 py-4 text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Terpakai
                 </p>
@@ -1455,7 +1455,7 @@ export function ProfilPageContent({
                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Sisa
                 </p>
-                <p className="mt-1 text-lg font-black text-[#b91c1c]">
+                <p className="mt-1 text-lg font-black text-slate-900">
                   {formatWfhQuota(user.wfh_quota_remaining_monthly)}
                 </p>
               </div>
@@ -1594,8 +1594,8 @@ export function ProfilPageContent({
                 className="mt-6 space-y-5"
               >
                 {/* GRUP 1: INFORMASI UTAMA */}
-                <div className="rounded-2xl border border-red-100 bg-[#fff5f5] p-4 space-y-4">
-                  <div className="text-xs font-black uppercase tracking-wider text-[#b91c1c] flex items-center gap-2">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-4">
+                  <div className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
                     <UserRound size={15} />
                     Informasi Utama & Foto Profil
                   </div>
@@ -1604,12 +1604,12 @@ export function ProfilPageContent({
                     <label className="mb-2 block text-xs font-black text-slate-700">
                       Foto Profil
                     </label>
-                    <div className="flex items-center gap-4 rounded-2xl border border-red-100 bg-white p-3">
+                    <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-3">
                       {user ? (
                         <ProfileAvatar user={user} initials={initials} size="sm" />
                       ) : null}
                       <div className="min-w-0 flex-1">
-                        <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#b91c1c] px-4 py-2.5 text-xs font-black text-white transition hover:bg-[#991b1b] active:scale-[0.97]">
+                        <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black text-white transition hover:bg-emerald-700 active:scale-[0.97]">
                           {isUploadingPhoto ? (
                             <>
                               <Loader2 size={15} className="animate-spin" />
@@ -1844,7 +1844,7 @@ export function ProfilPageContent({
                   <button
                     type="submit"
                     disabled={isUpdatingProfile}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 py-3 text-sm font-black text-white transition hover:bg-[#991b1b] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isUpdatingProfile ? (
                       <>
@@ -1947,7 +1947,7 @@ export function ProfilPageContent({
                   <button
                     type="submit"
                     disabled={isChangingPassword}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 py-3 text-sm font-black text-white transition hover:bg-[#991b1b] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isChangingPassword ? (
                       <>

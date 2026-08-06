@@ -194,7 +194,7 @@ export default function AnnouncementPage() {
         <AppHeader title="Pengumuman" rightLabel="Info" variant="employee" />
       </div>
 
-      <main className="min-h-dvh bg-gradient-to-br from-[#fff5f5] via-white to-[#fef2f2] pb-[calc(8rem+env(safe-area-inset-bottom))] text-slate-950 md:pb-28">
+      <main className="min-h-dvh bg-gradient-to-br from-slate-50 via-white to-slate-100 pb-[calc(8rem+env(safe-area-inset-bottom))] text-slate-950 md:pb-28">
         <section className="mx-auto max-w-5xl px-5 pt-7 md:hidden">
           <div className="announcement-enter relative overflow-hidden rounded-[2rem] bg-[#b91c1c] p-5 text-white shadow-xl shadow-red-900/20">
             <div className="relative z-10 flex items-center gap-3">

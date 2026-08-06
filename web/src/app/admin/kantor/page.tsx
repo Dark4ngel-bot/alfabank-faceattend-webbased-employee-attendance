@@ -235,7 +235,7 @@ function OfficeCard({
     >
       <div className="flex w-full max-w-full flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="flex w-full min-w-0 gap-3 md:gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-800">
             <Building2 size={24} strokeWidth={2.6} />
           </div>
 
@@ -253,7 +253,7 @@ function OfficeCard({
             </p>
 
             <div className="mt-4 grid w-full max-w-full gap-2 text-sm font-bold text-slate-500 md:grid-cols-3">
-              <div className="min-w-0 rounded-2xl bg-[#fef2f2] p-3">
+              <div className="min-w-0 rounded-2xl bg-slate-50 p-3">
                 <p className="break-words text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Latitude
                 </p>
@@ -263,7 +263,7 @@ function OfficeCard({
                 </p>
               </div>
 
-              <div className="min-w-0 rounded-2xl bg-[#fef2f2] p-3">
+              <div className="min-w-0 rounded-2xl bg-slate-50 p-3">
                 <p className="break-words text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Longitude
                 </p>
@@ -273,7 +273,7 @@ function OfficeCard({
                 </p>
               </div>
 
-              <div className="min-w-0 rounded-2xl bg-[#fef2f2] p-3">
+              <div className="min-w-0 rounded-2xl bg-slate-50 p-3">
                 <p className="break-words text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Radius
                 </p>
@@ -288,7 +288,7 @@ function OfficeCard({
               href={`https://www.google.com/maps?q=${office.latitude},${office.longitude}`}
               target="_blank"
               rel="noreferrer"
-              className="mt-4 inline-flex max-w-full items-center justify-center gap-2 rounded-2xl bg-[#f6f8ff] px-4 py-2 text-xs font-black text-[#b91c1c] ring-1 ring-red-100 transition hover:bg-[#fee2e2] active:scale-[0.98]"
+              className="mt-4 inline-flex max-w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 px-4 py-2 text-xs font-black text-slate-800 ring-1 ring-slate-200 transition hover:bg-slate-200 active:scale-[0.98]"
             >
               <MapPin size={15} className="shrink-0" strokeWidth={2.7} />
               <span className="truncate">Buka Maps</span>
@@ -300,7 +300,7 @@ function OfficeCard({
           <button
             type="button"
             onClick={() => onEdit(office)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-[#b91c1c] transition hover:bg-[#fee2e2] active:scale-95"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 transition hover:bg-slate-200 hover:text-slate-950 active:scale-95"
             aria-label="Ubah kantor"
           >
             <Edit3 size={18} strokeWidth={2.6} />
@@ -341,7 +341,7 @@ function OfficeFormPanel({
     <AppCard className="office-enter h-fit w-full max-w-full overflow-hidden rounded-[2rem] border-white/80 bg-white p-5 shadow-2xl shadow-slate-300/30 md:overflow-visible md:p-6">
       <div className="flex min-w-0 items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <p className="break-words text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
+          <p className="break-words text-xs font-black uppercase tracking-[0.22em] text-slate-900">
             {editingOffice ? "Edit Kantor" : "Tambah Kantor"}
           </p>
 
@@ -370,7 +370,7 @@ function OfficeFormPanel({
             value={form.name}
             onChange={(event) => onChange("name", event.target.value)}
             placeholder="Contoh: Creativemu Academy"
-            className="office-field focus:ring-4 focus:ring-red-100"
+            className="office-field focus:ring-4 focus:ring-slate-100"
           />
         </div>
 
@@ -380,12 +380,12 @@ function OfficeFormPanel({
             value={form.address}
             onChange={(event) => onChange("address", event.target.value)}
             placeholder="Contoh: Jogja"
-            className="office-field min-h-28 focus:ring-4 focus:ring-red-100"
+            className="office-field min-h-28 focus:ring-4 focus:ring-slate-100"
           />
         </div>
 
         <div
-          className="office-row-enter w-full max-w-full overflow-hidden rounded-[1.7rem] border border-red-100 bg-[#fef2f2] p-4"
+          className="office-row-enter w-full max-w-full overflow-hidden rounded-[1.7rem] border border-slate-200 bg-slate-50 p-4"
           style={{ animationDelay: "100ms" }}
         >
           <AppTextarea
@@ -718,7 +718,7 @@ export default function AdminOfficePage() {
 
             <div className="w-full max-w-full space-y-5 overflow-hidden md:overflow-visible">
               <div
-                className="office-enter w-full max-w-full overflow-hidden rounded-[2rem] bg-[#b91c1c] p-5 text-white shadow-2xl shadow-red-950/20 md:p-8"
+                className="office-enter w-full max-w-full overflow-hidden rounded-[2rem] bg-[#b91c1c] bg-gradient-to-br from-[#b91c1c] via-[#a81818] to-[#7f1d1d] p-5 text-white shadow-2xl shadow-red-950/25 md:p-8"
                 style={{ animationDelay: "80ms" }}
               >
                 <div className="flex min-w-0 flex-col gap-5 md:flex-row md:items-center md:justify-between">

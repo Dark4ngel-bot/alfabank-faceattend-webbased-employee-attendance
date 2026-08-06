@@ -299,7 +299,7 @@ export default function AdminContactNumbersPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -415,7 +415,7 @@ export default function AdminContactNumbersPage() {
                                   phone_number: editingPhoneNumber,
                                 })
                               }
-                              className="inline-flex items-center gap-2 rounded-xl bg-[#b91c1c] px-3 py-2 text-xs font-black text-white transition active:scale-[0.97] disabled:opacity-60"
+                              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white transition hover:bg-slate-800 active:scale-[0.97] disabled:opacity-60"
                             >
                               <Save size={15} strokeWidth={2.7} />
                               Simpan

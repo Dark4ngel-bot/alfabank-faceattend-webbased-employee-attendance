@@ -169,7 +169,7 @@ function EmployeeProfileAvatar({ item }: { item: RecentAttendance }) {
 
   if (profilePhoto && !imageError) {
     return (
-      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-[#fee2e2] ring-1 ring-red-100 md:h-11 md:w-11">
+      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 md:h-11 md:w-11">
         <img
           src={profilePhoto}
           alt={`Foto profil ${item.name}`}
@@ -181,7 +181,7 @@ function EmployeeProfileAvatar({ item }: { item: RecentAttendance }) {
   }
 
   return (
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-sm font-black text-[#b91c1c] ring-1 ring-red-100 md:h-11 md:w-11">
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-sm font-black text-slate-800 ring-1 ring-slate-200 md:h-11 md:w-11">
       {getInitialName(item.name) || <UserRound size={22} strokeWidth={2.6} />}
     </div>
   );
@@ -441,7 +441,7 @@ export default function AdminDashboardPage() {
       <AppHeader title="Admin Dasbor" variant="admin" />
 
       <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
-        <div className="dashboard-enter overflow-hidden rounded-3xl border border-red-100 bg-white shadow-xl shadow-slate-300/30">
+        <div className="dashboard-enter overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-300/30">
           <div className="grid gap-0 lg:grid-cols-[1fr_1fr]">
             <div className="bg-[#b91c1c] p-6 text-white md:p-8">
               <div className="flex items-center gap-3">
@@ -477,14 +477,14 @@ export default function AdminDashboardPage() {
                       <Icon
                         size={20}
                         strokeWidth={2.5}
-                        className="text-[#b91c1c]"
+                        className={item.label === "Terlambat" ? "text-[#b91c1c]" : "text-slate-700"}
                       />
                     </div>
 
                     {isLoading ? (
-                      <div className="mt-4 h-8 w-16 animate-pulse rounded-xl bg-red-100" />
+                      <div className="mt-4 h-8 w-16 animate-pulse rounded-xl bg-slate-200" />
                     ) : (
-                      <h3 className="mt-3 text-3xl font-black text-[#b91c1c]">
+                      <h3 className={`mt-3 text-3xl font-black ${item.label === "Terlambat" ? "text-[#b91c1c]" : "text-slate-950"}`}>
                         {item.value}
                       </h3>
                     )}
@@ -565,21 +565,21 @@ export default function AdminDashboardPage() {
                       </Link>
 
                       <div className="grid grid-cols-3 gap-2 text-xs font-bold text-slate-500 md:w-[320px] md:shrink-0">
-                        <div className="rounded-2xl border border-red-100 bg-[#fef2f2] px-3.5 py-2.5">
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2.5">
                           <p className="text-[11px] font-bold text-slate-400">Masuk</p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
                             {formatTime(item.checkInTime)}
                           </p>
                         </div>
 
-                        <div className="rounded-2xl border border-red-100 bg-[#fef2f2] px-3.5 py-2.5">
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2.5">
                           <p className="text-[11px] font-bold text-slate-400">Keluar</p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
                             {formatTime(item.checkOutTime)}
                           </p>
                         </div>
 
-                        <div className="rounded-2xl border border-red-100 bg-[#fef2f2] px-3.5 py-2.5">
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2.5">
                           <p className="text-[11px] font-bold text-slate-400">Durasi</p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
                             {formatMinutes(item.workMinutes, Boolean(item.checkOutTime))}
@@ -608,7 +608,7 @@ export default function AdminDashboardPage() {
                       <div className="flex shrink-0 items-center justify-end">
                         <Link
                           href={detailHref}
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-red-100 bg-white px-4 text-xs font-black text-[#b91c1c] shadow-sm transition hover:bg-[#fee2e2] hover:shadow-md"
+                          className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-xs font-black text-slate-800 shadow-sm transition hover:bg-slate-100 hover:text-slate-950 hover:shadow-md"
                         >
                           <Eye size={15} />
                           Lihat Detail Kehadiran

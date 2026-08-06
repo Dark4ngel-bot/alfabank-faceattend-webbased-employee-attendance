@@ -508,15 +508,13 @@ export async function GET(req: NextRequest) {
     const totalStatuses = await prisma.employmentStatus.count();
     if (totalStatuses === 0) {
       const defaultStatuses = ["Tetap", "Kontrak", "Magang", "Freelance"];
-      await Promise.all(
-        defaultStatuses.map((name) =>
-          prisma.employmentStatus.upsert({
-            where: { name },
-            update: {},
-            create: { name, code: createStatusCode(name), status: "active" },
-          })
-        )
-      );
+      for (const name of defaultStatuses) {
+        await prisma.employmentStatus.upsert({
+          where: { name },
+          update: {},
+          create: { name, code: createStatusCode(name), status: "active" },
+        });
+      }
     }
 
     const employmentStatuses = await prisma.employmentStatus.findMany({

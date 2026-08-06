@@ -539,7 +539,7 @@ export default function WorkSchedulesPage() {
                     type="button"
                     onClick={saveSelectedSchedule}
                     disabled={loading || saving || !selectedRow}
-                    className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-black text-white shadow-lg shadow-red-950/30 transition hover:bg-slate-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {saving ? (
                       <Loader2 size={18} className="animate-spin" />
@@ -590,10 +590,10 @@ export default function WorkSchedulesPage() {
               <>
                 <div className="grid gap-3 md:grid-cols-4">
                   <div
-                    className="work-schedule-row-enter rounded-3xl border border-red-100 bg-[#fef2f2] p-4"
+                    className="work-schedule-row-enter rounded-3xl border border-slate-200 bg-slate-50 p-4"
                     style={{ animationDelay: "40ms" }}
                   >
-                    <div className="flex items-center gap-2 text-[#b91c1c]">
+                    <div className="flex items-center gap-2 text-slate-800">
                       <CalendarDays size={18} />
                       <p className="text-sm font-bold text-slate-500">Shift</p>
                     </div>
@@ -603,17 +603,17 @@ export default function WorkSchedulesPage() {
                   </div>
 
                   <div
-                    className="work-schedule-row-enter rounded-3xl border border-red-100 bg-[#fef2f2] p-4"
+                    className="work-schedule-row-enter rounded-3xl border border-slate-200 bg-slate-50 p-4"
                     style={{ animationDelay: "80ms" }}
                   >
-                    <div className="flex items-center gap-2 text-[#b91c1c]">
+                    <div className="flex items-center gap-2 text-slate-800">
                       <Power size={18} />
                       <p className="text-sm font-bold text-slate-500">Status</p>
                     </div>
                     <p
                       className={`mt-2 text-2xl font-black ${
                         selectedRow.shift_status === "active"
-                          ? "text-[#b91c1c]"
+                          ? "text-emerald-700"
                           : "text-slate-500"
                       }`}
                     >
@@ -622,25 +622,25 @@ export default function WorkSchedulesPage() {
                   </div>
 
                   <div
-                    className="work-schedule-row-enter rounded-3xl border border-red-100 bg-[#fef2f2] p-4"
+                    className="work-schedule-row-enter rounded-3xl border border-slate-200 bg-slate-50 p-4"
                     style={{ animationDelay: "120ms" }}
                   >
-                    <div className="flex items-center gap-2 text-[#b91c1c]">
+                    <div className="flex items-center gap-2 text-slate-800">
                       <CalendarDays size={18} />
                       <p className="text-sm font-bold text-slate-500">
                         Hari Kerja
                       </p>
                     </div>
-                    <p className="mt-2 text-2xl font-black text-[#b91c1c]">
+                    <p className="mt-2 text-2xl font-black text-emerald-700">
                       {activeWorkDays} Hari
                     </p>
                   </div>
 
                   <div
-                    className="work-schedule-row-enter rounded-3xl border border-red-100 bg-[#fef2f2] p-4"
+                    className="work-schedule-row-enter rounded-3xl border border-slate-200 bg-slate-50 p-4"
                     style={{ animationDelay: "160ms" }}
                   >
-                    <div className="flex items-center gap-2 text-[#b91c1c]">
+                    <div className="flex items-center gap-2 text-slate-800">
                       <Clock3 size={18} />
                       <p className="text-sm font-bold text-slate-500">
                         Toleransi
@@ -653,7 +653,7 @@ export default function WorkSchedulesPage() {
                 </div>
 
                 <div
-                  className="work-schedule-row-enter mt-5 flex flex-col gap-3 rounded-3xl border border-red-100 bg-[#fef2f2] p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="work-schedule-row-enter mt-5 flex flex-col gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
                   style={{ animationDelay: "200ms" }}
                 >
                   <div>
@@ -669,7 +669,7 @@ export default function WorkSchedulesPage() {
                   <button
                     type="button"
                     onClick={setWeekdayOnly}
-                    className="rounded-2xl bg-[#b91c1c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.98]"
+                    className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-700 active:scale-[0.98]"
                   >
                     Set Senin-Jumat Kerja
                   </button>
@@ -684,7 +684,7 @@ export default function WorkSchedulesPage() {
                         key={dayKey}
                         className={`work-schedule-row-enter rounded-3xl border p-4 transition duration-200 hover:-translate-y-0.5 ${
                           day.is_work_day
-                            ? "border-red-100 bg-white shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/40"
+                            ? "border-slate-200 bg-white shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/40"
                             : "border-slate-100 bg-slate-50"
                         }`}
                         style={{
@@ -699,7 +699,7 @@ export default function WorkSchedulesPage() {
                             <p
                               className={`mt-1 text-xs font-black ${
                                 day.is_work_day
-                                  ? "text-[#b91c1c]"
+                                  ? "text-emerald-700"
                                   : "text-slate-400"
                               }`}
                             >

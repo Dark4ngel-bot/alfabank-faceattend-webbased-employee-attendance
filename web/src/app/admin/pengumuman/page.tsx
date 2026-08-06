@@ -403,7 +403,7 @@ export default function AdminAnnouncementsPage() {
             <button
               type="button"
               onClick={openAddModal}
-              className="inline-flex items-center justify-center gap-3 rounded-[1.4rem] bg-white px-6 py-4 text-sm font-black text-[#b91c1c] shadow-sm ring-1 ring-white/70 transition duration-200 hover:bg-red-50 active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-3 rounded-[1.4rem] bg-emerald-600 px-6 py-4 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition duration-200 hover:bg-emerald-700 active:scale-[0.98]"
             >
               <Plus size={20} strokeWidth={3} />
               Tambah Pengumuman
@@ -495,18 +495,18 @@ export default function AdminAnnouncementsPage() {
             </div>
           ) : null}
 
-          <div className="mt-5 overflow-hidden rounded-2xl border border-red-100">
-            <div className="hidden grid-cols-[minmax(0,1.7fr)_minmax(11rem,0.75fr)_0.5fr_0.75fr] items-center bg-[#f6f8ff] px-5 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-[#b91c1c] md:grid">
+          <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
+            <div className="hidden grid-cols-[minmax(0,1.7fr)_minmax(11rem,0.75fr)_0.5fr_0.75fr] items-center bg-slate-100/70 px-5 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-slate-800 md:grid">
               <p>Pengumuman</p>
               <p>Dokumen</p>
               <p>Status</p>
               <p className="text-center">Aksi</p>
             </div>
 
-            <div className="divide-y divide-red-100 bg-white">
+            <div className="divide-y divide-slate-100 bg-white">
               {isLoading ? (
                 <div className="admin-announcement-row-enter px-5 py-10 text-center">
-                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#b91c1c]" />
+                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-slate-800" />
                   <p className="mt-3 font-black text-slate-700">
                     Mengambil data pengumuman...
                   </p>
@@ -524,17 +524,17 @@ export default function AdminAnnouncementsPage() {
                 filteredAnnouncements.map((announcement, index) => (
                   <div
                     key={announcement.id}
-                    className="admin-announcement-row-enter grid gap-3 px-4 py-4 text-sm transition duration-200 hover:bg-[#fef2f2] md:grid-cols-[minmax(0,1.7fr)_minmax(11rem,0.75fr)_0.5fr_0.75fr] md:items-start md:px-5"
+                    className="admin-announcement-row-enter grid gap-3 px-4 py-4 text-sm transition duration-200 hover:bg-slate-50/80 md:grid-cols-[minmax(0,1.7fr)_minmax(11rem,0.75fr)_0.5fr_0.75fr] md:items-start md:px-5"
                     style={{
                       animationDelay: `${index * 55}ms`,
                     }}
                   >
                     <Link
                       href={`/admin/pengumuman/${announcement.id}`}
-                      className="min-w-0 rounded-2xl transition hover:bg-red-50/50 focus:outline-none focus:ring-4 focus:ring-red-100"
+                      className="min-w-0 rounded-2xl transition hover:bg-slate-100/50 focus:outline-none focus:ring-4 focus:ring-slate-100"
                     >
                       <div className="flex items-start gap-3">
-                        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-[#b91c1c]">
+                        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-800">
                           <Megaphone size={17} strokeWidth={2.6} />
                         </span>
 
@@ -605,7 +605,7 @@ export default function AdminAnnouncementsPage() {
                       <button
                         type="button"
                         onClick={() => openEditModal(announcement)}
-                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-red-100 bg-white px-3 text-xs font-black text-[#b91c1c] transition hover:bg-[#fee2e2] active:scale-[0.97]"
+                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-800 transition hover:bg-slate-100 hover:text-slate-950 active:scale-[0.97]"
                       >
                         <Edit size={14} />
                         Edit
@@ -839,7 +839,7 @@ export default function AdminAnnouncementsPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-xl bg-[#b91c1c] px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-[#7f1d1d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting
                     ? "Menyimpan..."

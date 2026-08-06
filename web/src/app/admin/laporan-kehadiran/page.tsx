@@ -202,7 +202,7 @@ function EmployeeProfileAvatar({ item }: { item: AttendanceReport }) {
 
   if (profilePhoto && !imageError) {
     return (
-      <div className="attendance-report-avatar-enter h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-[#fee2e2] ring-1 ring-red-100">
+      <div className="attendance-report-avatar-enter h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200">
         <img
           src={profilePhoto}
           alt={`Foto profil ${item.employeeName}`}
@@ -214,7 +214,7 @@ function EmployeeProfileAvatar({ item }: { item: AttendanceReport }) {
   }
 
   return (
-    <div className="attendance-report-avatar-enter flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
+    <div className="attendance-report-avatar-enter flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-800 ring-1 ring-slate-200">
       <UserRound size={23} strokeWidth={2.6} />
     </div>
   );
@@ -419,7 +419,7 @@ export default function AdminAttendanceReportPage() {
 
       <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff]">
         <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
-          <div className="attendance-report-enter overflow-hidden rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
+          <div className="attendance-report-enter overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
               <div className="bg-[#b91c1c] p-6 text-white md:p-8">
                 <div className="flex items-center gap-3">
@@ -693,14 +693,14 @@ export default function AdminAttendanceReportPage() {
                               </div>
 
                               <div className="hidden grid-cols-2 gap-2 text-xs font-bold text-slate-500 md:grid md:w-[260px]">
-                                <div className="rounded-2xl border border-red-100 bg-white px-4 py-3">
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                                   <p className="text-slate-400">Masuk</p>
                                   <p className="mt-1 font-black text-slate-800">
                                     {item.checkIn}
                                   </p>
                                 </div>
 
-                                <div className="rounded-2xl border border-red-100 bg-white px-4 py-3">
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                                   <p className="text-slate-400">Keluar</p>
                                   <p className="mt-1 font-black text-slate-800">
                                     {item.checkOut}

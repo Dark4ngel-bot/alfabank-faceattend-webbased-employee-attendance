@@ -496,7 +496,7 @@ export default function TukarShiftPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || !targetUserId}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#b91c1c] to-[#dc2626] py-3.5 text-sm font-black text-white shadow-lg shadow-red-900/20 transition hover:shadow-xl active:scale-[0.98] disabled:opacity-40 disabled:shadow-none"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-700 hover:shadow-xl active:scale-[0.98] disabled:opacity-40 disabled:shadow-none"
               >
                 {isSubmitting ? (
                   <Loader2 size={16} className="animate-spin" />

@@ -826,7 +826,7 @@ export default function AdminCompanyMonitorPage() {
 
       <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff]">
         <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
-          <div className="monitor-enter overflow-hidden rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
+          <div className="monitor-enter overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 xl:grid-cols-[0.95fr_1.05fr]">
               <div className="bg-[#b91c1c] p-6 text-white md:p-8">
                 <div className="flex items-center gap-3">

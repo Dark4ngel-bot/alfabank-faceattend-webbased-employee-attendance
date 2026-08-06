@@ -510,7 +510,7 @@ export default function AdminEmployeeAttendanceRecapPage() {
 
       <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff]">
         <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
-          <div className="attendance-recap-enter overflow-hidden rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
+          <div className="attendance-recap-enter overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
               <div className="bg-[#b91c1c] p-6 text-white md:p-8">
                 <div className="flex items-center gap-3">
@@ -528,23 +528,23 @@ export default function AdminEmployeeAttendanceRecapPage() {
 
               <div className="grid grid-cols-2 gap-3 p-5 md:p-6">
                 <div
-                  className="attendance-recap-row-enter rounded-2xl border border-red-100 bg-[#fef2f2] p-4"
+                  className="attendance-recap-row-enter rounded-2xl border border-slate-200 bg-slate-50 p-4"
                   style={{ animationDelay: "60ms" }}
                 >
                   <p className="text-xs font-bold text-slate-500">
                     Total Karyawan
                   </p>
-                  <h3 className="mt-3 text-3xl font-black text-[#b91c1c]">
+                  <h3 className="mt-3 text-3xl font-black text-slate-950">
                     {employees.length}
                   </h3>
                 </div>
 
                 <div
-                  className="attendance-recap-row-enter rounded-2xl border border-emerald-100 bg-emerald-50 p-4"
+                  className="attendance-recap-row-enter rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4"
                   style={{ animationDelay: "100ms" }}
                 >
-                  <p className="text-xs font-bold text-emerald-700">Aktif</p>
-                  <h3 className="mt-3 text-3xl font-black text-emerald-700">
+                  <p className="text-xs font-bold text-emerald-800">Aktif</p>
+                  <h3 className="mt-3 text-3xl font-black text-slate-950">
                     {activeEmployees}
                   </h3>
                 </div>
@@ -780,7 +780,7 @@ export default function AdminEmployeeAttendanceRecapPage() {
                             </span>
                           </div>
 
-                          <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c] ring-1 ring-red-100 transition group-hover:bg-[#b91c1c] group-hover:text-white sm:h-10 sm:w-10">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition group-hover:bg-slate-900 group-hover:text-white sm:h-10 sm:w-10">
                             <ChevronRight size={18} strokeWidth={2.8} className="transition-transform group-hover:translate-x-0.5" />
                           </div>
                         </div>
@@ -790,7 +790,7 @@ export default function AdminEmployeeAttendanceRecapPage() {
               </div>
             ) : (
               <div className="flex min-h-64 flex-col items-center justify-center p-8 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
                   <ClipboardList size={26} strokeWidth={2.6} />
                 </div>
 

@@ -208,7 +208,7 @@ function LoginMotionStyles() {
 
       .login-presence-title {
         background: none;
-        color: #b91c1c;
+        color: #0f172a;
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -658,7 +658,7 @@ export default function LoginPage() {
           <div className="login-enter relative flex flex-col justify-between px-6 pb-8 pt-28 md:px-12 lg:px-20 lg:pb-14 lg:pt-36">
             <div className="relative z-10 my-auto max-w-2xl text-center lg:text-left">
               <p
-                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#b91c1c] md:text-sm"
+                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-slate-900 md:text-sm"
                 style={{
                   animationDelay: "120ms",
                 }}
@@ -678,7 +678,7 @@ export default function LoginPage() {
               </h2>
 
               <p
-                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#b91c1c] md:text-2xl"
+                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-slate-900 md:text-2xl"
                 style={{
                   animationDelay: "240ms",
                 }}

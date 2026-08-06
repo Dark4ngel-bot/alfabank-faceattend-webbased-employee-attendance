@@ -451,7 +451,7 @@ export default function AppHeader({
             <button
               type="button"
               onClick={() => setIsSidebarOpen(true)}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#fef2f2] text-[#b91c1c] shadow-md shadow-slate-200/70 ring-1 ring-red-100 transition hover:bg-red-50 active:scale-[0.96] sm:h-12 sm:w-12"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-800 shadow-md shadow-slate-200/70 ring-1 ring-slate-200 transition hover:bg-slate-200 active:scale-[0.96] sm:h-12 sm:w-12"
               aria-label="Buka menu"
             >
               <Menu size={22} strokeWidth={3} className="sm:hidden" />
@@ -485,8 +485,8 @@ export default function AppHeader({
             <Link
               href={notificationHref}
               className={`relative hidden h-12 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-black shadow-sm ring-1 transition active:scale-[0.96] sm:inline-flex ${isNotificationPage
-                  ? "bg-[#b91c1c] text-white ring-[#b91c1c] shadow-lg shadow-red-900/20"
-                  : "bg-white text-[#b91c1c] ring-red-100 hover:bg-[#fef2f2]"
+                  ? "bg-slate-100 text-slate-950 ring-2 ring-slate-950 shadow-md"
+                  : "bg-white text-slate-800 ring-slate-200 hover:bg-slate-100 hover:text-slate-950"
                 }`}
             >
               <span className="relative">
@@ -504,8 +504,8 @@ export default function AppHeader({
               href={notificationHref}
               aria-label="Buka notifikasi"
               className={`relative flex h-10 w-10 items-center justify-center rounded-2xl shadow-sm ring-1 transition active:scale-[0.96] sm:hidden ${isNotificationPage
-                  ? "bg-[#b91c1c] text-white ring-[#b91c1c]"
-                  : "bg-white text-[#b91c1c] ring-red-100 hover:bg-[#fef2f2]"
+                  ? "bg-slate-100 text-slate-950 ring-2 ring-slate-950"
+                  : "bg-white text-slate-800 ring-slate-200 hover:bg-slate-100 hover:text-slate-950"
                 }`}
             >
               <Bell size={19} strokeWidth={2.7} />
@@ -518,7 +518,7 @@ export default function AppHeader({
             </Link>
 
             {/* Full Logo Badge Box on the far right next to Bell */}
-            <div className="relative hidden h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-4 py-2.5 shadow-sm ring-1 ring-red-100/90 transition hover:bg-[#fef2f2] active:scale-[0.96] sm:flex">
+            <div className="relative hidden h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-4 py-2.5 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100 active:scale-[0.96] sm:flex">
               <Image
                 src={logoSrc}
                 alt="Logo Alfabank"
@@ -529,7 +529,7 @@ export default function AppHeader({
             </div>
 
             {rightLabel ? (
-              <span className="hidden rounded-2xl bg-white px-4 py-2 text-xs font-black text-slate-600 shadow-sm ring-1 ring-red-100 md:inline-flex">
+              <span className="hidden rounded-2xl bg-white px-4 py-2 text-xs font-black text-slate-600 shadow-sm ring-1 ring-slate-200 md:inline-flex">
                 {rightLabel}
               </span>
             ) : null}
@@ -549,13 +549,13 @@ export default function AppHeader({
       ) : null}
 
       <aside
-        className={`fixed left-0 top-0 z-[60] h-dvh w-[82vw] max-w-80 border-r border-red-100 bg-white shadow-2xl shadow-slate-950/20 transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed left-0 top-0 z-[60] h-dvh w-[82vw] max-w-80 border-r border-slate-200 bg-white shadow-2xl shadow-slate-950/20 transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between gap-3 border-b border-red-50 px-5 py-5">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-slate-300/50 ring-1 ring-red-100">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-slate-300/50 ring-1 ring-slate-200">
                 <Image
                   src={logoSrc}
                   alt="Alfabank Logo"
@@ -567,7 +567,7 @@ export default function AppHeader({
               </div>
 
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#b91c1c]">
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-800">
                   Alfabank
                 </p>
 
@@ -602,8 +602,8 @@ export default function AppHeader({
                         type="button"
                         onClick={() => handleNavigate(menu.href)}
                         className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${active
-                            ? "bg-[#b91c1c] text-white shadow-lg shadow-red-900/20"
-                            : "text-slate-600 hover:bg-[#fef2f2] hover:text-[#b91c1c]"
+                            ? "bg-[#b91c1c] text-white shadow-lg shadow-red-950/20"
+                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
                           }`}
                       >
                         <Icon size={18} strokeWidth={2.5} />
@@ -614,12 +614,12 @@ export default function AppHeader({
                 </nav>
 
                 <div className="mt-6">
-                  <div className="flex items-center gap-3 rounded-2xl bg-[#fff5f5] px-4 py-3 text-sm font-black text-[#b91c1c]">
+                  <div className="flex items-center gap-3 rounded-2xl bg-slate-100 px-4 py-3 text-sm font-black text-slate-900">
                     <Settings size={18} strokeWidth={2.5} />
                     Master Data
                   </div>
 
-                  <div className="mt-2 space-y-1 border-l-2 border-red-100 pl-4">
+                  <div className="mt-2 space-y-1 border-l-2 border-slate-200 pl-4">
                     {masterDataMenus.map((menu) => {
                       const Icon = menu.icon;
                       const active = isActivePath(pathname, menu.href);
@@ -630,8 +630,8 @@ export default function AppHeader({
                           type="button"
                           onClick={() => handleNavigate(menu.href)}
                           className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold transition ${active
-                              ? "bg-[#fef2f2] text-[#b91c1c]"
-                              : "text-slate-500 hover:bg-slate-50 hover:text-[#b91c1c]"
+                              ? "bg-slate-100 text-slate-950 font-black"
+                              : "text-slate-500 hover:bg-slate-50 hover:text-slate-950"
                             }`}
                         >
                           <Icon size={15} strokeWidth={2.5} />
@@ -658,8 +658,8 @@ export default function AppHeader({
                           type="button"
                           onClick={() => handleNavigate(menu.href)}
                           className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${active
-                              ? "bg-[#b91c1c] text-white shadow-lg shadow-red-900/20"
-                              : "text-slate-600 hover:bg-[#fef2f2] hover:text-[#b91c1c]"
+                              ? "bg-[#b91c1c] text-white shadow-lg shadow-red-950/20"
+                              : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
                             }`}
                         >
                           <Icon size={18} strokeWidth={2.5} />
@@ -683,8 +683,8 @@ export default function AppHeader({
                         type="button"
                         onClick={() => handleNavigate(menu.href)}
                         className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${active
-                            ? "bg-[#b91c1c] text-white shadow-lg shadow-red-900/20"
-                            : "text-slate-600 hover:bg-[#fef2f2] hover:text-[#b91c1c]"
+                            ? "bg-[#b91c1c] text-white shadow-lg shadow-red-950/20"
+                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
                           }`}
                       >
                         <Icon size={18} strokeWidth={2.5} />

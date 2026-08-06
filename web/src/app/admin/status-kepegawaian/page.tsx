@@ -52,7 +52,7 @@ function formatStatus(status: string) {
 
 function statusClass(status: string) {
   return status === "active"
-    ? "bg-red-50 text-[#b91c1c]"
+    ? "bg-emerald-50 text-emerald-700"
     : "bg-slate-100 text-slate-600";
 }
 
@@ -367,7 +367,7 @@ export default function EmploymentStatusPage() {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => openEditModal(item)}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-red-100 bg-white text-[#b91c1c] shadow-sm hover:bg-red-50 transition"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-100 hover:text-slate-950 transition"
                           title="Ubah"
                         >
                           <Edit size={16} />

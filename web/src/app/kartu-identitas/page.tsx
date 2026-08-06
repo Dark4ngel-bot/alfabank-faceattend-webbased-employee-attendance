@@ -550,7 +550,7 @@ export default function KartuIdentitasPage() {
                 type="button"
                 disabled={isDownloading}
                 onClick={handleDownloadPNG}
-                className="order-2 inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-2xl bg-[#b91c1c] px-3 py-2 text-[11px] font-bold text-white shadow-md shadow-red-900/20 transition duration-200 hover:bg-[#991b1b] active:scale-95 disabled:opacity-50 sm:order-3 sm:gap-2 sm:px-4 sm:text-xs"
+                className="order-2 inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-2xl bg-emerald-600 px-3 py-2 text-[11px] font-bold text-white shadow-md shadow-emerald-950/20 transition duration-200 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 sm:order-3 sm:gap-2 sm:px-4 sm:text-xs"
               >
                 <Download size={15} strokeWidth={2.5} />
                 <span>
@@ -563,13 +563,13 @@ export default function KartuIdentitasPage() {
           {/* Main Card Area */}
           <div className="flex flex-1 items-center justify-center py-2 overflow-hidden">
             {loading ? (
-              <div className="flex items-center gap-3 rounded-3xl border border-red-100 bg-[#fff5f5] p-5 text-sm font-bold text-slate-500">
-                <Loader2 size={20} className="animate-spin text-[#b91c1c]" />
+              <div className="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-5 text-sm font-bold text-slate-500">
+                <Loader2 size={20} className="animate-spin text-slate-900" />
                 Mengambil kartu identitas...
               </div>
             ) : errorMessage || !user ? (
-              <div className="rounded-3xl border border-red-100 bg-red-50 px-6 py-6 text-center">
-                <p className="text-xs font-bold text-red-700">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 px-6 py-6 text-center">
+                <p className="text-xs font-bold text-slate-700">
                   {errorMessage || "Kartu identitas tidak ditemukan."}
                 </p>
               </div>
@@ -630,11 +630,11 @@ export default function KartuIdentitasPage() {
                     </div>
 
                     {/* RIGHT PANEL */}
-                    <div className="relative flex h-full flex-col justify-between min-w-0 bg-gradient-to-br from-white via-[#fff5f5] to-[#fef2f2] p-3.5 md:p-5">
+                    <div className="relative flex h-full flex-col justify-between min-w-0 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-3.5 md:p-5">
                       {/* Panel Header */}
-                      <div className="flex shrink-0 items-center justify-between border-b border-red-900/10 pb-2">
+                      <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 pb-2">
                         <div className="min-w-0">
-                          <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-[#b91c1c] md:text-[9px]">
+                          <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-slate-500 md:text-[9px]">
                             {activeSide === "front"
                               ? "Kartu Karyawan"
                               : "Kartu Karyawan"}
@@ -646,7 +646,7 @@ export default function KartuIdentitasPage() {
                           </h2>
                         </div>
 
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-red-50 text-[#b91c1c] border border-red-100 md:h-9 md:w-9">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-800 border border-slate-200 md:h-9 md:w-9">
                           {activeSide === "front" ? (
                             <IdCard size={15} strokeWidth={2.4} />
                           ) : (
@@ -661,7 +661,7 @@ export default function KartuIdentitasPage() {
                           {frontOfficeDetails.map((item) => (
                             <div key={item.label} className="min-w-0">
                               <div className="flex items-center gap-2">
-                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-red-50 text-[#b91c1c] border border-red-100/60 md:h-7 md:w-7">
+                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-800 border border-slate-200 md:h-7 md:w-7">
                                   <item.icon size={13} strokeWidth={2.4} />
                                 </div>
 
@@ -683,7 +683,7 @@ export default function KartuIdentitasPage() {
                           {backSensitiveDetails.map((item) => (
                             <div key={item.label} className="min-w-0">
                               <div className="flex items-center gap-2">
-                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-red-50 text-[#b91c1c] border border-red-100/60 md:h-7 md:w-7">
+                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-800 border border-slate-200 md:h-7 md:w-7">
                                   <item.icon size={13} strokeWidth={2.4} />
                                 </div>
 

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
 
-type Variant = "primary" | "secondary" | "danger" | "ghost" | "soft";
+type Variant = "primary" | "secondary" | "danger" | "ghost" | "soft" | "emerald" | "success";
 type Size = "sm" | "md" | "lg";
 
 function cn(...classes: Array<string | false | null | undefined>) {
@@ -14,12 +14,14 @@ function cn(...classes: Array<string | false | null | undefined>) {
 
 const buttonVariantClass: Record<Variant, string> = {
   primary:
-    "bg-[#b91c1c] text-white shadow-lg shadow-red-900/20 hover:bg-[#991b1b]",
+    "bg-emerald-600 text-white shadow-lg shadow-emerald-950/20 hover:bg-emerald-700 active:scale-[0.98]",
   secondary:
-    "border border-red-100 bg-white text-[#b91c1c] shadow-sm hover:bg-red-50",
-  danger: "bg-rose-50 text-rose-600 ring-1 ring-rose-100 hover:bg-rose-100",
-  ghost: "bg-transparent text-[#b91c1c] hover:bg-red-50",
-  soft: "bg-[#fef2f2] text-[#b91c1c] ring-1 ring-red-100 hover:bg-red-100",
+    "border border-slate-200 bg-white text-slate-800 shadow-sm hover:bg-slate-100 hover:text-slate-950",
+  danger: "bg-[#b91c1c] text-white shadow-lg shadow-red-900/20 hover:bg-[#991b1b]",
+  ghost: "bg-transparent text-slate-700 hover:bg-slate-100",
+  soft: "bg-slate-100 text-slate-900 ring-1 ring-slate-200 hover:bg-slate-200",
+  emerald: "bg-emerald-600 text-white shadow-lg shadow-emerald-950/20 hover:bg-emerald-700",
+  success: "bg-emerald-600 text-white shadow-lg shadow-emerald-950/20 hover:bg-emerald-700",
 };
 
 const buttonSizeClass: Record<Size, string> = {
@@ -519,7 +521,7 @@ export function AppAnimatedActionButton({
         disabled={isDisabled}
         onClick={handleClick}
         className={cn(
-          "group relative inline-flex items-center justify-center gap-4 overflow-hidden rounded-[1.8rem] bg-white px-6 py-5 text-[#b91c1c] shadow-2xl shadow-red-950/20 ring-1 ring-white/70 transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-50 hover:shadow-red-950/25 active:scale-[0.98] disabled:cursor-wait disabled:opacity-80",
+          "group relative inline-flex items-center justify-center gap-4 overflow-hidden rounded-[1.8rem] bg-white px-6 py-5 text-slate-900 shadow-2xl shadow-slate-950/20 ring-1 ring-slate-200/70 transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-100 hover:shadow-slate-950/25 active:scale-[0.98] disabled:cursor-wait disabled:opacity-80",
           full && "w-full",
           fullOnMobile && "w-full md:w-auto",
           !full && !fullOnMobile && "w-auto",
@@ -530,15 +532,15 @@ export function AppAnimatedActionButton({
       >
         <span
           className={cn(
-            "pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-red-100/60 to-transparent opacity-0",
+            "pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-slate-100/60 to-transparent opacity-0",
             isAnimating && "app-button-shine-active",
           )}
         />
 
         <span
           className={cn(
-            "relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[1.4rem] bg-[#fef2f2] transition-all duration-200 group-hover:bg-[#b91c1c] group-hover:text-white",
-            isAnimating && "app-icon-press-active bg-[#b91c1c] text-white",
+            "relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[1.4rem] bg-slate-100 transition-all duration-200 group-hover:bg-slate-900 group-hover:text-white",
+            isAnimating && "app-icon-press-active bg-slate-900 text-white",
           )}
         >
           {loading ? (
@@ -556,7 +558,7 @@ export function AppAnimatedActionButton({
           </span>
 
           {subtitle ? (
-            <span className="mt-1 block text-xs font-bold text-[#b91c1c]/70">
+            <span className="mt-1 block text-xs font-bold text-slate-500">
               {subtitle}
             </span>
           ) : null}
@@ -580,7 +582,7 @@ export function AppInput({ label, error, className, ...props }: AppInputProps) {
 
       <input
         className={cn(
-          "mt-2 min-h-12 w-full rounded-2xl border border-red-100 bg-[#fff5f5] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100 disabled:cursor-not-allowed disabled:opacity-60",
+          "mt-2 min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm font-bold text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:bg-white focus:ring-4 focus:ring-slate-100 disabled:cursor-not-allowed disabled:opacity-60",
           error &&
             "border-red-200 bg-red-50 focus:border-red-400 focus:ring-red-100",
           className,
@@ -616,7 +618,7 @@ export function AppTextarea({
 
       <textarea
         className={cn(
-          "mt-2 min-h-28 w-full resize-none rounded-2xl border border-red-100 bg-[#fff5f5] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100 disabled:cursor-not-allowed disabled:opacity-60",
+          "mt-2 min-h-28 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-4 text-sm font-bold leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:bg-white focus:ring-4 focus:ring-slate-100 disabled:cursor-not-allowed disabled:opacity-60",
           error &&
             "border-red-200 bg-red-50 focus:border-red-400 focus:ring-red-100",
           className,
@@ -656,7 +658,7 @@ export function AppSelect({
         suppressHydrationWarning
         value={value ?? ""}
         className={cn(
-          "mt-2 min-h-12 w-full rounded-2xl border border-red-100 bg-[#fff5f5] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100 disabled:cursor-not-allowed disabled:opacity-60",
+          "mt-2 min-h-12 w-full rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-slate-900 focus:bg-white focus:ring-4 focus:ring-slate-100 disabled:cursor-not-allowed disabled:opacity-60",
           error &&
             "border-red-200 bg-red-50 focus:border-red-400 focus:ring-red-100",
           className,
@@ -688,7 +690,7 @@ export function AppCard({
   return (
     <div
       className={cn(
-        "rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-200/60",
+        "rounded-[2rem] border border-slate-200/80 bg-white shadow-xl shadow-slate-200/60",
         padding === "sm" && "p-4",
         padding === "md" && "p-5",
         padding === "lg" && "p-6 md:p-8",
@@ -734,7 +736,7 @@ export function AppClickableCard({
         disabled={disabled}
         onClick={handleClick}
         className={cn(
-          "relative w-full overflow-hidden rounded-[2rem] border border-red-100 bg-white text-left shadow-lg shadow-slate-200/60 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60",
+          "relative w-full overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white text-left shadow-lg shadow-slate-200/60 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60",
           padding === "sm" && "p-4",
           padding === "md" && "p-5",
           padding === "lg" && "p-6 md:p-8",
@@ -769,7 +771,7 @@ export function AppBadge({
   ...props
 }: AppBadgeProps) {
   const variantClass = {
-    blue: "bg-red-50 text-[#b91c1c] ring-red-100",
+    blue: "bg-slate-100 text-slate-800 ring-slate-200",
     green: "bg-emerald-50 text-emerald-700 ring-emerald-100",
     yellow: "bg-amber-50 text-amber-700 ring-amber-100",
     red: "bg-rose-50 text-rose-700 ring-rose-100",
@@ -832,45 +834,56 @@ type AppEmptyStateProps = {
   icon?: React.ReactNode;
   title: string;
   description?: string;
+  action?: React.ReactNode;
 };
 
 export function AppEmptyState({
   icon,
   title,
   description,
+  action,
 }: AppEmptyStateProps) {
   return (
-    <div className="rounded-[2rem] border border-dashed border-red-100 bg-[#fff5f5] px-5 py-12 text-center">
-      {icon ? (
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fef2f2] text-[#b91c1c]">
-          {icon}
-        </div>
-      ) : null}
+    <div className="rounded-[2rem] border border-dashed border-slate-200 bg-slate-50/60 px-5 py-12 text-center">
+      <div className="mx-auto flex max-w-sm flex-col items-center">
+        {icon ? (
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+            {icon}
+          </div>
+        ) : null}
 
-      <p className="mt-4 text-sm font-black text-slate-600">{title}</p>
+        <h3 className="mt-4 text-lg font-black tracking-tight text-slate-900">
+          {title}
+        </h3>
 
-      {description ? (
-        <p className="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-slate-500">
+        <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
           {description}
         </p>
-      ) : null}
+
+        {action ? <div className="mt-6">{action}</div> : null}
+      </div>
     </div>
   );
 }
 
 type AppLoadingStateProps = {
   text?: string;
+  title?: string;
+  description?: string;
 };
 
 export function AppLoadingState({
-  text = "Memuat data...",
+  title,
+  text,
 }: AppLoadingStateProps) {
+  const displayText = title || text || "Memuat data...";
+
   return (
     <>
       <AppInteractionStyles />
 
-      <div className="flex min-h-48 flex-col items-center justify-center rounded-[2rem] border border-red-100 bg-white px-5 py-12 text-center text-sm font-bold text-slate-500 shadow-lg shadow-slate-200/50">
-        <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-[1.75rem] border border-red-100 bg-[#fff5f5] shadow-inner">
+      <div className="flex min-h-48 flex-col items-center justify-center rounded-[2rem] border border-slate-200 bg-white px-5 py-12 text-center text-sm font-bold text-slate-500 shadow-lg shadow-slate-200/50">
+        <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50 shadow-inner">
           <span className="app-brand-loader-scan pointer-events-none absolute left-3 right-3 top-1/2 z-20 h-0.5 bg-gradient-to-r from-transparent via-[#ff8a00] to-transparent shadow-[0_0_12px_rgba(255,138,0,0.62)]" />
           <Image
             src={DEFAULT_SITE_MARK_LOGO_SRC}
@@ -882,7 +895,7 @@ export function AppLoadingState({
           />
         </div>
 
-        <p className="mt-4 text-sm font-black text-slate-600">{text}</p>
+        <p className="mt-4 text-sm font-black text-slate-600">{displayText}</p>
       </div>
     </>
   );
@@ -1042,7 +1055,7 @@ export function AppPageSkeleton({
         className={cn("app-skeleton-enter mt-6 space-y-6", className)}
         {...props}
       >
-        <section className="overflow-hidden rounded-[2.2rem] border border-red-100 bg-white shadow-2xl shadow-slate-300/30">
+        <section className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-white shadow-2xl shadow-slate-300/30">
           <div className="grid lg:grid-cols-[0.82fr_1.18fr]">
             <div className="bg-[#b91c1c] p-7 md:p-8">
               <div className="h-28 w-28 animate-pulse rounded-[2rem] bg-white/20" />
@@ -1060,10 +1073,10 @@ export function AppPageSkeleton({
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="rounded-[1.6rem] border border-red-100 bg-white p-5 shadow-lg shadow-slate-200/50"
+                  className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-lg shadow-slate-200/50"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 shrink-0 animate-pulse rounded-2xl bg-[#fef2f2]" />
+                    <div className="h-12 w-12 shrink-0 animate-pulse rounded-2xl bg-slate-100" />
 
                     <div className="min-w-0 flex-1">
                       <div className="h-3 w-24 animate-pulse rounded-full bg-slate-100" />
@@ -1077,17 +1090,17 @@ export function AppPageSkeleton({
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-red-100 bg-white p-5 shadow-xl shadow-slate-300/30 md:p-6">
-          <div className="h-4 w-40 animate-pulse rounded-full bg-red-100" />
+        <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-xl shadow-slate-300/30 md:p-6">
+          <div className="h-4 w-40 animate-pulse rounded-full bg-slate-100" />
           <div className="mt-3 h-7 w-72 max-w-full animate-pulse rounded-2xl bg-slate-100" />
 
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="rounded-[1.6rem] border border-red-100 bg-white p-5 shadow-lg shadow-slate-200/50"
+                className="rounded-[1.6rem] border border-slate-200 bg-white p-5 shadow-lg shadow-slate-200/50"
               >
-                <div className="h-12 w-12 animate-pulse rounded-2xl bg-[#fef2f2]" />
+                <div className="h-12 w-12 animate-pulse rounded-2xl bg-slate-100" />
                 <div className="mt-4 h-3 w-24 animate-pulse rounded-full bg-slate-100" />
                 <div className="mt-3 h-5 w-40 max-w-full animate-pulse rounded-full bg-slate-100" />
               </div>

@@ -1,0 +1,105 @@
+import "dotenv/config";
+import bcrypt from "bcryptjs";
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import { PrismaClient } from "../src/generated/prisma/client";
+
+function getDatabaseConfig() {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (databaseUrl) {
+    const parsedUrl = new URL(databaseUrl);
+    const host = parsedUrl.hostname;
+    const localHosts = new Set(["localhost", "127.0.0.1", "::1"]);
+    const isLocalDatabase = localHosts.has(host.toLowerCase());
+    const sslAccept = (
+      parsedUrl.searchParams.get("sslaccept") || ""
+    ).toLowerCase();
+    const sslValue = (parsedUrl.searchParams.get("ssl") || "").toLowerCase();
+    const sslMode = (
+      parsedUrl.searchParams.get("sslmode") || ""
+    ).toLowerCase();
+
+    const useTls =
+      !isLocalDatabase ||
+      sslAccept === "strict" ||
+      sslValue === "true" ||
+      sslMode === "required" ||
+      sslMode === "verify-ca" ||
+      sslMode === "verify-identity";
+
+    return {
+      host,
+      port: Number(parsedUrl.port || 3306),
+      user: decodeURIComponent(parsedUrl.username),
+      password: decodeURIComponent(parsedUrl.password) || undefined,
+      database: decodeURIComponent(parsedUrl.pathname.replace(/^\/+/, "")),
+      connectionLimit: 5,
+      connectTimeout: 20_000,
+      ...(useTls
+        ? {
+            ssl: {
+              minVersion: "TLSv1.2" as const,
+              rejectUnauthorized: true,
+            },
+          }
+        : {}),
+    };
+  }
+
+  return {
+    host: process.env.DATABASE_HOST || "127.0.0.1",
+    port: Number(process.env.DATABASE_PORT || 3306),
+    user: process.env.DATABASE_USER || "root",
+    password: process.env.DATABASE_PASSWORD || undefined,
+    database: process.env.DATABASE_NAME || "faceattend_db",
+    connectionLimit: 5,
+  };
+}
+
+const adapter = new PrismaMariaDb(getDatabaseConfig());
+const prisma = new PrismaClient({ adapter });
+
+async function main() {
+  const email = process.env.USER_EMAIL || "admin@alfabankjogja.com";
+  const rawPassword = process.env.USER_PASSWORD || "AdminAlfaBank2026!";
+  const name = process.env.USER_NAME || "Admin AlfaBank Jogja";
+  const role = process.env.USER_ROLE || "admin";
+
+  const password_hash = await bcrypt.hash(rawPassword, 12);
+
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: {
+      name,
+      password_hash,
+      visible_password: rawPassword,
+      role,
+      status: "active",
+    },
+    create: {
+      name,
+      email,
+      password_hash,
+      visible_password: rawPassword,
+      role,
+      status: "active",
+    },
+  });
+
+  console.log("------------------------------------------");
+  console.log("SUCCESSFULLY CREATED / UPDATED ACCOUNT:");
+  console.log(`Email    : ${user.email}`);
+  console.log(`Password : ${rawPassword}`);
+  console.log(`Name     : ${user.name}`);
+  console.log(`Role     : ${user.role}`);
+  console.log("------------------------------------------");
+}
+
+main()
+  .catch((error) => {
+    console.error("Error creating account:", error);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

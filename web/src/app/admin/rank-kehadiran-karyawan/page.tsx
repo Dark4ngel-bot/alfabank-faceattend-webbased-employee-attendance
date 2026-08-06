@@ -503,12 +503,12 @@ export default function AdminAttendanceRankPage() {
               <div className="w-full overflow-x-auto">
                 <table className="w-full border-collapse text-left">
                   <thead>
-                    <tr className="bg-[#fee2e2] text-xs font-black uppercase tracking-[0.08em] text-slate-500">
+                    <tr className="bg-slate-100/70 text-xs font-black uppercase tracking-[0.08em] text-slate-800">
                       <th className="w-20 px-5 py-4 text-center">Rank</th>
                       <th className="px-5 py-4">{sortLabels.name}</th>
                       <th className="px-5 py-4 text-center">{sortLabels.hadir}</th>
                       <th className="px-5 py-4 text-center">Total Kerja</th>
-                      <th className="px-5 py-4 text-center text-[#b91c1c]">
+                      <th className="px-5 py-4 text-center text-amber-800">
                         {sortLabels.terlambat}
                       </th>
                       <th className="px-5 py-4 text-center">Durasi Efektif</th>
@@ -528,17 +528,17 @@ export default function AdminAttendanceRankPage() {
                         <tr
                           key={employee.id}
                           onClick={() => openEmployeeDetail(employee.id)}
-                          className="cursor-pointer transition hover:bg-[#fef2f2]"
+                          className="cursor-pointer transition hover:bg-slate-50/80"
                         >
                           <td className="px-5 py-4">
-                            <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-[#fee2e2] text-sm font-black text-[#b91c1c] ring-1 ring-red-100">
+                            <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-sm font-black text-slate-800 ring-1 ring-slate-200">
                               {index + 1}
                             </div>
                           </td>
 
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#fee2e2] text-[#b91c1c] ring-1 ring-red-100">
+                              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 text-slate-800 ring-1 ring-slate-200">
                                 {employeePhoto ? (
                                   <img
                                     src={employeePhoto}

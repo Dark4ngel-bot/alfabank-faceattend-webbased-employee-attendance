@@ -72,7 +72,7 @@ function formatStatus(status: string) {
 
 function statusClass(status: string) {
   return status === "active"
-    ? "bg-red-50 text-[#b91c1c]"
+    ? "bg-emerald-50 text-emerald-700"
     : "bg-slate-100 text-slate-600";
 }
 
@@ -373,13 +373,13 @@ export default function ShiftsPage() {
                 {filteredShifts.map((item, index) => (
                   <div
                     key={item.id}
-                    className="row-enter rounded-3xl border border-red-100/50 bg-[#fbfdff] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-red-100 hover:bg-white hover:shadow-md hover:shadow-red-950/5"
+                    className="row-enter rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
                     style={{ animationDelay: `${index * 40}ms` }}
                   >
                     {/* Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-[#b91c1c]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-800">
                           <Clock3 size={20} />
                         </div>
                         <div>
@@ -402,7 +402,7 @@ export default function ShiftsPage() {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => openEditModal(item)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-100 bg-white text-[#b91c1c] shadow-sm transition hover:bg-red-50"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-100 hover:text-slate-950"
                           title="Ubah"
                         >
                           <Edit size={14} />
@@ -419,25 +419,25 @@ export default function ShiftsPage() {
 
                     {/* Time Info - Clean rows */}
                     <div className="mt-4 space-y-2">
-                      <div className="flex items-center justify-between rounded-xl bg-red-50/40 px-3 py-2">
+                      <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
                         <span className="text-xs font-bold text-slate-500">Jam Kerja</span>
                         <span className="text-sm font-black text-slate-800">
                           {item.start_time || "08:00"} — {item.end_time || "17:00"}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between rounded-xl bg-red-50/40 px-3 py-2">
+                      <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
                         <span className="text-xs font-bold text-slate-500">Check-in Buka</span>
-                        <span className="text-sm font-black text-[#b91c1c]">
+                        <span className="text-sm font-black text-slate-900">
                           {item.check_in_open || "07:00"}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between rounded-xl bg-red-50/40 px-3 py-2">
+                      <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
                         <span className="text-xs font-bold text-slate-500">Check-out Buka</span>
-                        <span className="text-sm font-black text-[#b91c1c]">
+                        <span className="text-sm font-black text-slate-900">
                           {item.check_out_open || "16:50"}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between rounded-xl bg-red-50/40 px-3 py-2">
+                      <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
                         <span className="text-xs font-bold text-slate-500">Toleransi Telat</span>
                         <span className="text-sm font-black text-slate-800">
                           {item.tolerance_minutes ?? 0} menit

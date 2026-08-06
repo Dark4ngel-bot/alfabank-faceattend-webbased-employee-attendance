@@ -354,7 +354,7 @@ function EmployeeAvatar({ employee }: { employee: Employee }) {
 
   if (profilePhoto && !imageError) {
     return (
-      <div className="h-11 w-11 shrink-0 overflow-hidden rounded-2xl bg-[#fee2e2] ring-1 ring-red-100">
+      <div className="h-11 w-11 shrink-0 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200">
         <img
           src={profilePhoto}
           alt={`Foto profil ${employee.name}`}
@@ -366,7 +366,7 @@ function EmployeeAvatar({ employee }: { employee: Employee }) {
   }
 
   return (
-    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-sm font-black text-[#b91c1c]">
+    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-sm font-black text-slate-800">
       {getInitialName(employee.name)}
     </div>
   );
@@ -1172,7 +1172,7 @@ export default function AdminEmployeesPage() {
       <AppHeader title="Karyawan" variant="admin" />
 
       <main className="mx-auto max-w-7xl px-5 py-6 pb-28 md:px-10 lg:px-16">
-        <section className="employee-enter relative overflow-hidden rounded-[2.2rem] bg-[#b91c1c] p-6 text-white shadow-2xl shadow-red-950/25 md:p-8">
+        <section className="employee-enter relative overflow-hidden rounded-[2.2rem] bg-[#b91c1c] bg-gradient-to-br from-[#b91c1c] via-[#a81818] to-[#7f1d1d] p-6 text-white shadow-2xl shadow-red-950/25 md:p-8">
           <div className="relative z-10 flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-red-100">
@@ -1209,7 +1209,7 @@ export default function AdminEmployeesPage() {
                 </h3>
               </div>
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-800">
                 <UsersRound size={25} strokeWidth={2.7} />
               </div>
             </div>
@@ -1276,17 +1276,17 @@ export default function AdminEmployeesPage() {
                 />
                 <input
                   value={keyword}
-                  onChange={(event) => setKeyword(event.target.value)}
+                  onChange={(e) => setKeyword(e.target.value)}
                   placeholder="Cari karyawan..."
-                  className="employee-field w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
+                  className="employee-field w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-slate-900 focus:bg-white focus:ring-4 focus:ring-slate-100"
                 />
-              </div>
+                </div>
 
-              <select
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-                className="employee-field rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-3 text-xs font-black text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
-              >
+                <select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+                  className="employee-field rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-black text-slate-700 outline-none transition focus:border-slate-900 focus:bg-white focus:ring-4 focus:ring-slate-100"
+                >
                 <option value="asc">Nama: A - Z</option>
                 <option value="desc">Nama: Z - A</option>
               </select>
@@ -1348,8 +1348,8 @@ export default function AdminEmployeesPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase text-[#b91c1c]">WFH</p>
-                      <p className="mt-0.5 text-xs font-black text-[#b91c1c]">
+                      <p className="text-[10px] font-black uppercase text-slate-400">WFH</p>
+                      <p className="mt-0.5 text-xs font-black text-slate-900">
                         {formatWfhQuota(employee.wfh_quota_monthly)} Hari
                       </p>
                     </div>
@@ -1362,7 +1362,7 @@ export default function AdminEmployeesPage() {
                         e.stopPropagation();
                         openEditModal(employee);
                       }}
-                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-red-100 bg-white px-3 text-xs font-black text-[#b91c1c]"
+                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-800 transition hover:bg-slate-100 hover:text-slate-950"
                     >
                       <Edit size={14} />
                       Edit
@@ -1384,10 +1384,10 @@ export default function AdminEmployeesPage() {
               ))}
           </div>
 
-          <div className="mt-5 hidden overflow-hidden rounded-3xl border border-red-100 bg-white md:block">
+          <div className="mt-5 hidden overflow-hidden rounded-3xl border border-slate-200 bg-white md:block">
             <table className="w-full table-fixed border-collapse text-left">
               <thead>
-                <tr className="bg-[#f6f8ff] text-[11px] font-black uppercase tracking-[0.18em] text-[#b91c1c]">
+                <tr className="bg-slate-100/70 text-[11px] font-black uppercase tracking-[0.18em] text-slate-800">
                   <th className="w-[22%] px-4 py-4">Karyawan</th>
                   <th className="w-[20%] px-4 py-4">Email</th>
                   <th className="w-[12%] px-3 py-4">Kantor</th>
@@ -1398,7 +1398,7 @@ export default function AdminEmployeesPage() {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-red-100">
+              <tbody className="divide-y divide-slate-100">
                 {isLoading && (
                   <tr>
                     <td colSpan={7} className="px-6 py-10 text-center font-black text-slate-700">
@@ -1414,7 +1414,7 @@ export default function AdminEmployeesPage() {
                       onClick={() =>
                         router.push(`/admin/daftar-karyawan/${employee.id}`)
                       }
-                      className="employee-row-enter cursor-pointer transition duration-200 hover:bg-[#fef2f2] active:bg-[#eef4ff]"
+                      className="employee-row-enter cursor-pointer transition duration-200 hover:bg-slate-50/80 active:bg-slate-100"
                       style={{
                         animationDelay: `${index * 45}ms`,
                       }}
@@ -1427,7 +1427,7 @@ export default function AdminEmployeesPage() {
                             <p className="truncate text-sm font-black text-slate-950">
                               {employee.name}
                             </p>
-                            <p className="mt-0.5 truncate text-[11px] font-black uppercase tracking-[0.12em] text-[#b91c1c]">
+                            <p className="mt-0.5 truncate text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">
                               {employee.employee_code ? `${employee.employee_code} • ` : ""}
                               {getRelationName(employee.department) !== "-"
                                 ? getRelationName(employee.department)
@@ -1439,7 +1439,7 @@ export default function AdminEmployeesPage() {
                                   "admin" ||
                                 String(employee.role || "").toLowerCase() ===
                                   "owner"
-                                  ? "bg-red-50 text-[#b91c1c]"
+                                  ? "bg-slate-100 text-slate-800"
                                   : "bg-slate-100 text-slate-500"
                               }`}
                             >
@@ -1461,7 +1461,7 @@ export default function AdminEmployeesPage() {
                         <p className="truncate">{getRelationName(employee.shift)}</p>
                       </td>
 
-                      <td className="px-2 py-4 text-center text-sm font-black text-[#b91c1c]">
+                      <td className="px-2 py-4 text-center text-sm font-black text-slate-900">
                         {formatWfhQuota(employee.wfh_quota_monthly)}
                       </td>
 
@@ -1485,7 +1485,7 @@ export default function AdminEmployeesPage() {
                               event.stopPropagation();
                               openEditModal(employee);
                             }}
-                            className="inline-flex h-9 items-center justify-center gap-1 rounded-xl border border-red-100 bg-white px-2.5 text-xs font-black text-[#b91c1c] shadow-none transition hover:bg-[#fee2e2]"
+                            className="inline-flex h-9 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-black text-slate-800 shadow-none transition hover:bg-slate-100 hover:text-slate-950"
                           >
                             <Edit size={14} />
                             Edit
@@ -2264,7 +2264,7 @@ export default function AdminEmployeesPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="rounded-2xl bg-[#b91c1c] px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-2xl bg-emerald-600 px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSaving
                     ? "Saving..."

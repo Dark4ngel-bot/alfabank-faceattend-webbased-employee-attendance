@@ -650,7 +650,7 @@ export default function LeaveRequestPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-red-900/20 transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 <>
@@ -668,7 +668,7 @@ export default function LeaveRequestPage() {
         </form>
 
         <div className="min-w-0 space-y-4">
-          <div className="rounded-[2rem] bg-[#b91c1c] p-5 text-white shadow-xl shadow-red-900/20">
+          <div className="rounded-[2rem] bg-[#b91c1c] bg-gradient-to-br from-[#b91c1c] via-[#a81818] to-[#7f1d1d] p-5 text-white shadow-xl shadow-red-950/25">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
                 <FileText size={25} strokeWidth={2.6} />

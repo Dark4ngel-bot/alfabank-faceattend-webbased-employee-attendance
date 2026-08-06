@@ -283,7 +283,7 @@ function ProfileAvatar({
     <div
       className={`home-icon-pop ${sizeClass} flex shrink-0 items-center justify-center rounded-full font-black ${variant === "blue"
           ? "bg-white/15 text-white ring-4 ring-white/20"
-          : "bg-[#fef2f2] text-[#b91c1c] ring-4 ring-white"
+          : "bg-slate-100 text-slate-800 ring-4 ring-white"
         }`}
     >
       {user.name ? getInitialName(user.name) : ""}
@@ -309,17 +309,17 @@ function AnnouncementButton({
       className={`home-icon-pop relative flex shrink-0 items-center justify-center rounded-2xl ring-1 transition hover:-translate-y-0.5 active:scale-[0.96] ${desktop ? "h-16 w-16" : "h-12 w-12"
         } ${unread
           ? desktop
-            ? "bg-white text-[#b91c1c] ring-white"
-            : "bg-[#b91c1c] text-white ring-[#b91c1c]"
+            ? "bg-white text-slate-900 ring-white"
+            : "bg-slate-900 text-white ring-slate-900"
           : desktop
             ? "bg-white/10 text-white/70 ring-white/20"
-            : "bg-white text-slate-400 ring-red-100"
+            : "bg-white text-slate-400 ring-slate-200"
         }`}
       aria-label="Pengumuman"
     >
       <Bell
         size={desktop ? 28 : 24}
-        fill={unread ? (desktop ? "#b91c1c" : "white") : "transparent"}
+        fill={unread ? (desktop ? "#0f172a" : "white") : "transparent"}
         strokeWidth={2.2}
       />
 
@@ -372,13 +372,13 @@ function QuickMenuGrid() {
         <Link
           key={href}
           href={href}
-          className="home-card-enter group flex flex-col items-center rounded-3xl text-center transition hover:-translate-y-0.5 active:scale-[0.98] md:border md:border-red-100 md:bg-[#fff5f5] md:p-6 md:hover:-translate-y-1 md:hover:bg-white md:hover:shadow-xl md:hover:shadow-slate-200/60"
+          className="home-card-enter group flex flex-col items-center rounded-3xl text-center transition hover:-translate-y-0.5 active:scale-[0.98] md:border md:border-slate-200 md:bg-slate-50/80 md:p-6 md:hover:-translate-y-1 md:hover:bg-white md:hover:shadow-xl md:hover:shadow-slate-200/60"
           style={{
             animationDelay: `${index * 70}ms`,
           }}
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#fef2f2] transition group-hover:scale-105 md:h-20 md:w-20">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#b91c1c] text-white shadow-lg shadow-red-900/20 transition group-hover:rotate-[-2deg] md:h-14 md:w-14">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 transition group-hover:scale-105 md:h-20 md:w-20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg shadow-slate-950/20 transition group-hover:rotate-[-2deg] md:h-14 md:w-14">
               <Icon size={22} strokeWidth={2.6} />
             </div>
           </div>
@@ -412,8 +412,8 @@ function AttendanceButton({
       className={`flex min-h-[48px] w-full flex-1 items-center justify-center rounded-2xl px-3 py-2.5 text-sm font-black transition md:h-20 md:min-h-0 md:px-6 md:py-0 md:text-lg ${disabled
           ? "cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300"
           : variant === "primary"
-            ? "bg-[#b91c1c] text-white shadow-md shadow-red-900/20 hover:-translate-y-0.5 hover:bg-[#991b1b] active:scale-[0.98]"
-            : "border border-red-100 bg-white text-[#b91c1c] hover:-translate-y-0.5 hover:bg-[#fff5f5] active:scale-[0.98]"
+            ? "bg-emerald-600 text-white shadow-md shadow-emerald-950/20 hover:-translate-y-0.5 hover:bg-emerald-700 active:scale-[0.98]"
+            : "border border-slate-200 bg-white text-slate-800 hover:-translate-y-0.5 hover:bg-slate-100 active:scale-[0.98]"
         }`}
     >
       {label}
@@ -432,7 +432,7 @@ function AnnouncementList({
 }) {
   if (!hasAnnouncement) {
     return (
-      <div className="home-card-enter rounded-3xl border border-dashed border-red-100 bg-white px-5 py-6 text-center shadow-sm md:py-14">
+      <div className="home-card-enter rounded-3xl border border-dashed border-slate-200 bg-white px-5 py-6 text-center shadow-sm md:py-14">
         <p className="text-sm font-bold text-slate-400 md:text-base">
           Pengumuman Kosong
         </p>
@@ -446,7 +446,7 @@ function AnnouncementList({
     <Link
       href="/pengumuman"
       onClick={onRead}
-      className="home-card-enter block min-w-0 rounded-3xl border border-red-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#fff5f5] hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99] md:p-5"
+      className="home-card-enter block min-w-0 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50/80 hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99] md:p-5"
     >
       <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-100 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-900 shadow-sm">
         <Megaphone size={14} className="text-amber-700" />
@@ -464,7 +464,7 @@ function AnnouncementList({
       ) : null}
 
       {topAnnouncement.document_url || topAnnouncement.documentUrl ? (
-        <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-2xl bg-[#fee2e2] px-3 py-2 text-xs font-black text-[#b91c1c]">
+        <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-800">
           <FileText size={14} strokeWidth={2.6} />
           <span className="truncate">
             {topAnnouncement.document_name ||
@@ -631,7 +631,7 @@ export default function HomePage() {
             <div className="mx-auto w-full max-w-7xl px-5 pt-6">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="home-icon-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-red-100">
+                  <div className="home-icon-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-slate-200">
                     <Image
                       src={logoSrc}
                       alt="AlfaBank Logo"
@@ -645,12 +645,12 @@ export default function HomePage() {
                   <ProfileAvatar user={user} />
 
                   <div className="min-w-0">
-                    <p className="home-text-reveal text-[10px] font-black uppercase tracking-[0.24em] text-[#b91c1c]">
+                    <p className="home-text-reveal text-[10px] font-black uppercase tracking-[0.24em] text-slate-800">
                       Presensi
                     </p>
 
                     <h1
-                      className="home-text-reveal mt-1 truncate text-base font-black text-[#7f1d1d]"
+                      className="home-text-reveal mt-1 truncate text-base font-black text-slate-950"
                       style={{
                         animationDelay: "60ms",
                       }}
@@ -684,7 +684,7 @@ export default function HomePage() {
 
               <div className="py-7 text-center">
                 <p
-                  className="home-text-reveal text-xs font-black uppercase tracking-[0.24em] text-[#b91c1c]"
+                  className="home-text-reveal text-xs font-black uppercase tracking-[0.24em] text-slate-800"
                   style={{
                     animationDelay: "120ms",
                   }}
@@ -693,7 +693,7 @@ export default function HomePage() {
                 </p>
 
                 <h2
-                  className="home-text-reveal mt-3 text-4xl font-black tracking-tight text-[#7f1d1d]"
+                  className="home-text-reveal mt-3 text-4xl font-black tracking-tight text-slate-950"
                   style={{
                     animationDelay: "170ms",
                   }}
@@ -714,7 +714,7 @@ export default function HomePage() {
           </section>
 
           <section className="mx-auto hidden max-w-7xl px-10 pt-8 md:block lg:px-16">
-            <div className="home-enter relative overflow-hidden rounded-[2.2rem] bg-[#b91c1c] p-8 text-white shadow-2xl shadow-red-900/25">
+            <div className="home-enter relative overflow-hidden rounded-[2.2rem] bg-[#b91c1c] bg-gradient-to-br from-[#b91c1c] via-[#a81818] to-[#7f1d1d] p-8 text-white shadow-2xl shadow-red-950/30">
               <div className="relative z-10 flex items-center justify-between gap-8">
                 <div className="flex items-center gap-5">
                   <ProfileAvatar user={user} size="desktop" variant="blue" />
@@ -751,7 +751,7 @@ export default function HomePage() {
 
             <AppCard
               padding="md"
-              className="home-card-enter rounded-[1.8rem] border-red-100 bg-white p-5 shadow-sm transition hover:shadow-xl hover:shadow-slate-200/60 md:p-8"
+              className="home-card-enter rounded-[1.8rem] border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-xl hover:shadow-slate-200/60 md:p-8"
               style={{
                 animationDelay: "140ms",
               }}
@@ -763,7 +763,7 @@ export default function HomePage() {
                       {currentTime || "--:-- WIB"}
                     </p>
 
-                    <div className="rounded-xl bg-gradient-to-r from-[#b91c1c] to-[#dc2626] px-2 py-1 text-[10px] font-black text-white shadow-md shadow-red-900/15 sm:rounded-2xl sm:px-4 sm:py-2 md:text-sm">
+                    <div className="rounded-xl bg-slate-100 border border-slate-200 px-2 py-1 text-[10px] font-black text-slate-800 shadow-sm sm:rounded-2xl sm:px-4 sm:py-2 md:text-sm">
                       {currentDate || "Memuat tanggal..."}
                     </div>
                   </div>
@@ -774,7 +774,7 @@ export default function HomePage() {
 
                   <p className="mt-0.5 text-[11px] font-semibold text-slate-500 sm:text-sm md:mt-3 md:text-lg">
                     Status hari ini:{" "}
-                    <span className="font-black text-[#b91c1c]">
+                    <span className="font-black text-amber-700">
                       {attendanceToday.status}
                     </span>
                   </p>
@@ -813,7 +813,7 @@ export default function HomePage() {
               <Link
                 href="/pengumuman"
                 onClick={markAnnouncementsAsRead}
-                className="text-lg font-black text-[#b91c1c] transition hover:text-[#7f1d1d] active:scale-[0.98] md:text-base"
+                className="text-lg font-black text-slate-900 transition hover:text-slate-700 active:scale-[0.98] md:text-base"
               >
                 Lihat Lainnya
               </Link>

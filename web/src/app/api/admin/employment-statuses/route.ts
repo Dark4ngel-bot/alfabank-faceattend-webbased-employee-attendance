@@ -48,15 +48,13 @@ function isPrismaUniqueError(error: unknown) {
 async function ensureDefaultStatuses() {
   const count = await prisma.employmentStatus.count();
   if (count === 0) {
-    await Promise.all(
-      defaultStatuses.map((name) =>
-        prisma.employmentStatus.upsert({
-          where: { name },
-          update: {},
-          create: { name, code: createStatusCode(name), status: "active" },
-        })
-      )
-    );
+    for (const name of defaultStatuses) {
+      await prisma.employmentStatus.upsert({
+        where: { name },
+        update: {},
+        create: { name, code: createStatusCode(name), status: "active" },
+      });
+    }
   }
 }
 

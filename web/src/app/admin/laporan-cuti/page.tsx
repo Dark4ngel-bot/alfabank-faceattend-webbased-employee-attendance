@@ -435,11 +435,11 @@ export default function AdminLeaveReportPage() {
 
       <AppHeader title="Laporan Cuti" variant="admin" />
 
-      <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff]">
+      <main className="min-h-dvh bg-slate-50/50">
         <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
-          <div className="leave-report-enter overflow-hidden rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
+          <div className="leave-report-enter overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="bg-[#b91c1c] p-6 text-white md:p-8">
+              <div className="bg-[#b91c1c] bg-gradient-to-br from-[#b91c1c] via-[#a81818] to-[#7f1d1d] p-6 text-white shadow-2xl shadow-red-950/30 md:p-8">
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
                     <FileText size={25} strokeWidth={2.6} />
@@ -455,16 +455,16 @@ export default function AdminLeaveReportPage() {
 
               <div className="grid grid-cols-2 gap-3 p-5 md:grid-cols-4 md:p-6">
                 <div
-                  className="leave-report-row-enter rounded-2xl border border-red-100 bg-[#fef2f2] p-4"
+                  className="leave-report-row-enter rounded-2xl border border-slate-200 bg-slate-50 p-4"
                   style={{ animationDelay: "60ms" }}
                 >
-	                  <p className="text-xs font-bold text-slate-500">Total</p>
-	                  <h3 className="mt-3 text-3xl font-black text-[#b91c1c]">
-	                    {stats.total}
-	                  </h3>
-	                  <p className="mt-1 text-xs font-semibold text-slate-500">
-	                    Semua karyawan
-	                  </p>
+                  <p className="text-xs font-bold text-slate-500">Total</p>
+                  <h3 className="mt-3 text-3xl font-black text-slate-900">
+                    {stats.total}
+                  </h3>
+                  <p className="mt-1 text-xs font-semibold text-slate-500">
+                    Semua karyawan
+                  </p>
                 </div>
 
                 <div
@@ -541,10 +541,10 @@ export default function AdminLeaveReportPage() {
                 />
 
                 <input
-	                  value={searchKeyword}
-	                  onChange={(event) => setSearchKeyword(event.target.value)}
-	                  placeholder="Cari nama, kode, divisi, atau status cuti..."
-                  className="leave-report-field h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
+                  value={searchKeyword}
+                  onChange={(event) => setSearchKeyword(event.target.value)}
+                  placeholder="Cari nama, kode, divisi, atau status cuti..."
+                  className="leave-report-field h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-bold text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
                 />
               </div>
 
@@ -553,7 +553,7 @@ export default function AdminLeaveReportPage() {
                 onChange={(event) =>
                   setStatusFilter(event.target.value as StatusFilter)
                 }
-                className="leave-report-field h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
+                className="leave-report-field h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
               >
                 <option value="all">Semua Status</option>
                 <option value="pending">Menunggu</option>
@@ -586,15 +586,15 @@ export default function AdminLeaveReportPage() {
 
 	                    return (
 	                      <Link
-	                        key={item.id}
-	                        href={`/admin/laporan-cuti/karyawan/${item.id}`}
-	                        className="leave-report-row-enter group relative overflow-hidden rounded-3xl border border-red-100 bg-white p-4 shadow-md shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:border-[#b91c1c]/30 hover:shadow-lg hover:shadow-slate-300/30 active:scale-[0.99] md:p-5"
+                        key={item.id}
+                        href={`/admin/laporan-cuti/karyawan/${item.id}`}
+                        className="leave-report-row-enter group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-md shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-lg hover:shadow-slate-300/30 active:scale-[0.99] md:p-5"
                         style={{
                           animationDelay: `${index * 55}ms`,
                         }}
                       >
-	                        {item.leaveStatus === "pending" ? (
-	                          <span className="absolute right-4 top-4 flex h-3 w-3">
+                        {item.leaveStatus === "pending" ? (
+                          <span className="absolute right-4 top-4 flex h-3 w-3">
                             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
                             <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500 ring-4 ring-emerald-100" />
                           </span>
@@ -602,43 +602,43 @@ export default function AdminLeaveReportPage() {
 
                         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                           <div className="flex min-w-0 items-center gap-3 pr-6">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-base font-black text-[#b91c1c]">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-base font-black text-slate-800 border border-slate-200">
                               {index + 1}
                             </div>
 
-	                            {profilePhoto ? (
-	                              <img
-	                                src={profilePhoto}
-	                                alt={`Foto profil ${item.name}`}
-	                                className="h-12 w-12 shrink-0 rounded-2xl border border-red-100 object-cover"
-	                              />
+                            {profilePhoto ? (
+                              <img
+                                src={profilePhoto}
+                                alt={`Foto profil ${item.name}`}
+                                className="h-12 w-12 shrink-0 rounded-2xl border border-slate-200 object-cover"
+                              />
                             ) : (
-                              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-red-100 bg-[#fef2f2] text-[#b91c1c]">
+                              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 text-slate-800">
                                 <UserRound size={24} strokeWidth={2.6} />
                               </div>
                             )}
 
                             <div className="min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
-	                                <h3 className="truncate text-lg font-black text-slate-950 md:text-xl">
-	                                  {item.name}
-	                                </h3>
+                                <h3 className="truncate text-lg font-black text-slate-950 md:text-xl">
+                                  {item.name}
+                                </h3>
 
-	                                <span
-	                                  className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs font-black ring-1 ${getStatusStyle(
-	                                    item.leaveStatus,
-	                                  )}`}
-	                                >
-	                                  <StatusIcon size={14} strokeWidth={2.6} />
-	                                  {item.leaveStatusLabel}
-	                                </span>
-	                              </div>
+                                <span
+                                  className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs font-black ring-1 ${getStatusStyle(
+                                    item.leaveStatus,
+                                  )}`}
+                                >
+                                  <StatusIcon size={14} strokeWidth={2.6} />
+                                  {item.leaveStatusLabel}
+                                </span>
+                              </div>
                             </div>
                           </div>
 
-                          <span className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 text-sm font-black text-white shadow-lg shadow-red-950/20 transition group-hover:bg-[#7f1d1d] md:min-w-44">
-	                            Detail Karyawan
-	                          </span>
+                          <span className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition group-hover:bg-emerald-700 md:min-w-44">
+                            Detail Karyawan
+                          </span>
                         </div>
                       </Link>
                     );

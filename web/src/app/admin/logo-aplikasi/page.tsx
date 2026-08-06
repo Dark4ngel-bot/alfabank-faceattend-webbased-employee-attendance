@@ -243,7 +243,7 @@ export default function AdminSiteLogoPage() {
                   <button
                     type="submit"
                     disabled={isSaving || !selectedFile}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isSaving ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -257,7 +257,7 @@ export default function AdminSiteLogoPage() {
                     type="button"
                     disabled={isSaving}
                     onClick={handleResetLogo}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#b91c1c] ring-1 ring-red-100 transition hover:bg-[#fee2e2] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-slate-800 ring-1 ring-slate-200 transition hover:bg-slate-100 hover:text-slate-950 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <RotateCcw size={18} strokeWidth={2.7} />
                     Reset Default

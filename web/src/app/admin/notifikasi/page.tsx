@@ -642,7 +642,7 @@ export default function AdminNotificationsPage() {
 
                         <Link
                           href={item.href}
-                          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.97]"
+                          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 text-sm font-black text-white shadow-lg shadow-slate-950/20 transition hover:bg-slate-800 active:scale-[0.97]"
                         >
                           <UserRound size={17} />
                           Lihat Detail
