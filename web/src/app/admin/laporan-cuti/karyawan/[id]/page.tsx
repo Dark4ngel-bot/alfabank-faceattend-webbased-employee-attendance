@@ -451,15 +451,15 @@ export default function AdminEmployeeLeaveDetailPage() {
           <button
             type="button"
             onClick={() => router.push("/admin/laporan-cuti")}
-            className="leave-employee-detail-enter inline-flex h-11 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-black text-[#123c8c] ring-1 ring-blue-100 transition hover:bg-[#f8fbff] active:scale-[0.98]"
+            className="leave-employee-detail-enter inline-flex h-11 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-black text-[#b91c1c] ring-1 ring-red-100 transition hover:bg-[#fef2f2] active:scale-[0.98]"
           >
             <ArrowLeft size={18} strokeWidth={2.6} />
             Kembali ke Laporan Cuti
           </button>
 
           {isLoading ? (
-            <div className="leave-employee-detail-enter flex items-center justify-center gap-2 rounded-[2rem] border border-blue-100 bg-white px-5 py-14 text-sm font-bold text-slate-500 shadow-xl shadow-slate-300/30">
-              <Loader2 size={18} className="animate-spin text-[#123c8c]" />
+            <div className="leave-employee-detail-enter flex items-center justify-center gap-2 rounded-[2rem] border border-red-100 bg-white px-5 py-14 text-sm font-bold text-slate-500 shadow-xl shadow-slate-300/30">
+              <Loader2 size={18} className="animate-spin text-[#b91c1c]" />
               Memuat detail cuti karyawan...
             </div>
           ) : errorMessage || !employee ? (
@@ -468,17 +468,17 @@ export default function AdminEmployeeLeaveDetailPage() {
             </div>
           ) : (
             <>
-              <article className="leave-employee-detail-enter rounded-3xl border border-blue-100 bg-white p-5 shadow-lg shadow-slate-300/20 md:p-6">
+              <article className="leave-employee-detail-enter rounded-3xl border border-red-100 bg-white p-5 shadow-lg shadow-slate-300/20 md:p-6">
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                   <div className="flex min-w-0 items-center gap-4">
                     {profilePhoto ? (
                       <img
                         src={profilePhoto}
                         alt={`Foto profil ${employee.name}`}
-                        className="h-14 w-14 shrink-0 rounded-2xl border border-blue-100 object-cover"
+                        className="h-14 w-14 shrink-0 rounded-2xl border border-red-100 object-cover"
                       />
                     ) : (
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eef4ff] text-[#123c8c]">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eef4ff] text-[#b91c1c]">
                         <UserRound size={28} strokeWidth={2.6} />
                       </div>
                     )}
@@ -529,14 +529,14 @@ export default function AdminEmployeeLeaveDetailPage() {
                     </p>
                   </div>
 
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf1ff] text-[#123c8c]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fee2e2] text-[#b91c1c]">
                     <CalendarDays size={22} strokeWidth={2.6} />
                   </div>
                 </div>
 
                 <div className="mt-5 grid gap-3">
                   {requests.length === 0 ? (
-                    <div className="rounded-3xl border border-dashed border-blue-100 bg-[#f8fbff] px-5 py-10 text-center text-sm font-black text-slate-500">
+                    <div className="rounded-3xl border border-dashed border-red-100 bg-[#fef2f2] px-5 py-10 text-center text-sm font-black text-slate-500">
                       Karyawan ini belum pernah mengajukan cuti.
                     </div>
                   ) : (
@@ -548,7 +548,7 @@ export default function AdminEmployeeLeaveDetailPage() {
                       return (
                         <article
                           key={request.id}
-                          className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm shadow-slate-200/60"
+                          className="rounded-2xl border border-red-100 bg-white p-4 shadow-sm shadow-slate-200/60"
                         >
                           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div className="min-w-0 space-y-2">
@@ -633,7 +633,7 @@ export default function AdminEmployeeLeaveDetailPage() {
           <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                   Jawaban Admin
                 </p>
                 <h2 className="mt-2 text-2xl font-black text-slate-950">
@@ -652,7 +652,7 @@ export default function AdminEmployeeLeaveDetailPage() {
               </button>
             </div>
 
-            <div className="mt-5 rounded-2xl bg-[#f8fbff] p-4">
+            <div className="mt-5 rounded-2xl bg-[#fef2f2] p-4">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
                 Pengajuan
               </p>
@@ -667,7 +667,7 @@ export default function AdminEmployeeLeaveDetailPage() {
             <select
               value={selectedAnswer}
               onChange={(event) => handleSelectedAnswerChange(event.target.value)}
-              className="mt-2 h-14 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+              className="mt-2 h-14 w-full rounded-2xl border border-red-100 bg-[#fef2f2] px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
             >
               {currentAnswerOptions.map((option) => (
                 <option key={option.label} value={option.value}>
@@ -686,7 +686,7 @@ export default function AdminEmployeeLeaveDetailPage() {
               value={adminNote}
               onChange={(event) => setAdminNote(event.target.value)}
               placeholder="Tulis jawaban admin jika diperlukan..."
-              className="mt-2 min-h-32 w-full resize-none rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+              className="mt-2 min-h-32 w-full resize-none rounded-2xl border border-red-100 bg-[#fef2f2] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
             />
 
             <div className="mt-6 flex flex-col-reverse gap-3 md:flex-row md:justify-end">

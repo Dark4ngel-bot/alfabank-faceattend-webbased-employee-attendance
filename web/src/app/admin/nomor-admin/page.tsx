@@ -231,14 +231,14 @@ export default function AdminContactNumbersPage() {
       <main className="min-h-[calc(100dvh-88px)] bg-[#f6f8ff] px-4 pb-24 pt-6 md:px-8 lg:px-16">
         <AppPageTransition className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[0.9fr_1.4fr]">
           <AppFormReveal delay={60} className="h-full">
-            <section className="h-full rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
+            <section className="h-full rounded-[1.5rem] border border-red-100 bg-white p-5 shadow-xl shadow-slate-200/50">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ecfff5] text-[#00a884] ring-1 ring-[#baf7dc]">
                   <PhoneCall size={23} strokeWidth={2.7} />
                 </div>
 
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                     Nomor Aktif
                   </p>
                   <h2 className="text-xl font-black tracking-tight text-slate-950">
@@ -257,7 +257,7 @@ export default function AdminContactNumbersPage() {
                   <input
                     value={label}
                     onChange={(event) => setLabel(event.target.value)}
-                    className="mt-2 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    className="mt-2 w-full rounded-2xl border border-red-100 bg-[#fef2f2] px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                     placeholder="Admin AlfaBank"
                   />
                 </label>
@@ -270,7 +270,7 @@ export default function AdminContactNumbersPage() {
                     value={phoneNumber}
                     onChange={(event) => setPhoneNumber(event.target.value)}
                     inputMode="tel"
-                    className="mt-2 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    className="mt-2 w-full rounded-2xl border border-red-100 bg-[#fef2f2] px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                     placeholder="081234567890"
                   />
                 </label>
@@ -299,7 +299,7 @@ export default function AdminContactNumbersPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -313,10 +313,10 @@ export default function AdminContactNumbersPage() {
           </AppFormReveal>
 
           <AppFormReveal delay={140} className="h-full">
-            <section className="h-full rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
+            <section className="h-full rounded-[1.5rem] border border-red-100 bg-white p-5 shadow-xl shadow-slate-200/50">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                     Daftar Nomor
                   </p>
                   <h2 className="text-xl font-black tracking-tight text-slate-950">
@@ -343,7 +343,7 @@ export default function AdminContactNumbersPage() {
                 ) : null}
 
                 {!isLoading && numbers.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-blue-200 bg-[#f8fbff] px-4 py-8 text-center text-sm font-bold text-slate-500">
+                  <div className="rounded-2xl border border-dashed border-red-200 bg-[#fef2f2] px-4 py-8 text-center text-sm font-bold text-slate-500">
                     Belum ada nomor admin.
                   </div>
                 ) : null}
@@ -357,7 +357,7 @@ export default function AdminContactNumbersPage() {
                       className={`rounded-2xl border p-4 transition ${
                         number.is_active
                           ? "border-emerald-200 bg-emerald-50/70"
-                          : "border-blue-100 bg-[#f8fbff]"
+                          : "border-red-100 bg-[#fef2f2]"
                       }`}
                     >
                       {isEditing ? (
@@ -367,7 +367,7 @@ export default function AdminContactNumbersPage() {
                             onChange={(event) =>
                               setEditingLabel(event.target.value)
                             }
-                            className="rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
+                            className="rounded-xl border border-red-100 bg-white px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-[#b91c1c]"
                           />
                           <input
                             value={editingPhoneNumber}
@@ -375,7 +375,7 @@ export default function AdminContactNumbersPage() {
                               setEditingPhoneNumber(event.target.value)
                             }
                             inputMode="tel"
-                            className="rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-[#123c8c]"
+                            className="rounded-xl border border-red-100 bg-white px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-[#b91c1c]"
                           />
                         </div>
                       ) : (
@@ -415,7 +415,7 @@ export default function AdminContactNumbersPage() {
                                   phone_number: editingPhoneNumber,
                                 })
                               }
-                              className="inline-flex items-center gap-2 rounded-xl bg-[#123c8c] px-3 py-2 text-xs font-black text-white transition active:scale-[0.97] disabled:opacity-60"
+                              className="inline-flex items-center gap-2 rounded-xl bg-[#b91c1c] px-3 py-2 text-xs font-black text-white transition active:scale-[0.97] disabled:opacity-60"
                             >
                               <Save size={15} strokeWidth={2.7} />
                               Simpan
@@ -449,7 +449,7 @@ export default function AdminContactNumbersPage() {
                             <button
                               type="button"
                               onClick={() => startEdit(number)}
-                              className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-[#123c8c] ring-1 ring-blue-100 transition active:scale-[0.97]"
+                              className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-[#b91c1c] ring-1 ring-red-100 transition active:scale-[0.97]"
                             >
                               <Pencil size={15} strokeWidth={2.7} />
                               Edit

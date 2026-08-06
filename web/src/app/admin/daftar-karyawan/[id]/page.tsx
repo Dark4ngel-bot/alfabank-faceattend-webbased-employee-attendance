@@ -317,13 +317,13 @@ function DetailCard({
 }) {
   return (
     <div
-      className="employee-detail-card-enter rounded-[1.6rem] border border-blue-100 bg-white p-5 shadow-lg shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40"
+      className="employee-detail-card-enter rounded-[1.6rem] border border-red-100 bg-white p-5 shadow-lg shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40"
       style={{
         animationDelay: `${delay}ms`,
       }}
     >
       <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
           <Icon size={23} strokeWidth={2.7} />
         </div>
 
@@ -356,7 +356,7 @@ function SectionTitle({
 }) {
   return (
     <div>
-      <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+      <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
         {title}
       </p>
       <h2 className="mt-2 text-2xl font-black text-slate-950">{subtitle}</h2>
@@ -437,16 +437,16 @@ export default function AdminEmployeeDetailPage() {
       <main className="mx-auto max-w-7xl px-5 py-6 pb-28 md:px-10 lg:px-16">
         <Link
           href="/admin/daftar-karyawan"
-          className="employee-detail-enter inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#123c8c] shadow-sm ring-1 ring-blue-100 transition hover:bg-[#f8fbff] active:scale-[0.98]"
+          className="employee-detail-enter inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#b91c1c] shadow-sm ring-1 ring-red-100 transition hover:bg-[#fef2f2] active:scale-[0.98]"
         >
           <ArrowLeft size={18} strokeWidth={2.7} />
           Kembali ke Karyawan
         </Link>
 
         {isLoading ? (
-          <div className="employee-detail-enter mt-6 flex min-h-[360px] items-center justify-center rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-200/50">
+          <div className="employee-detail-enter mt-6 flex min-h-[360px] items-center justify-center rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-200/50">
             <div className="text-center">
-              <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#123c8c]" />
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#b91c1c]" />
               <p className="mt-3 text-sm font-black text-slate-600">
                 Mengambil data karyawan...
               </p>
@@ -458,9 +458,9 @@ export default function AdminEmployeeDetailPage() {
           </div>
         ) : (
           <>
-            <section className="employee-detail-enter mt-6 overflow-hidden rounded-[2.2rem] border border-blue-100 bg-white shadow-2xl shadow-slate-300/30">
+            <section className="employee-detail-enter mt-6 overflow-hidden rounded-[2.2rem] border border-red-100 bg-white shadow-2xl shadow-slate-300/30">
               <div className="grid lg:grid-cols-[0.82fr_1.18fr]">
-                <div className="relative overflow-hidden bg-[#123c8c] p-7 text-white md:p-8">
+                <div className="relative overflow-hidden bg-[#b91c1c] p-7 text-white md:p-8">
                   <div className="relative z-10">
                     <EmployeeProfileAvatar employee={employee} />
 
@@ -468,7 +468,7 @@ export default function AdminEmployeeDetailPage() {
                       className="employee-detail-card-enter mt-6"
                       style={{ animationDelay: "80ms" }}
                     >
-                      <p className="text-xs font-black uppercase tracking-[0.24em] text-blue-100">
+                      <p className="text-xs font-black uppercase tracking-[0.24em] text-red-100">
                         Profil Karyawan
                       </p>
 
@@ -490,7 +490,7 @@ export default function AdminEmployeeDetailPage() {
                         <button
                           type="button"
                           onClick={() => setIsIdCardModalOpen(true)}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-4 py-2 text-xs font-black text-white backdrop-blur-sm transition hover:bg-white hover:text-[#123c8c] active:scale-95"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-4 py-2 text-xs font-black text-white backdrop-blur-sm transition hover:bg-white hover:text-[#b91c1c] active:scale-95"
                         >
                           <IdCard size={15} />
                           Kartu Identitas Digital
@@ -498,11 +498,11 @@ export default function AdminEmployeeDetailPage() {
                       </div>
 
                       {profilePhoto ? (
-                        <p className="mt-4 text-xs font-semibold text-blue-100">
+                        <p className="mt-4 text-xs font-semibold text-red-100">
                           Foto profil tersimpan pada akun karyawan.
                         </p>
                       ) : (
-                        <p className="mt-4 text-xs font-semibold text-blue-100">
+                        <p className="mt-4 text-xs font-semibold text-red-100">
                           Karyawan belum memiliki foto profil.
                         </p>
                       )}
@@ -569,7 +569,7 @@ export default function AdminEmployeeDetailPage() {
             </section>
 
             <section
-              className="employee-detail-enter mt-6 rounded-[2rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-300/30 md:p-6"
+              className="employee-detail-enter mt-6 rounded-[2rem] border border-red-100 bg-white p-5 shadow-xl shadow-slate-300/30 md:p-6"
               style={{ animationDelay: "120ms" }}
             >
               <SectionTitle
@@ -680,7 +680,7 @@ export default function AdminEmployeeDetailPage() {
             </section>
 
             <section
-              className="employee-detail-enter mt-6 rounded-[2rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-300/30 md:p-6"
+              className="employee-detail-enter mt-6 rounded-[2rem] border border-red-100 bg-white p-5 shadow-xl shadow-slate-300/30 md:p-6"
               style={{ animationDelay: "160ms" }}
             >
               <SectionTitle
@@ -690,10 +690,10 @@ export default function AdminEmployeeDetailPage() {
 
               <div className="mt-5 grid gap-4 md:grid-cols-3">
                 <div
-                  className="employee-detail-card-enter rounded-[1.6rem] bg-[#f8fbff] p-5 ring-1 ring-blue-50 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60"
+                  className="employee-detail-card-enter rounded-[1.6rem] bg-[#fef2f2] p-5 ring-1 ring-red-100 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60"
                   style={{ animationDelay: "80ms" }}
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
                     <UsersRound size={24} strokeWidth={2.7} />
                   </div>
                   <p className="mt-4 text-xs font-black uppercase tracking-[0.18em] text-slate-400">
@@ -705,7 +705,7 @@ export default function AdminEmployeeDetailPage() {
                 </div>
 
                 <div
-                  className="employee-detail-card-enter rounded-[1.6rem] bg-[#f8fbff] p-5 ring-1 ring-blue-50 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60"
+                  className="employee-detail-card-enter rounded-[1.6rem] bg-[#fef2f2] p-5 ring-1 ring-red-100 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60"
                   style={{ animationDelay: "120ms" }}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
@@ -720,10 +720,10 @@ export default function AdminEmployeeDetailPage() {
                 </div>
 
                 <div
-                  className="employee-detail-card-enter rounded-[1.6rem] bg-[#f8fbff] p-5 ring-1 ring-blue-50 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60"
+                  className="employee-detail-card-enter rounded-[1.6rem] bg-[#fef2f2] p-5 ring-1 ring-red-100 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/60"
                   style={{ animationDelay: "160ms" }}
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
                     <BriefcaseBusiness size={24} strokeWidth={2.7} />
                   </div>
                   <p className="mt-4 text-xs font-black uppercase tracking-[0.18em] text-slate-400">

@@ -211,16 +211,16 @@ function MobileHeader() {
     <section className="history-enter mx-auto max-w-7xl px-5 pt-7 md:hidden">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">
+          <p className="text-xs font-black uppercase tracking-[0.28em] text-[#b91c1c]">
             Presensi
           </p>
 
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-[#073456]">
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-[#7f1d1d]">
             Laporan Presensi
           </h1>
         </div>
 
-        <div className="history-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#123c8c] text-white ring-1 ring-[#123c8c]">
+        <div className="history-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#b91c1c] text-white ring-1 ring-[#b91c1c]">
           <History size={24} strokeWidth={2.6} />
         </div>
       </div>
@@ -241,7 +241,7 @@ function DesktopHero({
 }) {
   return (
     <section className="mx-auto hidden max-w-7xl px-10 pt-8 md:block lg:px-16">
-      <div className="history-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-8 text-white shadow-2xl shadow-blue-900/25">
+      <div className="history-enter relative overflow-hidden rounded-[2.2rem] bg-[#b91c1c] p-8 text-white shadow-2xl shadow-red-950/25">
         <div className="relative z-10 flex items-center justify-between gap-8">
           <div className="flex items-center gap-5">
             <div className="history-icon-pop flex h-20 w-20 shrink-0 items-center justify-center rounded-[1.6rem] bg-white/15 text-white ring-1 ring-white/20">
@@ -289,7 +289,7 @@ function StatCard({
     <div className="history-row-enter" style={{ animationDelay: delay }}>
       <AppCard
         padding="sm"
-        className="rounded-3xl bg-[#f8fbff] shadow-none transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-lg hover:shadow-slate-200/60"
+        className="rounded-3xl bg-[#fef2f2] shadow-none transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-lg hover:shadow-slate-200/60"
       >
         <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
           {label}
@@ -335,12 +335,12 @@ function FilterCard({
       className="history-enter rounded-[1.8rem] shadow-none md:p-6"
     >
       <div className="flex items-center gap-4">
-        <div className="history-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+        <div className="history-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
           <CalendarDays size={24} strokeWidth={2.6} />
         </div>
 
         <div className="min-w-0">
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
             Filter Riwayat
           </p>
 
@@ -461,7 +461,7 @@ function AttendanceRecordCard({
               <div className="flex items-center gap-2">
                 <Clock3
                   size={17}
-                  className="shrink-0 text-[#123c8c]"
+                  className="shrink-0 text-[#b91c1c]"
                   strokeWidth={2.6}
                 />
                 <span>
@@ -472,7 +472,7 @@ function AttendanceRecordCard({
               <div className="flex items-center gap-2">
                 <TimerReset
                   size={17}
-                  className="shrink-0 text-[#123c8c]"
+                  className="shrink-0 text-[#b91c1c]"
                   strokeWidth={2.6}
                 />
                 <span>{formatWorkDuration(item.workMinutes)}</span>
@@ -483,7 +483,7 @@ function AttendanceRecordCard({
 	          </div>
 	        </div>
 
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#f8fbff] text-slate-400 transition group-hover:text-[#123c8c]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#fff5f5] text-slate-400 transition group-hover:text-[#b91c1c]">
           <ChevronRight size={20} strokeWidth={2.6} />
         </div>
       </div>

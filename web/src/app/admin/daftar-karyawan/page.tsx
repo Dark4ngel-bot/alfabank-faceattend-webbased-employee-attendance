@@ -354,7 +354,7 @@ function EmployeeAvatar({ employee }: { employee: Employee }) {
 
   if (profilePhoto && !imageError) {
     return (
-      <div className="h-11 w-11 shrink-0 overflow-hidden rounded-2xl bg-[#eaf1ff] ring-1 ring-blue-100">
+      <div className="h-11 w-11 shrink-0 overflow-hidden rounded-2xl bg-[#fee2e2] ring-1 ring-red-100">
         <img
           src={profilePhoto}
           alt={`Foto profil ${employee.name}`}
@@ -366,7 +366,7 @@ function EmployeeAvatar({ employee }: { employee: Employee }) {
   }
 
   return (
-    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-sm font-black text-[#123c8c]">
+    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-sm font-black text-[#b91c1c]">
       {getInitialName(employee.name)}
     </div>
   );
@@ -386,7 +386,7 @@ function getRelationName(
 function getAlertTheme(type: NonNullable<EmployeeAlert>["type"]) {
   if (type === "success") {
     return {
-      shell: "from-emerald-50 via-white to-blue-50",
+      shell: "from-emerald-50 via-white to-red-50",
       iconWrap: "bg-emerald-100 text-emerald-600",
       badge: "text-emerald-600 bg-white/70",
       button: "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20",
@@ -397,7 +397,7 @@ function getAlertTheme(type: NonNullable<EmployeeAlert>["type"]) {
 
   if (type === "error") {
     return {
-      shell: "from-red-50 via-white to-blue-50",
+      shell: "from-red-50 via-white to-red-50",
       iconWrap: "bg-red-100 text-red-600",
       badge: "text-red-600 bg-white/70",
       button: "bg-red-600 hover:bg-red-700 shadow-red-900/20",
@@ -408,20 +408,20 @@ function getAlertTheme(type: NonNullable<EmployeeAlert>["type"]) {
 
   if (type === "info") {
     return {
-      shell: "from-blue-50 via-white to-blue-50",
-      iconWrap: "bg-blue-100 text-[#123c8c]",
-      badge: "text-[#123c8c] bg-white/70",
-      button: "bg-[#123c8c] hover:bg-[#0f3274] shadow-blue-900/20",
+      shell: "from-red-50 via-white to-red-50",
+      iconWrap: "bg-red-100 text-[#b91c1c]",
+      badge: "text-[#b91c1c] bg-white/70",
+      button: "bg-[#b91c1c] hover:bg-[#7f1d1d] shadow-red-950/20",
       icon: Info,
       label: "INFO",
     };
   }
 
   return {
-    shell: "from-orange-50 via-white to-blue-50",
+    shell: "from-orange-50 via-white to-red-50",
     iconWrap: "bg-orange-100 text-orange-600",
     badge: "text-orange-600 bg-white/70",
-    button: "bg-[#526fae] hover:bg-[#46629d] shadow-blue-900/20",
+    button: "bg-[#526fae] hover:bg-[#46629d] shadow-red-950/20",
     icon: AlertTriangle,
     label: "PERHATIAN",
   };
@@ -1172,10 +1172,10 @@ export default function AdminEmployeesPage() {
       <AppHeader title="Karyawan" variant="admin" />
 
       <main className="mx-auto max-w-7xl px-5 py-6 pb-28 md:px-10 lg:px-16">
-        <section className="employee-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-6 text-white shadow-2xl shadow-blue-900/25 md:p-8">
+        <section className="employee-enter relative overflow-hidden rounded-[2.2rem] bg-[#b91c1c] p-6 text-white shadow-2xl shadow-red-950/25 md:p-8">
           <div className="relative z-10 flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-blue-100">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-red-100">
                 <ShieldCheck size={15} />
                 Manajemen Karyawan
               </div>
@@ -1196,7 +1196,7 @@ export default function AdminEmployeesPage() {
 
         <section className="mt-6 grid gap-4 md:grid-cols-3">
           <div
-            className="employee-row-enter rounded-[1.7rem] border border-blue-100 bg-white/90 p-5 shadow-xl shadow-slate-300/30"
+            className="employee-row-enter rounded-[1.7rem] border border-red-100 bg-white/90 p-5 shadow-xl shadow-slate-300/30"
             style={{ animationDelay: "70ms" }}
           >
             <div className="flex items-center justify-between">
@@ -1209,7 +1209,7 @@ export default function AdminEmployeesPage() {
                 </h3>
               </div>
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
                 <UsersRound size={25} strokeWidth={2.7} />
               </div>
             </div>
@@ -1278,14 +1278,14 @@ export default function AdminEmployeesPage() {
                   value={keyword}
                   onChange={(event) => setKeyword(event.target.value)}
                   placeholder="Cari karyawan..."
-                  className="employee-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="employee-field w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 />
               </div>
 
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-                className="employee-field rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-xs font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                className="employee-field rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-3 text-xs font-black text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
               >
                 <option value="asc">Nama: A - Z</option>
                 <option value="desc">Nama: Z - A</option>
@@ -1295,7 +1295,7 @@ export default function AdminEmployeesPage() {
 
           <div className="mt-5 space-y-3 md:hidden">
             {isLoading && (
-              <div className="rounded-3xl border border-blue-100 bg-white p-8 text-center font-black text-slate-700">
+              <div className="rounded-3xl border border-red-100 bg-white p-8 text-center font-black text-slate-700">
                 Loading employee data...
               </div>
             )}
@@ -1307,7 +1307,7 @@ export default function AdminEmployeesPage() {
                   onClick={() =>
                     router.push(`/admin/daftar-karyawan/${employee.id}`)
                   }
-                  className="employee-row-enter rounded-3xl border border-blue-100 bg-white p-4 shadow-sm transition active:bg-blue-50"
+                  className="employee-row-enter rounded-3xl border border-red-100 bg-white p-4 shadow-sm transition active:bg-red-50"
                   style={{ animationDelay: `${index * 45}ms` }}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -1348,8 +1348,8 @@ export default function AdminEmployeesPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase text-[#123c8c]">WFH</p>
-                      <p className="mt-0.5 text-xs font-black text-[#123c8c]">
+                      <p className="text-[10px] font-black uppercase text-[#b91c1c]">WFH</p>
+                      <p className="mt-0.5 text-xs font-black text-[#b91c1c]">
                         {formatWfhQuota(employee.wfh_quota_monthly)} Hari
                       </p>
                     </div>
@@ -1362,7 +1362,7 @@ export default function AdminEmployeesPage() {
                         e.stopPropagation();
                         openEditModal(employee);
                       }}
-                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-blue-100 bg-white px-3 text-xs font-black text-[#123c8c]"
+                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-red-100 bg-white px-3 text-xs font-black text-[#b91c1c]"
                     >
                       <Edit size={14} />
                       Edit
@@ -1384,10 +1384,10 @@ export default function AdminEmployeesPage() {
               ))}
           </div>
 
-          <div className="mt-5 hidden overflow-hidden rounded-3xl border border-blue-100 bg-white md:block">
+          <div className="mt-5 hidden overflow-hidden rounded-3xl border border-red-100 bg-white md:block">
             <table className="w-full table-fixed border-collapse text-left">
               <thead>
-                <tr className="bg-[#f6f8ff] text-[11px] font-black uppercase tracking-[0.18em] text-[#123c8c]">
+                <tr className="bg-[#f6f8ff] text-[11px] font-black uppercase tracking-[0.18em] text-[#b91c1c]">
                   <th className="w-[22%] px-4 py-4">Karyawan</th>
                   <th className="w-[20%] px-4 py-4">Email</th>
                   <th className="w-[12%] px-3 py-4">Kantor</th>
@@ -1398,7 +1398,7 @@ export default function AdminEmployeesPage() {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-blue-50">
+              <tbody className="divide-y divide-red-100">
                 {isLoading && (
                   <tr>
                     <td colSpan={7} className="px-6 py-10 text-center font-black text-slate-700">
@@ -1414,7 +1414,7 @@ export default function AdminEmployeesPage() {
                       onClick={() =>
                         router.push(`/admin/daftar-karyawan/${employee.id}`)
                       }
-                      className="employee-row-enter cursor-pointer transition duration-200 hover:bg-[#f8fbff] active:bg-[#eef4ff]"
+                      className="employee-row-enter cursor-pointer transition duration-200 hover:bg-[#fef2f2] active:bg-[#eef4ff]"
                       style={{
                         animationDelay: `${index * 45}ms`,
                       }}
@@ -1427,7 +1427,7 @@ export default function AdminEmployeesPage() {
                             <p className="truncate text-sm font-black text-slate-950">
                               {employee.name}
                             </p>
-                            <p className="mt-0.5 truncate text-[11px] font-black uppercase tracking-[0.12em] text-[#123c8c]">
+                            <p className="mt-0.5 truncate text-[11px] font-black uppercase tracking-[0.12em] text-[#b91c1c]">
                               {employee.employee_code ? `${employee.employee_code} • ` : ""}
                               {getRelationName(employee.department) !== "-"
                                 ? getRelationName(employee.department)
@@ -1439,7 +1439,7 @@ export default function AdminEmployeesPage() {
                                   "admin" ||
                                 String(employee.role || "").toLowerCase() ===
                                   "owner"
-                                  ? "bg-blue-50 text-[#123c8c]"
+                                  ? "bg-red-50 text-[#b91c1c]"
                                   : "bg-slate-100 text-slate-500"
                               }`}
                             >
@@ -1461,7 +1461,7 @@ export default function AdminEmployeesPage() {
                         <p className="truncate">{getRelationName(employee.shift)}</p>
                       </td>
 
-                      <td className="px-2 py-4 text-center text-sm font-black text-[#123c8c]">
+                      <td className="px-2 py-4 text-center text-sm font-black text-[#b91c1c]">
                         {formatWfhQuota(employee.wfh_quota_monthly)}
                       </td>
 
@@ -1485,7 +1485,7 @@ export default function AdminEmployeesPage() {
                               event.stopPropagation();
                               openEditModal(employee);
                             }}
-                            className="inline-flex h-9 items-center justify-center gap-1 rounded-xl border border-blue-100 bg-white px-2.5 text-xs font-black text-[#123c8c] shadow-none transition hover:bg-[#eaf1ff]"
+                            className="inline-flex h-9 items-center justify-center gap-1 rounded-xl border border-red-100 bg-white px-2.5 text-xs font-black text-[#b91c1c] shadow-none transition hover:bg-[#fee2e2]"
                           >
                             <Edit size={14} />
                             Edit
@@ -1529,7 +1529,7 @@ export default function AdminEmployeesPage() {
           <AppModalPanel>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-[#eaf1ff] px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#123c8c]">
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#fee2e2] px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#b91c1c]">
                   <UserRound size={15} strokeWidth={3} />
                   {editingEmployee ? "Perbarui Karyawan" : "Tambah Karyawan"}
                 </div>
@@ -1558,8 +1558,8 @@ export default function AdminEmployeesPage() {
                   onClick={() => setActiveModalTab("account")}
                   className={`flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-black transition ${
                     activeModalTab === "account"
-                      ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
-                      : "bg-[#f6f8ff] text-slate-600 hover:bg-blue-50"
+                      ? "bg-[#b91c1c] text-white shadow-md shadow-red-950/20"
+                      : "bg-[#f6f8ff] text-slate-600 hover:bg-red-50"
                   }`}
                 >
                   <UserRound size={15} />
@@ -1571,8 +1571,8 @@ export default function AdminEmployeesPage() {
                   onClick={() => setActiveModalTab("structure")}
                   className={`flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-black transition ${
                     activeModalTab === "structure"
-                      ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
-                      : "bg-[#f6f8ff] text-slate-600 hover:bg-blue-50"
+                      ? "bg-[#b91c1c] text-white shadow-md shadow-red-950/20"
+                      : "bg-[#f6f8ff] text-slate-600 hover:bg-red-50"
                   }`}
                 >
                   <Building2 size={15} />
@@ -1584,8 +1584,8 @@ export default function AdminEmployeesPage() {
                   onClick={() => setActiveModalTab("employment")}
                   className={`flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-black transition ${
                     activeModalTab === "employment"
-                      ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
-                      : "bg-[#f6f8ff] text-slate-600 hover:bg-blue-50"
+                      ? "bg-[#b91c1c] text-white shadow-md shadow-red-950/20"
+                      : "bg-[#f6f8ff] text-slate-600 hover:bg-red-50"
                   }`}
                 >
                   <BadgeCheck size={15} />
@@ -1597,8 +1597,8 @@ export default function AdminEmployeesPage() {
                   onClick={() => setActiveModalTab("payroll")}
                   className={`flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-black transition ${
                     activeModalTab === "payroll"
-                      ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
-                      : "bg-[#f6f8ff] text-slate-600 hover:bg-blue-50"
+                      ? "bg-[#b91c1c] text-white shadow-md shadow-red-950/20"
+                      : "bg-[#f6f8ff] text-slate-600 hover:bg-red-50"
                   }`}
                 >
                   <CreditCard size={15} />
@@ -1639,7 +1639,7 @@ export default function AdminEmployeesPage() {
                             }))
                           }
                           placeholder="Nama karyawan"
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -1665,7 +1665,7 @@ export default function AdminEmployeesPage() {
                             }))
                           }
                           placeholder={CREATIVEMU_EMAIL_EXAMPLE}
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -1691,7 +1691,7 @@ export default function AdminEmployeesPage() {
                           }
                           maxLength={30}
                           placeholder="Contoh: CR-001"
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -1713,7 +1713,7 @@ export default function AdminEmployeesPage() {
                               role: event.target.value as "admin" | "employee",
                             }))
                           }
-                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full appearance-none rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         >
                           <option value="employee">Employee</option>
                           <option value="admin">Admin</option>
@@ -1746,14 +1746,14 @@ export default function AdminEmployeesPage() {
                               ? "Biarkan kosong jika tidak diubah"
                               : "Password sementara"
                           }
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         />
                         <button
                           type="button"
                           onClick={() =>
                             setShowTemporaryPassword((prev) => !prev)
                           }
-                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#b91c1c]"
                         >
                           {showTemporaryPassword ? (
                             <EyeOff size={18} />
@@ -1789,14 +1789,14 @@ export default function AdminEmployeesPage() {
                               ? "Ulangi password baru"
                               : "Ulangi password"
                           }
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         />
                         <button
                           type="button"
                           onClick={() =>
                             setShowConfirmTemporaryPassword((prev) => !prev)
                           }
-                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#b91c1c]"
                         >
                           {showConfirmTemporaryPassword ? (
                             <EyeOff size={18} />
@@ -1831,7 +1831,7 @@ export default function AdminEmployeesPage() {
                               registered_office_id: event.target.value,
                             }))
                           }
-                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full appearance-none rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         >
                           <option value="">Pilih Kantor</option>
                           {activeOffices.map((office) => (
@@ -1860,7 +1860,7 @@ export default function AdminEmployeesPage() {
                               department_id: event.target.value,
                             }))
                           }
-                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full appearance-none rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         >
                           <option value="">Pilih Divisi</option>
                           {filteredDepartments.map((department) => (
@@ -1891,7 +1891,7 @@ export default function AdminEmployeesPage() {
                               jabatan_id: event.target.value,
                             }))
                           }
-                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full appearance-none rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         >
                           <option value="">Pilih Jabatan</option>
                           {filteredJabatans.map((jabatan) => (
@@ -1920,7 +1920,7 @@ export default function AdminEmployeesPage() {
                               position_id: event.target.value,
                             }))
                           }
-                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full appearance-none rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         >
                           <option value="">Pilih Posisi</option>
                           {filteredPositions.map((position) => (
@@ -1958,7 +1958,7 @@ export default function AdminEmployeesPage() {
                                   : prev.employment_end_date,
                             }));
                           }}
-                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full appearance-none rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         >
                           <option value="">Pilih Shift</option>
                           {activeShifts.map((shift) => (
@@ -1990,7 +1990,7 @@ export default function AdminEmployeesPage() {
                               status: event.target.value as "active" | "inactive",
                             }))
                           }
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         >
                           <option value="active">Aktif</option>
                           <option value="inactive">Nonaktif</option>
@@ -2011,7 +2011,7 @@ export default function AdminEmployeesPage() {
                               employment_status: event.target.value,
                             }))
                           }
-                          className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full appearance-none rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         >
                           <option value="">Pilih Status Kepegawaian</option>
                           {activeEmploymentStatuses.map((status) => (
@@ -2051,7 +2051,7 @@ export default function AdminEmployeesPage() {
                               employment_start_date: event.target.value,
                             }))
                           }
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -2076,7 +2076,7 @@ export default function AdminEmployeesPage() {
                               }))
                             }
                             min={form.employment_start_date || undefined}
-                            className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                            className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                           />
                         </div>
                       </div>
@@ -2105,7 +2105,7 @@ export default function AdminEmployeesPage() {
                           pattern="[0-9]*"
                           maxLength={3}
                           placeholder="0"
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -2131,7 +2131,7 @@ export default function AdminEmployeesPage() {
                           pattern="[0-9]*"
                           maxLength={3}
                           placeholder="12"
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -2161,7 +2161,7 @@ export default function AdminEmployeesPage() {
                             }))
                           }
                           placeholder="Contoh: Jakarta"
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -2184,7 +2184,7 @@ export default function AdminEmployeesPage() {
                               birth_date: event.target.value,
                             }))
                           }
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -2208,7 +2208,7 @@ export default function AdminEmployeesPage() {
                         pattern="[0-9]*"
                         maxLength={16}
                         placeholder="Masukkan NIK"
-                        className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                       />
                     </div>
                   </div>
@@ -2243,7 +2243,7 @@ export default function AdminEmployeesPage() {
                           pattern="[0-9]*"
                           maxLength={16}
                           placeholder="Masukkan no rekening"
-                          className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                         />
                       </div>
                     </div>
@@ -2264,7 +2264,7 @@ export default function AdminEmployeesPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="rounded-2xl bg-[#123c8c] px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-2xl bg-[#b91c1c] px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSaving
                     ? "Saving..."

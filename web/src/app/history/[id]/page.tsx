@@ -526,12 +526,12 @@ function LocationCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="history-detail-icon-pop flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+          <div className="history-detail-icon-pop flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
             <MapPin size={23} strokeWidth={2.6} />
           </div>
 
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#b91c1c]">
               Lokasi GPS
             </p>
 
@@ -699,7 +699,7 @@ export default function HistoryDetailPage() {
 
             <Link
               href="/history"
-              className="mt-6 inline-flex rounded-2xl bg-[#123c8c] px-5 py-4 text-sm font-black text-white transition hover:bg-[#0f3274] active:scale-[0.98]"
+              className="mt-6 inline-flex rounded-2xl bg-[#b91c1c] px-5 py-4 text-sm font-black text-white transition hover:bg-[#991b1b] active:scale-[0.98]"
             >
               Kembali ke Riwayat
             </Link>

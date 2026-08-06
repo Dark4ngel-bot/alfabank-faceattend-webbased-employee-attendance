@@ -931,7 +931,7 @@ function CameraEmptyState({
           <button
             type="button"
             onClick={onTurnOn}
-            className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#123c8c] shadow-lg transition hover:bg-slate-100 active:scale-95"
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#b91c1c] shadow-lg transition hover:bg-slate-100 active:scale-95"
           >
             <Camera size={15} />
             Nyalakan Kamera
@@ -942,7 +942,7 @@ function CameraEmptyState({
           <button
             type="button"
             onClick={onRetry}
-            className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#123c8c] shadow-lg transition hover:bg-slate-100 active:scale-95"
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#b91c1c] shadow-lg transition hover:bg-slate-100 active:scale-95"
           >
             <RefreshCw size={15} />
             Coba Minta Izin Lagi
@@ -1149,7 +1149,7 @@ function WorkModeFilter({
   const shouldDisableVisitOption = !isModeAllowed("visit");
 
   return (
-    <div className="attendance-row-enter grid grid-cols-[1fr_auto] items-center gap-2 rounded-[1.2rem] border border-blue-100 bg-[#f8fbff] p-2 sm:p-3">
+    <div className="attendance-row-enter grid grid-cols-[1fr_auto] items-center gap-2 rounded-[1.2rem] border border-red-100 bg-[#fef2f2] p-2 sm:p-3">
       <AppSelect
         label="Mode Presensi"
         value={value}
@@ -3113,11 +3113,11 @@ export default function AttendancePage() {
         <section className="attendance-enter mx-auto w-full max-w-7xl px-5 pt-4 md:hidden">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#b91c1c]">
                 Presensi
               </p>
 
-              <h1 className="mt-1 text-2xl font-black tracking-tight text-[#073456]">
+              <h1 className="mt-1 text-2xl font-black tracking-tight text-[#7f1d1d]">
                 Presensi Wajah
               </h1>
 
@@ -3126,11 +3126,11 @@ export default function AttendancePage() {
                 {currentUser?.shift?.start_time && (
                   <>
                     <span>•</span>
-                    <span className="text-[#123c8c]">
+                    <span className="text-[#b91c1c]">
                       Jam: {currentUser.shift.start_time}-{currentUser.shift.end_time || "17:00"}
                     </span>
                     <span>•</span>
-                    <span className="text-[#123c8c]">
+                    <span className="text-[#b91c1c]">
                       Tol: {currentUser.shift.tolerance_minutes ?? 5}m
                     </span>
                   </>
@@ -3153,7 +3153,7 @@ export default function AttendancePage() {
           >
             <div className="attendance-row-enter mb-4 hidden items-start justify-between gap-4 md:flex">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-[#b91c1c]">
                   Camera
                 </p>
 
@@ -3345,7 +3345,7 @@ export default function AttendancePage() {
                     </button>
                   </div>
 
-                  <div className="attendance-row-enter absolute bottom-4 left-4 z-30 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-black text-[#123c8c] backdrop-blur-md">
+                  <div className="attendance-row-enter absolute bottom-4 left-4 z-30 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-black text-[#b91c1c] backdrop-blur-md">
                     {getWorkModeLabel(workMode)}
                   </div>
 

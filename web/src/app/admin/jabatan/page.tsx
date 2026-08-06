@@ -97,7 +97,7 @@ function normalizeJabatanName(value: string) {
 function getJabatanAlertTheme(type: JabatanAlert["type"]) {
   if (type === "success") {
     return {
-      shell: "from-emerald-50 via-white to-blue-50",
+      shell: "from-emerald-50 via-white to-red-50",
       iconWrap: "bg-emerald-100 text-emerald-600",
       badge: "bg-white/70 text-emerald-600",
       button: "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20",
@@ -108,7 +108,7 @@ function getJabatanAlertTheme(type: JabatanAlert["type"]) {
 
   if (type === "error") {
     return {
-      shell: "from-red-50 via-white to-blue-50",
+      shell: "from-red-50 via-white to-red-50",
       iconWrap: "bg-red-100 text-red-600",
       badge: "bg-white/70 text-red-600",
       button: "bg-red-600 hover:bg-red-700 shadow-red-900/20",
@@ -118,10 +118,10 @@ function getJabatanAlertTheme(type: JabatanAlert["type"]) {
   }
 
   return {
-    shell: "from-orange-50 via-white to-blue-50",
+    shell: "from-orange-50 via-white to-red-50",
     iconWrap: "bg-orange-100 text-orange-600",
     badge: "bg-white/70 text-orange-600",
-    button: "bg-[#526fae] hover:bg-[#46629d] shadow-blue-900/20",
+    button: "bg-[#526fae] hover:bg-[#46629d] shadow-red-950/20",
     icon: AlertTriangle,
     label: "PERHATIAN",
   };
@@ -546,7 +546,7 @@ export default function JabatansPage() {
 
       <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
         <div className="jabatan-enter overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-xl shadow-slate-300/30">
-          <div className="bg-[#123c8c] p-6 text-white md:p-8">
+          <div className="bg-[#b91c1c] p-6 text-white md:p-8">
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div>
                 <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
@@ -557,7 +557,7 @@ export default function JabatansPage() {
               <button
                 type="button"
                 onClick={openCreateModal}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white px-5 text-sm font-black text-[#123c8c] shadow-lg shadow-blue-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-50 active:scale-[0.98]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white px-5 text-sm font-black text-[#b91c1c] shadow-lg shadow-red-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-red-50 active:scale-[0.98]"
               >
                 <Plus size={18} />
                 Tambah Jabatan
@@ -585,7 +585,7 @@ export default function JabatansPage() {
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder="Cari jabatan..."
-                    className="jabatan-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    className="jabatan-field w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                   />
                 </div>
               </div>
@@ -598,7 +598,7 @@ export default function JabatansPage() {
                 <select
                   value={statusFilter}
                   onChange={(event) => setStatusFilter(event.target.value)}
-                  className="jabatan-field mt-3 w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="jabatan-field mt-3 w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 >
                   {statusOptions.map((item) => (
                     <option key={item.value} value={item.value}>
@@ -612,7 +612,7 @@ export default function JabatansPage() {
                 <button
                   type="button"
                   onClick={resetFilter}
-                  className="flex h-[54px] flex-1 items-center justify-center rounded-2xl border border-blue-100 bg-white px-5 text-sm font-black text-[#123c8c] shadow-sm transition hover:bg-blue-50 active:scale-[0.96] md:flex-none"
+                  className="flex h-[54px] flex-1 items-center justify-center rounded-2xl border border-red-100 bg-white px-5 text-sm font-black text-[#b91c1c] shadow-sm transition hover:bg-red-50 active:scale-[0.96] md:flex-none"
                 >
                   Atur Ulang
                 </button>
@@ -626,10 +626,10 @@ export default function JabatansPage() {
             ) : null}
 
             <div
-              className="jabatan-row-enter mt-8 overflow-hidden rounded-2xl border border-blue-100"
+              className="jabatan-row-enter mt-8 overflow-hidden rounded-2xl border border-red-100"
               style={{ animationDelay: "130ms" }}
             >
-              <div className="hidden grid-cols-[0.3fr_1.6fr_0.75fr_0.75fr_1fr] bg-[#f6f8ff] px-5 py-4 text-xs font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
+              <div className="hidden grid-cols-[0.3fr_1.6fr_0.75fr_0.75fr_1fr] bg-[#f6f8ff] px-5 py-4 text-xs font-black uppercase tracking-[0.18em] text-[#b91c1c] md:grid">
                 <p>#</p>
                 <p>Jabatan</p>
                 <p>Posisi</p>
@@ -637,10 +637,10 @@ export default function JabatansPage() {
                 <p className="text-center">Aksi</p>
               </div>
 
-              <div className="divide-y divide-blue-50 bg-white">
+              <div className="divide-y divide-red-100 bg-white">
                 {isLoading ? (
                   <div className="jabatan-row-enter px-5 py-10 text-center">
-                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#123c8c]" />
+                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#b91c1c]" />
                     <p className="mt-3 text-sm font-black text-slate-600">
                       Mengambil data jabatan...
                     </p>
@@ -659,14 +659,14 @@ export default function JabatansPage() {
                   filteredJabatans.map((jabatan, index) => (
                     <div
                       key={jabatan.id}
-                      className="jabatan-row-enter grid gap-4 px-4 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] md:grid-cols-[0.3fr_1.6fr_0.75fr_0.75fr_1fr] md:items-center md:px-5 md:py-6"
+                      className="jabatan-row-enter grid gap-4 px-4 py-4 text-sm transition duration-200 hover:bg-[#fef2f2] md:grid-cols-[0.3fr_1.6fr_0.75fr_0.75fr_1fr] md:items-center md:px-5 md:py-6"
                       style={{
                         animationDelay: `${index * 55}ms`,
                       }}
                     >
                       <div className="flex items-start justify-between gap-3 md:block">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-xs font-black text-[#123c8c] md:h-auto md:w-auto md:bg-transparent md:text-sm md:text-slate-500">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-xs font-black text-[#b91c1c] md:h-auto md:w-auto md:bg-transparent md:text-sm md:text-slate-500">
                             {index + 1}
                           </div>
 
@@ -684,7 +684,7 @@ export default function JabatansPage() {
                         <span
                           className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black md:hidden ${
                             jabatan.status === "active"
-                              ? "bg-blue-50 text-[#123c8c]"
+                              ? "bg-red-50 text-[#b91c1c]"
                               : "bg-slate-100 text-slate-600"
                           }`}
                         >
@@ -702,7 +702,7 @@ export default function JabatansPage() {
                         </p>
                       </div>
 
-                      <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-3 md:border-0 md:bg-transparent md:p-0">
+                      <div className="rounded-2xl border border-red-100 bg-[#fef2f2] p-3 md:border-0 md:bg-transparent md:p-0">
                         <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400 md:hidden">
                           Posisi
                         </p>
@@ -716,7 +716,7 @@ export default function JabatansPage() {
                         <span
                           className={`w-fit rounded-full px-4 py-2 text-xs font-black ${
                             jabatan.status === "active"
-                              ? "bg-blue-50 text-[#123c8c]"
+                              ? "bg-red-50 text-[#b91c1c]"
                               : "bg-slate-100 text-slate-600"
                           }`}
                         >
@@ -728,7 +728,7 @@ export default function JabatansPage() {
                         <button
                           type="button"
                           onClick={() => openEditModal(jabatan)}
-                          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.97] md:h-auto md:w-fit md:rounded-xl md:border md:border-blue-100 md:bg-white md:px-4 md:py-2 md:text-xs md:text-[#123c8c] md:shadow-none md:hover:bg-[#eaf1ff]"
+                          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-4 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.97] md:h-auto md:w-fit md:rounded-xl md:border md:border-red-100 md:bg-white md:px-4 md:py-2 md:text-xs md:text-[#b91c1c] md:shadow-none md:hover:bg-[#fee2e2]"
                         >
                           <Edit size={16} className="md:h-3.5 md:w-3.5" />
                           Edit
@@ -769,7 +769,7 @@ export default function JabatansPage() {
           <div className="jabatan-modal-panel max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                   {editingJabatan ? "Edit Jabatan" : "Tambah Jabatan"}
                 </p>
 
@@ -809,7 +809,7 @@ export default function JabatansPage() {
                     }))
                   }
                   placeholder="Contoh: Kembaliend Development, Mobile Development, Accounting"
-                  className="jabatan-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="jabatan-field w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 />
               </div>
 
@@ -829,7 +829,7 @@ export default function JabatansPage() {
                       status: event.target.value,
                     }))
                   }
-                  className="jabatan-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="jabatan-field w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 >
                   <option value="active">Aktif</option>
                   <option value="inactive">Nonaktif</option>
@@ -851,7 +851,7 @@ export default function JabatansPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-2xl bg-[#b91c1c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting
                     ? "Menyimpan..."

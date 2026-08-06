@@ -116,7 +116,7 @@ function getTypeIcon(type: NotificationType) {
 
 function getTypeClass(type: NotificationType) {
   if (type === "sick") return "bg-red-50 text-red-600 border-red-100";
-  if (type === "leave") return "bg-blue-50 text-[#123c8c] border-blue-100";
+  if (type === "leave") return "bg-red-50 text-[#b91c1c] border-red-100";
   if (type === "permission") {
     return "bg-amber-50 text-amber-700 border-amber-100";
   }
@@ -376,10 +376,10 @@ export default function AdminNotificationsPage() {
       <AppHeader title="Notifikasi" variant="admin" />
 
       <main className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
-        <section className="notification-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-6 text-white shadow-2xl shadow-blue-900/25 md:p-8">
+        <section className="notification-enter relative overflow-hidden rounded-[2.2rem] bg-[#b91c1c] p-6 text-white shadow-2xl shadow-red-950/25 md:p-8">
           <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-blue-100">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-red-100">
                 <ShieldAlert size={15} />
                 Notification Center
               </div>
@@ -399,7 +399,7 @@ export default function AdminNotificationsPage() {
             return (
               <div
                 key={item.label}
-                className="notification-row-enter rounded-[1.7rem] border border-blue-100 bg-white/90 p-5 shadow-xl shadow-slate-300/30 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/40"
+                className="notification-row-enter rounded-[1.7rem] border border-red-100 bg-white/90 p-5 shadow-xl shadow-slate-300/30 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/40"
                 style={{
                   animationDelay: `${index * 70}ms`,
                 }}
@@ -415,7 +415,7 @@ export default function AdminNotificationsPage() {
                     </h3>
                   </div>
 
-                  <div className="notification-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+                  <div className="notification-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
                     <Icon size={24} strokeWidth={2.7} />
                   </div>
                 </div>
@@ -444,7 +444,7 @@ export default function AdminNotificationsPage() {
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Cari nama, laporan, status, atau keterangan..."
-                  className="notification-field h-[58px] w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="notification-field h-[58px] w-full rounded-2xl border border-red-100 bg-[#f6f8ff] pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 />
               </div>
             </div>
@@ -457,7 +457,7 @@ export default function AdminNotificationsPage() {
               <select
                 value={typeFilter}
                 onChange={(event) => setTypeFilter(event.target.value)}
-                className="notification-field mt-3 h-[58px] w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                className="notification-field mt-3 h-[58px] w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
               >
                 {typeOptions.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -475,7 +475,7 @@ export default function AdminNotificationsPage() {
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
-                className="notification-field mt-3 h-[58px] w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                className="notification-field mt-3 h-[58px] w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
               >
                 {statusOptions.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -493,7 +493,7 @@ export default function AdminNotificationsPage() {
                   setTypeFilter("all");
                   setStatusFilter("all");
                 }}
-                className="flex h-[58px] w-full items-center justify-center rounded-2xl border border-blue-100 bg-white px-5 text-sm font-black text-[#123c8c] shadow-sm transition hover:bg-blue-50 active:scale-[0.96] lg:w-auto"
+                className="flex h-[58px] w-full items-center justify-center rounded-2xl border border-red-100 bg-white px-5 text-sm font-black text-[#b91c1c] shadow-sm transition hover:bg-red-50 active:scale-[0.96] lg:w-auto"
               >
                 Atur Ulang
               </button>
@@ -508,12 +508,12 @@ export default function AdminNotificationsPage() {
 
           <div className="mt-6 space-y-4">
             {isLoading ? (
-              <div className="notification-row-enter flex items-center justify-center gap-3 rounded-3xl border border-blue-100 bg-[#f8fbff] p-10 text-sm font-black text-slate-600">
-                <Loader2 className="animate-spin text-[#123c8c]" size={22} />
+              <div className="notification-row-enter flex items-center justify-center gap-3 rounded-3xl border border-red-100 bg-[#fef2f2] p-10 text-sm font-black text-slate-600">
+                <Loader2 className="animate-spin text-[#b91c1c]" size={22} />
                 Mengambil data notifikasi...
               </div>
             ) : filteredNotifications.length === 0 ? (
-              <div className="notification-row-enter rounded-3xl border border-blue-100 bg-[#f8fbff] p-10 text-center">
+              <div className="notification-row-enter rounded-3xl border border-red-100 bg-[#fef2f2] p-10 text-center">
                 <Bell className="mx-auto text-slate-300" size={42} />
                 <p className="mt-3 text-lg font-black text-slate-700">
                   Tidak ada notifikasi
@@ -534,7 +534,7 @@ export default function AdminNotificationsPage() {
                     key={item.id}
                     className={`notification-row-enter rounded-[1.7rem] p-5 transition duration-200 hover:-translate-y-0.5 ${
                       isUnread
-                        ? "border-2 border-blue-300 bg-[#f4f8ff] shadow-lg shadow-blue-900/10 ring-2 ring-blue-400/30 hover:bg-white"
+                        ? "border-2 border-red-400 bg-[#fff5f5] shadow-lg shadow-red-950/10 ring-2 ring-red-400/30 hover:bg-white"
                         : "border border-slate-200/80 bg-slate-50/70 shadow-none opacity-85 hover:bg-slate-100/80"
                     }`}
                     style={{
@@ -579,7 +579,7 @@ export default function AdminNotificationsPage() {
 
                           <h3
                             className={`mt-3 text-lg font-black ${
-                              isUnread ? "text-[#123c8c]" : "text-slate-800"
+                              isUnread ? "text-[#b91c1c]" : "text-slate-800"
                             }`}
                           >
                             {item.title}
@@ -629,7 +629,7 @@ export default function AdminNotificationsPage() {
                             type="button"
                             onClick={() => markAsRead(item)}
                             disabled={isMarking === item.rawId}
-                            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-5 text-sm font-black text-[#123c8c] shadow-sm transition hover:bg-[#eaf1ff] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl border border-red-100 bg-white px-5 text-sm font-black text-[#b91c1c] shadow-sm transition hover:bg-[#fee2e2] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {isMarking === item.rawId ? (
                               <Loader2 size={17} className="animate-spin" />
@@ -642,7 +642,7 @@ export default function AdminNotificationsPage() {
 
                         <Link
                           href={item.href}
-                          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.97]"
+                          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.97]"
                         >
                           <UserRound size={17} />
                           Lihat Detail

@@ -347,7 +347,7 @@ export default function AnnouncementPage() {
                             announcement.document_size ||
                               announcement.documentSize,
                           ) ? (
-                            <span className="mt-0.5 block text-xs font-bold text-blue-500">
+                            <span className="mt-0.5 block text-xs font-bold text-red-600">
                               PDF
                               {" | "}
                               {formatFileSize(
@@ -356,7 +356,7 @@ export default function AnnouncementPage() {
                               )}
                             </span>
                           ) : (
-                            <span className="mt-0.5 block text-xs font-bold text-blue-500">
+                            <span className="mt-0.5 block text-xs font-bold text-red-600">
                               PDF
                             </span>
                           )}

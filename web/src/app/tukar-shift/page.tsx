@@ -541,7 +541,7 @@ export default function TukarShiftPage() {
                         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
                           isOut
                             ? "bg-orange-50 text-orange-600"
-                            : "bg-blue-50 text-blue-600"
+                            : "bg-red-50 text-red-600"
                         }`}
                       >
                         {isOut ? "↑" : "↓"}

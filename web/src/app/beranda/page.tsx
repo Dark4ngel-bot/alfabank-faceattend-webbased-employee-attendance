@@ -464,7 +464,7 @@ function AnnouncementList({
       ) : null}
 
       {topAnnouncement.document_url || topAnnouncement.documentUrl ? (
-        <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-2xl bg-[#eaf1ff] px-3 py-2 text-xs font-black text-[#123c8c]">
+        <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-2xl bg-[#fee2e2] px-3 py-2 text-xs font-black text-[#b91c1c]">
           <FileText size={14} strokeWidth={2.6} />
           <span className="truncate">
             {topAnnouncement.document_name ||
@@ -650,7 +650,7 @@ export default function HomePage() {
                     </p>
 
                     <h1
-                      className="home-text-reveal mt-1 truncate text-base font-black text-[#073456]"
+                      className="home-text-reveal mt-1 truncate text-base font-black text-[#7f1d1d]"
                       style={{
                         animationDelay: "60ms",
                       }}
@@ -693,7 +693,7 @@ export default function HomePage() {
                 </p>
 
                 <h2
-                  className="home-text-reveal mt-3 text-4xl font-black tracking-tight text-[#073456]"
+                  className="home-text-reveal mt-3 text-4xl font-black tracking-tight text-[#7f1d1d]"
                   style={{
                     animationDelay: "170ms",
                   }}
@@ -774,7 +774,7 @@ export default function HomePage() {
 
                   <p className="mt-0.5 text-[11px] font-semibold text-slate-500 sm:text-sm md:mt-3 md:text-lg">
                     Status hari ini:{" "}
-                    <span className="font-black text-[#123c8c]">
+                    <span className="font-black text-[#b91c1c]">
                       {attendanceToday.status}
                     </span>
                   </p>
@@ -813,7 +813,7 @@ export default function HomePage() {
               <Link
                 href="/pengumuman"
                 onClick={markAnnouncementsAsRead}
-                className="text-lg font-black text-[#123c8c] transition hover:text-[#0f3274] active:scale-[0.98] md:text-base"
+                className="text-lg font-black text-[#b91c1c] transition hover:text-[#7f1d1d] active:scale-[0.98] md:text-base"
               >
                 Lihat Lainnya
               </Link>

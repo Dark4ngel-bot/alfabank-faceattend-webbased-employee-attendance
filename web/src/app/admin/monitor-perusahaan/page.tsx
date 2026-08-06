@@ -619,7 +619,7 @@ function AttendancePieChart({
         <h4 className="mt-2 text-2xl font-black text-slate-950">
           Persentase dari {totalEmployees} karyawan
         </h4>
-        <p className="mt-1 text-xs font-black text-[#123c8c]">
+        <p className="mt-1 text-xs font-black text-[#b91c1c]">
           Data rekap {monthLabel} {year}
         </p>
         {!hasAttendanceData ? (
@@ -826,9 +826,9 @@ export default function AdminCompanyMonitorPage() {
 
       <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff]">
         <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
-          <div className="monitor-enter overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
+          <div className="monitor-enter overflow-hidden rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 xl:grid-cols-[0.95fr_1.05fr]">
-              <div className="bg-[#123c8c] p-6 text-white md:p-8">
+              <div className="bg-[#b91c1c] p-6 text-white md:p-8">
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
                     <BarChart3 size={25} strokeWidth={2.6} />
@@ -862,8 +862,8 @@ export default function AdminCompanyMonitorPage() {
                           onClick={() => setDisplayMode(option.value)}
                           className={`monitor-field flex h-12 items-center justify-center rounded-2xl border px-4 text-sm font-black outline-none transition active:scale-[0.98] ${
                             active
-                              ? "border-[#123c8c] bg-[#123c8c] text-white shadow-sm"
-                              : "border-blue-100 bg-[#f6f8ff] text-slate-700 hover:border-slate-300"
+                              ? "border-[#b91c1c] bg-[#b91c1c] text-white shadow-sm"
+                              : "border-red-100 bg-[#f6f8ff] text-slate-700 hover:border-slate-300"
                           }`}
                         >
                           {option.label}
@@ -885,7 +885,7 @@ export default function AdminCompanyMonitorPage() {
                     <select
                       value={month}
                       onChange={(event) => setMonth(Number(event.target.value))}
-                      className="monitor-field mt-2 h-12 w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                      className="monitor-field mt-2 h-12 w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                     >
                       {monthOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -904,16 +904,16 @@ export default function AdminCompanyMonitorPage() {
                       type="number"
                       value={year}
                       onChange={(event) => setYear(Number(event.target.value))}
-                      className="monitor-field mt-2 h-12 w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                      className="monitor-field mt-2 h-12 w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                     />
                   </div>
                 </div>
 
                 <div
-                  className="monitor-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4"
+                  className="monitor-row-enter rounded-2xl border border-red-100 bg-[#fef2f2] p-4"
                   style={{ animationDelay: "140ms" }}
                 >
-                  <p className="text-xs font-black uppercase tracking-[0.16em] text-[#123c8c]">
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-[#b91c1c]">
                     Grafik Aktif
                   </p>
 
@@ -926,9 +926,9 @@ export default function AdminCompanyMonitorPage() {
           </div>
 
           {isLoading ? (
-            <div className="monitor-enter flex min-h-[320px] items-center justify-center rounded-3xl border border-blue-100 bg-white">
+            <div className="monitor-enter flex min-h-[320px] items-center justify-center rounded-3xl border border-red-100 bg-white">
               <div className="text-center">
-                <Loader2 className="mx-auto animate-spin text-[#123c8c]" />
+                <Loader2 className="mx-auto animate-spin text-[#b91c1c]" />
                 <p className="mt-3 text-sm font-black text-slate-600">
                   Mengambil data monitor perusahaan...
                 </p>
@@ -990,7 +990,7 @@ export default function AdminCompanyMonitorPage() {
                       {summaryCards.map((item, index) => (
                         <div
                           key={item.label}
-                          className="monitor-row-enter rounded-2xl border border-blue-100 bg-white p-4 shadow-lg shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40"
+                          className="monitor-row-enter rounded-2xl border border-red-100 bg-white p-4 shadow-lg shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40"
                           style={{
                             animationDelay: `${index * 55}ms`,
                           }}
@@ -1003,7 +1003,7 @@ export default function AdminCompanyMonitorPage() {
                             {item.value}
                           </p>
 
-                          <p className="mt-1 text-xs font-black text-[#123c8c]">
+                          <p className="mt-1 text-xs font-black text-[#b91c1c]">
                             {item.note}
                           </p>
                         </div>

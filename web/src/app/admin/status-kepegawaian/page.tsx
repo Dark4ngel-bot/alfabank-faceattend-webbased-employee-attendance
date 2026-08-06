@@ -52,7 +52,7 @@ function formatStatus(status: string) {
 
 function statusClass(status: string) {
   return status === "active"
-    ? "bg-blue-50 text-[#123c8c]"
+    ? "bg-red-50 text-[#b91c1c]"
     : "bg-slate-100 text-slate-600";
 }
 
@@ -264,7 +264,7 @@ export default function EmploymentStatusPage() {
         <div className="page-enter rounded-[2rem] border border-white/70 bg-white/95 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl md:p-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#b91c1c]">
                 Master Data Admin Panel
               </p>
 
@@ -295,7 +295,7 @@ export default function EmploymentStatusPage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Cari status kepegawaian..."
-                className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
               />
             </div>
 
@@ -303,7 +303,7 @@ export default function EmploymentStatusPage() {
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
-                className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                className="w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
               >
                 {filterOptions.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -323,7 +323,7 @@ export default function EmploymentStatusPage() {
           <div className="mt-8">
             {isLoading ? (
               <div className="flex min-h-[200px] flex-col items-center justify-center gap-3">
-                <Loader2 size={36} className="animate-spin text-[#123c8c]" />
+                <Loader2 size={36} className="animate-spin text-[#b91c1c]" />
                 <p className="text-sm font-bold text-slate-500">
                   Memuat data status kepegawaian...
                 </p>
@@ -342,12 +342,12 @@ export default function EmploymentStatusPage() {
                 {filteredStatuses.map((item, index) => (
                   <div
                     key={item.id}
-                    className="row-enter rounded-3xl border border-blue-50/50 bg-[#fbfdff] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-100 hover:bg-white hover:shadow-md hover:shadow-blue-900/5"
+                    className="row-enter rounded-3xl border border-red-100/50 bg-[#fbfdff] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-red-100 hover:bg-white hover:shadow-md hover:shadow-red-950/5"
                     style={{ animationDelay: `${index * 40}ms` }}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-[#b91c1c]">
                           <BadgeCheck size={20} />
                         </div>
                         <div>
@@ -367,7 +367,7 @@ export default function EmploymentStatusPage() {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => openEditModal(item)}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-50 bg-white text-[#123c8c] shadow-sm hover:bg-blue-50 transition"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-red-100 bg-white text-[#b91c1c] shadow-sm hover:bg-red-50 transition"
                           title="Ubah"
                         >
                           <Edit size={16} />

@@ -368,13 +368,13 @@ export default function AdminAttendanceRankPage() {
       <main className="min-h-dvh bg-[#f6f8fc] pb-10 text-slate-950">
         <section className="mx-auto max-w-7xl space-y-5 px-4 py-5 md:px-8 lg:px-12">
           <div className="rank-enter grid gap-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
-            <div className="rounded-3xl border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/60">
+            <div className="rounded-3xl border border-red-100 bg-white p-5 shadow-xl shadow-slate-200/60">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#123c8c] text-white">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#b91c1c] text-white">
                   <Trophy size={25} strokeWidth={2.7} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#b91c1c]">
                     Ranking
                   </p>
                   <h2 className="mt-1 truncate text-2xl font-black text-[#123456] md:text-3xl">
@@ -384,7 +384,7 @@ export default function AdminAttendanceRankPage() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/60">
+            <div className="rounded-3xl border border-red-100 bg-white p-5 shadow-xl shadow-slate-200/60">
               <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
                 Peringkat Teratas
               </p>
@@ -393,7 +393,7 @@ export default function AdminAttendanceRankPage() {
               </p>
             </div>
 
-            <div className="rounded-3xl border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/60">
+            <div className="rounded-3xl border border-red-100 bg-white p-5 shadow-xl shadow-slate-200/60">
               <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
                 Rata-rata Hadir
               </p>
@@ -404,7 +404,7 @@ export default function AdminAttendanceRankPage() {
           </div>
 
           <div
-            className="rank-enter grid gap-3 rounded-3xl border border-blue-100 bg-white p-4 shadow-xl shadow-slate-200/60 md:grid-cols-[1fr_1fr_1.4fr_auto]"
+            className="rank-enter grid gap-3 rounded-3xl border border-red-100 bg-white p-4 shadow-xl shadow-slate-200/60 md:grid-cols-[1fr_1fr_1.4fr_auto]"
             style={{ animationDelay: "80ms" }}
           >
             <label className="block">
@@ -420,7 +420,7 @@ export default function AdminAttendanceRankPage() {
                   type="date"
                   value={startDate}
                   onChange={(event) => setStartDate(event.target.value)}
-                  className="h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-[#123456] outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] py-3 pl-11 pr-4 text-sm font-bold text-[#123456] outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 />
               </div>
             </label>
@@ -438,7 +438,7 @@ export default function AdminAttendanceRankPage() {
                   type="date"
                   value={endDate}
                   onChange={(event) => setEndDate(event.target.value)}
-                  className="h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-[#123456] outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] py-3 pl-11 pr-4 text-sm font-bold text-[#123456] outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 />
               </div>
             </label>
@@ -456,7 +456,7 @@ export default function AdminAttendanceRankPage() {
                   value={searchKeyword}
                   onChange={(event) => setSearchKeyword(event.target.value)}
                   placeholder="Cari nama atau status..."
-                  className="h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-[#123456] outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] py-3 pl-11 pr-4 text-sm font-bold text-[#123456] outline-none transition placeholder:text-slate-400 focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 />
               </div>
             </label>
@@ -471,7 +471,7 @@ export default function AdminAttendanceRankPage() {
                   onChange={(event) =>
                     setSortDirection(event.target.value as SortDirection)
                   }
-                  className="h-12 w-full appearance-none rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-4 pr-11 text-sm font-black text-[#123456] outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="h-12 w-full appearance-none rounded-2xl border border-red-100 bg-[#fef2f2] py-3 pl-4 pr-11 text-sm font-black text-[#123456] outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 >
                   <option value="desc">Menaik</option>
                   <option value="asc">Menurun</option>
@@ -479,7 +479,7 @@ export default function AdminAttendanceRankPage() {
                 <ChevronDown
                   size={18}
                   strokeWidth={2.8}
-                  className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#123c8c]"
+                  className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#b91c1c]"
                 />
               </div>
             </label>
@@ -492,7 +492,7 @@ export default function AdminAttendanceRankPage() {
           ) : null}
 
           <div
-            className="rank-enter overflow-hidden rounded-[1.8rem] border border-blue-100 bg-white shadow-xl shadow-slate-200/60"
+            className="rank-enter overflow-hidden rounded-[1.8rem] border border-red-100 bg-white shadow-xl shadow-slate-200/60"
             style={{ animationDelay: "120ms" }}
           >
             {isLoading ? (
@@ -503,12 +503,12 @@ export default function AdminAttendanceRankPage() {
               <div className="w-full overflow-x-auto">
                 <table className="w-full border-collapse text-left">
                   <thead>
-                    <tr className="bg-[#eef5ff] text-xs font-black uppercase tracking-[0.08em] text-slate-500">
+                    <tr className="bg-[#fee2e2] text-xs font-black uppercase tracking-[0.08em] text-slate-500">
                       <th className="w-20 px-5 py-4 text-center">Rank</th>
                       <th className="px-5 py-4">{sortLabels.name}</th>
                       <th className="px-5 py-4 text-center">{sortLabels.hadir}</th>
                       <th className="px-5 py-4 text-center">Total Kerja</th>
-                      <th className="px-5 py-4 text-center text-[#123c8c]">
+                      <th className="px-5 py-4 text-center text-[#b91c1c]">
                         {sortLabels.terlambat}
                       </th>
                       <th className="px-5 py-4 text-center">Durasi Efektif</th>
@@ -528,17 +528,17 @@ export default function AdminAttendanceRankPage() {
                         <tr
                           key={employee.id}
                           onClick={() => openEmployeeDetail(employee.id)}
-                          className="cursor-pointer transition hover:bg-[#f8fbff]"
+                          className="cursor-pointer transition hover:bg-[#fef2f2]"
                         >
                           <td className="px-5 py-4">
-                            <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-[#eef5ff] text-sm font-black text-[#123c8c] ring-1 ring-blue-100">
+                            <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl bg-[#fee2e2] text-sm font-black text-[#b91c1c] ring-1 ring-red-100">
                               {index + 1}
                             </div>
                           </td>
 
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#eef5ff] text-[#123c8c] ring-1 ring-blue-100">
+                              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#fee2e2] text-[#b91c1c] ring-1 ring-red-100">
                                 {employeePhoto ? (
                                   <img
                                     src={employeePhoto}
@@ -564,7 +564,7 @@ export default function AdminAttendanceRankPage() {
                           <td className="px-5 py-4 text-center text-sm font-black text-emerald-600">
                             {employee.summary.hadir}
                           </td>
-                          <td className="px-5 py-4 text-center text-sm font-black text-[#123c8c]">
+                          <td className="px-5 py-4 text-center text-sm font-black text-[#b91c1c]">
                             {formatMinutes(
                               Number(employee.summary.totalWorkMinutes || 0),
                             )}
@@ -578,7 +578,7 @@ export default function AdminAttendanceRankPage() {
                           <td className="px-5 py-4 text-center text-sm font-black text-orange-500">
                             {employee.izinSakit}
                           </td>
-                          <td className="px-5 py-4 text-center text-sm font-black text-[#123c8c]">
+                          <td className="px-5 py-4 text-center text-sm font-black text-[#b91c1c]">
                             {employee.summary.cuti}
                           </td>
                           <td className="px-5 py-4 text-center">
@@ -603,7 +603,7 @@ export default function AdminAttendanceRankPage() {
               </div>
             ) : (
               <div className="flex min-h-72 flex-col items-center justify-center p-8 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#123c8c] text-white">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#b91c1c] text-white">
                   <Clock3 size={26} strokeWidth={2.7} />
                 </div>
                 <h3 className="mt-4 text-lg font-black text-[#123456]">

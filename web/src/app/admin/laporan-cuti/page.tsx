@@ -437,9 +437,9 @@ export default function AdminLeaveReportPage() {
 
       <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff]">
         <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
-          <div className="leave-report-enter overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
+          <div className="leave-report-enter overflow-hidden rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="bg-[#123c8c] p-6 text-white md:p-8">
+              <div className="bg-[#b91c1c] p-6 text-white md:p-8">
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
                     <FileText size={25} strokeWidth={2.6} />
@@ -455,11 +455,11 @@ export default function AdminLeaveReportPage() {
 
               <div className="grid grid-cols-2 gap-3 p-5 md:grid-cols-4 md:p-6">
                 <div
-                  className="leave-report-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4"
+                  className="leave-report-row-enter rounded-2xl border border-red-100 bg-[#fef2f2] p-4"
                   style={{ animationDelay: "60ms" }}
                 >
 	                  <p className="text-xs font-bold text-slate-500">Total</p>
-	                  <h3 className="mt-3 text-3xl font-black text-[#123c8c]">
+	                  <h3 className="mt-3 text-3xl font-black text-[#b91c1c]">
 	                    {stats.total}
 	                  </h3>
 	                  <p className="mt-1 text-xs font-semibold text-slate-500">
@@ -523,7 +523,7 @@ export default function AdminLeaveReportPage() {
           >
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                   Data Laporan
                 </p>
 
@@ -544,7 +544,7 @@ export default function AdminLeaveReportPage() {
 	                  value={searchKeyword}
 	                  onChange={(event) => setSearchKeyword(event.target.value)}
 	                  placeholder="Cari nama, kode, divisi, atau status cuti..."
-                  className="leave-report-field h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                  className="leave-report-field h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                 />
               </div>
 
@@ -553,7 +553,7 @@ export default function AdminLeaveReportPage() {
                 onChange={(event) =>
                   setStatusFilter(event.target.value as StatusFilter)
                 }
-                className="leave-report-field h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                className="leave-report-field h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
               >
                 <option value="all">Semua Status</option>
                 <option value="pending">Menunggu</option>
@@ -568,8 +568,8 @@ export default function AdminLeaveReportPage() {
                   <AppLoadingState text="Memuat laporan cuti..." />
                 </div>
 	              ) : filteredEmployees.length === 0 ? (
-	                <div className="leave-report-row-enter rounded-3xl border border-dashed border-blue-100 bg-[#f8fbff] px-5 py-12 text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+	                <div className="leave-report-row-enter rounded-3xl border border-dashed border-red-100 bg-[#fef2f2] px-5 py-12 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
                     <CalendarDays size={26} strokeWidth={2.6} />
                   </div>
 
@@ -588,7 +588,7 @@ export default function AdminLeaveReportPage() {
 	                      <Link
 	                        key={item.id}
 	                        href={`/admin/laporan-cuti/karyawan/${item.id}`}
-	                        className="leave-report-row-enter group relative overflow-hidden rounded-3xl border border-blue-100 bg-white p-4 shadow-md shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:border-[#123c8c]/30 hover:shadow-lg hover:shadow-slate-300/30 active:scale-[0.99] md:p-5"
+	                        className="leave-report-row-enter group relative overflow-hidden rounded-3xl border border-red-100 bg-white p-4 shadow-md shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:border-[#b91c1c]/30 hover:shadow-lg hover:shadow-slate-300/30 active:scale-[0.99] md:p-5"
                         style={{
                           animationDelay: `${index * 55}ms`,
                         }}
@@ -602,7 +602,7 @@ export default function AdminLeaveReportPage() {
 
                         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                           <div className="flex min-w-0 items-center gap-3 pr-6">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-base font-black text-[#123c8c]">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-base font-black text-[#b91c1c]">
                               {index + 1}
                             </div>
 
@@ -610,10 +610,10 @@ export default function AdminLeaveReportPage() {
 	                              <img
 	                                src={profilePhoto}
 	                                alt={`Foto profil ${item.name}`}
-	                                className="h-12 w-12 shrink-0 rounded-2xl border border-blue-100 object-cover"
+	                                className="h-12 w-12 shrink-0 rounded-2xl border border-red-100 object-cover"
 	                              />
                             ) : (
-                              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-blue-100 bg-[#f8fbff] text-[#123c8c]">
+                              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-red-100 bg-[#fef2f2] text-[#b91c1c]">
                                 <UserRound size={24} strokeWidth={2.6} />
                               </div>
                             )}
@@ -636,7 +636,7 @@ export default function AdminLeaveReportPage() {
                             </div>
                           </div>
 
-                          <span className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 text-sm font-black text-white shadow-lg shadow-blue-950/20 transition group-hover:bg-[#0f3274] md:min-w-44">
+                          <span className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 text-sm font-black text-white shadow-lg shadow-red-950/20 transition group-hover:bg-[#7f1d1d] md:min-w-44">
 	                            Detail Karyawan
 	                          </span>
                         </div>

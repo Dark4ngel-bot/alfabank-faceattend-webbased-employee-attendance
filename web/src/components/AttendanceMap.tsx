@@ -372,7 +372,7 @@ export default function AttendancePage() {
         <div className="rounded-[2rem] border border-white/80 bg-white/95 p-5 shadow-2xl shadow-slate-300/30 backdrop-blur-xl md:p-6">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#b91c1c]">
                 Camera
               </p>
               <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">

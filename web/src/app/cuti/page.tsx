@@ -387,15 +387,15 @@ export default function LeaveRequestPage() {
           suppressHydrationWarning
           onSubmit={handleSubmit}
           noValidate
-          className="h-fit self-start rounded-[2rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/60"
+          className="h-fit self-start rounded-[2rem] border border-red-100 bg-white p-5 shadow-xl shadow-slate-200/60"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
               <CalendarDays size={24} strokeWidth={2.6} />
             </div>
 
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#b91c1c]">
                 Form Cuti & Lembur
               </p>
 

@@ -82,8 +82,8 @@ function getNotificationStyle(type: string) {
   }
 
   return {
-    badge: "bg-blue-50 text-blue-700 ring-blue-100",
-    icon: "bg-blue-50 text-blue-700 ring-blue-100",
+    badge: "bg-red-50 text-red-700 ring-red-100",
+    icon: "bg-red-50 text-red-700 ring-red-100",
   };
 }
 
@@ -211,7 +211,7 @@ export default function EmployeeNotificationPage() {
       <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff] pb-[calc(8rem+env(safe-area-inset-bottom))] text-slate-950 md:pb-28">
         <section className="mx-auto max-w-5xl px-5 pb-10 pt-6 md:px-8">
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-blue-100">
+            <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-red-100">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
@@ -222,7 +222,7 @@ export default function EmployeeNotificationPage() {
                   </h2>
                 </div>
 
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-700 ring-1 ring-red-100">
                   <Bell size={22} strokeWidth={2.7} />
                 </div>
               </div>
@@ -263,7 +263,7 @@ export default function EmployeeNotificationPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-blue-100 md:p-6">
+          <div className="mt-6 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-red-100 md:p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <h3 className="text-2xl font-black tracking-tight text-slate-950">

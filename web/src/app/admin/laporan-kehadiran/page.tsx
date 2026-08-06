@@ -67,7 +67,7 @@ function getStatusStyle(status: string) {
   }
 
   if (normalized === "cuti") {
-    return "bg-blue-50 text-[#123c8c] ring-blue-100";
+    return "bg-red-50 text-[#b91c1c] ring-red-100";
   }
 
   return "bg-slate-100 text-slate-600 ring-slate-200";
@@ -202,7 +202,7 @@ function EmployeeProfileAvatar({ item }: { item: AttendanceReport }) {
 
   if (profilePhoto && !imageError) {
     return (
-      <div className="attendance-report-avatar-enter h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-[#eaf1ff] ring-1 ring-blue-100">
+      <div className="attendance-report-avatar-enter h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-[#fee2e2] ring-1 ring-red-100">
         <img
           src={profilePhoto}
           alt={`Foto profil ${item.employeeName}`}
@@ -214,7 +214,7 @@ function EmployeeProfileAvatar({ item }: { item: AttendanceReport }) {
   }
 
   return (
-    <div className="attendance-report-avatar-enter flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+    <div className="attendance-report-avatar-enter flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
       <UserRound size={23} strokeWidth={2.6} />
     </div>
   );
@@ -419,9 +419,9 @@ export default function AdminAttendanceReportPage() {
 
       <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff]">
         <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
-          <div className="attendance-report-enter overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
+          <div className="attendance-report-enter overflow-hidden rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="bg-[#123c8c] p-6 text-white md:p-8">
+              <div className="bg-[#b91c1c] p-6 text-white md:p-8">
                 <div className="flex items-center gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
                     <Camera size={25} strokeWidth={2.6} />
@@ -437,13 +437,13 @@ export default function AdminAttendanceReportPage() {
 
               <div className="grid grid-cols-2 gap-3 p-5 md:grid-cols-4 md:p-6">
                 <div
-                  className="attendance-report-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4"
+                  className="attendance-report-row-enter rounded-2xl border border-red-100 bg-[#fef2f2] p-4"
                   style={{ animationDelay: "60ms" }}
                 >
                   <p className="text-xs font-bold text-slate-500">
                     Total Rekap
                   </p>
-                  <h3 className="mt-3 text-3xl font-black text-[#123c8c]">
+                  <h3 className="mt-3 text-3xl font-black text-[#b91c1c]">
                     {stats.total}
                   </h3>
                   <p className="mt-1 text-xs font-semibold text-slate-500">
@@ -478,14 +478,14 @@ export default function AdminAttendanceReportPage() {
                 </div>
 
                 <div
-                  className="attendance-report-row-enter rounded-2xl border border-blue-100 bg-blue-50 p-4"
+                  className="attendance-report-row-enter rounded-2xl border border-red-100 bg-red-50 p-4"
                   style={{ animationDelay: "180ms" }}
                 >
-                  <p className="text-xs font-bold text-[#123c8c]">Ada Lokasi</p>
-                  <h3 className="mt-3 text-3xl font-black text-[#123c8c]">
+                  <p className="text-xs font-bold text-[#b91c1c]">Ada Lokasi</p>
+                  <h3 className="mt-3 text-3xl font-black text-[#b91c1c]">
                     {stats.withLocation}
                   </h3>
-                  <p className="mt-1 text-xs font-semibold text-[#123c8c]/70">
+                  <p className="mt-1 text-xs font-semibold text-[#b91c1c]/70">
                     Titik GPS
                   </p>
                 </div>
@@ -499,7 +499,7 @@ export default function AdminAttendanceReportPage() {
           >
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                   Filter Data
                 </p>
 
@@ -526,7 +526,7 @@ export default function AdminAttendanceReportPage() {
                     setSelectedEmployeeId("");
                   }}
                   placeholder="Cari nama / kode karyawan..."
-                  className="attendance-report-field h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                  className="attendance-report-field h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                 />
               </div>
 
@@ -535,7 +535,7 @@ export default function AdminAttendanceReportPage() {
                 value={selectedDate}
                 onChange={(event) => setSelectedDate(event.target.value)}
                 title="Kosongkan untuk menampilkan tanggal presensi terbaru"
-                className="attendance-report-field h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                className="attendance-report-field h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
               />
 
               <select
@@ -543,7 +543,7 @@ export default function AdminAttendanceReportPage() {
                 onChange={(event) =>
                   setStatusFilter(event.target.value as StatusFilter)
                 }
-                className="attendance-report-field h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                className="attendance-report-field h-12 w-full rounded-2xl border border-red-100 bg-[#fef2f2] px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
               >
                 {statusOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -554,7 +554,7 @@ export default function AdminAttendanceReportPage() {
 
               <button
                 type="submit"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-5 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.98]"
               >
                 <Search size={17} />
                 Cari
@@ -574,7 +574,7 @@ export default function AdminAttendanceReportPage() {
           >
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                   Rekap Presensi
                 </p>
 
@@ -593,7 +593,7 @@ export default function AdminAttendanceReportPage() {
                   onClick={handleExportPdf}
                   disabled={isLoading || reports.length === 0}
                   title="Export PDF"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 text-xs font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-4 text-xs font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <FileDown size={17} strokeWidth={2.6} />
                   PDF
@@ -607,8 +607,8 @@ export default function AdminAttendanceReportPage() {
                   <AppLoadingState text="Memuat rekap kehadiran..." />
                 </div>
               ) : groupedReports.length === 0 ? (
-                <div className="attendance-report-row-enter rounded-3xl border border-dashed border-blue-100 bg-[#f8fbff] px-5 py-12 text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+                <div className="attendance-report-row-enter rounded-3xl border border-dashed border-red-100 bg-[#fef2f2] px-5 py-12 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
                     <ImageIcon size={26} strokeWidth={2.6} />
                   </div>
 
@@ -621,14 +621,14 @@ export default function AdminAttendanceReportPage() {
                   {groupedReports.map((group, groupIndex) => (
                     <section
                       key={group.dateLabel}
-                      className="attendance-report-row-enter rounded-[2rem] border border-blue-100 bg-white p-4 md:p-5"
+                      className="attendance-report-row-enter rounded-[2rem] border border-red-100 bg-white p-4 md:p-5"
                       style={{
                         animationDelay: `${groupIndex * 70}ms`,
                       }}
                     >
                       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
                             <CalendarDays size={22} strokeWidth={2.6} />
                           </div>
 
@@ -652,7 +652,7 @@ export default function AdminAttendanceReportPage() {
                             onClick={(event) =>
                               openAttendanceDetail(event, item.id)
                             }
-                            className={`attendance-report-row-enter group block rounded-2xl border border-blue-100 bg-white px-3 py-3 shadow-sm shadow-slate-200/60 transition duration-300 hover:-translate-y-0.5 hover:border-[#123c8c]/30 hover:bg-[#fbfdff] hover:shadow-xl hover:shadow-slate-300/40 active:scale-[0.99] md:rounded-[1.6rem] md:px-5 md:py-4 ${
+                            className={`attendance-report-row-enter group block rounded-2xl border border-red-100 bg-white px-3 py-3 shadow-sm shadow-slate-200/60 transition duration-300 hover:-translate-y-0.5 hover:border-[#b91c1c]/30 hover:bg-[#fbfdff] hover:shadow-xl hover:shadow-slate-300/40 active:scale-[0.99] md:rounded-[1.6rem] md:px-5 md:py-4 ${
                               openingReportId === item.id
                                 ? "attendance-report-opening"
                                 : ""
@@ -693,14 +693,14 @@ export default function AdminAttendanceReportPage() {
                               </div>
 
                               <div className="hidden grid-cols-2 gap-2 text-xs font-bold text-slate-500 md:grid md:w-[260px]">
-                                <div className="rounded-2xl border border-blue-50 bg-white px-4 py-3">
+                                <div className="rounded-2xl border border-red-100 bg-white px-4 py-3">
                                   <p className="text-slate-400">Masuk</p>
                                   <p className="mt-1 font-black text-slate-800">
                                     {item.checkIn}
                                   </p>
                                 </div>
 
-                                <div className="rounded-2xl border border-blue-50 bg-white px-4 py-3">
+                                <div className="rounded-2xl border border-red-100 bg-white px-4 py-3">
                                   <p className="text-slate-400">Keluar</p>
                                   <p className="mt-1 font-black text-slate-800">
                                     {item.checkOut}
@@ -723,7 +723,7 @@ export default function AdminAttendanceReportPage() {
                                   </span>
                                 ) : null}
 
-                                <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-black text-[#123c8c] md:px-3 md:text-[11px]">
+                                <span className="rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-black text-[#b91c1c] md:px-3 md:text-[11px]">
                                   {item.workModeLabel}
                                 </span>
 
@@ -745,7 +745,7 @@ export default function AdminAttendanceReportPage() {
                               </div>
 
                               <div className="hidden shrink-0 items-center justify-start md:flex md:w-[220px] md:justify-end">
-                                <span className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-4 text-xs font-black text-[#123c8c] transition group-hover:bg-[#eaf1ff]">
+                                <span className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-red-100 bg-white px-4 text-xs font-black text-[#b91c1c] transition group-hover:bg-[#fee2e2]">
                                   Lihat detail
                                 </span>
                               </div>

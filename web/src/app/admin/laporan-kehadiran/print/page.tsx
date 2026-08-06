@@ -177,7 +177,7 @@ function AttendanceReportPrintContent() {
           display: flex;
           justify-content: space-between;
           gap: 24px;
-          border-bottom: 3px solid #123c8c;
+          border-bottom: 3px solid #b91c1c;
           padding-bottom: 16px;
           margin-bottom: 18px;
         }
@@ -193,7 +193,7 @@ function AttendanceReportPrintContent() {
 
         h1 {
           margin: 0;
-          color: #123c8c;
+          color: #b91c1c;
           font-size: 26px;
           line-height: 1.15;
         }
@@ -203,7 +203,7 @@ function AttendanceReportPrintContent() {
           border: 1px solid #dbeafe;
           border-radius: 14px;
           padding: 12px 14px;
-          background: #f8fbff;
+          background: #fef2f2;
           font-size: 12px;
           line-height: 1.7;
         }
@@ -219,7 +219,7 @@ function AttendanceReportPrintContent() {
           border: 1px solid #dbeafe;
           border-radius: 14px;
           padding: 12px;
-          background: #f8fbff;
+          background: #fef2f2;
         }
 
         .stat span {
@@ -232,7 +232,7 @@ function AttendanceReportPrintContent() {
         .stat strong {
           display: block;
           margin-top: 6px;
-          color: #123c8c;
+          color: #b91c1c;
           font-size: 24px;
         }
 
@@ -261,7 +261,7 @@ function AttendanceReportPrintContent() {
         }
 
         th {
-          background: #123c8c;
+          background: #b91c1c;
           color: #ffffff;
           padding: 9px 8px;
           text-align: left;
@@ -275,7 +275,7 @@ function AttendanceReportPrintContent() {
         }
 
         tr:nth-child(even) td {
-          background: #f8fbff;
+          background: #fef2f2;
         }
 
         small {

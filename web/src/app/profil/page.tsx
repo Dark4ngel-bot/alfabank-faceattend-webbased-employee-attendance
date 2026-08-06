@@ -257,7 +257,7 @@ function formatDateInput(value?: string | null) {
 function getProfileAlertTheme(type: NonNullable<ProfileAlert>["type"]) {
   if (type === "success") {
     return {
-      shell: "from-emerald-50 via-white to-blue-50",
+      shell: "from-emerald-50 via-white to-red-50",
       iconWrap: "bg-emerald-100 text-emerald-600",
       badge: "text-emerald-600 bg-white/70",
       button: "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-900/20",
@@ -268,7 +268,7 @@ function getProfileAlertTheme(type: NonNullable<ProfileAlert>["type"]) {
 
   if (type === "error") {
     return {
-      shell: "from-red-50 via-white to-blue-50",
+      shell: "from-red-50 via-white to-red-50",
       iconWrap: "bg-red-100 text-red-600",
       badge: "text-red-600 bg-white/70",
       button: "bg-red-600 hover:bg-red-700 shadow-red-900/20",
@@ -1289,8 +1289,8 @@ export function ProfilPageContent({
       <main className="min-h-dvh bg-white pb-28 text-slate-950 md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff]">
         {loading ? (
           <section className="profile-enter mx-auto max-w-5xl px-5 pt-8 md:px-10">
-            <div className="flex items-center gap-3 rounded-3xl border border-blue-100 bg-[#f8fbff] p-5 text-sm font-bold text-slate-500">
-              <Loader2 size={20} className="animate-spin text-[#123c8c]" />
+            <div className="flex items-center gap-3 rounded-3xl border border-red-100 bg-[#fef2f2] p-5 text-sm font-bold text-slate-500">
+              <Loader2 size={20} className="animate-spin text-[#b91c1c]" />
               Mengambil data profil...
             </div>
           </section>
@@ -1322,7 +1322,7 @@ export function ProfilPageContent({
               <button
                 type="button"
                 onClick={handleBackToMenu}
-                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200 transition hover:-translate-y-0.5 hover:bg-[#f8fbff] active:scale-[0.96]"
+                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200 transition hover:-translate-y-0.5 hover:bg-[#fef2f2] active:scale-[0.96]"
               >
                 <ArrowLeft size={25} strokeWidth={2.8} />
               </button>
@@ -1466,7 +1466,7 @@ export function ProfilPageContent({
               style={{ animationDelay: "100ms" }}
             >
 
-              <div className="mt-4 overflow-hidden rounded-[1.8rem] border border-blue-100/80 bg-white shadow-xl shadow-slate-200/50">
+              <div className="mt-4 overflow-hidden rounded-[1.8rem] border border-red-100/80 bg-white shadow-xl shadow-slate-200/50">
                 <SectionRow
                   icon={UserRound}
                   title="Info Pribadi"
@@ -1475,14 +1475,14 @@ export function ProfilPageContent({
                 />
 
                 <label
-                  className={`profile-row-enter block w-full border-b border-slate-100 transition hover:bg-[#f8fbff] active:scale-[0.99] ${isUploadingPhoto
+                  className={`profile-row-enter block w-full border-b border-slate-100 transition hover:bg-[#fef2f2] active:scale-[0.99] ${isUploadingPhoto
                     ? "cursor-not-allowed opacity-60"
                     : "cursor-pointer"
                     }`}
                   style={{ animationDelay: "160ms" }}
                 >
                   <div className="flex w-full items-center gap-4 px-5 py-5 sm:px-6">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eef5ff] text-[#123c8c]">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
                       {isUploadingPhoto ? (
                         <Loader2 size={23} className="animate-spin" />
                       ) : (
@@ -1505,7 +1505,7 @@ export function ProfilPageContent({
                     <Upload
                       size={24}
                       strokeWidth={2.8}
-                      className="shrink-0 text-[#123c8c]"
+                      className="shrink-0 text-[#b91c1c]"
                     />
                   </div>
 
@@ -1563,7 +1563,7 @@ export function ProfilPageContent({
             <div className="profile-modal-panel max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                     Edit Profil
                   </p>
 

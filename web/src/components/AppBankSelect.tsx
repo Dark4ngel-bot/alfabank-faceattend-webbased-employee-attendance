@@ -190,7 +190,7 @@ export function AppBankSelect({
                   </div>
 
                   {isSelected && (
-                    <Check size={16} className="text-[#123c8c] shrink-0" strokeWidth={3} />
+                    <Check size={16} className="text-[#b91c1c] shrink-0" strokeWidth={3} />
                   )}
                 </button>
               );

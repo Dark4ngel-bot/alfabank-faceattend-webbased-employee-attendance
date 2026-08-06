@@ -75,7 +75,7 @@ export default function MobileShell({
   const backgroundGlow =
     variant === "admin"
       ? "from-[#f6f8ff] via-white to-[#eef4ff]"
-      : "from-white via-[#f8fbff] to-[#eef4ff]";
+      : "from-white via-[#fef2f2] to-[#eef4ff]";
 
   return (
     <div

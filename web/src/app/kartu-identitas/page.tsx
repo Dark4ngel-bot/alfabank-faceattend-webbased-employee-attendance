@@ -378,7 +378,7 @@ export default function KartuIdentitasPage() {
       ctx.fillText(formatRole(user.role).toUpperCase(), 180, 431);
 
       // Front Right Grid
-      ctx.fillStyle = "#123c8c";
+      ctx.fillStyle = "#b91c1c";
       ctx.font = "bold 15px sans-serif";
       ctx.textAlign = "left";
       ctx.fillText("KARTU KARYAWAN", 410, 50);
@@ -507,7 +507,7 @@ export default function KartuIdentitasPage() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200/80 transition hover:bg-[#f8fbff] active:scale-[0.96] sm:h-10 sm:w-10"
+                className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200/80 transition hover:bg-[#fef2f2] active:scale-[0.96] sm:h-10 sm:w-10"
               >
                 <ArrowLeft size={19} strokeWidth={2.5} />
               </button>
@@ -624,7 +624,7 @@ export default function KartuIdentitasPage() {
                       <p className="mt-2.5 max-w-full truncate text-xs font-bold text-white md:mt-3.5 md:text-lg tracking-tight">
                         {user.name}
                       </p>
-                      <p className="mt-1 rounded-full bg-white/15 px-3 py-0.5 text-[8px] font-semibold tracking-wide text-blue-50 ring-1 ring-white/25 backdrop-blur-sm md:text-xs">
+                      <p className="mt-1 rounded-full bg-white/15 px-3 py-0.5 text-[8px] font-semibold tracking-wide text-red-50 ring-1 ring-white/25 backdrop-blur-sm md:text-xs">
                         {formatRole(user.role)}
                       </p>
                     </div>

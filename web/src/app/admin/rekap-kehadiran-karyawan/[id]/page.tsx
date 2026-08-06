@@ -276,8 +276,8 @@ const calendarCategoryStyles: Record<
   },
   wfh: {
     label: "WFH",
-    dot: "bg-blue-500",
-    tile: "bg-blue-500 text-white shadow-lg shadow-blue-200",
+    dot: "bg-red-600",
+    tile: "bg-red-600 text-white shadow-lg shadow-red-200",
   },
   kunjungan: {
     label: "Kunjungan",
@@ -487,8 +487,8 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
           <style>
             table { border-collapse: collapse; font-family: Arial, sans-serif; }
             th, td { border: 1px solid #cbd5e1; padding: 8px 12px; }
-            th { background: #123c8c; color: #ffffff; text-align: left; }
-            td:first-child { font-weight: 700; background: #f8fbff; }
+            th { background: #b91c1c; color: #ffffff; text-align: left; }
+            td:first-child { font-weight: 700; background: #fef2f2; }
           </style>
         </head>
         <body>
@@ -591,8 +591,8 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
           <style>
             table { border-collapse: collapse; font-family: Arial, sans-serif; width: 100%; }
             th, td { border: 1px solid #cbd5e1; padding: 8px 12px; font-size: 13px; }
-            th { background: #123c8c; color: #ffffff; text-align: left; font-weight: bold; }
-            tr:nth-child(even) { background-color: #f8fbff; }
+            th { background: #b91c1c; color: #ffffff; text-align: left; font-weight: bold; }
+            tr:nth-child(even) { background-color: #fef2f2; }
           </style>
         </head>
         <body>
@@ -660,7 +660,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
     {
       label: "Total Kerja",
       value: formatWorkDuration(summary.totalWorkMinutes),
-      className: "border-blue-100 bg-blue-50 text-[#123c8c]",
+      className: "border-red-100 bg-red-50 text-[#b91c1c]",
     },
     {
       label: "Sakit",
@@ -701,7 +701,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
           <div className="recap-detail-enter flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link
               href={backHref}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#123c8c] shadow-lg shadow-slate-300/30 ring-1 ring-blue-100 transition hover:bg-[#f8fbff]"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#b91c1c] shadow-lg shadow-slate-300/30 ring-1 ring-red-100 transition hover:bg-[#fef2f2]"
             >
               <ArrowLeft size={17} strokeWidth={2.8} />
               Kembali ke daftar
@@ -711,7 +711,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
               type="button"
               onClick={() => setIsExportModalOpen(true)}
               disabled={isLoading || !employee}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-950/20 transition hover:bg-[#0f3274] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
             >
               <Download size={17} strokeWidth={2.8} />
               Download Excel
@@ -732,33 +732,33 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                   <button
                     type="button"
                     onClick={handleDownloadExcelSummary}
-                    className="flex w-full items-center justify-between rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 text-left transition hover:border-[#123c8c] hover:bg-blue-50/50"
+                    className="flex w-full items-center justify-between rounded-2xl border border-red-100 bg-[#fef2f2] p-4 text-left transition hover:border-[#b91c1c] hover:bg-red-50/50"
                   >
                     <div>
-                      <p className="text-sm font-black text-[#123c8c]">
+                      <p className="text-sm font-black text-[#b91c1c]">
                         1. Mode Rekap Total (Summary)
                       </p>
                       <p className="mt-0.5 text-xs font-medium text-slate-500">
                         Ringkasan total hari kerja, total hadir, terlambat, WFH & total jam kerja.
                       </p>
                     </div>
-                    <Download size={18} className="shrink-0 text-[#123c8c]" />
+                    <Download size={18} className="shrink-0 text-[#b91c1c]" />
                   </button>
 
                   <button
                     type="button"
                     onClick={handleDownloadExcelDetailList}
-                    className="flex w-full items-center justify-between rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 text-left transition hover:border-[#123c8c] hover:bg-blue-50/50"
+                    className="flex w-full items-center justify-between rounded-2xl border border-red-100 bg-[#fef2f2] p-4 text-left transition hover:border-[#b91c1c] hover:bg-red-50/50"
                   >
                     <div>
-                      <p className="text-sm font-black text-[#123c8c]">
+                      <p className="text-sm font-black text-[#b91c1c]">
                         2. Mode List Kehadiran (Detail Harian)
                       </p>
                       <p className="mt-0.5 text-xs font-medium text-slate-500">
                         Rincian log absen per baris tanggal (Jam Masuk, Jam Pulang, WFH & Keterangan).
                       </p>
                     </div>
-                    <Download size={18} className="shrink-0 text-[#123c8c]" />
+                    <Download size={18} className="shrink-0 text-[#b91c1c]" />
                   </button>
                 </div>
 
@@ -775,9 +775,9 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
             </div>
           ) : null}
 
-          <div className="recap-detail-enter overflow-hidden rounded-[2.25rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
+          <div className="recap-detail-enter overflow-hidden rounded-[2.25rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="bg-[#123c8c] p-8 text-white md:p-12">
+              <div className="bg-[#b91c1c] p-8 text-white md:p-12">
                 <div className="flex items-center gap-5">
                   <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-white/15 ring-1 ring-white/20">
                     {employeePhoto ? (
@@ -792,14 +792,14 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                   </div>
 
                   <div>
-                    <p className="text-sm font-black uppercase tracking-[0.16em] text-blue-100">
+                    <p className="text-sm font-black uppercase tracking-[0.16em] text-red-100">
                       Rekap karyawan
                     </p>
                     <h2 className="mt-2 text-4xl font-black tracking-tight md:text-5xl">
                       {employee?.name ||
                         (isLoading ? "Memuat..." : "Data tidak tersedia")}
                     </h2>
-                    <p className="mt-3 text-base font-semibold text-blue-100">
+                    <p className="mt-3 text-base font-semibold text-red-100">
                       {formatDateRange(startDate, endDate)}
                     </p>
                   </div>
@@ -807,11 +807,11 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-5 p-7 sm:grid-cols-2 md:p-10">
-                <div className="min-h-36 rounded-3xl border border-blue-100 bg-[#f8fbff] p-6">
+                <div className="min-h-36 rounded-3xl border border-red-100 bg-[#fef2f2] p-6">
                   <p className="text-sm font-bold text-slate-500">
                     Masa Kerja
                   </p>
-                  <h3 className="mt-4 text-xl font-black leading-snug text-[#123c8c]">
+                  <h3 className="mt-4 text-xl font-black leading-snug text-[#b91c1c]">
                     {formatEmploymentPeriod(employee)}
                   </h3>
                 </div>
@@ -848,7 +848,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                     type="date"
                     value={startDate}
                     onChange={(event) => setStartDate(event.target.value)}
-                    className="recap-detail-field h-16 w-full rounded-3xl border border-blue-100 bg-[#f8fbff] py-4 pl-14 pr-5 text-base font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                    className="recap-detail-field h-16 w-full rounded-3xl border border-red-100 bg-[#fef2f2] py-4 pl-14 pr-5 text-base font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                   />
                 </div>
               </label>
@@ -868,7 +868,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                     type="date"
                     value={endDate}
                     onChange={(event) => setEndDate(event.target.value)}
-                    className="recap-detail-field h-16 w-full rounded-3xl border border-blue-100 bg-[#f8fbff] py-4 pl-14 pr-5 text-base font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                    className="recap-detail-field h-16 w-full rounded-3xl border border-red-100 bg-[#fef2f2] py-4 pl-14 pr-5 text-base font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
                   />
                 </div>
               </label>
@@ -882,9 +882,9 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
           ) : null}
 
           {isLoading ? (
-            <div className="recap-detail-enter flex min-h-56 flex-col items-center justify-center gap-3 rounded-[2rem] border border-blue-100 bg-white p-8 text-center shadow-xl shadow-slate-300/30">
+            <div className="recap-detail-enter flex min-h-56 flex-col items-center justify-center gap-3 rounded-[2rem] border border-red-100 bg-white p-8 text-center shadow-xl shadow-slate-300/30">
               <Loader2
-                className="h-8 w-8 animate-spin text-[#123c8c]"
+                className="h-8 w-8 animate-spin text-[#b91c1c]"
                 strokeWidth={2.7}
               />
               <p className="text-sm font-bold text-slate-500">
@@ -909,12 +909,12 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
               </div>
 
               <div
-                className="recap-detail-enter overflow-hidden rounded-[2.25rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30"
+                className="recap-detail-enter overflow-hidden rounded-[2.25rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30"
                 style={{ animationDelay: "160ms" }}
               >
                 <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 md:flex-row md:items-center md:justify-between md:px-8">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[#123c8c]">
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[#b91c1c]">
                       Kalender Kehadiran
                     </p>
                     <h3 className="mt-2 text-2xl font-black capitalize text-slate-950">
@@ -929,7 +929,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                         setCalendarMonth((current) => addMonths(current, -1))
                       }
                       disabled={!canOpenPreviousMonth}
-                      className="flex h-12 w-12 items-center justify-center rounded-2xl border border-blue-100 bg-white text-[#123c8c] shadow-sm transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-300"
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl border border-red-100 bg-white text-[#b91c1c] shadow-sm transition hover:bg-[#fef2f2] disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-300"
                     >
                       <ChevronLeft size={22} strokeWidth={2.8} />
                     </button>
@@ -940,7 +940,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                         setCalendarMonth((current) => addMonths(current, 1))
                       }
                       disabled={!canOpenNextMonth}
-                      className="flex h-12 w-12 items-center justify-center rounded-2xl border border-blue-100 bg-white text-[#123c8c] shadow-sm transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-300"
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl border border-red-100 bg-white text-[#b91c1c] shadow-sm transition hover:bg-[#fef2f2] disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-300"
                     >
                       <ChevronRight size={22} strokeWidth={2.8} />
                     </button>
@@ -988,7 +988,7 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
                               ? "bg-slate-50 text-slate-300"
                               : categoryStyle
                                 ? categoryStyle.tile
-                                : "bg-[#f8fbff] text-slate-700"
+                                : "bg-[#fef2f2] text-slate-700"
                           }`}
                           title={
                             categoryStyle

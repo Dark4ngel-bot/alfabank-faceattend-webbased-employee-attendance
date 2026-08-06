@@ -228,14 +228,14 @@ function OfficeCard({
 }) {
   return (
     <AppCard
-      className="office-row-enter w-full max-w-full overflow-hidden rounded-[2rem] border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/40 md:overflow-visible"
+      className="office-row-enter w-full max-w-full overflow-hidden rounded-[2rem] border-red-100 bg-white p-5 shadow-xl shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/40 md:overflow-visible"
       style={{
         animationDelay: `${index * 55}ms`,
       }}
     >
       <div className="flex w-full max-w-full flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="flex w-full min-w-0 gap-3 md:gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c]">
             <Building2 size={24} strokeWidth={2.6} />
           </div>
 
@@ -253,7 +253,7 @@ function OfficeCard({
             </p>
 
             <div className="mt-4 grid w-full max-w-full gap-2 text-sm font-bold text-slate-500 md:grid-cols-3">
-              <div className="min-w-0 rounded-2xl bg-[#f8fbff] p-3">
+              <div className="min-w-0 rounded-2xl bg-[#fef2f2] p-3">
                 <p className="break-words text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Latitude
                 </p>
@@ -263,7 +263,7 @@ function OfficeCard({
                 </p>
               </div>
 
-              <div className="min-w-0 rounded-2xl bg-[#f8fbff] p-3">
+              <div className="min-w-0 rounded-2xl bg-[#fef2f2] p-3">
                 <p className="break-words text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Longitude
                 </p>
@@ -273,7 +273,7 @@ function OfficeCard({
                 </p>
               </div>
 
-              <div className="min-w-0 rounded-2xl bg-[#f8fbff] p-3">
+              <div className="min-w-0 rounded-2xl bg-[#fef2f2] p-3">
                 <p className="break-words text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Radius
                 </p>
@@ -288,7 +288,7 @@ function OfficeCard({
               href={`https://www.google.com/maps?q=${office.latitude},${office.longitude}`}
               target="_blank"
               rel="noreferrer"
-              className="mt-4 inline-flex max-w-full items-center justify-center gap-2 rounded-2xl bg-[#f6f8ff] px-4 py-2 text-xs font-black text-[#123c8c] ring-1 ring-blue-100 transition hover:bg-[#eaf1ff] active:scale-[0.98]"
+              className="mt-4 inline-flex max-w-full items-center justify-center gap-2 rounded-2xl bg-[#f6f8ff] px-4 py-2 text-xs font-black text-[#b91c1c] ring-1 ring-red-100 transition hover:bg-[#fee2e2] active:scale-[0.98]"
             >
               <MapPin size={15} className="shrink-0" strokeWidth={2.7} />
               <span className="truncate">Buka Maps</span>
@@ -300,7 +300,7 @@ function OfficeCard({
           <button
             type="button"
             onClick={() => onEdit(office)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#123c8c] transition hover:bg-[#eaf1ff] active:scale-95"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-[#b91c1c] transition hover:bg-[#fee2e2] active:scale-95"
             aria-label="Ubah kantor"
           >
             <Edit3 size={18} strokeWidth={2.6} />
@@ -341,7 +341,7 @@ function OfficeFormPanel({
     <AppCard className="office-enter h-fit w-full max-w-full overflow-hidden rounded-[2rem] border-white/80 bg-white p-5 shadow-2xl shadow-slate-300/30 md:overflow-visible md:p-6">
       <div className="flex min-w-0 items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <p className="break-words text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+          <p className="break-words text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
             {editingOffice ? "Edit Kantor" : "Tambah Kantor"}
           </p>
 
@@ -370,7 +370,7 @@ function OfficeFormPanel({
             value={form.name}
             onChange={(event) => onChange("name", event.target.value)}
             placeholder="Contoh: Creativemu Academy"
-            className="office-field focus:ring-4 focus:ring-blue-100"
+            className="office-field focus:ring-4 focus:ring-red-100"
           />
         </div>
 
@@ -380,12 +380,12 @@ function OfficeFormPanel({
             value={form.address}
             onChange={(event) => onChange("address", event.target.value)}
             placeholder="Contoh: Jogja"
-            className="office-field min-h-28 focus:ring-4 focus:ring-blue-100"
+            className="office-field min-h-28 focus:ring-4 focus:ring-red-100"
           />
         </div>
 
         <div
-          className="office-row-enter w-full max-w-full overflow-hidden rounded-[1.7rem] border border-blue-100 bg-[#f8fbff] p-4"
+          className="office-row-enter w-full max-w-full overflow-hidden rounded-[1.7rem] border border-red-100 bg-[#fef2f2] p-4"
           style={{ animationDelay: "100ms" }}
         >
           <AppTextarea
@@ -393,7 +393,7 @@ function OfficeFormPanel({
             value={form.coordinateText}
             onChange={(event) => onChange("coordinateText", event.target.value)}
             placeholder="Contoh: -7.812201, 110.2685415 atau paste link Google Maps"
-            className="office-field min-h-24 bg-white focus:ring-4 focus:ring-blue-100"
+            className="office-field min-h-24 bg-white focus:ring-4 focus:ring-red-100"
           />
 
           <AppButton
@@ -424,7 +424,7 @@ function OfficeFormPanel({
             onChange={(event) => onChange("latitude", event.target.value)}
             placeholder="-7.812201"
             inputMode="decimal"
-            className="office-field focus:ring-4 focus:ring-blue-100"
+            className="office-field focus:ring-4 focus:ring-red-100"
           />
 
           <AppInput
@@ -433,7 +433,7 @@ function OfficeFormPanel({
             onChange={(event) => onChange("longitude", event.target.value)}
             placeholder="110.2685415"
             inputMode="decimal"
-            className="office-field focus:ring-4 focus:ring-blue-100"
+            className="office-field focus:ring-4 focus:ring-red-100"
           />
         </div>
 
@@ -447,7 +447,7 @@ function OfficeFormPanel({
             onChange={(event) => onChange("radius_meters", event.target.value)}
             placeholder="100"
             inputMode="numeric"
-            className="office-field focus:ring-4 focus:ring-blue-100"
+            className="office-field focus:ring-4 focus:ring-red-100"
           />
 
           <AppSelect
@@ -456,7 +456,7 @@ function OfficeFormPanel({
             onChange={(event) =>
               onChange("status", event.target.value as OfficeStatus)
             }
-            className="office-field focus:ring-4 focus:ring-blue-100"
+            className="office-field focus:ring-4 focus:ring-red-100"
           >
             <option value="active">Aktif</option>
             <option value="inactive">Nonaktif</option>
@@ -464,13 +464,13 @@ function OfficeFormPanel({
         </div>
 
         <div
-          className="office-row-enter w-full max-w-full overflow-hidden rounded-3xl border border-blue-100 bg-[#f8fbff] p-4"
+          className="office-row-enter w-full max-w-full overflow-hidden rounded-3xl border border-red-100 bg-[#fef2f2] p-4"
           style={{ animationDelay: "190ms" }}
         >
           <div className="flex min-w-0 items-start gap-3">
             <MapPin
               size={20}
-              className="mt-0.5 shrink-0 text-[#123c8c]"
+              className="mt-0.5 shrink-0 text-[#b91c1c]"
               strokeWidth={2.7}
             />
 
@@ -718,12 +718,12 @@ export default function AdminOfficePage() {
 
             <div className="w-full max-w-full space-y-5 overflow-hidden md:overflow-visible">
               <div
-                className="office-enter w-full max-w-full overflow-hidden rounded-[2rem] bg-[#123c8c] p-5 text-white shadow-2xl shadow-blue-900/20 md:p-8"
+                className="office-enter w-full max-w-full overflow-hidden rounded-[2rem] bg-[#b91c1c] p-5 text-white shadow-2xl shadow-red-950/20 md:p-8"
                 style={{ animationDelay: "80ms" }}
               >
                 <div className="flex min-w-0 flex-col gap-5 md:flex-row md:items-center md:justify-between">
                   <div className="min-w-0 flex-1">
-                    <p className="break-words text-xs font-black uppercase tracking-[0.24em] text-blue-100">
+                    <p className="break-words text-xs font-black uppercase tracking-[0.24em] text-red-100">
                       Lokasi Kantor
                     </p>
 
@@ -735,7 +735,7 @@ export default function AdminOfficePage() {
 
                 <div className="mt-6 grid w-full max-w-full gap-3 md:grid-cols-3">
                   <div className="office-row-enter min-w-0 rounded-2xl bg-white/15 p-4 ring-1 ring-white/20">
-                    <p className="break-words text-xs font-black uppercase tracking-[0.16em] text-blue-100">
+                    <p className="break-words text-xs font-black uppercase tracking-[0.16em] text-red-100">
                       Total
                     </p>
 
@@ -748,7 +748,7 @@ export default function AdminOfficePage() {
                     className="office-row-enter min-w-0 rounded-2xl bg-white/15 p-4 ring-1 ring-white/20"
                     style={{ animationDelay: "60ms" }}
                   >
-                    <p className="break-words text-xs font-black uppercase tracking-[0.16em] text-blue-100">
+                    <p className="break-words text-xs font-black uppercase tracking-[0.16em] text-red-100">
                       Aktif
                     </p>
 
@@ -761,7 +761,7 @@ export default function AdminOfficePage() {
                     className="office-row-enter min-w-0 rounded-2xl bg-white/15 p-4 ring-1 ring-white/20"
                     style={{ animationDelay: "100ms" }}
                   >
-                    <p className="break-words text-xs font-black uppercase tracking-[0.16em] text-blue-100">
+                    <p className="break-words text-xs font-black uppercase tracking-[0.16em] text-red-100">
                       Nonaktif
                     </p>
 
@@ -773,9 +773,9 @@ export default function AdminOfficePage() {
               </div>
 
               {isLoading ? (
-                <div className="office-row-enter flex min-h-[260px] w-full max-w-full items-center justify-center rounded-[2rem] border border-blue-100 bg-white">
+                <div className="office-row-enter flex min-h-[260px] w-full max-w-full items-center justify-center rounded-[2rem] border border-red-100 bg-white">
                   <div className="text-center">
-                    <Loader2 className="mx-auto animate-spin text-[#123c8c]" />
+                    <Loader2 className="mx-auto animate-spin text-[#b91c1c]" />
 
                     <p className="mt-3 text-sm font-black text-slate-600">
                       Mengambil data kantor...

@@ -392,7 +392,7 @@ export default function AdminAnnouncementsPage() {
       <AppHeader title="Pengumuman" variant="admin" />
 
       <main className="mx-auto max-w-7xl px-5 py-6 pb-28 md:px-10 lg:px-16">
-        <section className="admin-announcement-enter relative overflow-hidden rounded-[2rem] bg-[#123c8c] p-6 text-white shadow-md shadow-slate-300/40 md:p-8">
+        <section className="admin-announcement-enter relative overflow-hidden rounded-[2rem] bg-[#b91c1c] p-6 text-white shadow-md shadow-slate-300/40 md:p-8">
           <div className="relative z-10 flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="mt-5 text-3xl font-black tracking-tight md:text-4xl">
@@ -403,7 +403,7 @@ export default function AdminAnnouncementsPage() {
             <button
               type="button"
               onClick={openAddModal}
-              className="inline-flex items-center justify-center gap-3 rounded-[1.4rem] bg-white px-6 py-4 text-sm font-black text-[#123c8c] shadow-sm ring-1 ring-white/70 transition duration-200 hover:bg-blue-50 active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-3 rounded-[1.4rem] bg-white px-6 py-4 text-sm font-black text-[#b91c1c] shadow-sm ring-1 ring-white/70 transition duration-200 hover:bg-red-50 active:scale-[0.98]"
             >
               <Plus size={20} strokeWidth={3} />
               Tambah Pengumuman
@@ -444,7 +444,7 @@ export default function AdminAnnouncementsPage() {
         </section>
 
         <section
-          className="admin-announcement-enter mt-6 rounded-3xl border border-blue-100 bg-white p-4 shadow-sm md:p-5"
+          className="admin-announcement-enter mt-6 rounded-3xl border border-red-100 bg-white p-4 shadow-sm md:p-5"
           style={{ animationDelay: "120ms" }}
         >
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -468,7 +468,7 @@ export default function AdminAnnouncementsPage() {
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Cari pengumuman..."
-                  className="admin-announcement-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="admin-announcement-field w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 />
               </div>
 
@@ -479,7 +479,7 @@ export default function AdminAnnouncementsPage() {
                     event.target.value as "all" | AnnouncementStatus,
                   )
                 }
-                className="admin-announcement-field rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                className="admin-announcement-field rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
               >
                 <option value="all">Semua Status</option>
                 <option value="published">Published</option>
@@ -495,18 +495,18 @@ export default function AdminAnnouncementsPage() {
             </div>
           ) : null}
 
-          <div className="mt-5 overflow-hidden rounded-2xl border border-blue-100">
-            <div className="hidden grid-cols-[minmax(0,1.7fr)_minmax(11rem,0.75fr)_0.5fr_0.75fr] items-center bg-[#f6f8ff] px-5 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-[#123c8c] md:grid">
+          <div className="mt-5 overflow-hidden rounded-2xl border border-red-100">
+            <div className="hidden grid-cols-[minmax(0,1.7fr)_minmax(11rem,0.75fr)_0.5fr_0.75fr] items-center bg-[#f6f8ff] px-5 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-[#b91c1c] md:grid">
               <p>Pengumuman</p>
               <p>Dokumen</p>
               <p>Status</p>
               <p className="text-center">Aksi</p>
             </div>
 
-            <div className="divide-y divide-blue-50 bg-white">
+            <div className="divide-y divide-red-100 bg-white">
               {isLoading ? (
                 <div className="admin-announcement-row-enter px-5 py-10 text-center">
-                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#123c8c]" />
+                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#b91c1c]" />
                   <p className="mt-3 font-black text-slate-700">
                     Mengambil data pengumuman...
                   </p>
@@ -524,17 +524,17 @@ export default function AdminAnnouncementsPage() {
                 filteredAnnouncements.map((announcement, index) => (
                   <div
                     key={announcement.id}
-                    className="admin-announcement-row-enter grid gap-3 px-4 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] md:grid-cols-[minmax(0,1.7fr)_minmax(11rem,0.75fr)_0.5fr_0.75fr] md:items-start md:px-5"
+                    className="admin-announcement-row-enter grid gap-3 px-4 py-4 text-sm transition duration-200 hover:bg-[#fef2f2] md:grid-cols-[minmax(0,1.7fr)_minmax(11rem,0.75fr)_0.5fr_0.75fr] md:items-start md:px-5"
                     style={{
                       animationDelay: `${index * 55}ms`,
                     }}
                   >
                     <Link
                       href={`/admin/pengumuman/${announcement.id}`}
-                      className="min-w-0 rounded-2xl transition hover:bg-blue-50/50 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                      className="min-w-0 rounded-2xl transition hover:bg-red-50/50 focus:outline-none focus:ring-4 focus:ring-red-100"
                     >
                       <div className="flex items-start gap-3">
-                        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#123c8c]">
+                        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-[#b91c1c]">
                           <Megaphone size={17} strokeWidth={2.6} />
                         </span>
 
@@ -561,7 +561,7 @@ export default function AdminAnnouncementsPage() {
                         }
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex min-w-0 items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-xs font-black text-[#123c8c] transition hover:bg-blue-100 md:mt-1"
+                        className="inline-flex min-w-0 items-center gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-[#b91c1c] transition hover:bg-red-100 md:mt-1"
                       >
                         <FileText size={15} className="shrink-0" />
                         <span className="min-w-0">
@@ -574,7 +574,7 @@ export default function AdminAnnouncementsPage() {
                             announcement.document_size ||
                               announcement.documentSize,
                           ) ? (
-                            <span className="block text-[10px] font-bold text-blue-500">
+                            <span className="block text-[10px] font-bold text-red-600">
                               {formatFileSize(
                                 announcement.document_size ||
                                   announcement.documentSize,
@@ -605,7 +605,7 @@ export default function AdminAnnouncementsPage() {
                       <button
                         type="button"
                         onClick={() => openEditModal(announcement)}
-                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-blue-100 bg-white px-3 text-xs font-black text-[#123c8c] transition hover:bg-[#eaf1ff] active:scale-[0.97]"
+                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-red-100 bg-white px-3 text-xs font-black text-[#b91c1c] transition hover:bg-[#fee2e2] active:scale-[0.97]"
                       >
                         <Edit size={14} />
                         Edit
@@ -670,7 +670,7 @@ export default function AdminAnnouncementsPage() {
                     }))
                   }
                   placeholder="Contoh: Pengingat Presensi Harian"
-                  className="admin-announcement-field w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-2 focus:ring-blue-100"
+                  className="admin-announcement-field w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-2 focus:ring-red-100"
                 />
               </div>
 
@@ -692,7 +692,7 @@ export default function AdminAnnouncementsPage() {
                   }
                   rows={6}
                   placeholder="Tulis isi pemberitahuan..."
-                  className="admin-announcement-field w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-2 focus:ring-blue-100"
+                  className="admin-announcement-field w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-2 focus:ring-red-100"
                 />
               </div>
 
@@ -712,7 +712,7 @@ export default function AdminAnnouncementsPage() {
                       status: event.target.value as AnnouncementStatus,
                     }))
                   }
-                  className="admin-announcement-field w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-2 focus:ring-blue-100"
+                  className="admin-announcement-field w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-2 focus:ring-red-100"
                 >
                   <option value="published">Published</option>
                   <option value="draft">Draft</option>
@@ -728,9 +728,9 @@ export default function AdminAnnouncementsPage() {
                   Dokumen PDF
                 </label>
 
-                <label className="admin-announcement-field flex cursor-pointer flex-col gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-4 py-4 text-sm font-bold text-slate-600 outline-none transition hover:border-[#123c8c] hover:ring-2 hover:ring-blue-100 md:flex-row md:items-center md:justify-between">
+                <label className="admin-announcement-field flex cursor-pointer flex-col gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-4 py-4 text-sm font-bold text-slate-600 outline-none transition hover:border-[#b91c1c] hover:ring-2 hover:ring-red-100 md:flex-row md:items-center md:justify-between">
                   <span className="inline-flex min-w-0 items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-[#123c8c]">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-[#b91c1c]">
                       <Paperclip size={20} strokeWidth={2.6} />
                     </span>
                     <span className="min-w-0">
@@ -747,7 +747,7 @@ export default function AdminAnnouncementsPage() {
                     </span>
                   </span>
 
-                  <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-[#123c8c]">
+                  <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-[#b91c1c]">
                     Pilih File
                   </span>
 
@@ -796,7 +796,7 @@ export default function AdminAnnouncementsPage() {
                       href={form.existingDocumentUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex min-w-0 items-center gap-2 text-[#123c8c] hover:text-[#0f3274]"
+                      className="inline-flex min-w-0 items-center gap-2 text-[#b91c1c] hover:text-[#7f1d1d]"
                     >
                       <FileText size={15} />
                       <span className="truncate">
@@ -839,7 +839,7 @@ export default function AdminAnnouncementsPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-xl bg-[#123c8c] px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-xl bg-[#b91c1c] px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-[#7f1d1d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting
                     ? "Menyimpan..."

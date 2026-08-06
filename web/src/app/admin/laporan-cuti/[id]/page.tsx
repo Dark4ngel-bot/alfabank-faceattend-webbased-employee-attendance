@@ -166,7 +166,7 @@ function InfoCard({
   value: string | number | null | undefined;
 }) {
   return (
-    <div className="rounded-2xl bg-[#f8fbff] p-4">
+    <div className="rounded-2xl bg-[#fef2f2] p-4">
       <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
         {label}
       </p>
@@ -331,15 +331,15 @@ export default function AdminLeaveRequestDetailPage() {
           <button
             type="button"
             onClick={() => router.push("/admin/laporan-cuti")}
-            className="leave-detail-enter inline-flex h-11 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-black text-[#123c8c] ring-1 ring-blue-100 transition hover:bg-[#f8fbff] active:scale-[0.98]"
+            className="leave-detail-enter inline-flex h-11 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-black text-[#b91c1c] ring-1 ring-red-100 transition hover:bg-[#fef2f2] active:scale-[0.98]"
           >
             <ArrowLeft size={18} strokeWidth={2.6} />
             Kembali ke Laporan Cuti
           </button>
 
           {isLoading ? (
-            <div className="leave-detail-enter flex items-center justify-center gap-2 rounded-[2rem] border border-blue-100 bg-white px-5 py-14 text-sm font-bold text-slate-500 shadow-xl shadow-slate-300/30">
-              <Loader2 size={18} className="animate-spin text-[#123c8c]" />
+            <div className="leave-detail-enter flex items-center justify-center gap-2 rounded-[2rem] border border-red-100 bg-white px-5 py-14 text-sm font-bold text-slate-500 shadow-xl shadow-slate-300/30">
+              <Loader2 size={18} className="animate-spin text-[#b91c1c]" />
               Memuat detail pengajuan...
             </div>
           ) : errorMessage || !request ? (
@@ -348,8 +348,8 @@ export default function AdminLeaveRequestDetailPage() {
             </div>
           ) : (
             <>
-              <article className="leave-detail-enter overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
-                <div className="bg-[#123c8c] p-5 text-white md:p-7">
+              <article className="leave-detail-enter overflow-hidden rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
+                <div className="bg-[#b91c1c] p-5 text-white md:p-7">
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="flex min-w-0 items-center gap-4">
                       {request.employeeProfilePhoto ? (
@@ -423,15 +423,15 @@ export default function AdminLeaveRequestDetailPage() {
                     <InfoCard label="NIK" value={request.employeeNik} />
                   </div>
 
-                  <div className="rounded-[1.5rem] border border-blue-100 bg-[#f8fbff] p-4 md:p-5">
+                  <div className="rounded-[1.5rem] border border-red-100 bg-[#fef2f2] p-4 md:p-5">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-[#eaf1ff] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#123c8c]">
+                          <span className="rounded-full bg-[#fee2e2] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#b91c1c]">
                             {request.leaveTypeLabel}
                           </span>
 
-                          <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-slate-500 ring-1 ring-blue-100">
+                          <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-slate-500 ring-1 ring-red-100">
                             <CalendarDays size={14} strokeWidth={2.6} />
                             {request.totalDays} hari
                           </span>
@@ -465,8 +465,8 @@ export default function AdminLeaveRequestDetailPage() {
                     </div>
 
                     {request.documentUrl || request.document_url ? (
-                      <div className="mt-3 rounded-3xl border border-blue-100 bg-blue-50/60 p-4">
-                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#123c8c]">
+                      <div className="mt-3 rounded-3xl border border-red-100 bg-red-50/60 p-4">
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#b91c1c]">
                           Lampiran Surat Dokter / Dokumen
                         </p>
                         <div className="mt-2 flex items-center gap-3">
@@ -474,7 +474,7 @@ export default function AdminLeaveRequestDetailPage() {
                             href={request.documentUrl || request.document_url || "#"}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-2.5 text-xs font-black text-white shadow-md shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98]"
+                            className="inline-flex items-center gap-2 rounded-2xl bg-[#b91c1c] px-4 py-2.5 text-xs font-black text-white shadow-md shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.98]"
                           >
                             <FileText size={16} />
                             Lihat / Unduh Dokumen ({request.documentName || request.document_name || "Lampiran"})
@@ -484,11 +484,11 @@ export default function AdminLeaveRequestDetailPage() {
                     ) : null}
 
                     {request.adminNote ? (
-                      <div className="mt-3 rounded-3xl bg-blue-50 p-4">
-                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#123c8c]">
+                      <div className="mt-3 rounded-3xl bg-red-50 p-4">
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#b91c1c]">
                           Jawaban Admin
                         </p>
-                        <p className="mt-2 break-words text-sm font-semibold leading-7 text-[#123c8c]">
+                        <p className="mt-2 break-words text-sm font-semibold leading-7 text-[#b91c1c]">
                           {request.adminNote}
                         </p>
                       </div>
@@ -528,7 +528,7 @@ export default function AdminLeaveRequestDetailPage() {
           <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                   Jawaban Admin
                 </p>
                 <h2 className="mt-2 text-2xl font-black text-slate-950">
@@ -547,7 +547,7 @@ export default function AdminLeaveRequestDetailPage() {
               </button>
             </div>
 
-            <div className="mt-5 rounded-2xl bg-[#f8fbff] p-4">
+            <div className="mt-5 rounded-2xl bg-[#fef2f2] p-4">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
                 Karyawan
               </p>
@@ -564,7 +564,7 @@ export default function AdminLeaveRequestDetailPage() {
               onChange={(event) =>
                 handleSelectedAnswerChange(event.target.value)
               }
-              className="mt-2 h-14 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+              className="mt-2 h-14 w-full rounded-2xl border border-red-100 bg-[#fef2f2] px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
             >
               {currentAnswerOptions.map((option) => (
                 <option key={option.label} value={option.value}>
@@ -583,7 +583,7 @@ export default function AdminLeaveRequestDetailPage() {
               value={adminNote}
               onChange={(event) => setAdminNote(event.target.value)}
               placeholder="Tulis jawaban admin jika diperlukan..."
-              className="mt-2 min-h-32 w-full resize-none rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+              className="mt-2 min-h-32 w-full resize-none rounded-2xl border border-red-100 bg-[#fef2f2] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none transition focus:border-[#b91c1c] focus:ring-4 focus:ring-red-100"
             />
 
             <div className="mt-6 flex flex-col-reverse gap-3 md:flex-row md:justify-end">

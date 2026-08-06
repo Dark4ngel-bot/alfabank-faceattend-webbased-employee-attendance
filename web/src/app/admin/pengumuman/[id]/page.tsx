@@ -182,15 +182,15 @@ export default function AdminAnnouncementDetailPage() {
         <button
           type="button"
           onClick={() => router.push("/admin/pengumuman")}
-          className="announcement-detail-enter inline-flex items-center gap-2 rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm font-black text-[#123c8c] shadow-sm transition hover:bg-blue-50 active:scale-[0.98]"
+          className="announcement-detail-enter inline-flex items-center gap-2 rounded-2xl border border-red-100 bg-white px-4 py-3 text-sm font-black text-[#b91c1c] shadow-sm transition hover:bg-red-50 active:scale-[0.98]"
         >
           <ArrowLeft size={18} />
           Kembali
         </button>
 
         {isLoading ? (
-          <section className="announcement-detail-enter mt-6 rounded-3xl border border-blue-100 bg-white px-5 py-12 text-center shadow-sm">
-            <Loader2 className="mx-auto h-9 w-9 animate-spin text-[#123c8c]" />
+          <section className="announcement-detail-enter mt-6 rounded-3xl border border-red-100 bg-white px-5 py-12 text-center shadow-sm">
+            <Loader2 className="mx-auto h-9 w-9 animate-spin text-[#b91c1c]" />
             <p className="mt-3 font-black text-slate-700">
               Mengambil detail pengumuman...
             </p>
@@ -202,16 +202,16 @@ export default function AdminAnnouncementDetailPage() {
             </p>
           </section>
         ) : (
-          <section className="announcement-detail-enter mt-6 overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm">
-            <div className="border-b border-blue-50 bg-[#f8fbff] p-6 md:p-8">
+          <section className="announcement-detail-enter mt-6 overflow-hidden rounded-3xl border border-red-100 bg-white shadow-sm">
+            <div className="border-b border-red-100 bg-[#fef2f2] p-6 md:p-8">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="flex min-w-0 items-start gap-4">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#123c8c]">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-[#b91c1c]">
                     <Megaphone size={22} strokeWidth={2.6} />
                   </span>
 
                   <div className="min-w-0">
-                    <p className="text-xs font-black uppercase tracking-[0.18em] text-[#123c8c]">
+                    <p className="text-xs font-black uppercase tracking-[0.18em] text-[#b91c1c]">
                       Detail Pengumuman
                     </p>
                     <h1 className="mt-2 break-words text-2xl font-black leading-tight text-slate-950 [overflow-wrap:anywhere] md:text-3xl">
@@ -258,13 +258,13 @@ export default function AdminAnnouncementDetailPage() {
                     href={documentUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-3 inline-flex max-w-full items-center gap-3 rounded-2xl bg-blue-50 px-4 py-3 text-sm font-black text-[#123c8c] transition hover:bg-blue-100"
+                    className="mt-3 inline-flex max-w-full items-center gap-3 rounded-2xl bg-red-50 px-4 py-3 text-sm font-black text-[#b91c1c] transition hover:bg-red-100"
                   >
                     <FileText size={18} className="shrink-0" />
                     <span className="min-w-0">
                       <span className="block truncate">{documentName}</span>
                       {documentSize ? (
-                        <span className="block text-xs font-bold text-blue-500">
+                        <span className="block text-xs font-bold text-red-600">
                           {documentSize}
                         </span>
                       ) : null}

@@ -372,7 +372,7 @@ export default function DepartmentsPage() {
 
       <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
         <div className="department-enter overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-xl shadow-slate-300/30">
-          <div className="bg-[#123c8c] p-6 text-white md:p-8">
+          <div className="bg-[#b91c1c] p-6 text-white md:p-8">
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div>
                 <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
@@ -383,7 +383,7 @@ export default function DepartmentsPage() {
               <button
                 type="button"
                 onClick={openCreateModal}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white px-5 text-sm font-black text-[#123c8c] shadow-lg shadow-blue-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-50 active:scale-[0.98]"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white px-5 text-sm font-black text-[#b91c1c] shadow-lg shadow-red-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-red-50 active:scale-[0.98]"
               >
                 <Plus size={18} />
                 Tambah Divisi
@@ -411,7 +411,7 @@ export default function DepartmentsPage() {
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder="Cari divisi..."
-                    className="department-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    className="department-field w-full rounded-2xl border border-red-100 bg-[#f6f8ff] py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                   />
                 </div>
               </div>
@@ -424,7 +424,7 @@ export default function DepartmentsPage() {
                 <select
                   value={statusFilter}
                   onChange={(event) => setStatusFilter(event.target.value)}
-                  className="department-field mt-3 w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="department-field mt-3 w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 >
                   {statusOptions.map((item) => (
                     <option key={item.value} value={item.value}>
@@ -438,7 +438,7 @@ export default function DepartmentsPage() {
                 <button
                   type="button"
                   onClick={resetFilter}
-                  className="flex h-[54px] flex-1 items-center justify-center rounded-2xl border border-blue-100 bg-white px-5 text-sm font-black text-[#123c8c] shadow-sm transition hover:bg-blue-50 active:scale-[0.96] md:flex-none"
+                  className="flex h-[54px] flex-1 items-center justify-center rounded-2xl border border-red-100 bg-white px-5 text-sm font-black text-[#b91c1c] shadow-sm transition hover:bg-red-50 active:scale-[0.96] md:flex-none"
                 >
                   Atur Ulang
                 </button>
@@ -452,10 +452,10 @@ export default function DepartmentsPage() {
             ) : null}
 
             <div
-              className="department-row-enter mt-8 overflow-hidden rounded-2xl border border-blue-100"
+              className="department-row-enter mt-8 overflow-hidden rounded-2xl border border-red-100"
               style={{ animationDelay: "130ms" }}
             >
-              <div className="hidden grid-cols-[0.3fr_1.6fr_0.75fr_0.75fr_1fr] bg-[#f6f8ff] px-5 py-4 text-xs font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
+              <div className="hidden grid-cols-[0.3fr_1.6fr_0.75fr_0.75fr_1fr] bg-[#f6f8ff] px-5 py-4 text-xs font-black uppercase tracking-[0.18em] text-[#b91c1c] md:grid">
                 <p>#</p>
                 <p>Divisi</p>
                 <p>Jabatan</p>
@@ -463,10 +463,10 @@ export default function DepartmentsPage() {
                 <p className="text-center">Aksi</p>
               </div>
 
-              <div className="divide-y divide-blue-50 bg-white">
+              <div className="divide-y divide-red-100 bg-white">
                 {isLoading ? (
                   <div className="department-row-enter px-5 py-10 text-center">
-                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#123c8c]" />
+                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#b91c1c]" />
                     <p className="mt-3 text-sm font-black text-slate-600">
                       Mengambil data divisi...
                     </p>
@@ -485,14 +485,14 @@ export default function DepartmentsPage() {
                   filteredDepartments.map((department, index) => (
                     <div
                       key={department.id}
-                      className="department-row-enter grid gap-4 px-4 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] md:grid-cols-[0.3fr_1.6fr_0.75fr_0.75fr_1fr] md:items-center md:px-5 md:py-6"
+                      className="department-row-enter grid gap-4 px-4 py-4 text-sm transition duration-200 hover:bg-[#fef2f2] md:grid-cols-[0.3fr_1.6fr_0.75fr_0.75fr_1fr] md:items-center md:px-5 md:py-6"
                       style={{
                         animationDelay: `${index * 55}ms`,
                       }}
                     >
                       <div className="flex items-start justify-between gap-3 md:block">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-xs font-black text-[#123c8c] md:h-auto md:w-auto md:bg-transparent md:text-sm md:text-slate-500">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-xs font-black text-[#b91c1c] md:h-auto md:w-auto md:bg-transparent md:text-sm md:text-slate-500">
                             {index + 1}
                           </div>
 
@@ -511,7 +511,7 @@ export default function DepartmentsPage() {
                         <span
                           className={`shrink-0 rounded-full px-3 py-1.5 text-[11px] font-black md:hidden ${
                             department.status === "active"
-                              ? "bg-blue-50 text-[#123c8c]"
+                              ? "bg-red-50 text-[#b91c1c]"
                               : "bg-slate-100 text-slate-600"
                           }`}
                         >
@@ -529,7 +529,7 @@ export default function DepartmentsPage() {
                         </p>
                       </div>
 
-                      <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-3 md:border-0 md:bg-transparent md:p-0">
+                      <div className="rounded-2xl border border-red-100 bg-[#fef2f2] p-3 md:border-0 md:bg-transparent md:p-0">
                         <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400 md:hidden">
                           Jabatan
                         </p>
@@ -543,7 +543,7 @@ export default function DepartmentsPage() {
                         <span
                           className={`w-fit rounded-full px-4 py-2 text-xs font-black ${
                             department.status === "active"
-                              ? "bg-blue-50 text-[#123c8c]"
+                              ? "bg-red-50 text-[#b91c1c]"
                               : "bg-slate-100 text-slate-600"
                           }`}
                         >
@@ -555,7 +555,7 @@ export default function DepartmentsPage() {
                         <button
                           type="button"
                           onClick={() => openEditModal(department)}
-                          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.97] md:h-auto md:w-fit md:rounded-xl md:border md:border-blue-100 md:bg-white md:px-4 md:py-2 md:text-xs md:text-[#123c8c] md:shadow-none md:hover:bg-[#eaf1ff]"
+                          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#b91c1c] px-4 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.97] md:h-auto md:w-fit md:rounded-xl md:border md:border-red-100 md:bg-white md:px-4 md:py-2 md:text-xs md:text-[#b91c1c] md:shadow-none md:hover:bg-[#fee2e2]"
                         >
                           <Edit size={16} className="md:h-3.5 md:w-3.5" />
                           Edit
@@ -596,7 +596,7 @@ export default function DepartmentsPage() {
           <div className="department-modal-panel max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                   {editingDepartment ? "Edit Divisi" : "Tambah Divisi"}
                 </p>
 
@@ -636,7 +636,7 @@ export default function DepartmentsPage() {
                     }))
                   }
                   placeholder="Contoh: Technology, Finance, HRD"
-                  className="department-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="department-field w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 />
               </div>
 
@@ -656,7 +656,7 @@ export default function DepartmentsPage() {
                       status: event.target.value,
                     }))
                   }
-                  className="department-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="department-field w-full rounded-2xl border border-red-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
                 >
                   <option value="active">Aktif</option>
                   <option value="inactive">Nonaktif</option>
@@ -682,7 +682,7 @@ export default function DepartmentsPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-2xl bg-[#b91c1c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:bg-[#7f1d1d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting
                     ? "Menyimpan..."

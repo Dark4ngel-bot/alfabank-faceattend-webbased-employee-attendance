@@ -94,7 +94,7 @@ function getInitialName(name: string) {
 
 function getStatusClass(item: RecentAttendance) {
   if (item.checkOutTime) {
-    return "bg-[#eaf1ff] text-[#123c8c]";
+    return "bg-[#fee2e2] text-[#b91c1c]";
   }
 
   if (item.lateMinutes > 0 || item.status?.toUpperCase() === "LATE") {
@@ -169,7 +169,7 @@ function EmployeeProfileAvatar({ item }: { item: RecentAttendance }) {
 
   if (profilePhoto && !imageError) {
     return (
-      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-[#eaf1ff] ring-1 ring-blue-100 md:h-11 md:w-11">
+      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-[#fee2e2] ring-1 ring-red-100 md:h-11 md:w-11">
         <img
           src={profilePhoto}
           alt={`Foto profil ${item.name}`}
@@ -181,7 +181,7 @@ function EmployeeProfileAvatar({ item }: { item: RecentAttendance }) {
   }
 
   return (
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-sm font-black text-[#123c8c] ring-1 ring-blue-100 md:h-11 md:w-11">
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fee2e2] text-sm font-black text-[#b91c1c] ring-1 ring-red-100 md:h-11 md:w-11">
       {getInitialName(item.name) || <UserRound size={22} strokeWidth={2.6} />}
     </div>
   );
@@ -199,7 +199,7 @@ function MobileAttendanceCard({
 
   return (
     <div
-      className="dashboard-row-enter border-b border-blue-100 px-4 py-4 last:border-b-0"
+      className="dashboard-row-enter border-b border-red-100 px-4 py-4 last:border-b-0"
       style={{
         animationDelay: `${index * 45}ms`,
       }}
@@ -210,7 +210,7 @@ function MobileAttendanceCard({
         </Link>
 
         <Link href={`/admin/daftar-karyawan/${item.id}`} className="min-w-0 flex-1">
-          <p className="truncate text-base font-black text-slate-950 hover:text-[#123c8c]">
+          <p className="truncate text-base font-black text-slate-950 hover:text-[#b91c1c]">
             {item.name}
           </p>
 
@@ -243,7 +243,7 @@ function MobileAttendanceCard({
           <ChevronDown
             size={22}
             strokeWidth={3}
-            className={`text-[#123c8c] transition duration-200 ${
+            className={`text-[#b91c1c] transition duration-200 ${
               isOpen ? "rotate-180" : ""
             }`}
           />
@@ -288,14 +288,14 @@ function MobileAttendanceCard({
             </p>
           </div>
 
-          <div className="col-span-2 mt-1 border-t border-blue-100 pt-2">
+          <div className="col-span-2 mt-1 border-t border-red-100 pt-2">
             <Link
               href={
                 item.attendanceId
                   ? `/admin/laporan-kehadiran/${item.attendanceId}`
                   : `/admin/rekap-kehadiran-karyawan/${item.id}`
               }
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#123c8c] px-3 py-2 text-xs font-black text-white shadow-sm transition hover:bg-[#0e2f70] active:scale-95"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#b91c1c] px-3 py-2 text-xs font-black text-white shadow-sm transition hover:bg-[#0e2f70] active:scale-95"
             >
               Lihat Detail Kehadiran
             </Link>
@@ -441,9 +441,9 @@ export default function AdminDashboardPage() {
       <AppHeader title="Admin Dasbor" variant="admin" />
 
       <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
-        <div className="dashboard-enter overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
+        <div className="dashboard-enter overflow-hidden rounded-3xl border border-red-100 bg-white shadow-xl shadow-slate-300/30">
           <div className="grid gap-0 lg:grid-cols-[1fr_1fr]">
-            <div className="bg-[#123c8c] p-6 text-white md:p-8">
+            <div className="bg-[#b91c1c] p-6 text-white md:p-8">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
                   <LayoutDashboard size={25} strokeWidth={2.6} />
@@ -464,7 +464,7 @@ export default function AdminDashboardPage() {
                 return (
                   <div
                     key={`${item.label}-${index}`}
-                    className="dashboard-row-enter rounded-2xl border border-blue-100 bg-[#f6f8ff] p-4 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-lg hover:shadow-slate-200/60"
+                    className="dashboard-row-enter rounded-2xl border border-red-100 bg-[#f6f8ff] p-4 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-lg hover:shadow-slate-200/60"
                     style={{
                       animationDelay: `${index * 70}ms`,
                     }}
@@ -477,14 +477,14 @@ export default function AdminDashboardPage() {
                       <Icon
                         size={20}
                         strokeWidth={2.5}
-                        className="text-[#123c8c]"
+                        className="text-[#b91c1c]"
                       />
                     </div>
 
                     {isLoading ? (
-                      <div className="mt-4 h-8 w-16 animate-pulse rounded-xl bg-blue-100" />
+                      <div className="mt-4 h-8 w-16 animate-pulse rounded-xl bg-red-100" />
                     ) : (
-                      <h3 className="mt-3 text-3xl font-black text-[#123c8c]">
+                      <h3 className="mt-3 text-3xl font-black text-[#b91c1c]">
                         {item.value}
                       </h3>
                     )}
@@ -513,7 +513,7 @@ export default function AdminDashboardPage() {
         >
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
                 Laporan Hari Ini
               </p>
 
@@ -525,8 +525,8 @@ export default function AdminDashboardPage() {
 
           <div className="mt-6 space-y-3">
             {isLoading ? (
-              <div className="dashboard-row-enter flex items-center justify-center gap-2 rounded-3xl border border-blue-100 bg-white px-5 py-10 text-sm font-bold text-slate-500">
-                <Loader2 size={18} className="animate-spin text-[#123c8c]" />
+              <div className="dashboard-row-enter flex items-center justify-center gap-2 rounded-3xl border border-red-100 bg-white px-5 py-10 text-sm font-bold text-slate-500">
+                <Loader2 size={18} className="animate-spin text-[#b91c1c]" />
                 Mengambil data presensi...
               </div>
             ) : data?.recentAttendance.length ? (
@@ -540,7 +540,7 @@ export default function AdminDashboardPage() {
                 return (
                   <div
                     key={getAttendanceKey(item, index)}
-                    className="dashboard-row-enter group rounded-2xl border border-blue-100 bg-white px-4 py-4 shadow-sm shadow-slate-200/60 transition duration-300 hover:-translate-y-0.5 hover:border-[#123c8c]/30 hover:bg-[#fbfdff] hover:shadow-xl hover:shadow-slate-300/40 md:rounded-[1.6rem] md:px-5 md:py-4"
+                    className="dashboard-row-enter group rounded-2xl border border-red-100 bg-white px-4 py-4 shadow-sm shadow-slate-200/60 transition duration-300 hover:-translate-y-0.5 hover:border-[#b91c1c]/30 hover:bg-[#fbfdff] hover:shadow-xl hover:shadow-slate-300/40 md:rounded-[1.6rem] md:px-5 md:py-4"
                     style={{
                       animationDelay: `${index * 45}ms`,
                     }}
@@ -553,7 +553,7 @@ export default function AdminDashboardPage() {
                         <EmployeeProfileAvatar item={item} />
 
                         <div className="min-w-0 flex-1">
-                          <h4 className="truncate text-base font-black text-slate-950 hover:text-[#123c8c]">
+                          <h4 className="truncate text-base font-black text-slate-950 hover:text-[#b91c1c]">
                             {item.name}
                           </h4>
 
@@ -565,21 +565,21 @@ export default function AdminDashboardPage() {
                       </Link>
 
                       <div className="grid grid-cols-3 gap-2 text-xs font-bold text-slate-500 md:w-[320px] md:shrink-0">
-                        <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
+                        <div className="rounded-2xl border border-red-100 bg-[#fef2f2] px-3.5 py-2.5">
                           <p className="text-[11px] font-bold text-slate-400">Masuk</p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
                             {formatTime(item.checkInTime)}
                           </p>
                         </div>
 
-                        <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
+                        <div className="rounded-2xl border border-red-100 bg-[#fef2f2] px-3.5 py-2.5">
                           <p className="text-[11px] font-bold text-slate-400">Keluar</p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
                             {formatTime(item.checkOutTime)}
                           </p>
                         </div>
 
-                        <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
+                        <div className="rounded-2xl border border-red-100 bg-[#fef2f2] px-3.5 py-2.5">
                           <p className="text-[11px] font-bold text-slate-400">Durasi</p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
                             {formatMinutes(item.workMinutes, Boolean(item.checkOutTime))}
@@ -608,7 +608,7 @@ export default function AdminDashboardPage() {
                       <div className="flex shrink-0 items-center justify-end">
                         <Link
                           href={detailHref}
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-4 text-xs font-black text-[#123c8c] shadow-sm transition hover:bg-[#eaf1ff] hover:shadow-md"
+                          className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-red-100 bg-white px-4 text-xs font-black text-[#b91c1c] shadow-sm transition hover:bg-[#fee2e2] hover:shadow-md"
                         >
                           <Eye size={15} />
                           Lihat Detail Kehadiran
@@ -619,7 +619,7 @@ export default function AdminDashboardPage() {
                 );
               })
             ) : (
-              <div className="dashboard-row-enter rounded-3xl border border-blue-100 bg-white px-5 py-10 text-center text-sm font-bold text-slate-500">
+              <div className="dashboard-row-enter rounded-3xl border border-red-100 bg-white px-5 py-10 text-center text-sm font-bold text-slate-500">
                 Belum ada data check-in atau check-out hari ini.
               </div>
             )}
