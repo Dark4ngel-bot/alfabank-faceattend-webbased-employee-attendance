@@ -1,4 +1,8 @@
 {
   "githubPullRequests.ignoredPullRequestBranches": ["main"],
-  "prisma.pinToPrisma6": true
+  "prisma.pinToPrisma6": true,
+  "git.scanRepositories": [
+    "d:/SEM 8/ALFABANK WEB/alfabank-faceattend-webbased-employee-attendance",
+    "d:/SEM 8/ALFABANK WEB/absen_alfabank"
+  ]
 }
