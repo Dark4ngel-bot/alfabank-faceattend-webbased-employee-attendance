@@ -344,23 +344,19 @@ export async function GET(
       scheduledCheckOutTime,
 
       hasCheckInPhoto: Boolean(
-        attendance.check_in_photo_url ||
-          (attendance.check_in_photo && attendance.check_in_photo_mime),
+        attendance.check_in_photo && attendance.check_in_photo_mime,
       ),
       hasCheckOutPhoto: Boolean(
-        attendance.check_out_photo_url ||
-          (attendance.check_out_photo && attendance.check_out_photo_mime),
+        attendance.check_out_photo && attendance.check_out_photo_mime,
       ),
       checkInPhotoUrl:
-        attendance.check_in_photo_url ||
-        (attendance.check_in_photo
+        attendance.check_in_photo
           ? `/api/attendance/${attendance.id}/photo?type=check-in`
-          : null),
+          : null,
       checkOutPhotoUrl:
-        attendance.check_out_photo_url ||
-        (attendance.check_out_photo
+        attendance.check_out_photo
           ? `/api/attendance/${attendance.id}/photo?type=check-out`
-          : null),
+          : null,
 
       checkInLocation: {
         latitude: attendance.check_in_latitude,

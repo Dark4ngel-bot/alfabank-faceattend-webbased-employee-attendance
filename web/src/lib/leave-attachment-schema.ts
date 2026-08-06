@@ -13,8 +13,6 @@ function getErrorText(error: unknown) {
 }
 
 function isDuplicateColumnError(error: unknown) {
-  if (!error || typeof error !== "object") return false;
-
   const text = getErrorText(error);
 
   return (
@@ -41,7 +39,7 @@ async function hasAttachmentColumns() {
     FROM INFORMATION_SCHEMA.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = 'leave_requests'
-      AND COLUMN_NAME = 'attachment_url'
+      AND COLUMN_NAME = 'attachment_file'
     LIMIT 1
   `;
 
@@ -50,7 +48,7 @@ async function hasAttachmentColumns() {
 
 async function createAttachmentColumns() {
   await prisma.$executeRawUnsafe(
-    "ALTER TABLE `leave_requests` ADD COLUMN `attachment_url` TEXT NULL, ADD COLUMN `attachment_public_id` VARCHAR(255) NULL, ADD COLUMN `attachment_name` VARCHAR(255) NULL, ADD COLUMN `attachment_mime` VARCHAR(100) NULL",
+    "ALTER TABLE `leave_requests` ADD COLUMN `attachment_file` LONGBLOB NULL, ADD COLUMN `attachment_name` VARCHAR(255) NULL, ADD COLUMN `attachment_mime` VARCHAR(100) NULL",
   );
 }
 

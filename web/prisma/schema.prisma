@@ -8,329 +8,231 @@ datasource db {
 }
 
 model User {
-  id            String  @id @default(uuid()) @db.Char(36)
-  employee_code String? @unique @db.VarChar(30)
-
-  name          String @db.VarChar(100)
-  email         String @unique @db.VarChar(100)
-  password_hash String @db.VarChar(255)
-  visible_password String? @db.VarChar(255)
-
-  // admin, employee
-  role String @default("employee") @db.VarChar(20)
-
-  // utama, magang
-  employee_type String @default("utama") @db.VarChar(20)
-
-  phone                 String?   @db.VarChar(20)
-  status                String    @default("active") @db.VarChar(20)
-  employment_status_id  String?   @db.Char(36)
-  employment_status     String?   @db.VarChar(100)
-  employment_start_date DateTime? @db.Date
-  employment_end_date   DateTime? @db.Date
-  birth_place           String?   @db.VarChar(100)
-  birth_date            DateTime? @db.Date
-  bank_code             String?   @db.VarChar(30)
-  bank_name             String?   @db.VarChar(100)
-  bank_account_number   String?   @db.VarChar(50)
-  nik                   String?   @db.VarChar(30)
-
-  profile_photo           String? @db.Text
-  profile_photo_public_id String? @db.VarChar(255)
-
-  jabatan_id    String? @db.Char(36)
-  department_id String? @db.Char(36)
-  position_id   String? @db.Char(36)
-  shift_id      String? @db.Char(36)
-
-  // Kantor utama / kantor asal karyawan
-  registered_office_id String? @db.Char(36)
-
-  // Data pajak / payroll
-  npwp_number String?  @db.VarChar(30)
-  ptkp_status String?  @db.VarChar(20) // TK0, K0, K1, K2, K3
-  base_salary Decimal? @db.Decimal(15, 2)
-
-  // Kuota WFH karyawan per bulan. Pemakaian dihitung dari presensi WFH bulan berjalan.
-  wfh_quota_monthly Int @default(0)
-
-  // Kuota Cuti Tahunan karyawan per tahun. Default 12 hari.
-  annual_leave_quota Int @default(12)
-
-  jabatan           Jabatan?        @relation(fields: [jabatan_id], references: [id], onDelete: SetNull)
-  department        Department?     @relation(fields: [department_id], references: [id], onDelete: SetNull)
-  position          Position?       @relation(fields: [position_id], references: [id], onDelete: SetNull)
-  shift             Shift?          @relation(fields: [shift_id], references: [id], onDelete: SetNull)
-  registered_office OfficeLocation? @relation("EmployeeRegisteredOffice", fields: [registered_office_id], references: [id], onDelete: SetNull)
-  employmentStatus  EmploymentStatus? @relation(fields: [employment_status_id], references: [id], onDelete: SetNull)
-
-  attendances          Attendance[]
-  attendance_summaries AttendanceMonthlySummary[]
-  admin_notifications  AdminNotification[]
-
-  announcements  Announcement[] @relation("AnnouncementAuthor")
-  leave_requests LeaveRequest[]
-
-  visits EmployeeVisit[]
-
-  wfh_requests          WfhRequest[] @relation("WfhRequestUser")
-  approved_wfh_requests WfhRequest[] @relation("WfhApprovedBy")
-
-  payrolls Payroll[]
-
+  id                      String                     @id @default(uuid()) @db.Char(36)
+  employee_code           String?                    @unique @db.VarChar(30)
+  name                    String                     @db.VarChar(100)
+  email                   String                     @unique @db.VarChar(100)
+  password_hash           String                     @db.VarChar(255)
+  role                    String                     @default("employee") @db.VarChar(20)
+  phone                   String?                    @db.VarChar(20)
+  status                  String                     @default("active") @db.VarChar(20)
+  profile_photo           String?                    @db.Text
+  department_id           String?                    @db.Char(36)
+  position_id             String?                    @db.Char(36)
+  shift_id                String?                    @db.Char(36)
+  registered_office_id    String?                    @db.Char(36)
+  created_at              DateTime                   @default(now())
+  updated_at              DateTime                   @default(now()) @updatedAt
+  base_salary             Decimal?                   @db.Decimal(15, 2)
+  employee_type           String                     @default("utama") @db.VarChar(20)
+  npwp_number             String?                    @db.VarChar(30)
+  ptkp_status             String?                    @db.VarChar(20)
+  jabatan_id              String?                    @db.Char(36)
+  employment_status_id    String?                    @db.Char(36)
+  employment_status       String?                    @db.VarChar(100)
+  employment_start_date   DateTime?                  @db.Date
+  employment_end_date     DateTime?                  @db.Date
+  birth_place             String?                    @db.VarChar(100)
+  birth_date              DateTime?                  @db.Date
+  bank_account_number     String?                    @db.VarChar(50)
+  nik                     String?                    @db.VarChar(30)
+  profile_photo_public_id String?                    @db.VarChar(255)
+  wfh_quota_monthly       Int                        @default(0)
+  leave_quota_yearly      Int                        @default(12)
+  visible_password        String?                    @db.VarChar(255)
+  bank_code               String?                    @db.VarChar(30)
+  profile_photo_data      Bytes?
+  profile_photo_mime      String?                    @db.VarChar(50)
+  admin_notifications     AdminNotification[]
+  announcements           Announcement[]             @relation("AnnouncementAuthor")
+  attendances             Attendance[]
+  attendance_summaries    AttendanceMonthlySummary[]
+  visits                  EmployeeVisit[]
+  leave_requests          LeaveRequest[]
+  payrolls                Payroll[]
   shift_swap_requests_sent     ShiftSwapRequest[] @relation("ShiftSwapRequester")
   shift_swap_requests_received ShiftSwapRequest[] @relation("ShiftSwapTargetUser")
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  approved_wfh_requests   WfhRequest[]               @relation("WfhApprovedBy")
+  wfh_requests            WfhRequest[]               @relation("WfhRequestUser")
+  department              Department?                @relation(fields: [department_id], references: [id])
+  employmentStatus        EmploymentStatus?          @relation(fields: [employment_status_id], references: [id])
+  jabatan                 Jabatan?                   @relation(fields: [jabatan_id], references: [id])
+  position                Position?                  @relation(fields: [position_id], references: [id])
+  registered_office       OfficeLocation?            @relation("EmployeeRegisteredOffice", fields: [registered_office_id], references: [id])
+  shift                   Shift?                     @relation(fields: [shift_id], references: [id])
 
   @@index([role])
   @@index([employee_type])
   @@index([employment_status_id])
+  @@index([department_id], map: "users_department_id_fkey")
+  @@index([jabatan_id])
+  @@index([position_id], map: "users_position_id_fkey")
+  @@index([registered_office_id], map: "users_registered_office_id_fkey")
+  @@index([shift_id], map: "users_shift_id_fkey")
   @@map("users")
 }
 
 model LoginRateLimit {
-  rate_limit_key String   @id @db.VarChar(191)
+  rate_limit_key String   @id
   attempt_count  Int      @default(0)
-  reset_at       DateTime @db.DateTime(3)
-  created_at     DateTime @default(now()) @db.DateTime(3)
-  updated_at     DateTime @default(now()) @updatedAt @db.DateTime(3)
+  reset_at       DateTime
+  created_at     DateTime @default(now())
+  updated_at     DateTime @default(now()) @updatedAt
 
   @@map("login_rate_limits")
 }
 
 model Department {
-  id   String @id @default(uuid()) @db.Char(36)
-  name String @db.VarChar(100)
-
-  // Kantor pemilik divisi
-  office_id String?         @db.Char(36)
-  office    OfficeLocation? @relation(fields: [office_id], references: [id], onDelete: SetNull)
-
-  shift_id String? @db.Char(36)
-  shift    Shift?  @relation(fields: [shift_id], references: [id], onDelete: SetNull)
-
-  // monthly, daily, hourly
-  salary_calculation String @default("monthly") @db.VarChar(30)
-
-  // active, inactive
-  status String @default("active") @db.VarChar(20)
-
-  users    User[]
-  jabatans Jabatan[]
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  id                 String          @id @default(uuid()) @db.Char(36)
+  name               String          @db.VarChar(100)
+  shift_id           String?         @db.Char(36)
+  salary_calculation String          @default("monthly") @db.VarChar(30)
+  status             String          @default("active") @db.VarChar(20)
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @default(now()) @updatedAt
+  office_id          String?         @db.Char(36)
+  office             OfficeLocation? @relation(fields: [office_id], references: [id])
+  shift              Shift?          @relation(fields: [shift_id], references: [id])
+  jabatans           Jabatan[]
+  users              User[]
 
   @@unique([office_id, name])
   @@index([office_id])
+  @@index([shift_id])
 }
 
 model Jabatan {
-  id String @id @default(uuid()) @db.Char(36)
-
-  name String @db.VarChar(100)
-
-  // Divisi pemilik jabatan
+  id            String      @id @default(uuid()) @db.Char(36)
+  name          String      @db.VarChar(100)
   department_id String?     @db.Char(36)
-  department    Department? @relation(fields: [department_id], references: [id], onDelete: SetNull)
-
-  // active, inactive
-  status String @default("active") @db.VarChar(20)
-
-  users     User[]
-  positions Position[]
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  status        String      @default("active") @db.VarChar(20)
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @default(now()) @updatedAt
+  positions     Position[]
+  department    Department? @relation(fields: [department_id], references: [id])
+  users         User[]
 
   @@unique([department_id, name])
   @@index([department_id])
-  @@map("jabatans")
+  @@map("jabatan")
 }
 
 model Position {
-  id String @id @default(uuid()) @db.Char(36)
-
-  name String @db.VarChar(100)
-
-  // Jabatan pemilik posisi
-  jabatan_id String?  @db.Char(36)
-  jabatan    Jabatan? @relation(fields: [jabatan_id], references: [id], onDelete: SetNull)
-
-  // active, inactive
-  status String @default("active") @db.VarChar(20)
-
-  users User[]
-
+  id         String   @id @default(uuid()) @db.Char(36)
+  name       String   @db.VarChar(100)
+  status     String   @default("active") @db.VarChar(20)
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
+  jabatan_id String?  @db.Char(36)
+  jabatan    Jabatan? @relation(fields: [jabatan_id], references: [id])
+  users      User[]
 
   @@unique([jabatan_id, name])
   @@index([jabatan_id])
 }
 
 model Shift {
-  id String @id @default(uuid()) @db.Char(36)
-
-  // Contoh: Utama, Magang, Shift A, Shift B
-  name String @unique @db.VarChar(100)
-
-  // Toleransi telat dalam menit
-  tolerance_minutes Int @default(5)
-
-  // Jam kerja & jam buka absensi (format "HH:mm")
-  start_time     String @default("08:00") @db.VarChar(10)
-  end_time        String @default("17:00") @db.VarChar(10)
-  check_in_open  String @default("07:00") @db.VarChar(10)
-  check_out_open String @default("16:50") @db.VarChar(10)
-
-  // active, inactive
-  status String @default("active") @db.VarChar(20)
-
-  users          User[]
-  departments    Department[]
-  work_schedules WorkSchedule[]
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  id                String         @id @default(uuid()) @db.Char(36)
+  name              String         @unique @db.VarChar(100)
+  tolerance_minutes Int            @default(0)
+  start_time        String         @default("08:00") @db.VarChar(10)
+  end_time          String         @default("17:00") @db.VarChar(10)
+  check_in_open     String         @default("07:00") @db.VarChar(10)
+  check_out_open    String         @default("16:50") @db.VarChar(10)
+  status            String         @default("active") @db.VarChar(20)
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @default(now()) @updatedAt
+  departments       Department[]
+  work_schedules    WorkSchedule[]
+  users             User[]
 }
 
 model WorkSchedule {
-  id String @id @default(uuid()) @db.Char(36)
-
-  shift_id String @db.Char(36)
-  shift    Shift  @relation(fields: [shift_id], references: [id], onDelete: Cascade)
-
-  day_of_week DayOfWeek
-  is_work_day Boolean   @default(true)
-
-  check_in_time  String? @db.VarChar(5)
-  check_out_time String? @db.VarChar(5)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  id             String    @id @default(uuid()) @db.Char(36)
+  shift_id       String    @db.Char(36)
+  day_of_week    DayOfWeek
+  is_work_day    Boolean   @default(true)
+  check_in_time  String?   @db.VarChar(5)
+  check_out_time String?   @db.VarChar(5)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @default(now()) @updatedAt
+  shift          Shift     @relation(fields: [shift_id], references: [id], onDelete: Cascade)
 
   @@unique([shift_id, day_of_week])
 }
 
 model OfficeLocation {
-  id String @id @default(uuid()) @db.Char(36)
-
-  name    String  @unique @db.VarChar(100)
-  address String? @db.VarChar(255)
-
-  latitude      Float
-  longitude     Float
-  radius_meters Int   @default(100)
-
-  status String @default("active") @db.VarChar(20)
-
-  users User[] @relation("EmployeeRegisteredOffice")
-
-  // Divisi yang berada di kantor ini
-  departments Department[]
-
-  registered_attendances Attendance[] @relation("RegisteredOfficeAttendance")
+  id                     String       @id @default(uuid()) @db.Char(36)
+  name                   String       @unique @db.VarChar(100)
+  address                String?      @db.VarChar(255)
+  latitude               Float
+  longitude              Float
+  radius_meters          Int          @default(100)
+  status                 String       @default("active") @db.VarChar(20)
+  created_at             DateTime     @default(now())
+  updated_at             DateTime     @default(now()) @updatedAt
   check_in_attendances   Attendance[] @relation("CheckInOfficeAttendance")
   check_out_attendances  Attendance[] @relation("CheckOutOfficeAttendance")
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  registered_attendances Attendance[] @relation("RegisteredOfficeAttendance")
+  departments            Department[]
+  users                  User[]       @relation("EmployeeRegisteredOffice")
 }
 
 model Attendance {
-  id String @id @default(uuid()) @db.Char(36)
-
-  user_id String @db.Char(36)
-  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  attendance_date DateTime @db.Date
-
-  scheduled_check_in  DateTime?
-  scheduled_check_out DateTime?
-
-  check_in_time  DateTime?
-  check_out_time DateTime?
-
-  // Foto lama dalam database, dipertahankan sementara untuk kompatibilitas
-  check_in_photo  Bytes?
-  check_out_photo Bytes?
-
-  check_in_photo_mime  String? @db.VarChar(50)
-  check_out_photo_mime String? @db.VarChar(50)
-
-  // Foto baru disimpan di Cloudinary
-  check_in_photo_url       String? @db.Text
-  check_in_photo_public_id String? @db.VarChar(255)
-
-  check_out_photo_url       String? @db.Text
-  check_out_photo_public_id String? @db.VarChar(255)
-
-  // office, wfh, wfc, visit
-  work_mode           String  @default("office") @db.VarChar(20)
-  check_out_work_mode String? @db.VarChar(20)
-
-  // Kantor asal karyawan saat absensi dibuat
-  registered_office_id String?         @db.Char(36)
-  registered_office    OfficeLocation? @relation("RegisteredOfficeAttendance", fields: [registered_office_id], references: [id], onDelete: SetNull)
-
-  // Kantor aktual saat check-in
-  check_in_office_id String?         @db.Char(36)
-  check_in_office    OfficeLocation? @relation("CheckInOfficeAttendance", fields: [check_in_office_id], references: [id], onDelete: SetNull)
-
-  check_in_latitude      Float?
-  check_in_longitude     Float?
-  check_in_accuracy      Float?
-  check_in_distance      Float?
-  check_in_within_radius Boolean @default(false)
-
-  // Kantor aktual saat check-out
-  check_out_office_id String?         @db.Char(36)
-  check_out_office    OfficeLocation? @relation("CheckOutOfficeAttendance", fields: [check_out_office_id], references: [id], onDelete: SetNull)
-
-  check_out_latitude      Float?
-  check_out_longitude     Float?
-  check_out_accuracy      Float?
-  check_out_distance      Float?
-  check_out_within_radius Boolean @default(false)
-
-  late_minutes        Int @default(0)
-  early_leave_minutes Int @default(0)
-  work_minutes        Int @default(0)
-
-  // true jika telat melewati toleransi shift
-  is_over_tolerance Boolean @default(false)
-
-  // alasan wajib jika telat melewati toleransi
-  late_reason String? @db.VarChar(255)
-
-  // alasan jika pulang cepat
-  early_leave_reason String? @db.VarChar(255)
-
-  // WFH / WFC / Kunjungan
-  is_wfh   Boolean @default(false)
-  is_wfc   Boolean @default(false)
-  is_visit Boolean @default(false)
-
-  wfh_request_id String?     @db.Char(36)
-  wfh_request    WfhRequest? @relation(fields: [wfh_request_id], references: [id], onDelete: SetNull)
-
-  activity_note String? @db.VarChar(255)
-
-  status           AttendanceStatus @default(PENDING)
-  check_in_status  CheckInStatus?
-  check_out_status CheckOutStatus?
-
-  note String? @db.VarChar(255)
-
-  visits EmployeeVisit[]
-
-  admin_notifications AdminNotification[]
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  id                        String              @id @default(uuid()) @db.Char(36)
+  user_id                   String              @db.Char(36)
+  attendance_date           DateTime            @db.Date
+  scheduled_check_in        DateTime?
+  scheduled_check_out       DateTime?
+  check_in_time             DateTime?
+  check_out_time            DateTime?
+  check_in_photo            Bytes?
+  check_out_photo           Bytes?
+  check_in_photo_mime       String?             @db.VarChar(50)
+  check_out_photo_mime      String?             @db.VarChar(50)
+  registered_office_id      String?             @db.Char(36)
+  check_in_office_id        String?             @db.Char(36)
+  check_in_latitude         Float?
+  check_in_longitude        Float?
+  check_in_accuracy         Float?
+  check_in_distance         Float?
+  check_in_within_radius    Boolean             @default(false)
+  check_out_office_id       String?             @db.Char(36)
+  check_out_latitude        Float?
+  check_out_longitude       Float?
+  check_out_accuracy        Float?
+  check_out_distance        Float?
+  check_out_within_radius   Boolean             @default(false)
+  late_minutes              Int                 @default(0)
+  early_leave_minutes       Int                 @default(0)
+  work_minutes              Int                 @default(0)
+  status                    AttendanceStatus    @default(PENDING)
+  check_in_status           CheckInStatus?
+  check_out_status          CheckOutStatus?
+  note                      String?             @db.VarChar(255)
+  created_at                DateTime            @default(now())
+  updated_at                DateTime            @default(now()) @updatedAt
+  activity_note             String?             @db.VarChar(255)
+  early_leave_reason        String?             @db.VarChar(255)
+  is_over_tolerance         Boolean             @default(false)
+  is_visit                  Boolean             @default(false)
+  is_wfh                    Boolean             @default(false)
+  late_reason               String?             @db.VarChar(255)
+  wfh_request_id            String?             @db.Char(36)
+  work_mode                 String              @default("office") @db.VarChar(20)
+  is_wfc                    Boolean             @default(false)
+  check_in_photo_public_id  String?             @db.VarChar(255)
+  check_in_photo_url        String?             @db.Text
+  check_out_photo_public_id String?             @db.VarChar(255)
+  check_out_photo_url       String?             @db.Text
+  check_out_work_mode       String?             @db.VarChar(20)
+  admin_notifications       AdminNotification[]
+  check_in_office           OfficeLocation?     @relation("CheckInOfficeAttendance", fields: [check_in_office_id], references: [id])
+  check_out_office          OfficeLocation?     @relation("CheckOutOfficeAttendance", fields: [check_out_office_id], references: [id])
+  registered_office         OfficeLocation?     @relation("RegisteredOfficeAttendance", fields: [registered_office_id], references: [id])
+  user                      User                @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  wfh_request               WfhRequest?         @relation(fields: [wfh_request_id], references: [id])
+  visits                    EmployeeVisit[]
 
   @@unique([user_id, attendance_date])
   @@index([attendance_date])
@@ -342,243 +244,196 @@ model Attendance {
   @@index([is_wfh])
   @@index([is_wfc])
   @@index([is_visit])
+  @@index([check_in_office_id])
+  @@index([check_out_office_id])
+  @@index([registered_office_id])
+  @@index([wfh_request_id])
 }
 
 model AttendanceMonthlySummary {
-  id String @id @default(uuid()) @db.Char(36)
-
-  user_id String @db.Char(36)
-  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  period_month Int
-  period_year  Int
-
-  total_present_days Int @default(0)
-  total_late_days    Int @default(0)
-  total_absent_days  Int @default(0)
-  total_leave_days   Int @default(0)
-  total_sick_days    Int @default(0)
-
-  total_late_minutes        Int @default(0)
-  total_early_leave_minutes Int @default(0)
-  total_work_minutes        Int @default(0)
-
-  total_wfh_days   Int @default(0)
-  total_wfc_days   Int @default(0)
-  total_visit_days Int @default(0)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  id                        String   @id @default(uuid()) @db.Char(36)
+  user_id                   String   @db.Char(36)
+  period_month              Int
+  period_year               Int
+  total_present_days        Int      @default(0)
+  total_late_days           Int      @default(0)
+  total_absent_days         Int      @default(0)
+  total_leave_days          Int      @default(0)
+  total_sick_days           Int      @default(0)
+  total_late_minutes        Int      @default(0)
+  total_early_leave_minutes Int      @default(0)
+  total_work_minutes        Int      @default(0)
+  total_wfh_days            Int      @default(0)
+  total_visit_days          Int      @default(0)
+  created_at                DateTime @default(now())
+  updated_at                DateTime @default(now()) @updatedAt
+  total_wfc_days            Int      @default(0)
+  user                      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, period_month, period_year])
   @@index([period_month, period_year])
 }
 
 model EmployeeVisit {
-  id String @id @default(uuid()) @db.Char(36)
-
-  user_id String @db.Char(36)
-  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
+  id            String      @id @default(uuid()) @db.Char(36)
+  user_id       String      @db.Char(36)
   attendance_id String?     @db.Char(36)
-  attendance    Attendance? @relation(fields: [attendance_id], references: [id], onDelete: SetNull)
-
-  visit_date DateTime @db.Date
-
-  title       String  @db.VarChar(150)
-  client_name String? @db.VarChar(100)
-  address     String? @db.VarChar(255)
-
-  latitude  Float?
-  longitude Float?
-  accuracy  Float?
-
-  start_time DateTime?
-  end_time   DateTime?
-
-  note String? @db.VarChar(255)
-
-  // planned, ongoing, completed, cancelled
-  status String @default("planned") @db.VarChar(20)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  visit_date    DateTime    @db.Date
+  title         String      @db.VarChar(150)
+  client_name   String?     @db.VarChar(100)
+  address       String?     @db.VarChar(255)
+  latitude      Float?
+  longitude     Float?
+  accuracy      Float?
+  start_time    DateTime?
+  end_time      DateTime?
+  note          String?     @db.VarChar(255)
+  status        String      @default("planned") @db.VarChar(20)
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @default(now()) @updatedAt
+  attendance    Attendance? @relation(fields: [attendance_id], references: [id])
+  user          User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([visit_date])
   @@index([status])
+  @@index([attendance_id])
+  @@index([user_id])
 }
 
 model WfhRequest {
-  id String @id @default(uuid()) @db.Char(36)
-
-  user_id String @db.Char(36)
-  user    User   @relation("WfhRequestUser", fields: [user_id], references: [id], onDelete: Cascade)
-
-  request_date DateTime @db.Date
-
-  reason String @db.Text
-
-  // pending, approved, rejected
-  status String @default("pending") @db.VarChar(20)
-
-  // Radius khusus WFH jika disetujui admin / owner
-  allowed_radius_meters Int? @default(500)
-
-  approved_by_id String? @db.Char(36)
-  approved_by    User?   @relation("WfhApprovedBy", fields: [approved_by_id], references: [id], onDelete: SetNull)
-
-  admin_note String? @db.VarChar(255)
-
-  attendances Attendance[]
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  id                    String       @id @default(uuid()) @db.Char(36)
+  user_id               String       @db.Char(36)
+  request_date          DateTime     @db.Date
+  reason                String       @db.Text
+  status                String       @default("pending") @db.VarChar(20)
+  allowed_radius_meters Int?         @default(500)
+  approved_by_id        String?      @db.Char(36)
+  admin_note            String?      @db.VarChar(255)
+  created_at            DateTime     @default(now())
+  updated_at            DateTime     @default(now()) @updatedAt
+  attendances           Attendance[]
+  approved_by           User?        @relation("WfhApprovedBy", fields: [approved_by_id], references: [id])
+  user                  User         @relation("WfhRequestUser", fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([request_date])
   @@index([status])
+  @@index([approved_by_id])
+  @@index([user_id])
 }
 
 model LeaveRequest {
-  id String @id @default(uuid()) @db.Char(36)
-
-  user_id String @db.Char(36)
-  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  // annual_leave, permission, sick, other
-  leave_type String @db.VarChar(30)
-
-  start_date DateTime @db.Date
-  end_date   DateTime @db.Date
-  total_days Int      @default(1)
-
-  reason String @db.Text
-
-  // pending, approved, rejected
-  status String @default("pending") @db.VarChar(20)
-
-  admin_note String? @db.VarChar(255)
-
-  // Lampiran / Surat Dokter
-  attachment_url       String? @db.Text
-  attachment_public_id String? @db.VarChar(255)
-  attachment_name      String? @db.VarChar(255)
-  attachment_mime      String? @db.VarChar(100)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  id              String   @id @default(uuid()) @db.Char(36)
+  user_id         String   @db.Char(36)
+  leave_type      String   @db.VarChar(30)
+  start_date      DateTime @db.Date
+  end_date        DateTime @db.Date
+  total_days      Int      @default(1)
+  reason          String   @db.Text
+  status          String   @default("pending") @db.VarChar(20)
+  admin_note      String?  @db.VarChar(255)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now()) @updatedAt
+  attachment_file Bytes?
+  attachment_name String?  @db.VarChar(255)
+  attachment_mime String?  @db.VarChar(100)
+  user            User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@index([start_date])
+  @@index([user_id])
 }
 
 model Announcement {
-  id String @id @default(uuid()) @db.Char(36)
-
-  title   String @db.VarChar(150)
-  content String @db.Text
-
-  document_url       String? @db.Text
-  document_public_id String? @db.VarChar(255)
-  document_name      String? @db.VarChar(255)
-  document_mime      String? @db.VarChar(100)
+  id                 String   @id @default(uuid()) @db.Char(36)
+  title              String   @db.VarChar(150)
+  content            String   @db.Text
+  target             String   @default("all") @db.VarChar(20)
+  status             String   @default("published") @db.VarChar(20)
+  author_id          String?  @db.Char(36)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @default(now()) @updatedAt
+  document_mime      String?  @db.VarChar(100)
+  document_name      String?  @db.VarChar(255)
+  document_public_id String?  @db.VarChar(255)
   document_size      Int?
-
-  // all, employee, admin, cs
-  target String @default("all") @db.VarChar(20)
-
-  // published, draft, archived
-  status String @default("published") @db.VarChar(20)
-
-  author_id String? @db.Char(36)
-  author    User?   @relation("AnnouncementAuthor", fields: [author_id], references: [id], onDelete: SetNull)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  document_url       String?  @db.Text
+  document_file      Bytes?
+  author             User?    @relation("AnnouncementAuthor", fields: [author_id], references: [id])
 
   @@index([target])
   @@index([status])
   @@index([created_at])
+  @@index([author_id], map: "Announcement_author_id_fkey")
 }
 
 model AdminNotification {
-  id String @id @default(uuid()) @db.Char(36)
-
+  id            String      @id @default(uuid()) @db.Char(36)
   attendance_id String?     @db.Char(36)
-  attendance    Attendance? @relation(fields: [attendance_id], references: [id], onDelete: SetNull)
-
-  user_id String @db.Char(36)
-  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  // wfh, wfc, visit, attendance
-  type String @db.VarChar(50)
-
-  title   String @db.VarChar(150)
-  message String @db.Text
-
-  // unread, read
-  status String @default("unread") @db.VarChar(20)
-
-  is_read Boolean @default(false)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  user_id       String      @db.Char(36)
+  type          String      @db.VarChar(50)
+  title         String      @db.VarChar(150)
+  message       String      @db.Text
+  status        String      @default("unread") @db.VarChar(20)
+  is_read       Boolean     @default(false)
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @default(now()) @updatedAt
+  attendance    Attendance? @relation(fields: [attendance_id], references: [id])
+  user          User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([type])
   @@index([status])
   @@index([is_read])
   @@index([created_at])
+  @@index([attendance_id], map: "AdminNotification_attendance_id_fkey")
+  @@index([user_id], map: "AdminNotification_user_id_fkey")
 }
 
 model AdminContactNumber {
-  id String @id @default(uuid()) @db.Char(36)
-
-  label        String  @db.VarChar(100)
-  phone_number String  @unique @db.VarChar(25)
-  is_active    Boolean @default(false)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  id           String   @id @default(uuid()) @db.Char(36)
+  label        String   @db.VarChar(100)
+  phone_number String   @unique @db.VarChar(25)
+  is_active    Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now()) @updatedAt
 
   @@index([is_active])
   @@map("admin_contact_numbers")
 }
 
+model AppSetting {
+  setting_key   String   @id @db.VarChar(100)
+  setting_value String   @db.Text
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+  setting_file  Bytes?
+  setting_mime  String?  @db.VarChar(100)
+
+  @@map("app_settings")
+}
+
 model Payroll {
-  id String @id @default(uuid()) @db.Char(36)
-
-  user_id String @db.Char(36)
-  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  period_month Int
-  period_year  Int
-
-  base_salary Decimal @default(0) @db.Decimal(15, 2)
-
-  total_bonus     Decimal @default(0) @db.Decimal(15, 2)
-  total_reward    Decimal @default(0) @db.Decimal(15, 2)
-  leave_deduction Decimal @default(0) @db.Decimal(15, 2)
-  late_deduction  Decimal @default(0) @db.Decimal(15, 2)
-  other_deduction Decimal @default(0) @db.Decimal(15, 2)
-
-  gross_salary Decimal @default(0) @db.Decimal(15, 2)
-
-  // Pajak PPH
-  pph_amount Decimal @default(0) @db.Decimal(15, 2)
-
-  net_salary Decimal @default(0) @db.Decimal(15, 2)
-
-  total_late_minutes Int @default(0)
-  total_work_minutes Int @default(0)
-  total_absent_days  Int @default(0)
-  total_leave_days   Int @default(0)
-
-  // draft, finalized, paid
-  status String @default("draft") @db.VarChar(20)
-
-  items PayrollItem[]
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
+  id                 String        @id @default(uuid()) @db.Char(36)
+  user_id            String        @db.Char(36)
+  period_month       Int
+  period_year        Int
+  base_salary        Decimal       @default(0.00) @db.Decimal(15, 2)
+  total_bonus        Decimal       @default(0.00) @db.Decimal(15, 2)
+  total_reward       Decimal       @default(0.00) @db.Decimal(15, 2)
+  leave_deduction    Decimal       @default(0.00) @db.Decimal(15, 2)
+  late_deduction     Decimal       @default(0.00) @db.Decimal(15, 2)
+  other_deduction    Decimal       @default(0.00) @db.Decimal(15, 2)
+  gross_salary       Decimal       @default(0.00) @db.Decimal(15, 2)
+  pph_amount         Decimal       @default(0.00) @db.Decimal(15, 2)
+  net_salary         Decimal       @default(0.00) @db.Decimal(15, 2)
+  total_late_minutes Int           @default(0)
+  total_work_minutes Int           @default(0)
+  total_absent_days  Int           @default(0)
+  total_leave_days   Int           @default(0)
+  status             String        @default("draft") @db.VarChar(20)
+  created_at         DateTime      @default(now())
+  updated_at         DateTime      @default(now()) @updatedAt
+  user               User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  items              PayrollItem[]
 
   @@unique([user_id, period_month, period_year])
   @@index([period_month, period_year])
@@ -586,50 +441,76 @@ model Payroll {
 }
 
 model PayrollItem {
-  id String @id @default(uuid()) @db.Char(36)
-
-  payroll_id String  @db.Char(36)
-  payroll    Payroll @relation(fields: [payroll_id], references: [id], onDelete: Cascade)
-
-  // bonus, reward, leave_deduction, late_deduction, pph, other_deduction
-  type String @db.VarChar(30)
-
-  name String @db.VarChar(100)
-
-  amount Decimal @default(0) @db.Decimal(15, 2)
-
-  note String? @db.VarChar(255)
-
+  id         String   @id @default(uuid()) @db.Char(36)
+  payroll_id String   @db.Char(36)
+  type       String   @db.VarChar(30)
+  name       String   @db.VarChar(100)
+  amount     Decimal  @default(0.00) @db.Decimal(15, 2)
+  note       String?  @db.VarChar(255)
   created_at DateTime @default(now())
+  payroll    Payroll  @relation(fields: [payroll_id], references: [id], onDelete: Cascade)
 
   @@index([type])
+  @@index([payroll_id])
 }
 
 model Permission {
-  id String @id @default(uuid()) @db.Char(36)
-
-  name String @unique @db.VarChar(100)
-  code String @unique @db.VarChar(100)
-
+  id               String           @id @default(uuid()) @db.Char(36)
+  name             String           @unique @db.VarChar(100)
+  code             String           @unique @db.VarChar(100)
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @default(now()) @updatedAt
   role_permissions RolePermission[]
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
 }
 
 model RolePermission {
-  id String @id @default(uuid()) @db.Char(36)
-
-  // owner, admin, cs, employee
-  role String @db.VarChar(20)
-
+  id            String     @id @default(uuid()) @db.Char(36)
+  role          String     @db.VarChar(20)
   permission_id String     @db.Char(36)
+  created_at    DateTime   @default(now())
   permission    Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
-
-  created_at DateTime @default(now())
 
   @@unique([role, permission_id])
   @@index([role])
+  @@index([permission_id])
+}
+
+model EmploymentStatus {
+  id         String   @id @default(uuid()) @db.Char(36)
+  name       String   @unique @db.VarChar(100)
+  code       String   @unique @db.VarChar(50)
+  status     String   @default("active") @db.VarChar(20)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+  users      User[]
+
+  @@map("employment_statuses")
+}
+
+model ShiftSwapRequest {
+  id String @id @default(uuid()) @db.Char(36)
+
+  requester_id String @db.Char(36)
+  requester    User   @relation("ShiftSwapRequester", fields: [requester_id], references: [id], onDelete: Cascade)
+
+  target_user_id String @db.Char(36)
+  target_user    User   @relation("ShiftSwapTargetUser", fields: [target_user_id], references: [id], onDelete: Cascade)
+
+  swap_date DateTime @db.Date
+
+  requester_shift_name String @db.VarChar(100)
+  target_shift_name    String @db.VarChar(100)
+
+  reason String? @db.Text
+
+  status String @default("pending") @db.VarChar(20)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@index([swap_date])
+  @@index([status])
+  @@map("shift_swap_requests")
 }
 
 enum DayOfWeek {
@@ -659,54 +540,4 @@ enum CheckInStatus {
 enum CheckOutStatus {
   NORMAL
   EARLY
-}
-
-model EmploymentStatus {
-  id         String   @id @default(uuid()) @db.Char(36)
-  name       String   @unique @db.VarChar(100)
-  code       String   @unique @db.VarChar(50)
-  status     String   @default("active") @db.VarChar(20) // active, inactive
-  users      User[]
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
-
-  @@map("employment_statuses")
-}
-
-model ShiftSwapRequest {
-  id String @id @default(uuid()) @db.Char(36)
-
-  requester_id String @db.Char(36)
-  requester    User   @relation("ShiftSwapRequester", fields: [requester_id], references: [id], onDelete: Cascade)
-
-  target_user_id String @db.Char(36)
-  target_user    User   @relation("ShiftSwapTargetUser", fields: [target_user_id], references: [id], onDelete: Cascade)
-
-  swap_date DateTime @db.Date
-
-  requester_shift_name String @db.VarChar(100)
-  target_shift_name    String @db.VarChar(100)
-
-  reason String? @db.Text
-
-  // pending, approved, rejected, cancelled
-  status String @default("pending") @db.VarChar(20)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now()) @updatedAt
-
-  @@index([swap_date])
-  @@index([status])
-  @@map("shift_swap_requests")
-}
-
-model AppSetting {
-  setting_key   String   @id @db.VarChar(100)
-  setting_value String   @db.Text
-  created_at    DateTime @default(now())
-  updated_at    DateTime @default(now()) @updatedAt
-  setting_file  Bytes?
-  setting_mime  String?  @db.VarChar(100)
-
-  @@map("app_settings")
 }

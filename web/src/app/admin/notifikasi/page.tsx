@@ -130,18 +130,6 @@ function getTypeClass(type: NotificationType) {
   return "bg-slate-50 text-slate-600 border-slate-100";
 }
 
-function getStatusClass(status: string) {
-  const value = status.toLowerCase();
-
-  if (value === "unread") return "bg-orange-50 text-orange-700";
-  if (value === "read") return "bg-slate-100 text-slate-600";
-  if (value === "pending") return "bg-amber-50 text-amber-700";
-  if (value === "approved") return "bg-emerald-50 text-emerald-700";
-  if (value === "rejected") return "bg-red-50 text-red-600";
-
-  return "bg-slate-100 text-slate-600";
-}
-
 function formatCreatedAt(value: string | null) {
   if (!value) return "-";
 

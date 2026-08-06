@@ -107,10 +107,8 @@ function normalizeImageUrl(value: string | null) {
   if (!text) return null;
 
   if (
-    text.startsWith("http://") ||
-    text.startsWith("https://") ||
     text.startsWith("data:image") ||
-    text.startsWith("blob:")
+    text.startsWith("/api/attendance/")
   ) {
     return text;
   }
@@ -121,44 +119,17 @@ function normalizeImageUrl(value: string | null) {
     .replace(/^\.\/public\//, "")
     .replace(/^\/public\//, "/");
 
-  if (cleanText.startsWith("/")) {
+  if (cleanText.startsWith("/api/attendance/")) {
     return cleanText;
   }
 
-  return `/${cleanText}`;
+  return null;
 }
 
-function normalizeProfilePhotoUrl(value: string | null) {
-  if (!value) return null;
+function getProfilePhotoApiUrl(userId: string | null) {
+  if (!userId) return null;
 
-  const text = String(value).trim();
-
-  if (!text) return null;
-
-  if (
-    text.startsWith("http://") ||
-    text.startsWith("https://") ||
-    text.startsWith("data:image") ||
-    text.startsWith("blob:")
-  ) {
-    return text;
-  }
-
-  const cleanText = text
-    .replaceAll("\\", "/")
-    .replace(/^public\//, "")
-    .replace(/^\.\/public\//, "")
-    .replace(/^\/public\//, "/");
-
-  if (cleanText.startsWith("/")) {
-    return cleanText;
-  }
-
-  if (cleanText.startsWith("uploads/")) {
-    return `/${cleanText}`;
-  }
-
-  return `/uploads/profiles/${cleanText}`;
+  return `/api/profil/photo?userId=${encodeURIComponent(userId)}&raw=1`;
 }
 
 function formatDate(value: Date | string | null) {
@@ -217,10 +188,29 @@ function formatStatus(status: string | null) {
   if (normalized === "present") return "Hadir";
   if (normalized === "late") return "Terlambat";
   if (normalized === "pending") return "Pending";
-  if (normalized === "cuti") return "Cuti";
+  if (normalized === "cuti" || normalized === "permission") return "Cuti";
+  if (normalized === "sick") return "Sakit";
   if (normalized === "approved") return "Disetujui";
 
   return status || "Belum diketahui";
+}
+
+function normalizeStatusFilter(status: string) {
+  const normalized = String(status || "").trim().toLowerCase();
+
+  if (["hadir", "present", "presented"].includes(normalized)) {
+    return "present";
+  }
+
+  if (["terlambat", "telat", "late"].includes(normalized)) {
+    return "late";
+  }
+
+  if (["cuti", "izin", "permission", "leave"].includes(normalized)) {
+    return "cuti";
+  }
+
+  return normalized;
 }
 
 function formatWorkMode(mode: string | null) {
@@ -284,9 +274,9 @@ export async function GET(req: NextRequest) {
     const employeeId = String(searchParams.get("employeeId") || "").trim();
     const search = String(searchParams.get("search") || "").trim();
     const date = String(searchParams.get("date") || "").trim();
-    const status = String(searchParams.get("status") || "")
-      .trim()
-      .toLowerCase();
+    const status = normalizeStatusFilter(
+      String(searchParams.get("status") || ""),
+    );
 
     const monthParam = String(searchParams.get("month") || "").trim();
     const yearParam = String(searchParams.get("year") || "").trim();
@@ -334,6 +324,14 @@ export async function GET(req: NextRequest) {
     ]);
 
     const statusColumn = pickColumn(attendanceColumns, ["status"]);
+    const checkInStatusColumn = pickColumn(attendanceColumns, [
+      "check_in_status",
+      "checkInStatus",
+    ]);
+    const lateMinutesColumn = pickColumn(attendanceColumns, [
+      "late_minutes",
+      "lateMinutes",
+    ]);
 
     const workModeColumn = pickColumn(attendanceColumns, [
       "work_mode",
@@ -400,12 +398,47 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    if (status && status !== "all" && statusColumn) {
-      if (status === "uncheckout" && checkOutColumn) {
-        whereClauses.push(
-          `(a.\`${checkOutColumn}\` IS NULL OR a.\`${checkOutColumn}\` = '' OR a.\`${checkOutColumn}\` = '-')`
-        );
-      } else {
+    if (status && status !== "all") {
+      if (status === "present" && statusColumn) {
+        whereClauses.push(`LOWER(a.\`${statusColumn}\`) = ?`);
+        queryValues.push("present");
+      } else if (status === "late") {
+        const lateClauses: string[] = [];
+
+        if (statusColumn) {
+          lateClauses.push(`LOWER(a.\`${statusColumn}\`) = ?`);
+          queryValues.push("late");
+        }
+
+        if (checkInStatusColumn) {
+          lateClauses.push(`LOWER(a.\`${checkInStatusColumn}\`) = ?`);
+          queryValues.push("late");
+        }
+
+        if (lateMinutesColumn) {
+          lateClauses.push(`COALESCE(a.\`${lateMinutesColumn}\`, 0) > 0`);
+        }
+
+        if (lateClauses.length) {
+          whereClauses.push(`(${lateClauses.join(" OR ")})`);
+        }
+      } else if (status === "cuti") {
+        const leaveClauses: string[] = [];
+
+        if (statusColumn) {
+          leaveClauses.push(`LOWER(a.\`${statusColumn}\`) IN (?, ?, ?)`);
+          queryValues.push("cuti", "permission", "sick");
+        }
+
+        if (workModeColumn) {
+          leaveClauses.push(`LOWER(a.\`${workModeColumn}\`) = ?`);
+          queryValues.push("cuti");
+        }
+
+        if (leaveClauses.length) {
+          whereClauses.push(`(${leaveClauses.join(" OR ")})`);
+        }
+      } else if (statusColumn) {
         whereClauses.push(`LOWER(a.\`${statusColumn}\`) = ?`);
         queryValues.push(status);
       }
@@ -473,7 +506,9 @@ export async function GET(req: NextRequest) {
       const checkInPhoto = normalizeImageUrl(row.checkInPhoto);
       const checkOutPhoto = normalizeImageUrl(row.checkOutPhoto);
       const proofPhoto = normalizeImageUrl(row.proofPhoto);
-      const profilePhoto = normalizeProfilePhotoUrl(row.profilePhoto);
+      const profilePhoto = row.profilePhoto
+        ? getProfilePhotoApiUrl(row.userId)
+        : null;
 
       const latitude = toNumber(row.latitude);
       const longitude = toNumber(row.longitude);

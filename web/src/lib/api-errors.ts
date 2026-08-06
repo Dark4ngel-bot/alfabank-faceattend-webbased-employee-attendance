@@ -41,12 +41,11 @@ export function getApiErrorMessage(
   if (error instanceof Error) {
     const message = getErrorText(error).toLowerCase();
 
-    if (message.includes("wfh_quota_monthly")) {
+    if (
+      message.includes("wfh_quota_monthly") ||
+      message.includes("leave_quota_yearly")
+    ) {
       return fallback;
-    }
-
-    if (message.includes("konfigurasi cloudinary belum lengkap")) {
-      return "Konfigurasi upload foto di hosting belum lengkap. Pastikan CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, dan CLOUDINARY_API_SECRET sudah diset.";
     }
 
     if (
