@@ -10,6 +10,8 @@ type Shift = {
   id: string;
   name: string;
   tolerance_minutes: number;
+  check_in_open?: string;
+  check_out_open?: string;
   status: string;
   created_at?: string;
   updated_at?: string;
@@ -17,11 +19,15 @@ type Shift = {
 
 type ShiftForm = {
   tolerance_minutes: string;
+  check_in_open: string;
+  check_out_open: string;
   status: string;
 };
 
 const initialForm: ShiftForm = {
   tolerance_minutes: "0",
+  check_in_open: "07:00",
+  check_out_open: "16:50",
   status: "active",
 };
 
@@ -30,24 +36,32 @@ const presetShifts: Shift[] = [
     id: "preset-utama",
     name: "UTAMA",
     tolerance_minutes: 3,
+    check_in_open: "07:00",
+    check_out_open: "16:50",
     status: "active",
   },
   {
     id: "preset-magang",
     name: "MAGANG",
     tolerance_minutes: 0,
+    check_in_open: "07:00",
+    check_out_open: "16:50",
     status: "active",
   },
   {
     id: "preset-shift-pagi",
     name: "SHIFT PAGI",
     tolerance_minutes: 5,
+    check_in_open: "06:30",
+    check_out_open: "15:20",
     status: "active",
   },
   {
     id: "preset-shift-siang",
     name: "SHIFT SIANG",
     tolerance_minutes: 5,
+    check_in_open: "11:00",
+    check_out_open: "20:50",
     status: "active",
   },
 ];
@@ -295,6 +309,8 @@ export default function ShiftsPage() {
     setEditingShift(shift);
     setForm({
       tolerance_minutes: String(shift.tolerance_minutes || 0),
+      check_in_open: shift.check_in_open || "07:00",
+      check_out_open: shift.check_out_open || "16:50",
       status: shift.status || "active",
     });
     setIsModalOpen(true);
@@ -333,6 +349,8 @@ export default function ShiftsPage() {
             ? {
                 ...shift,
                 tolerance_minutes: toleranceMinutes,
+                check_in_open: form.check_in_open,
+                check_out_open: form.check_out_open,
                 status: form.status,
               }
             : shift,
@@ -354,6 +372,8 @@ export default function ShiftsPage() {
         body: JSON.stringify({
           id: editingShift.id,
           tolerance_minutes: toleranceMinutes,
+          check_in_open: form.check_in_open,
+          check_out_open: form.check_out_open,
           status: form.status,
         }),
       });
@@ -451,10 +471,12 @@ export default function ShiftsPage() {
             className="shift-row-enter mt-8 overflow-hidden rounded-2xl border border-blue-100"
             style={{ animationDelay: "150ms" }}
           >
-            <div className="hidden grid-cols-[0.3fr_1.4fr_1fr_1fr_1fr] bg-[#f6f8ff] px-5 py-4 text-xs font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
+            <div className="hidden grid-cols-[0.3fr_1.3fr_1fr_1fr_1fr_0.8fr_0.8fr] bg-[#f6f8ff] px-5 py-4 text-xs font-black uppercase tracking-[0.18em] text-[#123c8c] md:grid">
               <p>#</p>
               <p>Shift</p>
               <p>Toleransi Telat</p>
+              <p>Check-in Dibuka</p>
+              <p>Check-out Dibuka</p>
               <p>Status</p>
               <p className="text-center">Aksi</p>
             </div>
@@ -480,7 +502,7 @@ export default function ShiftsPage() {
                 filteredShifts.map((shift, index) => (
                   <div
                     key={shift.id}
-                    className="shift-row-enter grid gap-4 px-4 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] md:grid-cols-[0.3fr_1.4fr_1fr_1fr_1fr] md:items-center md:px-5 md:py-6"
+                    className="shift-row-enter grid gap-4 px-4 py-4 text-sm transition duration-200 hover:bg-[#f8fbff] md:grid-cols-[0.3fr_1.3fr_1fr_1fr_1fr_0.8fr_0.8fr] md:items-center md:px-5 md:py-6"
                     style={{
                       animationDelay: `${index * 55}ms`,
                     }}
@@ -495,10 +517,13 @@ export default function ShiftsPage() {
                           <p className="font-black uppercase text-slate-950">
                             {shift.name}
                           </p>
-                          <p className="mt-1 text-xs font-semibold text-slate-400">
-                            Toleransi {shift.tolerance_minutes || 0} menit
-                          </p>
-                        </div>
+                        <p className="mt-1 text-xs font-semibold text-slate-400">
+                          Toleransi {shift.tolerance_minutes || 0} menit
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-slate-400">
+                          Check-in dibuka {shift.check_in_open || "07:00"}
+                        </p>
+                      </div>
                       </div>
 
                       <span
@@ -525,6 +550,24 @@ export default function ShiftsPage() {
                         </p>
                         <p className="mt-1 font-black text-slate-600 md:mt-0">
                           {shift.tolerance_minutes || 0} Menit
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-3 md:border-0 md:bg-transparent md:p-0">
+                        <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400 md:hidden">
+                          Check-in Dibuka
+                        </p>
+                        <p className="mt-1 font-black text-[#123c8c] md:mt-0">
+                          {shift.check_in_open || "07:00"}
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-3 md:border-0 md:bg-transparent md:p-0">
+                        <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400 md:hidden">
+                          Check-out Dibuka
+                        </p>
+                        <p className="mt-1 font-black text-[#123c8c] md:mt-0">
+                          {shift.check_out_open || "16:50"}
                         </p>
                       </div>
 
@@ -639,6 +682,49 @@ export default function ShiftsPage() {
                 className="shift-row-enter"
                 style={{ animationDelay: "80ms" }}
               >
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-2 block text-sm font-black text-slate-700">
+                      Check-in Dibuka
+                    </label>
+
+                    <input
+                      type="time"
+                      value={form.check_in_open}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          check_in_open: event.target.value,
+                        }))
+                      }
+                      className="shift-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-black text-slate-700">
+                      Check-out Dibuka
+                    </label>
+
+                    <input
+                      type="time"
+                      value={form.check_out_open}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          check_out_open: event.target.value,
+                        }))
+                      }
+                      className="shift-field w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="shift-row-enter"
+                style={{ animationDelay: "120ms" }}
+              >
                 <label className="mb-2 block text-sm font-black text-slate-700">
                   Status Shift
                 </label>
@@ -664,7 +750,7 @@ export default function ShiftsPage() {
 
               <div
                 className="shift-row-enter flex flex-col-reverse gap-3 pt-2 md:flex-row md:justify-end"
-                style={{ animationDelay: "120ms" }}
+                style={{ animationDelay: "160ms" }}
               >
                 <button
                   type="button"

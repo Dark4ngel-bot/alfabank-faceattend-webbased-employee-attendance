@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   CalendarDays,
+  ChevronRight,
   ClipboardList,
   Loader2,
   Search,
@@ -143,21 +144,6 @@ function formatDateRange(startDate: string, endDate: string) {
   });
 
   return `${formatter.format(start)} - ${formatter.format(end)}`;
-}
-
-function formatWorkDuration(minutes: number) {
-  if (!minutes || minutes <= 0) return "0 menit";
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-
-  if (hours > 0 && remainingMinutes > 0) {
-    return `${hours}j ${remainingMinutes}m`;
-  }
-
-  if (hours > 0) return `${hours}j`;
-
-  return `${remainingMinutes}m`;
 }
 
 function getNetWorkMinutes(summary?: EmployeeAttendanceSummary | null) {
@@ -485,11 +471,6 @@ export default function AdminEmployeeAttendanceRecapPage() {
       className: "border-teal-100 bg-teal-50 text-teal-700",
     },
     {
-      label: "Kerja Bersih",
-      value: formatWorkDuration(getNetWorkMinutes(selectedSummary)),
-      className: "border-blue-100 bg-blue-50 text-[#123c8c]",
-    },
-    {
       label: "Sakit",
       value: selectedSummary.sakit,
       className: "border-red-100 bg-red-50 text-red-700",
@@ -684,8 +665,6 @@ export default function AdminEmployeeAttendanceRecapPage() {
                     pendingLeaveCountByEmployeeId.get(employee.id) || 0;
                   const hasPendingLeave = pendingLeaveCount > 0;
                   const employeePhoto = getEmployeePhoto(employee);
-                  const summary = recapByEmployeeId.get(employee.id)?.summary;
-                  const netWorkMinutes = getNetWorkMinutes(summary);
                   const detailParams = new URLSearchParams({
                     startDate,
                     endDate,
@@ -742,47 +721,42 @@ export default function AdminEmployeeAttendanceRecapPage() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="truncate text-base font-black text-slate-950">
-                              {employee.name}
-                            </h3>
+                          <h3 className="text-sm font-black text-slate-950 leading-snug break-words sm:text-base">
+                            {employee.name}
+                          </h3>
+
+                          <p className="mt-0.5 text-[11px] font-semibold leading-snug text-slate-500 break-words sm:text-xs">
+                            {[
+                              employee.employee_code,
+                              employee.department?.name,
+                              employee.jabatan?.name || employee.position?.name,
+                            ]
+                              .filter(Boolean)
+                              .join(" / ")}
+                          </p>
+                        </div>
+
+                        <div className="flex shrink-0 items-center gap-2 ml-auto">
+                          <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center">
+                            {hasPendingLeave ? (
+                              <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-black text-orange-700 ring-1 ring-orange-200 sm:px-2.5 sm:py-1 sm:text-[11px]">
+                                {pendingLeaveCount} cuti baru
+                              </span>
+                            ) : null}
 
                             <span
-                              className={`rounded-full px-2.5 py-1 text-[11px] font-black ring-1 ${getStatusStyle(
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-black ring-1 sm:px-2.5 sm:py-1 sm:text-[11px] ${getStatusStyle(
                                 employee.status,
                               )}`}
                             >
                               {getStatusLabel(employee.status)}
                             </span>
-
-                            {hasPendingLeave ? (
-                              <span className="rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-black text-orange-700 ring-1 ring-orange-200">
-                                {pendingLeaveCount} pengajuan cuti baru
-                              </span>
-                            ) : null}
                           </div>
 
-                          <p className="mt-1 line-clamp-1 text-sm font-semibold text-slate-500">
-                            {[
-                              employee.employee_code,
-                              employee.department?.name,
-                              employee.jabatan?.name,
-                              employee.position?.name,
-                            ]
-                              .filter(Boolean)
-                              .join(" / ") || employee.email}
-                          </p>
-                          <p className="mt-2 text-xs font-black uppercase tracking-[0.1em] text-[#123c8c]">
-                            Kerja bersih {formatWorkDuration(netWorkMinutes)}
-                          </p>
+                          <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100 transition group-hover:bg-[#123c8c] group-hover:text-white sm:h-10 sm:w-10">
+                            <ChevronRight size={18} strokeWidth={2.8} className="transition-transform group-hover:translate-x-0.5" />
+                          </div>
                         </div>
-
-                        <span
-                          className="hidden h-11 shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition group-hover:bg-[#0f3274] group-active:scale-[0.98] sm:inline-flex"
-                        >
-                          Buka Rekap
-                          <ArrowRight size={16} strokeWidth={2.8} />
-                        </span>
                     </Link>
                   );
                 })}

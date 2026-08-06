@@ -21,6 +21,7 @@ import {
   Megaphone,
   Menu,
   Network,
+  Palette,
   PhoneCall,
   Settings,
   Trophy,
@@ -166,6 +167,11 @@ const operationalMenus = [
     label: "Logo Aplikasi",
     icon: Settings,
   },
+  {
+    href: "/admin/warna-aplikasi",
+    label: "Warna Aplikasi",
+    icon: Palette,
+  },
 ];
 
 const WHATSAPP_LINK = "https://wa.me/6282123459565";
@@ -281,6 +287,7 @@ export default function AppHeader({
         const response = await fetch(endpoint, {
           method: "GET",
           cache: "no-store",
+          credentials: "same-origin",
         });
 
         if (!response.ok) {
@@ -324,6 +331,7 @@ export default function AppHeader({
         const response = await fetch("/api/admin-contact-number", {
           method: "GET",
           cache: "no-store",
+          credentials: "same-origin",
         });
 
         if (!response.ok) {
@@ -331,8 +339,9 @@ export default function AppHeader({
           return;
         }
 
-        const data =
-          (await readJsonResponse(response)) as AdminContactNumberResponse;
+        const data = (await readJsonResponse(
+          response,
+        )) as AdminContactNumberResponse;
 
         if (isMounted) {
           setWhatsappLink(getWhatsappLink(data.number?.phone_number));
@@ -374,12 +383,12 @@ export default function AppHeader({
       await fetch("/api/auth/logout", {
         method: "POST",
         cache: "no-store",
+        credentials: "same-origin",
       });
     } finally {
       window.localStorage.removeItem("presensi_read_announcement_id");
       window.sessionStorage.clear();
       router.replace("/login");
-      router.refresh();
     }
   }
 
@@ -491,7 +500,7 @@ export default function AppHeader({
           type="button"
           aria-label="Tutup menu"
           onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 z-50 bg-slate-950/40"
+          className="fixed inset-0 z-50 bg-transparent"
         />
       ) : null}
 

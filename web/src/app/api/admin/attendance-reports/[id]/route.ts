@@ -201,10 +201,8 @@ function normalizeImageUrl(value: unknown) {
   if (!text) return null;
 
   if (
-    text.startsWith("http://") ||
-    text.startsWith("https://") ||
     text.startsWith("data:image") ||
-    text.startsWith("blob:")
+    text.startsWith("/api/attendance/")
   ) {
     return text;
   }
@@ -215,11 +213,11 @@ function normalizeImageUrl(value: unknown) {
     .replace(/^\.\/public\//, "")
     .replace(/^\/public\//, "/");
 
-  if (cleanText.startsWith("/")) {
+  if (cleanText.startsWith("/api/attendance/")) {
     return cleanText;
   }
 
-  return `/${cleanText}`;
+  return null;
 }
 
 function formatDate(value: Date | string | null) {
@@ -622,14 +620,14 @@ export async function GET(
           : null,
 
         checkInPhoto:
-          normalizeImageUrl(row.checkInPhotoUrl) ||
-          normalizeImageUrl(row.checkInPhoto),
+          normalizeImageUrl(row.checkInPhoto) ||
+          normalizeImageUrl(row.checkInPhotoUrl),
         checkOutPhoto:
-          normalizeImageUrl(row.checkOutPhotoUrl) ||
-          normalizeImageUrl(row.checkOutPhoto),
+          normalizeImageUrl(row.checkOutPhoto) ||
+          normalizeImageUrl(row.checkOutPhotoUrl),
         proofPhoto:
-          normalizeImageUrl(row.proofPhotoUrl) ||
-          normalizeImageUrl(row.proofPhoto),
+          normalizeImageUrl(row.proofPhoto) ||
+          normalizeImageUrl(row.proofPhotoUrl),
 
         officeName: row.officeName || null,
         officeAddress: row.officeAddress || null,

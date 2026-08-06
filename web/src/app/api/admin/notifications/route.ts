@@ -79,7 +79,7 @@ function getLeaveTitle(type: NotificationType) {
   if (type === "sick") return "Pengajuan Sakit";
   if (type === "permission") return "Pengajuan Izin";
 
-  return "Pengajuan Cuti";
+  return "Pengajuan";
 }
 
 function normalizeAdminNotificationType(
@@ -155,7 +155,7 @@ function normalizeLocationMessage(message: string, locationLabel: string) {
 
 function getNotificationHref(type: NotificationType, attendanceId?: string | null) {
   if (type === "sick" || type === "leave" || type === "permission") {
-    return "/admin/laporan-cuti";
+    return "/admin/laporan-pengajuan";
   }
 
   if (attendanceId) {

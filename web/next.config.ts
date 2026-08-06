@@ -6,15 +6,6 @@ const nextConfig: NextConfig = {
   distDir,
   output: "standalone",
 
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
-      },
-    ],
-  },
-
   // Membatasi workspace Next.js ke folder web ini
   outputFileTracingRoot: process.cwd(),
 
@@ -26,6 +17,23 @@ const nextConfig: NextConfig = {
     "192.168.10.6",
     "smudgy-jubilance-action.ngrok-free.dev",
   ],
+
+  images: {
+    localPatterns: [
+      {
+        pathname: "/images/**",
+      },
+      {
+        pathname: "/api/site-logo",
+      },
+      {
+        pathname: "/api/profil/photo",
+      },
+      {
+        pathname: "/api/attendance/**/photo",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

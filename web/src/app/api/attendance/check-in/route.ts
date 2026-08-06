@@ -1,8 +1,6 @@
-import type { UploadApiResponse } from "cloudinary";
 import { Buffer } from "node:buffer";
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCloudinary } from "@/lib/cloudinary";
 import { isPhoneAttendanceRequest } from "@/lib/attendance-device";
 import { requireAuth } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
@@ -11,6 +9,7 @@ import {
   ensureWfhQuotaColumn,
   isMissingWfhQuotaColumnError,
 } from "@/lib/wfh-quota-schema";
+import { getEffectiveShiftNameForDate } from "@/lib/shift-swap-schema";
 import {
   findActiveLeaveForDate,
   formatJakartaDate,
@@ -57,18 +56,11 @@ type ParsedAttendanceBody = {
 };
 
 type StoredAttendancePhoto =
-  | {
-      storage: "cloudinary";
-      data: null;
-      secureUrl: string;
-      publicId: string;
-    }
-  | {
-      storage: "database";
-      data: Uint8Array<ArrayBuffer>;
-      secureUrl: null;
-      publicId: null;
-    };
+  {
+    data: Uint8Array<ArrayBuffer>;
+    secureUrl: null;
+    publicId: null;
+  };
 
 async function getUserIdFromRequest(req: NextRequest) {
   const authUser = await requireAuth(req);
@@ -112,9 +104,63 @@ function toJakartaDate(date = new Date()) {
   return new Date(date.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
 }
 
+function getDayOfWeekEnum(date = new Date()) {
+  const dayIndex = toJakartaDate(date).getDay();
+
+  const days = [
+    "SUNDAY",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+  ];
+
+  return days[dayIndex];
+}
+
 function timeToMinutes(time: string) {
   const [hourText, minuteText] = time.split(":");
   return Number(hourText || 0) * 60 + Number(minuteText || 0);
+}
+
+function normalizeScheduleTime(value: unknown) {
+  if (!value) return "";
+
+  if (typeof value === "string") {
+    if (/^\d{2}:\d{2}/.test(value)) {
+      return value.slice(0, 5);
+    }
+
+    const parsedDate = new Date(value);
+
+    if (!Number.isNaN(parsedDate.getTime())) {
+      return new Intl.DateTimeFormat("id-ID", {
+        timeZone: "Asia/Jakarta",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+        .format(parsedDate)
+        .replace(".", ":");
+    }
+
+    return "";
+  }
+
+  if (value instanceof Date) {
+    return new Intl.DateTimeFormat("id-ID", {
+      timeZone: "Asia/Jakarta",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+      .format(value)
+      .replace(".", ":");
+  }
+
+  return "";
 }
 
 function dateToMinutes(date: Date) {
@@ -137,7 +183,7 @@ function getShiftStartTime(shiftName?: string | null) {
   const name = String(shiftName || "").toUpperCase();
 
   if (name.includes("SHIFT SIANG") || name.includes("SIANG")) return "13:00";
-  if (name.includes("SHIFT PAGI") || name.includes("PAGI")) return "08:00";
+  if (name.includes("SHIFT PAGI") || name.includes("PAGI")) return "07:30";
   if (name.includes("MAGANG") || name.includes("UTAMA")) return "08:00";
 
   return "08:00";
@@ -196,82 +242,14 @@ async function fileToBuffer(file: File) {
   };
 }
 
-async function uploadCheckInPhoto(
-  photoBuffer: Uint8Array<ArrayBuffer>,
-  userId: string,
-): Promise<UploadApiResponse | null> {
-  let cloudinary: ReturnType<typeof getCloudinary>;
-
-  try {
-    cloudinary = getCloudinary();
-  } catch (error) {
-    console.warn("CHECK_IN_CLOUDINARY_UNAVAILABLE:", error);
-    return null;
-  }
-
-  return new Promise<UploadApiResponse>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: "presensi/attendance/check-in",
-        public_id: `user-${userId}-${Date.now()}`,
-        resource_type: "image",
-        overwrite: false,
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        if (!result) {
-          reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
-          return;
-        }
-
-        resolve(result);
-      },
-    );
-
-    uploadStream.end(Buffer.from(photoBuffer));
-  });
-}
-
 async function storeCheckInPhoto(
   photoBuffer: Uint8Array<ArrayBuffer>,
-  userId: string,
 ): Promise<StoredAttendancePhoto> {
-  const uploadedPhoto = await uploadCheckInPhoto(photoBuffer, userId);
-
-  if (uploadedPhoto) {
-    return {
-      storage: "cloudinary",
-      data: null,
-      secureUrl: uploadedPhoto.secure_url,
-      publicId: uploadedPhoto.public_id,
-    };
-  }
-
   return {
-    storage: "database",
     data: photoBuffer,
     secureUrl: null,
     publicId: null,
   };
-}
-
-async function deleteCloudinaryPhoto(publicId: string | null | undefined) {
-  if (!publicId) return;
-
-  try {
-    const cloudinary = getCloudinary();
-
-    await cloudinary.uploader.destroy(publicId, {
-      resource_type: "image",
-      invalidate: true,
-    });
-  } catch (error) {
-    console.warn("DELETE_CHECK_IN_PHOTO_WARNING:", error);
-  }
 }
 
 function getFormText(formData: FormData, keys: string[]) {
@@ -642,6 +620,17 @@ export async function POST(req: NextRequest) {
             id: true,
             name: true,
             tolerance_minutes: true,
+            start_time: true,
+            end_time: true,
+            check_in_open: true,
+            check_out_open: true,
+            work_schedules: {
+              select: {
+                day_of_week: true,
+                is_work_day: true,
+                check_in_time: true,
+              },
+            },
           },
         },
       },
@@ -663,34 +652,39 @@ export async function POST(req: NextRequest) {
 
     const now = new Date();
     const today = getTodayDateOnly();
+    const todayName = getDayOfWeekEnum(now);
+    const effectiveShiftName = await getEffectiveShiftNameForDate(
+      userId,
+      today,
+      user.shift?.name,
+    );
+    const effectiveShift =
+      effectiveShiftName && effectiveShiftName !== user.shift?.name
+        ? await prisma.shift.findFirst({
+            where: { name: effectiveShiftName },
+            select: {
+              id: true,
+              name: true,
+              tolerance_minutes: true,
+              start_time: true,
+              end_time: true,
+              check_in_open: true,
+              check_out_open: true,
+              work_schedules: {
+                select: {
+                  day_of_week: true,
+                  is_work_day: true,
+                  check_in_time: true,
+                },
+              },
+            },
+          })
+        : user.shift;
+    const todaySchedule = effectiveShift?.work_schedules?.find((schedule) => {
+      return String(schedule.day_of_week).toUpperCase() === todayName;
+    });
 
     if (isWfhMode) {
-      const todayWfhCount = await prisma.attendance.count({
-        where: {
-          attendance_date: today,
-          work_mode: "wfh",
-          check_in_time: {
-            not: null,
-          },
-          NOT: {
-            user_id: userId,
-          },
-        },
-      });
-
-      if (todayWfhCount >= 2) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              "Kuota WFH harian kantor sudah penuh (Maksimal 2 karyawan per hari). Silakan pilih mode Kantor atau hubungi admin.",
-            message:
-              "Kuota WFH harian kantor sudah penuh (Maksimal 2 karyawan per hari). Silakan pilih mode Kantor atau hubungi admin.",
-          },
-          { status: 400 },
-        );
-      }
-
       const hasWfhQuotaColumn = await ensureWfhQuotaColumn();
       let quotaRows: Array<{ wfh_quota_monthly: number | null }> = [];
 
@@ -728,10 +722,7 @@ export async function POST(req: NextRequest) {
           },
         },
       });
-      const remainingWfhQuota = Math.max(
-        0,
-        wfhQuotaMonthly - usedWfhThisMonth,
-      );
+      const remainingWfhQuota = Math.max(0, wfhQuotaMonthly - usedWfhThisMonth);
 
       if (wfhQuotaMonthly > 0 && remainingWfhQuota <= 0) {
         return NextResponse.json(
@@ -746,6 +737,32 @@ export async function POST(req: NextRequest) {
               used: usedWfhThisMonth,
               remaining: 0,
             },
+          },
+          { status: 400 },
+        );
+      }
+
+      // Max 2 Karyawan WFH per hari
+      const MAX_DAILY_WFH = 2;
+      const todayWfhCount = await prisma.attendance.count({
+        where: {
+          attendance_date: today,
+          work_mode: "wfh",
+          check_in_time: {
+            not: null,
+          },
+          NOT: {
+            user_id: userId,
+          },
+        },
+      });
+
+      if (todayWfhCount >= MAX_DAILY_WFH) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Kuota WFH harian kantor sudah penuh (Maksimal ${MAX_DAILY_WFH} karyawan per hari). Silakan absensi mode Kantor atau Kunjungan.`,
+            message: `Kuota WFH harian kantor sudah penuh (Maksimal ${MAX_DAILY_WFH} karyawan per hari). Silakan absensi mode Kantor atau Kunjungan.`,
           },
           { status: 400 },
         );
@@ -856,7 +873,9 @@ export async function POST(req: NextRequest) {
 
       const sortedOfficeGeofences = [
         registeredOfficeGeofence,
-        ...officeGeofences.filter((office) => office.id !== registeredOffice.id),
+        ...officeGeofences.filter(
+          (office) => office.id !== registeredOffice.id,
+        ),
       ];
 
       matchedOffice = findNearestValidOffice(
@@ -958,12 +977,24 @@ export async function POST(req: NextRequest) {
 
     const shouldValidateLate = !isVisitMode;
 
+    if (
+      shouldValidateLate &&
+      todaySchedule &&
+      todaySchedule.is_work_day === false
+    ) {
+      return NextResponse.json(
+        { error: "Hari ini bukan jadwal kerja kamu." },
+        { status: 400 },
+      );
+    }
     const startTime = shouldValidateLate
-      ? getShiftStartTime(user.shift?.name)
+      ? normalizeScheduleTime(todaySchedule?.check_in_time) ||
+        effectiveShift?.start_time ||
+        getShiftStartTime(effectiveShiftName)
       : null;
 
     const toleranceMinutes = shouldValidateLate
-      ? user.shift?.tolerance_minutes || 0
+      ? Number(effectiveShift?.tolerance_minutes ?? user.shift?.tolerance_minutes ?? 5)
       : 0;
 
     const lateMinutes =
@@ -985,7 +1016,7 @@ export async function POST(req: NextRequest) {
             "Kamu sudah melewati batas toleransi. Alasan telat wajib diisi.",
           lateMinutes,
           schedule: {
-            shift: user.shift?.name || "Tanpa Shift",
+            shift: effectiveShiftName || user.shift?.name || "Tanpa Shift",
             startTime,
             toleranceMinutes,
           },
@@ -994,7 +1025,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const storedPhoto = await storeCheckInPhoto(photoBuffer, userId);
+    const storedPhoto = await storeCheckInPhoto(photoBuffer);
 
     const checkInData = {
       check_in_time: now,
@@ -1035,78 +1066,70 @@ export async function POST(req: NextRequest) {
 
       attendance = await prisma.$transaction(async (tx) => {
         const savedAttendance = existingAttendance
-        ? await tx.attendance.update({
-            where: {
-              id: existingAttendance.id,
-            },
-            data: {
-              ...checkInData,
-              work_minutes: existingAttendance.work_minutes ?? 0,
-            },
-          })
-        : await tx.attendance.create({
+          ? await tx.attendance.update({
+              where: {
+                id: existingAttendance.id,
+              },
+              data: {
+                ...checkInData,
+                work_minutes: existingAttendance.work_minutes ?? 0,
+              },
+            })
+          : await tx.attendance.create({
+              data: {
+                user_id: userId,
+                attendance_date: today,
+                ...checkInData,
+                work_minutes: 0,
+              },
+            });
+
+        if (isVisitMode) {
+          await tx.employeeVisit.create({
             data: {
               user_id: userId,
-              attendance_date: today,
-              ...checkInData,
-              work_minutes: 0,
+              attendance_id: savedAttendance.id,
+              visit_date: today,
+              title: visitTitle,
+              client_name: visitClientName || null,
+              address: visitAddress,
+              latitude,
+              longitude,
+              accuracy,
+              start_time: now,
+              note: visitNote,
+              status: "ongoing",
             },
           });
+        }
 
-      if (isVisitMode) {
-        await tx.employeeVisit.create({
-          data: {
-            user_id: userId,
-            attendance_id: savedAttendance.id,
-            visit_date: today,
-            title: visitTitle,
-            client_name: visitClientName || null,
-            address: visitAddress,
-            latitude,
-            longitude,
-            accuracy,
-            start_time: now,
-            note: visitNote,
-            status: "ongoing",
-          },
-        });
-      }
+        if (isFlexibleMode) {
+          const modeLabel = getWorkModeLabel(workMode);
+          const employeeName = user.name || "Karyawan";
 
-      if (isFlexibleMode) {
-        const modeLabel = getWorkModeLabel(workMode);
-        const employeeName = user.name || "Karyawan";
-
-        await tx.adminNotification.create({
-          data: {
-            attendance_id: savedAttendance.id,
-            user_id: userId,
-            type: workMode,
-            title:
-              workMode === "visit"
-                ? "Karyawan melakukan kunjungan"
-                : `Karyawan ${modeLabel}`,
-            message:
-              workMode === "visit"
-                ? `${employeeName} check-in kunjungan di ${visitTitle}. Alamat: ${visitAddress || nearestLocationLabel}. Keperluan: ${visitNote}.`
-                : `${employeeName} check-in dengan mode ${modeLabel}. Lokasi: ${nearestLocationLabel}.`,
-            status: "unread",
-            is_read: false,
-          },
-        });
-      }
+          await tx.adminNotification.create({
+            data: {
+              attendance_id: savedAttendance.id,
+              user_id: userId,
+              type: workMode,
+              title:
+                workMode === "visit"
+                  ? "Karyawan melakukan kunjungan"
+                  : `Karyawan ${modeLabel}`,
+              message:
+                workMode === "visit"
+                  ? `${employeeName} check-in kunjungan di ${visitTitle}. Alamat: ${visitAddress || nearestLocationLabel}. Keperluan: ${visitNote}.`
+                  : `${employeeName} check-in dengan mode ${modeLabel}. Lokasi: ${nearestLocationLabel}.`,
+              status: "unread",
+              is_read: false,
+            },
+          });
+        }
 
         return savedAttendance;
       });
     } catch (databaseError) {
-      await deleteCloudinaryPhoto(storedPhoto.publicId);
       throw databaseError;
-    }
-
-    if (
-      existingAttendance?.check_in_photo_public_id &&
-      existingAttendance.check_in_photo_public_id !== storedPhoto.publicId
-    ) {
-      await deleteCloudinaryPhoto(existingAttendance.check_in_photo_public_id);
     }
 
     return NextResponse.json({
@@ -1129,12 +1152,12 @@ export async function POST(req: NextRequest) {
       isLateValidationSkipped: isVisitMode,
       schedule: shouldValidateLate
         ? {
-            shift: user.shift?.name || "Tanpa Shift",
+            shift: effectiveShiftName || user.shift?.name || "Tanpa Shift",
             startTime,
             toleranceMinutes,
           }
         : {
-            shift: user.shift?.name || "Tanpa Shift",
+            shift: effectiveShiftName || user.shift?.name || "Tanpa Shift",
             startTime: null,
             toleranceMinutes: 0,
             note: "Mode kunjungan tidak terikat jadwal shift dan toleransi keterlambatan.",

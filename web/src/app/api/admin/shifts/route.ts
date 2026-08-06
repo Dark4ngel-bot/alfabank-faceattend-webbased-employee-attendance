@@ -13,21 +13,29 @@ const defaultShifts = [
   {
     name: "UTAMA",
     tolerance_minutes: 3,
+    check_in_open: "07:00",
+    check_out_open: "16:50",
     status: "active",
   },
   {
     name: "MAGANG",
     tolerance_minutes: 0,
+    check_in_open: "07:00",
+    check_out_open: "16:50",
     status: "active",
   },
   {
     name: "SHIFT PAGI",
     tolerance_minutes: 5,
+    check_in_open: "06:30",
+    check_out_open: "15:20",
     status: "active",
   },
   {
     name: "SHIFT SIANG",
     tolerance_minutes: 5,
+    check_in_open: "11:00",
+    check_out_open: "20:50",
     status: "active",
   },
 ];
@@ -91,6 +99,8 @@ export async function GET(req: NextRequest) {
         id: true,
         name: true,
         tolerance_minutes: true,
+        check_in_open: true,
+        check_out_open: true,
         status: true,
         created_at: true,
         updated_at: true,
@@ -136,6 +146,8 @@ export async function PATCH(req: NextRequest) {
 
     const id = String(body.id || "");
     const toleranceMinutes = Number(body.tolerance_minutes ?? 0);
+    const checkInOpen = String(body.check_in_open || "07:00");
+    const checkOutOpen = String(body.check_out_open || "16:50");
     const status = String(body.status || "active");
 
     if (!id) {
@@ -189,12 +201,16 @@ export async function PATCH(req: NextRequest) {
       },
       data: {
         tolerance_minutes: toleranceMinutes,
+        check_in_open: checkInOpen,
+        check_out_open: checkOutOpen,
         status,
       },
       select: {
         id: true,
         name: true,
         tolerance_minutes: true,
+        check_in_open: true,
+        check_out_open: true,
         status: true,
         created_at: true,
         updated_at: true,

@@ -1,12 +1,11 @@
-import type { UploadApiResponse } from "cloudinary";
 import { Buffer } from "node:buffer";
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCloudinary } from "@/lib/cloudinary";
 import { isPhoneAttendanceRequest } from "@/lib/attendance-device";
 import { requireAuth } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
+import { getEffectiveShiftNameForDate } from "@/lib/shift-swap-schema";
 import {
   findActiveLeaveForDate,
   formatJakartaDate,
@@ -48,21 +47,15 @@ type ParsedAttendanceBody = {
   visitClientName: string;
   visitAddress: string;
   visitNote: string;
+  earlyLeaveReason: string;
 };
 
 type StoredAttendancePhoto =
-  | {
-      storage: "cloudinary";
-      data: null;
-      secureUrl: string;
-      publicId: string;
-    }
-  | {
-      storage: "database";
-      data: Uint8Array<ArrayBuffer>;
-      secureUrl: null;
-      publicId: null;
-    };
+  {
+    data: Uint8Array<ArrayBuffer>;
+    secureUrl: null;
+    publicId: null;
+  };
 
 async function getUserIdFromRequest(req: NextRequest) {
   const authUser = await requireAuth(req);
@@ -163,8 +156,8 @@ function getShiftDefaultCheckOutTime(shiftName?: string | null) {
   if (name.includes("SHIFT SIANG")) return "21:00";
   if (name.includes("SIANG")) return "21:00";
 
-  if (name.includes("SHIFT PAGI")) return "17:00";
-  if (name.includes("PAGI")) return "17:00";
+  if (name.includes("SHIFT PAGI")) return "15:30";
+  if (name.includes("PAGI")) return "15:30";
 
   if (name.includes("MAGANG")) return "17:00";
   if (name.includes("UTAMA")) return "17:00";
@@ -262,82 +255,14 @@ async function fileToBuffer(file: File) {
   };
 }
 
-async function uploadCheckOutPhoto(
-  photoBuffer: Uint8Array<ArrayBuffer>,
-  userId: string,
-): Promise<UploadApiResponse | null> {
-  let cloudinary: ReturnType<typeof getCloudinary>;
-
-  try {
-    cloudinary = getCloudinary();
-  } catch (error) {
-    console.warn("CHECK_OUT_CLOUDINARY_UNAVAILABLE:", error);
-    return null;
-  }
-
-  return new Promise<UploadApiResponse>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: "presensi/attendance/check-out",
-        public_id: `user-${userId}-${Date.now()}`,
-        resource_type: "image",
-        overwrite: false,
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        if (!result) {
-          reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
-          return;
-        }
-
-        resolve(result);
-      },
-    );
-
-    uploadStream.end(Buffer.from(photoBuffer));
-  });
-}
-
 async function storeCheckOutPhoto(
   photoBuffer: Uint8Array<ArrayBuffer>,
-  userId: string,
 ): Promise<StoredAttendancePhoto> {
-  const uploadedPhoto = await uploadCheckOutPhoto(photoBuffer, userId);
-
-  if (uploadedPhoto) {
-    return {
-      storage: "cloudinary",
-      data: null,
-      secureUrl: uploadedPhoto.secure_url,
-      publicId: uploadedPhoto.public_id,
-    };
-  }
-
   return {
-    storage: "database",
     data: photoBuffer,
     secureUrl: null,
     publicId: null,
   };
-}
-
-async function deleteCloudinaryPhoto(publicId: string | null | undefined) {
-  if (!publicId) return;
-
-  try {
-    const cloudinary = getCloudinary();
-
-    await cloudinary.uploader.destroy(publicId, {
-      resource_type: "image",
-      invalidate: true,
-    });
-  } catch (error) {
-    console.warn("DELETE_CHECK_OUT_PHOTO_WARNING:", error);
-  }
 }
 
 async function parseAttendanceBody(
@@ -392,6 +317,13 @@ async function parseAttendanceBody(
       "visitNote",
       "visitPurpose",
     ]);
+    const earlyLeaveReason = getFormText(formData, [
+      "earlyLeaveReason",
+      "early_leave_reason",
+      "checkOutReason",
+      "checkoutReason",
+      "reason",
+    ]);
 
     if (photo instanceof File) {
       const result = await fileToBuffer(photo);
@@ -407,6 +339,7 @@ async function parseAttendanceBody(
         visitClientName,
         visitAddress,
         visitNote,
+        earlyLeaveReason,
       };
     }
 
@@ -424,6 +357,7 @@ async function parseAttendanceBody(
         visitClientName,
         visitAddress,
         visitNote,
+        earlyLeaveReason,
       };
     }
 
@@ -438,6 +372,7 @@ async function parseAttendanceBody(
       visitClientName,
       visitAddress,
       visitNote,
+      earlyLeaveReason,
     };
   }
 
@@ -492,6 +427,13 @@ async function parseAttendanceBody(
       body.visitNote ??
       body.visitPurpose,
   );
+  const earlyLeaveReason = getText(
+    body.earlyLeaveReason ??
+      body.early_leave_reason ??
+      body.checkOutReason ??
+      body.checkoutReason ??
+      body.reason,
+  );
 
   if (!photoDataUrl) {
     return {
@@ -505,6 +447,7 @@ async function parseAttendanceBody(
       visitClientName,
       visitAddress,
       visitNote,
+      earlyLeaveReason,
     };
   }
 
@@ -521,6 +464,7 @@ async function parseAttendanceBody(
     visitClientName,
     visitAddress,
     visitNote,
+    earlyLeaveReason,
   };
 }
 
@@ -549,6 +493,7 @@ export async function POST(req: NextRequest) {
       visitClientName,
       visitAddress,
       visitNote,
+      earlyLeaveReason,
     } = await parseAttendanceBody(req);
 
     if (!photoBuffer) {
@@ -616,6 +561,10 @@ export async function POST(req: NextRequest) {
           select: {
             id: true,
             name: true,
+            start_time: true,
+            end_time: true,
+            check_in_open: true,
+            check_out_open: true,
             work_schedules: {
               select: {
                 id: true,
@@ -757,10 +706,7 @@ export async function POST(req: NextRequest) {
 
       const activeOffices = await prisma.officeLocation.findMany({
         where: { status: "active" },
-        orderBy: [
-          { id: officeId ? "asc" : "desc" },
-          { name: "asc" },
-        ],
+        orderBy: [{ id: officeId ? "asc" : "desc" }, { name: "asc" }],
         select: {
           id: true,
           name: true,
@@ -839,7 +785,9 @@ export async function POST(req: NextRequest) {
 
       const sortedOfficeGeofences = [
         registeredOfficeGeofence,
-        ...officeGeofences.filter((office) => office.id !== registeredOffice.id),
+        ...officeGeofences.filter(
+          (office) => office.id !== registeredOffice.id,
+        ),
       ];
 
       matchedOffice = findNearestValidOffice(
@@ -900,8 +848,35 @@ export async function POST(req: NextRequest) {
     }
 
     const todayName = getDayOfWeekEnum(now);
+    const effectiveShiftName = await getEffectiveShiftNameForDate(
+      userId,
+      today,
+      user.shift?.name,
+    );
+    const effectiveShift =
+      effectiveShiftName && effectiveShiftName !== user.shift?.name
+        ? await prisma.shift.findFirst({
+            where: { name: effectiveShiftName },
+            select: {
+              id: true,
+              name: true,
+              start_time: true,
+              end_time: true,
+              check_in_open: true,
+              check_out_open: true,
+              work_schedules: {
+                select: {
+                  id: true,
+                  day_of_week: true,
+                  is_work_day: true,
+                  check_out_time: true,
+                },
+              },
+            },
+          })
+        : user.shift;
 
-    const todaySchedule = user.shift?.work_schedules?.find((schedule) => {
+    const todaySchedule = effectiveShift?.work_schedules?.find((schedule) => {
       return String(schedule.day_of_week).toUpperCase() === todayName;
     });
 
@@ -914,7 +889,8 @@ export async function POST(req: NextRequest) {
 
     const scheduledCheckOutTime =
       normalizeScheduleTime(todaySchedule?.check_out_time) ||
-      getShiftDefaultCheckOutTime(user.shift?.name);
+      effectiveShift?.end_time ||
+      getShiftDefaultCheckOutTime(effectiveShiftName);
 
     const diffMs = now.getTime() - attendance.check_in_time.getTime();
     const workMinutes = diffMs > 0 ? Math.ceil(diffMs / 60000) : 0;
@@ -924,10 +900,24 @@ export async function POST(req: NextRequest) {
       scheduledCheckOutTime,
     );
 
+    if (earlyLeaveMinutes > 0 && !earlyLeaveReason) {
+      return NextResponse.json(
+        {
+          success: false,
+          requiresEarlyLeaveReason: true,
+          error:
+            "Checkout lebih awal membutuhkan alasan. Silakan isi alasan pulang cepat.",
+          message:
+            "Checkout lebih awal membutuhkan alasan. Silakan isi alasan pulang cepat.",
+        },
+        { status: 400 },
+      );
+    }
+
     const checkOutStatus =
       earlyLeaveMinutes > 0 ? ("EARLY" as const) : ("NORMAL" as const);
 
-    const storedPhoto = await storeCheckOutPhoto(photoBuffer, userId);
+    const storedPhoto = await storeCheckOutPhoto(photoBuffer);
 
     let updatedAttendance;
 
@@ -960,6 +950,7 @@ export async function POST(req: NextRequest) {
 
             work_minutes: workMinutes,
             early_leave_minutes: earlyLeaveMinutes,
+            early_leave_reason: earlyLeaveReason || null,
             check_out_status: checkOutStatus,
             activity_note: isFlexibleMode
               ? `Check-out: ${getWorkModeLabel(workMode)}`
@@ -1049,15 +1040,7 @@ export async function POST(req: NextRequest) {
         return savedAttendance;
       });
     } catch (databaseError) {
-      await deleteCloudinaryPhoto(storedPhoto.publicId);
       throw databaseError;
-    }
-
-    if (
-      attendance.check_out_photo_public_id &&
-      attendance.check_out_photo_public_id !== storedPhoto.publicId
-    ) {
-      await deleteCloudinaryPhoto(attendance.check_out_photo_public_id);
     }
 
     return NextResponse.json({
@@ -1087,7 +1070,7 @@ export async function POST(req: NextRequest) {
         accuracy: Math.round(accuracy),
       },
       schedule: {
-        shift: user.shift?.name || "Tanpa Shift",
+        shift: effectiveShiftName || user.shift?.name || "Tanpa Shift",
         scheduledCheckOutTime,
       },
       workMinutes,

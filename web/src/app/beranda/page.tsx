@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  ArrowLeftRight,
   Bell,
   PhoneCall,
   FileText,
@@ -80,26 +81,22 @@ const defaultAttendance: AttendanceToday = {
 const quickMenus = [
   {
     href: "/history",
-    label: "Laporan\nPresensi",
-    description: "Riwayat kehadiran",
+    label: "Riwayat Presensi",
     icon: History,
   },
   {
     href: "/presensi",
     label: "Presensi",
-    description: "Check-in/out",
     icon: ScanFace,
   },
   {
-    href: "/profil",
-    label: "Profil",
-    description: "Data akun",
-    icon: UserRound,
+    href: "/tukar-shift",
+    label: "Tukar Shift",
+    icon: ArrowLeftRight,
   },
   {
     href: "/cuti",
-    label: "Izin/Cuti",
-    description: "Ajukan izin",
+    label: "Ajukan Izin/Cuti",
     icon: FileText,
   },
 ];
@@ -367,8 +364,8 @@ function RoleBadges({ items }: { items: Array<string | undefined | null> }) {
 
 function QuickMenuGrid() {
   return (
-    <div className="grid grid-cols-4 gap-x-2 gap-y-3 md:grid-cols-4 md:gap-5">
-      {quickMenus.map(({ href, label, description, icon: Icon }, index) => (
+    <div className="grid grid-cols-4 gap-x-1.5 gap-y-3 md:grid-cols-4 md:gap-4">
+      {quickMenus.map(({ href, label, icon: Icon }, index) => (
         <Link
           key={href}
           href={href}
@@ -383,12 +380,8 @@ function QuickMenuGrid() {
             </div>
           </div>
 
-          <p className="mt-2 whitespace-pre-line text-[12px] font-bold leading-tight text-slate-600 md:mt-3 md:text-base">
+          <p className="mt-2 text-[12px] font-black leading-tight text-slate-800 md:mt-3 md:text-base">
             {label}
-          </p>
-
-          <p className="mt-2 hidden text-sm leading-6 text-slate-400 md:block">
-            {description}
           </p>
         </Link>
       ))}

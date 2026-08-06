@@ -1,0 +1,3 @@
+ALTER TABLE `Shift`
+  ADD COLUMN `check_in_open` VARCHAR(10) NOT NULL DEFAULT '07:00',
+  ADD COLUMN `check_out_open` VARCHAR(10) NOT NULL DEFAULT '16:50';

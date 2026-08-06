@@ -50,6 +50,7 @@ type EarlyCheckoutConfirm = {
   earlyMinutes: number;
   earlyLabel: string;
   endLabel: string;
+  reason: string;
 };
 
 type EarlyCheckinConfirm = {
@@ -57,6 +58,17 @@ type EarlyCheckinConfirm = {
   earlyMinutes: number;
   earlyLabel: string;
   startLabel: string;
+};
+
+type WorkSchedule = {
+  day_of_week?: string | null;
+  dayOfWeek?: string | null;
+  is_work_day?: boolean | null;
+  isWorkDay?: boolean | null;
+  check_in_time?: string | null;
+  checkInTime?: string | null;
+  check_out_time?: string | null;
+  checkOutTime?: string | null;
 };
 
 type VisitForm = {
@@ -75,6 +87,12 @@ type CurrentUser = {
     name?: string | null;
     tolerance_minutes?: number | null;
     toleranceMinutes?: number | null;
+    start_time?: string | null;
+    end_time?: string | null;
+    check_in_open?: string | null;
+    check_out_open?: string | null;
+    work_schedules?: WorkSchedule[] | null;
+    workSchedules?: WorkSchedule[] | null;
   } | null;
   wfh_quota_monthly?: number | null;
   wfh_quota_used_monthly?: number | null;
@@ -140,6 +158,7 @@ const emptyEarlyCheckoutConfirm: EarlyCheckoutConfirm = {
   earlyMinutes: 0,
   earlyLabel: "",
   endLabel: "",
+  reason: "",
 };
 
 const emptyEarlyCheckinConfirm: EarlyCheckinConfirm = {
@@ -293,13 +312,17 @@ function isMobileAttendanceDevice() {
     ) || /Android.+Mobile/i.test(userAgent);
   const isDesktopPlatform = /Mac|Win|Linux|CrOS/i.test(platform);
   const hasTouchInput =
-    navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches;
-  const isSmallScreen = Math.min(window.screen.width, window.screen.height) <= 820;
+    navigator.maxTouchPoints > 0 ||
+    window.matchMedia("(pointer: coarse)").matches;
+  const isSmallScreen =
+    Math.min(window.screen.width, window.screen.height) <= 820;
   const isMobileClientHint = userAgentData.userAgentData?.mobile === true;
 
   if (isDesktopPlatform) return false;
 
-  return hasTouchInput && isSmallScreen && (isPhoneUserAgent || isMobileClientHint);
+  return (
+    hasTouchInput && isSmallScreen && (isPhoneUserAgent || isMobileClientHint)
+  );
 }
 
 function normalizeCurrentUser(
@@ -331,10 +354,7 @@ async function readOptionalJson(response: Response) {
   }
 }
 
-function getResponseMessage(
-  data: Record<string, unknown>,
-  fallback: string,
-) {
+function getResponseMessage(data: Record<string, unknown>, fallback: string) {
   return String(data.message || data.error || fallback);
 }
 
@@ -396,23 +416,118 @@ function getAttendanceWorkMode(attendance: TodayAttendance | null): WorkMode {
   return "office";
 }
 
-function getShiftStartTime(shiftName?: string | null) {
-  const name = String(shiftName || "").toUpperCase();
+function getShiftStartTime(
+  shift?:
+    | string
+    | null
+    | {
+        name?: string | null;
+        start_time?: string | null;
+      },
+) {
+  if (shift && typeof shift !== "string" && shift.start_time) {
+    return shift.start_time;
+  }
 
-  if (name.includes("SHIFT SIANG") || name.includes("SIANG")) return "13:00";
+  const name = String(
+    typeof shift === "string" ? shift : shift?.name || "",
+  ).toUpperCase();
+
+  if (name.includes("SIANG")) return "13:00";
+  if (name.includes("PAGI")) return "07:30";
 
   return DEFAULT_SHIFT_START_TIME;
 }
 
+function getShiftEndTime(
+  shift?:
+    | string
+    | null
+    | {
+        name?: string | null;
+        end_time?: string | null;
+      },
+) {
+  if (shift && typeof shift !== "string" && shift.end_time) {
+    return shift.end_time;
+  }
+
+  const name = String(
+    typeof shift === "string" ? shift : shift?.name || "",
+  ).toUpperCase();
+
+  if (name.includes("SIANG")) return "21:00";
+  if (name.includes("PAGI")) return "15:30";
+
+  return DEFAULT_SHIFT_END_TIME;
+}
+
+function getJakartaDayOfWeek() {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Jakarta",
+    weekday: "long",
+  })
+    .format(new Date())
+    .toUpperCase();
+}
+
+function normalizeScheduleTime(value?: string | null) {
+  const text = String(value || "").trim();
+
+  return /^\d{2}:\d{2}/.test(text) ? text.slice(0, 5) : "";
+}
+
+function getTodayWorkSchedule(user: CurrentUser | null) {
+  const schedules =
+    user?.shift?.work_schedules || user?.shift?.workSchedules || [];
+  const today = getJakartaDayOfWeek();
+
+  return (
+    schedules.find((schedule) => {
+      const day = schedule.day_of_week || schedule.dayOfWeek || "";
+
+      return String(day).toUpperCase() === today;
+    }) || null
+  );
+}
+
 function getShiftToleranceMinutes(user: CurrentUser | null) {
   const tolerance =
-    user?.shift?.tolerance_minutes ?? user?.shift?.toleranceMinutes ?? 0;
+    user?.shift?.tolerance_minutes ?? user?.shift?.toleranceMinutes ?? 5;
 
   const parsedTolerance = Number(tolerance);
 
   return Number.isFinite(parsedTolerance) && parsedTolerance >= 0
     ? parsedTolerance
-    : 0;
+    : 5;
+}
+
+function getShiftStartTimeFromUser(user: CurrentUser | null) {
+  const schedule = getTodayWorkSchedule(user);
+  const scheduleStartTime = normalizeScheduleTime(
+    schedule?.check_in_time || schedule?.checkInTime,
+  );
+  const isWorkDay = schedule?.is_work_day ?? schedule?.isWorkDay;
+
+  if (scheduleStartTime && isWorkDay !== false) {
+    return scheduleStartTime;
+  }
+
+  return getShiftStartTime(user?.shift);
+}
+
+function getShiftEndTimeFromUser(user: CurrentUser | null) {
+  const schedule = getTodayWorkSchedule(user);
+  const scheduleEndTime = normalizeScheduleTime(
+    schedule?.check_out_time || schedule?.checkOutTime,
+  );
+  const isWorkDay = schedule?.is_work_day ?? schedule?.isWorkDay;
+
+  if (scheduleEndTime && isWorkDay !== false) {
+    return scheduleEndTime;
+  }
+
+  return getShiftEndTime(user?.shift);
 }
 
 function timeToMinutes(time: string) {
@@ -448,7 +563,7 @@ function getJakartaMinutesNow() {
 }
 
 function getLateLimitMinutes(user: CurrentUser | null) {
-  const startTime = getShiftStartTime(user?.shift?.name);
+  const startTime = getShiftStartTimeFromUser(user);
   const toleranceMinutes = getShiftToleranceMinutes(user);
 
   return timeToMinutes(startTime) + toleranceMinutes;
@@ -460,7 +575,8 @@ function getLateLimitLabel(user: CurrentUser | null) {
 
 function getEarlyCheckinMinutes(user: CurrentUser | null) {
   const nowMinutes = getJakartaMinutesNow();
-  const startMinutes = timeToMinutes(getShiftStartTime(user?.shift?.name));
+  const startTimeStr = getShiftStartTimeFromUser(user);
+  const startMinutes = timeToMinutes(startTimeStr);
 
   return nowMinutes < startMinutes ? startMinutes - nowMinutes : 0;
 }
@@ -472,17 +588,10 @@ function isLateCheckInNow(user: CurrentUser | null) {
   return nowMinutes > lateLimitMinutes;
 }
 
-function getShiftEndTime(shiftName?: string | null) {
-  const name = String(shiftName || "").toUpperCase();
-
-  if (name.includes("SHIFT SIANG") || name.includes("SIANG")) return "21:00";
-
-  return DEFAULT_SHIFT_END_TIME;
-}
-
 function getEarlyCheckoutMinutes(user: CurrentUser | null) {
   const nowMinutes = getJakartaMinutesNow();
-  const endMinutes = timeToMinutes(getShiftEndTime(user?.shift?.name));
+  const endTimeStr = getShiftEndTimeFromUser(user);
+  const endMinutes = timeToMinutes(endTimeStr);
 
   return nowMinutes < endMinutes ? endMinutes - nowMinutes : 0;
 }
@@ -1345,11 +1454,13 @@ function EarlyCheckoutConfirmModal({
   loading,
   onCancel,
   onConfirm,
+  onReasonChange,
 }: {
   confirm: EarlyCheckoutConfirm;
   loading: boolean;
   onCancel: () => void;
   onConfirm: () => void;
+  onReasonChange: (reason: string) => void;
 }) {
   if (!confirm.open) return null;
 
@@ -1427,6 +1538,20 @@ function EarlyCheckoutConfirmModal({
 
               <p className="mt-1 text-xs font-bold text-amber-700/75">
                 Format waktu ditampilkan dalam jam dan menit.
+              </p>
+            </div>
+
+            <div className="mt-5">
+              <AppTextarea
+                label="Alasan pulang cepat"
+                value={confirm.reason}
+                onChange={(event) => onReasonChange(event.target.value)}
+                placeholder="Masukkan alasan pulang cepat..."
+                className="min-h-24 rounded-[1.5rem]"
+                disabled={loading}
+              />
+              <p className="mt-2 text-xs text-slate-500">
+                Alasan ini akan tersimpan sebagai catatan admin.
               </p>
             </div>
 
@@ -1792,8 +1917,8 @@ export default function AttendancePage() {
     "Pilih mode presensi, aktifkan kamera, lalu izinkan lokasi GPS sebelum melakukan presensi.",
   );
 
-  const shiftStartTime = getShiftStartTime(currentUser?.shift?.name);
-  const shiftEndTime = getShiftEndTime(currentUser?.shift?.name);
+  const shiftStartTime = getShiftStartTimeFromUser(currentUser);
+  const shiftEndTime = getShiftEndTimeFromUser(currentUser);
   const shiftToleranceMinutes = getShiftToleranceMinutes(currentUser);
   const lateLimitLabel = getLateLimitLabel(currentUser);
 
@@ -1808,7 +1933,8 @@ export default function AttendancePage() {
     workMode === "visit" && (!hasCheckedInToday || lockedWorkMode === "office");
   const isLeaveBlocked = Boolean(leaveBlock?.active);
   const displayedWorkMinutes = getDisplayedWorkMinutes(todayAttendance);
-  const displayedWorkDuration = formatDurationHoursMinutes(displayedWorkMinutes);
+  const displayedWorkDuration =
+    formatDurationHoursMinutes(displayedWorkMinutes);
   const browserGuide =
     cameraPermissionDenied && cameraDeniedAttempts >= 3
       ? getCameraPermissionGuide()
@@ -2004,7 +2130,11 @@ export default function AttendancePage() {
 
     const remainingWfhQuota = getWfhQuotaRemaining(currentUser);
 
-    if (value === "wfh" && remainingWfhQuota !== null && remainingWfhQuota <= 0) {
+    if (
+      value === "wfh" &&
+      remainingWfhQuota !== null &&
+      remainingWfhQuota <= 0
+    ) {
       setSelectedWorkMode("office");
       setIsVisitModalOpen(false);
       setVisitForm(emptyVisitForm);
@@ -2015,10 +2145,7 @@ export default function AttendancePage() {
         "warning",
       );
 
-      safeSetStatus(
-        "WFH Tidak Tersedia",
-        "Kuota WFH bulan ini sudah habis.",
-      );
+      safeSetStatus("WFH Tidak Tersedia", "Kuota WFH bulan ini sudah habis.");
 
       return;
     }
@@ -2041,7 +2168,11 @@ export default function AttendancePage() {
 
   function validateVisitForm(mode = workModeRef.current) {
     if (mode !== "visit") return true;
-    if (hasCheckedInToday && !hasCheckedOutToday && lockedWorkMode === "visit") {
+    if (
+      hasCheckedInToday &&
+      !hasCheckedOutToday &&
+      lockedWorkMode === "visit"
+    ) {
       return true;
     }
 
@@ -2071,6 +2202,7 @@ export default function AttendancePage() {
       const response = await fetch("/api/auth/me", {
         method: "GET",
         cache: "no-store",
+        credentials: "same-origin",
       });
 
       const data = await readOptionalJson(response);
@@ -2085,6 +2217,7 @@ export default function AttendancePage() {
           await fetch("/api/auth/logout", {
             method: "POST",
             cache: "no-store",
+            credentials: "same-origin",
           }).catch(() => null);
 
           window.localStorage.removeItem("presensi_read_announcement_id");
@@ -2098,10 +2231,45 @@ export default function AttendancePage() {
         throw new Error(message);
       }
 
-      const user = normalizeCurrentUser(data as AuthMeResponse | CurrentUser);
+      let user = normalizeCurrentUser(data as AuthMeResponse | CurrentUser);
 
       if (!user) {
         throw new Error("Data user tidak valid.");
+      }
+
+      try {
+        const swapRes = await fetch("/api/shift-swaps", { cache: "no-store" });
+        if (swapRes.ok) {
+          const swapJson = await swapRes.json();
+          const todayDate = new Date();
+          const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, "0")}-${String(todayDate.getDate()).padStart(2, "0")}`;
+
+          const approvedSwap = [
+            ...(swapJson.sentRequests || []),
+            ...(swapJson.incomingRequests || []),
+          ].find(
+            (r: { status: string; swapDate: string }) =>
+              r.status === "approved" && r.swapDate === todayStr,
+          );
+
+          if (approvedSwap) {
+            const isTargetUser = approvedSwap.targetUser?.id === user.id;
+            const effectiveShiftName = isTargetUser
+              ? approvedSwap.requesterShiftName
+              : approvedSwap.targetShiftName;
+
+            user = {
+              ...user,
+              shift: {
+                ...user.shift,
+                id: user.shift?.id || "swapped-shift",
+                name: effectiveShiftName,
+              },
+            };
+          }
+        }
+      } catch {
+        // ignore error if swap check fails
       }
 
       if (mountedRef.current) {
@@ -2115,10 +2283,7 @@ export default function AttendancePage() {
           ? error.message
           : "Gagal mengambil data shift karyawan.";
 
-      safeSetStatus(
-        "Data Shift Belum Siap",
-        message,
-      );
+      safeSetStatus("Data Shift Belum Siap", message);
 
       return null;
     } finally {
@@ -2543,10 +2708,7 @@ export default function AttendancePage() {
         "Kuota WFH bulan ini sudah habis. Pilih mode Kantor atau hubungi admin.",
         "warning",
       );
-      safeSetStatus(
-        "Check-in WFH Ditolak",
-        "Kuota WFH bulan ini sudah habis.",
-      );
+      safeSetStatus("Check-in WFH Ditolak", "Kuota WFH bulan ini sudah habis.");
       return;
     }
 
@@ -2577,7 +2739,7 @@ export default function AttendancePage() {
     const earlyMinutes = getEarlyCheckinMinutes(user);
 
     if (earlyMinutes > 0) {
-      const startLabel = getShiftStartTime(user.shift?.name);
+      const startLabel = getShiftStartTimeFromUser(user);
       const earlyLabel = formatDurationHoursMinutes(earlyMinutes);
 
       setEarlyCheckinConfirm({
@@ -2669,7 +2831,7 @@ export default function AttendancePage() {
     const earlyMinutes = getEarlyCheckoutMinutes(user);
 
     if (earlyMinutes > 0) {
-      const endLabel = getShiftEndTime(user.shift?.name);
+      const endLabel = getShiftEndTimeFromUser(user);
       const earlyLabel = formatDurationHoursMinutes(earlyMinutes);
 
       setEarlyCheckoutConfirm({
@@ -2677,11 +2839,12 @@ export default function AttendancePage() {
         earlyMinutes,
         earlyLabel,
         endLabel,
+        reason: "",
       });
 
       safeSetStatus(
         "Checkout Lebih Awal",
-        `Kamu masih lebih awal ${earlyLabel} dari jam pulang ${endLabel}. Konfirmasi jika tetap ingin check-out.`,
+        `Kamu masih lebih awal ${earlyLabel} dari jam pulang ${endLabel}. Silakan isi alasan pulang cepat untuk melanjutkan check-out.`,
       );
 
       return;
@@ -2691,8 +2854,9 @@ export default function AttendancePage() {
   }
 
   async function confirmEarlyCheckout() {
+    const reason = earlyCheckoutConfirm.reason?.trim() ?? "";
     setEarlyCheckoutConfirm(emptyEarlyCheckoutConfirm);
-    await handleAttendance("check-out");
+    await handleAttendance("check-out", reason);
   }
 
   function handleSaveLateReason() {
@@ -2757,10 +2921,7 @@ export default function AttendancePage() {
         "Kuota WFH bulan ini sudah habis. Pilih mode Kantor atau hubungi admin.",
         "warning",
       );
-      safeSetStatus(
-        "Check-in WFH Ditolak",
-        "Kuota WFH bulan ini sudah habis.",
-      );
+      safeSetStatus("Check-in WFH Ditolak", "Kuota WFH bulan ini sudah habis.");
       return;
     }
 
@@ -2828,6 +2989,11 @@ export default function AttendancePage() {
       if (action === "check-in" && reason.trim()) {
         formData.append("lateReason", reason.trim());
         formData.append("late_reason", reason.trim());
+      }
+
+      if (action === "check-out" && reason.trim()) {
+        formData.append("earlyLeaveReason", reason.trim());
+        formData.append("early_leave_reason", reason.trim());
       }
 
       if (selectedWorkMode === "visit") {
@@ -2965,9 +3131,22 @@ export default function AttendancePage() {
                 Presensi Wajah
               </h1>
 
-              <p className="mt-1 text-xs font-bold text-slate-500">
-                Mode: {getWorkModeLabel(workMode)}
-              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-slate-500">
+                <span>Mode: {getWorkModeLabel(workMode)}</span>
+                {currentUser?.shift?.start_time && (
+                  <>
+                    <span>•</span>
+                    <span className="text-[#123c8c]">
+                      Jam: {currentUser.shift.start_time}-
+                      {currentUser.shift.end_time || "17:00"}
+                    </span>
+                    <span>•</span>
+                    <span className="text-[#123c8c]">
+                      Tol: {currentUser.shift.tolerance_minutes ?? 5}m
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
 
             <CameraStatusIcon
@@ -2992,10 +3171,6 @@ export default function AttendancePage() {
                 <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
                   Ambil Presensi
                 </h2>
-
-                <p className="mt-1 text-sm font-medium text-slate-500">
-                  Foto, GPS, dan mode presensi akan disimpan sebagai bukti.
-                </p>
               </div>
 
               <StatusPill
@@ -3151,7 +3326,11 @@ export default function AttendancePage() {
                     >
                       <RefreshCw
                         size={14}
-                        className={cameraStarting ? "animate-spin text-white" : "text-white"}
+                        className={
+                          cameraStarting
+                            ? "animate-spin text-white"
+                            : "text-white"
+                        }
                       />
                     </button>
 
@@ -3159,9 +3338,13 @@ export default function AttendancePage() {
                       type="button"
                       onClick={handleToggleCamera}
                       disabled={cameraStarting || loading}
-                      title={isCameraOffByUser ? "Nyalakan Kamera" : "Matikan Kamera"}
+                      title={
+                        isCameraOffByUser ? "Nyalakan Kamera" : "Matikan Kamera"
+                      }
                       className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/60 text-white backdrop-blur-md transition hover:bg-slate-900 active:scale-95 disabled:opacity-50"
-                      aria-label={isCameraOffByUser ? "Nyalakan Kamera" : "Matikan Kamera"}
+                      aria-label={
+                        isCameraOffByUser ? "Nyalakan Kamera" : "Matikan Kamera"
+                      }
                     >
                       {isCameraOffByUser ? (
                         <Camera size={14} className="text-[#ff8a00]" />
@@ -3190,7 +3373,9 @@ export default function AttendancePage() {
               </div>
             </div>
 
-            {browserGuide ? <CameraPermissionGuide guide={browserGuide} /> : null}
+            {browserGuide ? (
+              <CameraPermissionGuide guide={browserGuide} />
+            ) : null}
 
             <canvas ref={canvasRef} className="hidden" />
 
@@ -3297,7 +3482,9 @@ export default function AttendancePage() {
 
                 <InfoTile
                   title="Menit Kerja"
-                  icon={<BriefcaseBusiness size={22} className="text-[#123c8c]" />}
+                  icon={
+                    <BriefcaseBusiness size={22} className="text-[#123c8c]" />
+                  }
                 >
                   <div className="space-y-1">
                     <p className="font-black text-[#123456]">
@@ -3376,6 +3563,9 @@ export default function AttendancePage() {
           loading={loading}
           onCancel={() => setEarlyCheckoutConfirm(emptyEarlyCheckoutConfirm)}
           onConfirm={confirmEarlyCheckout}
+          onReasonChange={(reason) =>
+            setEarlyCheckoutConfirm((prev) => ({ ...prev, reason }))
+          }
         />
 
         {isLateReasonOpen ? (
