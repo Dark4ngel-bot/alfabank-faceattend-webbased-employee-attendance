@@ -186,10 +186,10 @@ export default function AdminSiteLogoPage() {
   }
 
   return (
-    <MobileShell variant="admin">
+    <MobileShell variant="admin" withBottomPadding={false}>
       <AppHeader title="Logo Aplikasi" variant="admin" />
 
-      <main className="min-h-[calc(100dvh-88px)] bg-[#f6f8ff] px-4 pb-24 pt-6 md:px-8 lg:px-16">
+      <main className="min-h-[calc(100dvh-88px)] bg-[#f6f8ff] px-4 pb-12 pt-6 md:px-8 md:pb-16 lg:px-16">
         <AppPageTransition className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[0.95fr_1.35fr]">
           <AppFormReveal delay={60} className="h-full">
             <section className="h-full rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
