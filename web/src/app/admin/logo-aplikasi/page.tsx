@@ -155,7 +155,7 @@ export default function AdminSiteLogoPage() {
   }
 
   async function handleResetLogo() {
-    if (!window.confirm("Kembalikan logo ke default AlfaBank?")) return;
+    if (!window.confirm("Kembalikan logo ke default Creativemu?")) return;
 
     try {
       setIsSaving(true);
@@ -186,20 +186,20 @@ export default function AdminSiteLogoPage() {
   }
 
   return (
-    <MobileShell variant="admin">
+    <MobileShell variant="admin" withBottomPadding={false}>
       <AppHeader title="Logo Aplikasi" variant="admin" />
 
-      <main className="min-h-[calc(100dvh-88px)] bg-[#f6f8ff] px-4 pb-24 pt-6 md:px-8 lg:px-16">
+      <main className="min-h-[calc(100dvh-88px)] bg-[#f6f8ff] px-4 pb-12 pt-6 md:px-8 md:pb-16 lg:px-16">
         <AppPageTransition className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[0.95fr_1.35fr]">
           <AppFormReveal delay={60} className="h-full">
-            <section className="h-full rounded-[1.5rem] border border-red-100 bg-white p-5 shadow-xl shadow-slate-200/50">
+            <section className="h-full rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fee2e2] text-[#b91c1c] ring-1 ring-red-100">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100">
                   <ImageIcon size={23} strokeWidth={2.7} />
                 </div>
 
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
                     Logo Aktif
                   </p>
                   <h2 className="text-xl font-black tracking-tight text-slate-950">
@@ -230,11 +230,11 @@ export default function AdminSiteLogoPage() {
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/svg+xml"
                     onChange={handleFileChange}
-                    className="mt-2 w-full rounded-2xl border border-red-100 bg-[#fef2f2] px-4 py-3 text-sm font-bold text-slate-800 file:mr-4 file:rounded-xl file:border-0 file:bg-[#b91c1c] file:px-3 file:py-2 file:text-xs file:font-black file:text-white focus:border-[#b91c1c] focus:bg-white focus:outline-none focus:ring-4 focus:ring-red-100"
+                    className="mt-2 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-800 file:mr-4 file:rounded-xl file:border-0 file:bg-[#123c8c] file:px-3 file:py-2 file:text-xs file:font-black file:text-white focus:border-[#123c8c] focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
                   />
                 </label>
 
-                <p className="rounded-2xl bg-[#fef2f2] px-4 py-3 text-xs font-bold leading-5 text-slate-500 ring-1 ring-red-100">
+                <p className="rounded-2xl bg-[#f8fbff] px-4 py-3 text-xs font-bold leading-5 text-slate-500 ring-1 ring-blue-100">
                   Format PNG, JPG, WEBP, atau SVG. Maksimal 2MB. Logo akan
                   otomatis menyesuaikan area panjang, kotak, dan background.
                 </p>
@@ -243,7 +243,7 @@ export default function AdminSiteLogoPage() {
                   <button
                     type="submit"
                     disabled={isSaving || !selectedFile}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isSaving ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -257,7 +257,7 @@ export default function AdminSiteLogoPage() {
                     type="button"
                     disabled={isSaving}
                     onClick={handleResetLogo}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-slate-800 ring-1 ring-slate-200 transition hover:bg-slate-100 hover:text-slate-950 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#123c8c] ring-1 ring-blue-100 transition hover:bg-[#eaf1ff] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <RotateCcw size={18} strokeWidth={2.7} />
                     Reset Default
@@ -268,10 +268,10 @@ export default function AdminSiteLogoPage() {
           </AppFormReveal>
 
           <AppFormReveal delay={140} className="h-full">
-            <section className="h-full rounded-[1.5rem] border border-red-100 bg-white p-5 shadow-xl shadow-slate-200/50">
+            <section className="h-full rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#b91c1c]">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
                     Preview
                   </p>
                   <h2 className="text-xl font-black tracking-tight text-slate-950">
@@ -286,7 +286,7 @@ export default function AdminSiteLogoPage() {
                 </div>
               ) : (
                 <div className="mt-6 grid gap-4">
-                  <div className="rounded-2xl border border-red-100 bg-[#fef2f2] p-4">
+                  <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4">
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
                       Logo Panjang
                     </p>
@@ -300,11 +300,11 @@ export default function AdminSiteLogoPage() {
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="rounded-2xl border border-red-100 bg-[#fef2f2] p-4">
+                    <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4">
                       <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
                         Logo Kotak
                       </p>
-                      <div className="mt-3 flex h-32 w-32 items-center justify-center overflow-hidden rounded-2xl bg-white p-3 shadow-lg shadow-slate-200/70 ring-1 ring-red-100">
+                      <div className="mt-3 flex h-32 w-32 items-center justify-center overflow-hidden rounded-2xl bg-white p-3 shadow-lg shadow-slate-200/70 ring-1 ring-blue-100">
                         <img
                           src={displayLogoSrc}
                           alt="Preview logo kotak"
@@ -313,14 +313,14 @@ export default function AdminSiteLogoPage() {
                       </div>
                     </div>
 
-                    <div className="relative min-h-44 overflow-hidden rounded-2xl border border-[#b91c1c]/20 bg-[#b91c1c] p-5 text-white">
+                    <div className="relative min-h-44 overflow-hidden rounded-2xl border border-[#123c8c]/20 bg-[#123c8c] p-5 text-white">
                       <img
                         src={displayLogoSrc}
                         alt=""
                         aria-hidden="true"
                         className="pointer-events-none absolute bottom-4 right-4 h-32 w-32 object-contain opacity-[0.08]"
                       />
-                      <p className="text-xs font-black uppercase tracking-[0.18em] text-red-100">
+                      <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-100">
                         Background Halus
                       </p>
                       <h3 className="mt-2 max-w-56 text-2xl font-black leading-tight">
