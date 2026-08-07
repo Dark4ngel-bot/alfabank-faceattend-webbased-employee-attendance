@@ -207,6 +207,7 @@ export default function AdminAppThemePage() {
       setTheme(nextTheme);
       setDefaultTheme(data.defaultTheme || DEFAULT_APP_THEME);
       applyAppTheme(nextTheme);
+      storeAppTheme(nextTheme);
       setFeedbackMessage(data.message || "Warna berhasil dikembalikan.");
       notifyAppThemeChanged();
     } catch (error) {
