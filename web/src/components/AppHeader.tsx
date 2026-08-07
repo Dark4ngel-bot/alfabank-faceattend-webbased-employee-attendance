@@ -608,8 +608,8 @@ export default function AppHeader({
                         type="button"
                         onClick={() => handleNavigate(menu.href)}
                         className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${active
-                            ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
-                            : "text-slate-600 hover:bg-[#eaf1ff] hover:text-[#123c8c]"
+                            ? "bg-[var(--app-primary,#123c8c)] text-white shadow-lg shadow-blue-900/20"
+                            : "text-slate-600 hover:bg-[var(--app-primary-soft,#eaf1ff)] hover:text-[var(--app-primary-text,#123c8c)]"
                           }`}
                       >
                         <Icon size={18} strokeWidth={2.5} />
@@ -620,7 +620,7 @@ export default function AppHeader({
                 </nav>
 
                 <div className="mt-6">
-                  <div className="flex items-center gap-3 rounded-2xl bg-[#f6f8ff] px-4 py-3 text-sm font-black text-[#123c8c]">
+                  <div className="flex items-center gap-3 rounded-2xl bg-[#f6f8ff] px-4 py-3 text-sm font-black text-[var(--app-primary-text,#123c8c)]">
                     <Settings size={18} strokeWidth={2.5} />
                     Master Data
                   </div>
@@ -636,8 +636,8 @@ export default function AppHeader({
                           type="button"
                           onClick={() => handleNavigate(menu.href)}
                           className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold transition ${active
-                              ? "bg-[#eaf1ff] text-[#123c8c]"
-                              : "text-slate-500 hover:bg-slate-50 hover:text-[#123c8c]"
+                              ? "bg-[var(--app-primary-soft,#eaf1ff)] text-[var(--app-primary-text,#123c8c)]"
+                              : "text-slate-500 hover:bg-slate-50 hover:text-[var(--app-primary-text,#123c8c)]"
                             }`}
                         >
                           <Icon size={15} strokeWidth={2.5} />
@@ -664,8 +664,8 @@ export default function AppHeader({
                           type="button"
                           onClick={() => handleNavigate(menu.href)}
                           className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${active
-                              ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
-                              : "text-slate-600 hover:bg-[#eaf1ff] hover:text-[#123c8c]"
+                              ? "bg-[var(--app-primary,#123c8c)] text-white shadow-lg shadow-blue-900/20"
+                              : "text-slate-600 hover:bg-[var(--app-primary-soft,#eaf1ff)] hover:text-[var(--app-primary-text,#123c8c)]"
                             }`}
                         >
                           <Icon size={18} strokeWidth={2.5} />
@@ -689,8 +689,8 @@ export default function AppHeader({
                         type="button"
                         onClick={() => handleNavigate(menu.href)}
                         className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-black transition ${active
-                            ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
-                            : "text-slate-600 hover:bg-[#eaf1ff] hover:text-[#123c8c]"
+                            ? "bg-[var(--app-primary,#123c8c)] text-white shadow-lg shadow-blue-900/20"
+                            : "text-slate-600 hover:bg-[var(--app-primary-soft,#eaf1ff)] hover:text-[var(--app-primary-text,#123c8c)]"
                           }`}
                       >
                         <Icon size={18} strokeWidth={2.5} />
