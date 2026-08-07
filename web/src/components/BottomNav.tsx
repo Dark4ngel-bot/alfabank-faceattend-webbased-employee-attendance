@@ -124,8 +124,8 @@ function NavItem({
       className={cn(
         "relative flex h-[4.05rem] w-full min-w-0 flex-col items-center justify-center gap-1 rounded-[1.25rem] text-[11px] font-black transition-all duration-300 active:scale-[0.96]",
         active
-          ? "bg-[#123c8c] text-white shadow-xl shadow-blue-900/25"
-          : "text-slate-400 hover:bg-[#f6f8ff] hover:text-[#123c8c]",
+          ? "bg-[var(--app-primary,#123c8c)] text-white shadow-xl shadow-blue-900/25"
+          : "text-slate-400 hover:bg-[#f6f8ff] hover:text-[var(--app-primary-text,#123c8c)]",
       )}
     >
       {active ? (

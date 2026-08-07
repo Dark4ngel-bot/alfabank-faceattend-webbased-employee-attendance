@@ -14,12 +14,12 @@ function cn(...classes: Array<string | false | null | undefined>) {
 
 const buttonVariantClass: Record<Variant, string> = {
   primary:
-    "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 hover:bg-[#0f347a]",
+    "bg-[var(--app-primary,#123c8c)] text-white shadow-lg shadow-blue-900/20 hover:bg-[var(--app-primary-hover,#0f347a)]",
   secondary:
-    "border border-blue-100 bg-white text-[#123c8c] shadow-sm hover:bg-blue-50",
+    "border border-blue-100 bg-white text-[var(--app-primary-text,#123c8c)] shadow-sm hover:bg-[var(--app-primary-soft,#eaf1ff)]",
   danger: "bg-rose-50 text-rose-600 ring-1 ring-rose-100 hover:bg-rose-100",
-  ghost: "bg-transparent text-[#123c8c] hover:bg-blue-50",
-  soft: "bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100 hover:bg-blue-100",
+  ghost: "bg-transparent text-[var(--app-primary-text,#123c8c)] hover:bg-[var(--app-primary-soft,#eaf1ff)]",
+  soft: "bg-[var(--app-primary-soft,#eaf1ff)] text-[var(--app-primary-text,#123c8c)] ring-1 ring-blue-100 hover:bg-[var(--app-primary-subtle,#f8fbff)]",
 };
 
 const buttonSizeClass: Record<Size, string> = {
