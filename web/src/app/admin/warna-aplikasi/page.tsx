@@ -39,28 +39,34 @@ type AppThemeResponse = {
 const colorFields: Array<{
   key: keyof AppThemeSettings;
   label: string;
+  description: string;
 }> = [
-  {
-    key: "primaryColor",
-    label: "Warna Utama",
-  },
-  {
-    key: "primaryHoverColor",
-    label: "Warna Hover",
-  },
-  {
-    key: "softColor",
-    label: "Warna Muda",
-  },
-  {
-    key: "subtleColor",
-    label: "Warna Latar Halus",
-  },
-  {
-    key: "textColor",
-    label: "Warna Tulisan Biru",
-  },
-];
+    {
+      key: "primaryColor",
+      label: "Warna Utama (Tombol & Header)",
+      description: "Digunakan pada latar belakang tombol utama, kartu aktif, dan elemen dominan.",
+    },
+    {
+      key: "primaryHoverColor",
+      label: "Warna Hover Tombol",
+      description: "Warna saat tombol utama ditunjuk (hover) oleh kursor.",
+    },
+    {
+      key: "softColor",
+      label: "Warna Latar Soft / Muda",
+      description: "Digunakan pada badge, background ikon, dan tombol tipe soft.",
+    },
+    {
+      key: "subtleColor",
+      label: "Warna Latar Tipis / Halus",
+      description: "Warna latar belakang alternatif yang sangat lembut untuk area pendukung.",
+    },
+    {
+      key: "textColor",
+      label: "Warna Teks & Ikon Tema",
+      description: "Digunakan pada teks utama bertema, judul kartu, dan ikon penjelas.",
+    },
+  ];
 
 async function readJsonResponse(response: Response) {
   const text = await response.text();
@@ -207,6 +213,7 @@ export default function AdminAppThemePage() {
       setTheme(nextTheme);
       setDefaultTheme(data.defaultTheme || DEFAULT_APP_THEME);
       applyAppTheme(nextTheme);
+      storeAppTheme(nextTheme);
       setFeedbackMessage(data.message || "Warna berhasil dikembalikan.");
       notifyAppThemeChanged();
     } catch (error) {
@@ -271,6 +278,9 @@ export default function AdminAppThemePage() {
                         <span className="block text-sm font-black text-slate-800">
                           {field.label}
                         </span>
+                        <span className="mt-0.5 block text-xs font-semibold text-slate-500">
+                          {field.description}
+                        </span>
                       </span>
 
                       <span className="flex items-center gap-3">
@@ -332,28 +342,61 @@ export default function AdminAppThemePage() {
                 Contoh Tampilan
               </h2>
 
-              <div className="mt-5 overflow-hidden rounded-3xl bg-[#123c8c] p-5 text-white shadow-2xl shadow-blue-900/20">
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-blue-100">
+              <div
+                className="mt-5 overflow-hidden rounded-3xl p-5 text-white shadow-2xl shadow-blue-900/20 transition-colors duration-200"
+                style={{ backgroundColor: theme.primaryColor }}
+              >
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-white/80">
                   Check-in
                 </p>
                 <h3 className="mt-2 text-2xl font-black">Presensi Hari Ini</h3>
-                <p className="mt-2 text-sm font-bold text-blue-100">
-                  Warna utama mengikuti pilihan admin.
-                </p>
               </div>
 
               <div className="mt-4 grid grid-cols-2 overflow-hidden rounded-2xl border border-blue-100 bg-white">
-                <div className="bg-[#eaf1ff] px-4 py-4 text-center text-sm font-black uppercase tracking-[0.12em] text-[#123c8c]">
+                <div
+                  className="px-4 py-4 text-center text-sm font-black uppercase tracking-[0.12em] transition-colors duration-200"
+                  style={{
+                    backgroundColor: theme.softColor,
+                    color: theme.textColor,
+                  }}
+                >
                   Check-in
                 </div>
-                <div className="px-4 py-4 text-center text-sm font-black uppercase tracking-[0.12em] text-[#123c8c]">
+                <div
+                  className="px-4 py-4 text-center text-sm font-black uppercase tracking-[0.12em] transition-colors duration-200"
+                  style={{ color: theme.textColor }}
+                >
                   Check-out
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-blue-100 bg-[#f8fbff] p-4">
-                <p className="text-sm font-black text-[#123c8c]">
-                  Tulisan biru juga ikut berubah.
+              <div className="mt-4">
+                <button
+                  type="button"
+                  className="w-full rounded-2xl px-5 py-3.5 text-sm font-black text-white shadow-lg transition-all duration-200 active:scale-[0.98]"
+                  style={{
+                    backgroundColor: theme.primaryColor,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = theme.primaryHoverColor;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = theme.primaryColor;
+                  }}
+                >
+                  Hover Tombol Ini (Uji Warna Hover)
+                </button>
+              </div>
+
+              <div
+                className="mt-4 rounded-2xl border border-blue-100 p-4 transition-colors duration-200"
+                style={{ backgroundColor: theme.subtleColor }}
+              >
+                <p
+                  className="text-sm font-black transition-colors duration-200"
+                  style={{ color: theme.textColor }}
+                >
+                  Tulisan & latar halus ikut berubah.
                 </p>
                 <p className="mt-1 text-xs font-bold leading-5 text-slate-500">
                   Default: {defaultTheme.primaryColor}

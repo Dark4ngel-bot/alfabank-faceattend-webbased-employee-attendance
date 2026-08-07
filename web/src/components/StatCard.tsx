@@ -10,9 +10,9 @@ type StatCardProps = {
 
 const toneClass = {
   blue: {
-    border: "border-slate-200",
-    icon: "bg-slate-100 text-slate-700",
-    badge: "bg-slate-900",
+    border: "border-blue-100",
+    icon: "bg-[var(--app-primary-soft,#eaf1ff)] text-[var(--app-primary-text,#123c8c)]",
+    badge: "bg-[var(--app-primary,#123c8c)]",
   },
   orange: {
     border: "border-orange-100",
