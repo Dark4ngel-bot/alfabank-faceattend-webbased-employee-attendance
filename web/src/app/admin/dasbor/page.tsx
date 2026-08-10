@@ -3,13 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  CalendarOff,
   ChevronDown,
   Clock3,
   Eye,
+  FileText,
   LayoutDashboard,
   Loader2,
   LogIn,
   LogOut,
+  Stethoscope,
   UserRound,
   UsersRound,
 } from "lucide-react";
@@ -23,6 +26,9 @@ type DashboardStats = {
   checkOutToday: number;
   lateToday: number;
   absentToday: number;
+  izinToday?: number;
+  sakitToday?: number;
+  cutiToday?: number;
 };
 
 type RecentAttendance = {
@@ -78,11 +84,11 @@ function normalizeProfilePhotoUrl(value: string | null | undefined) {
 function getDashboardProfilePhoto(item: RecentAttendance) {
   return normalizeProfilePhotoUrl(
     item.profilePhoto ||
-      item.profile_photo ||
-      item.profile_photo_url ||
-      item.photo_url ||
-      item.avatar_url ||
-      "",
+    item.profile_photo ||
+    item.profile_photo_url ||
+    item.photo_url ||
+    item.avatar_url ||
+    "",
   );
 }
 
@@ -249,9 +255,8 @@ function MobileAttendanceCard({
             <ChevronDown
               size={22}
               strokeWidth={3}
-              className={`text-[#123c8c] transition duration-200 ${
-                isOpen ? "rotate-180" : ""
-              }`}
+              className={`text-[#123c8c] transition duration-200 ${isOpen ? "rotate-180" : ""
+                }`}
             />
           </button>
         </div>
@@ -416,24 +421,49 @@ export default function AdminDashboardPage() {
         value: String(dashboardStats?.totalEmployees ?? 0),
         description: "Karyawan aktif",
         icon: UsersRound,
+        color: "text-[#123c8c]",
       },
       {
         label: "Check-in",
         value: String(dashboardStats?.checkInToday ?? 0),
-        description: "Sudah masuk hari ini",
+        description: "Sudah masuk",
         icon: LogIn,
+        color: "text-emerald-600",
       },
       {
         label: "Check-out",
         value: String(dashboardStats?.checkOutToday ?? 0),
-        description: "Sudah keluar hari ini",
+        description: "Sudah keluar",
         icon: LogOut,
+        color: "text-blue-600",
       },
       {
         label: "Terlambat",
         value: String(dashboardStats?.lateToday ?? 0),
         description: "Telat masuk",
         icon: Clock3,
+        color: "text-amber-600",
+      },
+      {
+        label: "Izin",
+        value: String(dashboardStats?.izinToday ?? 0),
+        description: "Izin tidak masuk",
+        icon: FileText,
+        color: "text-orange-600",
+      },
+      {
+        label: "Sakit",
+        value: String(dashboardStats?.sakitToday ?? 0),
+        description: "Surat izin sakit",
+        icon: Stethoscope,
+        color: "text-rose-600",
+      },
+      {
+        label: "Cuti",
+        value: String(dashboardStats?.cutiToday ?? 0),
+        description: "Sedang cuti",
+        icon: CalendarOff,
+        color: "text-purple-600",
       },
     ];
   }, [data]);
@@ -446,54 +476,54 @@ export default function AdminDashboardPage() {
 
       <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
         <div className="dashboard-enter overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
-          <div className="grid gap-0 lg:grid-cols-[1fr_1fr]">
-            <div className="bg-[#123c8c] p-6 text-white md:p-8">
+          <div className="grid gap-0 lg:grid-cols-[260px_1fr]">
+            <div className="bg-[#123c8c] p-6 text-white md:p-8 flex flex-col justify-center">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
                   <LayoutDashboard size={25} strokeWidth={2.6} />
                 </div>
 
                 <div>
-                  <h2 className="mt-1 text-3xl font-black tracking-tight md:text-4xl">
+                  <h2 className="text-2xl font-black tracking-tight md:text-3xl">
                     Ringkasan Presensi
                   </h2>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 p-5 md:p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 p-3.5 md:p-5">
               {stats.map((item, index) => {
                 const Icon = item.icon;
 
                 return (
                   <div
                     key={`${item.label}-${index}`}
-                    className="dashboard-row-enter rounded-2xl border border-blue-100 bg-[#f6f8ff] p-4 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-lg hover:shadow-slate-200/60"
+                    className="dashboard-row-enter rounded-2xl border border-blue-100/80 bg-[#f6f8ff] p-3 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-md hover:shadow-slate-200/60"
                     style={{
-                      animationDelay: `${index * 70}ms`,
+                      animationDelay: `${index * 40}ms`,
                     }}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs font-bold text-slate-500">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[11px] font-bold text-slate-500 truncate">
                         {item.label}
                       </p>
 
                       <Icon
-                        size={20}
+                        size={15}
                         strokeWidth={2.5}
-                        className="text-[#123c8c]"
+                        className={item.color || "text-[#123c8c]"}
                       />
                     </div>
 
                     {isLoading ? (
-                      <div className="mt-4 h-8 w-16 animate-pulse rounded-xl bg-blue-100" />
+                      <div className="mt-2.5 h-6 w-12 animate-pulse rounded-lg bg-blue-100" />
                     ) : (
-                      <h3 className="mt-3 text-3xl font-black text-[#123c8c]">
+                      <h3 className={`mt-2 text-xl md:text-2xl font-black ${item.color || "text-[#123c8c]"}`}>
                         {item.value}
                       </h3>
                     )}
 
-                    <p className="mt-1 text-xs font-semibold text-slate-500">
+                    <p className="mt-0.5 text-[10px] font-semibold text-slate-400 truncate">
                       {item.description}
                     </p>
                   </div>
@@ -566,23 +596,32 @@ export default function AdminDashboardPage() {
 
                       <div className="grid grid-cols-3 gap-2 text-xs font-bold text-slate-500 md:w-[320px] md:shrink-0">
                         <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
-                          <p className="text-[11px] font-bold text-slate-400">Masuk</p>
+                          <p className="text-[11px] font-bold text-slate-400">
+                            Masuk
+                          </p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
                             {formatTime(item.checkInTime)}
                           </p>
                         </div>
 
                         <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
-                          <p className="text-[11px] font-bold text-slate-400">Keluar</p>
+                          <p className="text-[11px] font-bold text-slate-400">
+                            Keluar
+                          </p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
                             {formatTime(item.checkOutTime)}
                           </p>
                         </div>
 
                         <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
-                          <p className="text-[11px] font-bold text-slate-400">Durasi</p>
+                          <p className="text-[11px] font-bold text-slate-400">
+                            Durasi
+                          </p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
-                            {formatMinutes(item.workMinutes, Boolean(item.checkOutTime))}
+                            {formatMinutes(
+                              item.workMinutes,
+                              Boolean(item.checkOutTime),
+                            )}
                           </p>
                         </div>
                       </div>

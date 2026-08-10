@@ -202,6 +202,36 @@ export async function GET(req: NextRequest) {
       (attendance) => !attendance.checkInTime,
     ).length;
 
+    let izinToday = 0;
+    let sakitToday = 0;
+    let cutiToday = 0;
+
+    try {
+      const todayLeaves = await prisma.leaveRequest.findMany({
+        where: {
+          status: { in: ["approved", "APPROVED"] },
+          start_date: { lte: today },
+          end_date: { gte: today },
+        },
+        select: {
+          leave_type: true,
+        },
+      });
+
+      for (const leave of todayLeaves) {
+        const type = String(leave.leave_type || "").toLowerCase();
+        if (type.includes("sakit") || type.includes("sick")) {
+          sakitToday++;
+        } else if (type.includes("cuti") || type.includes("leave")) {
+          cutiToday++;
+        } else {
+          izinToday++;
+        }
+      }
+    } catch {
+      // Graceful fallback if leave table is empty or missing
+    }
+
     return NextResponse.json({
       stats: {
         totalEmployees: employees.length,
@@ -209,6 +239,9 @@ export async function GET(req: NextRequest) {
         checkOutToday,
         lateToday,
         absentToday,
+        izinToday,
+        sakitToday,
+        cutiToday,
       },
       recentAttendance: sortedRecentAttendance,
     });
