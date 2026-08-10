@@ -64,9 +64,48 @@ export async function GET(req: NextRequest) {
       return allowedKeywords.some((kw) => shiftName.includes(kw));
     });
 
+    const activeShifts = await prisma.shift.findMany({
+      where: {
+        status: { in: ["active", "ACTIVE"] },
+      },
+      select: {
+        id: true,
+        name: true,
+        start_time: true,
+        end_time: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    // Make sure Shift Siang is always available as a fallback option if not present in DB
+    let shiftOptions = activeShifts.map((s) => ({
+      id: s.id,
+      name: s.name,
+      startTime: s.start_time,
+      endTime: s.end_time,
+    }));
+
+    const currentShift = currentUser?.shift?.name || "Shift Utama";
+
+    if (!shiftOptions.some((s) => s.name.toLowerCase().includes("siang"))) {
+      shiftOptions.push({
+        id: "shift-siang-default",
+        name: "Shift Siang",
+        startTime: "12:00",
+        endTime: "21:00",
+      });
+    }
+
+    // Filter out current user shift from options
+    shiftOptions = shiftOptions.filter(
+      (s) => s.name.toUpperCase() !== userShiftName,
+    );
+
     return NextResponse.json({
       success: true,
-      currentShiftName: currentUser?.shift?.name || "Shift Utama",
+      currentShiftName: currentShift,
       colleagues: filtered.map((col) => ({
         id: col.id,
         name: col.name,
@@ -74,6 +113,7 @@ export async function GET(req: NextRequest) {
         profilePhoto: col.profile_photo,
         shiftName: col.shift?.name || "Shift Utama",
       })),
+      availableShifts: shiftOptions,
     });
   } catch (error) {
     console.error("GET_SHIFT_SWAP_COLLEAGUES_ERROR:", error);

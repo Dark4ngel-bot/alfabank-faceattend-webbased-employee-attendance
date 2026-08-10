@@ -63,21 +63,7 @@ export async function PATCH(
       data: { status: newStatus },
     });
 
-    if (action === "approve") {
-      const reqShiftId = swapRequest.requester.shift_id;
-      const targetShiftId = swapRequest.target_user.shift_id;
-
-      if (reqShiftId && targetShiftId) {
-        await prisma.user.update({
-          where: { id: swapRequest.requester_id },
-          data: { shift_id: targetShiftId },
-        });
-        await prisma.user.update({
-          where: { id: swapRequest.target_user_id },
-          data: { shift_id: reqShiftId },
-        });
-      }
-    }
+    // Swap status updated. Effective shift for the date will be handled dynamically by getEffectiveShiftNameForDate without permanently mutating user default shift.
 
     try {
       await prisma.adminNotification.create({

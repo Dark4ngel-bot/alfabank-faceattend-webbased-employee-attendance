@@ -7,9 +7,11 @@ import {
   Calendar,
   CheckCircle2,
   ChevronDown,
+  Clock,
   Loader2,
   MessageSquare,
   Send,
+  Sparkles,
   Users,
   X,
   XCircle,
@@ -26,8 +28,16 @@ type Colleague = {
   shiftName: string;
 };
 
+type AvailableShift = {
+  id: string;
+  name: string;
+  startTime?: string | null;
+  endTime?: string | null;
+};
+
 type SwapRequest = {
   id: string;
+  isSelfShift?: boolean;
   targetUser?: {
     id: string;
     name: string;
@@ -106,12 +116,15 @@ function getStatusConfig(status: string) {
 }
 
 export default function TukarShiftPage() {
+  const [formMode, setFormMode] = useState<"swap" | "self">("self");
   const [currentShiftName, setCurrentShiftName] = useState("Shift Utama");
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
+  const [availableShifts, setAvailableShifts] = useState<AvailableShift[]>([]);
   const [sentRequests, setSentRequests] = useState<SwapRequest[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<SwapRequest[]>([]);
 
   const [targetUserId, setTargetUserId] = useState("");
+  const [targetShiftName, setTargetShiftName] = useState("Shift Siang");
   const [swapDate, setSwapDate] = useState(() => getTodayString());
   const [reason, setReason] = useState("");
 
@@ -144,6 +157,13 @@ export default function TukarShiftPage() {
 
       if (colJson.success) {
         setColleagues(colJson.colleagues || []);
+        const shifts: AvailableShift[] = colJson.availableShifts || [];
+        setAvailableShifts(shifts);
+
+        if (shifts.length > 0) {
+          const pref = shifts.find((s) => s.name.toLowerCase().includes("siang"));
+          setTargetShiftName(pref ? pref.name : shifts[0].name);
+        }
       }
     } catch (err) {
       console.error("LOAD_SWAP_DATA_ERROR:", err);
@@ -160,8 +180,13 @@ export default function TukarShiftPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    if (!targetUserId || !swapDate) {
+    if (formMode === "swap" && (!targetUserId || !swapDate)) {
       setAlertState({ type: "warning", message: "Pilih rekan kerja dan tanggal tukar shift." });
+      return;
+    }
+
+    if (formMode === "self" && (!targetShiftName || !swapDate)) {
+      setAlertState({ type: "warning", message: "Pilih shift tujuan dan tanggal geser shift." });
       return;
     }
 
@@ -169,10 +194,15 @@ export default function TukarShiftPage() {
       setIsSubmitting(true);
       setAlertState(null);
 
+      const payload =
+        formMode === "self"
+          ? { mode: "self", targetShiftName, swapDate, reason }
+          : { mode: "swap", targetUserId, swapDate, reason };
+
       const res = await fetch("/api/shift-swaps", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetUserId, swapDate, reason }),
+        body: JSON.stringify(payload),
       });
 
       const json = await res.json();
@@ -182,7 +212,7 @@ export default function TukarShiftPage() {
         return;
       }
 
-      setAlertState({ type: "success", message: json.message || "Pengajuan berhasil dikirim!" });
+      setAlertState({ type: "success", message: json.message || "Pengajuan berhasil diproses!" });
       setTargetUserId("");
       setReason("");
       if (typeof window !== "undefined") {
@@ -238,7 +268,7 @@ export default function TukarShiftPage() {
 
   return (
     <MobileShell variant="employee">
-      <AppHeader title="Tukar Shift" rightLabel="Tukar Shift" />
+      <AppHeader title="Kelola Shift" rightLabel="Shift Kerja" />
 
       {alertState ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/20 px-5 backdrop-blur-[2px]">
@@ -296,8 +326,8 @@ export default function TukarShiftPage() {
 
                 <h2 className="mt-6 text-3xl font-black leading-tight text-slate-950">
                   {alertState.type === "success"
-                    ? "Pengajuan berhasil"
-                    : "Tukar shift tidak bisa"}
+                    ? "Proses Berhasil"
+                    : "Tidak Dapat Diproses"}
                 </h2>
 
                 <p className="mt-5 text-lg font-bold leading-8 text-slate-500">
@@ -411,14 +441,20 @@ export default function TukarShiftPage() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-                    <ArrowLeftRight size={20} className="text-white" strokeWidth={2.5} />
+                    {formMode === "self" ? (
+                      <Clock size={20} className="text-white" strokeWidth={2.5} />
+                    ) : (
+                      <ArrowLeftRight size={20} className="text-white" strokeWidth={2.5} />
+                    )}
                   </div>
                   <div>
                     <h2 className="text-base font-black text-white">
-                      Ajukan Tukar Shift
+                      {formMode === "self" ? "Geser Shift Mandiri" : "Tukar Shift Rekan"}
                     </h2>
                     <p className="text-xs font-semibold text-blue-200">
-                      Pilih rekan kerja & tanggal
+                      {formMode === "self"
+                        ? "Ubah jam kerja tanpa tukar rekan"
+                        : "Tukar jam kerja dengan rekan lain"}
                     </p>
                   </div>
                 </div>
@@ -427,46 +463,120 @@ export default function TukarShiftPage() {
                   <p className="text-xs font-black text-white">{currentShiftName}</p>
                 </div>
               </div>
+
+              {/* Mode Selector Tabs */}
+              <div className="mt-4 flex rounded-2xl bg-black/20 p-1 backdrop-blur-md">
+                <button
+                  type="button"
+                  onClick={() => setFormMode("self")}
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-black transition ${
+                    formMode === "self"
+                      ? "bg-white text-[#123c8c] shadow-md"
+                      : "text-blue-100 hover:text-white"
+                  }`}
+                >
+                  <Clock size={14} />
+                  Geser Shift Mandiri
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormMode("swap")}
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-black transition ${
+                    formMode === "swap"
+                      ? "bg-white text-[#123c8c] shadow-md"
+                      : "text-blue-100 hover:text-white"
+                  }`}
+                >
+                  <Users size={14} />
+                  Tukar Shift Rekan
+                </button>
+              </div>
             </div>
 
             {/* Form Fields */}
             <div className="space-y-4 p-5">
-              {/* Rekan Kerja */}
-              <div>
-                <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
-                  <Users size={12} />
-                  Rekan Kerja Tujuan
-                </label>
-                <div className="relative">
-                  <select
-                    value={targetUserId}
-                    onChange={(e) => setTargetUserId(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-3.5 pr-10 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
-                  >
-                    <option value="">Pilih rekan kerja...</option>
-                    {colleagues.map((col) => (
-                      <option key={col.id} value={col.id}>
-                        {col.name} — {col.shiftName}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    size={16}
-                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
+              {formMode === "self" ? (
+                /* Mode Geser Shift Mandiri */
+                <div className="space-y-4">
+                  <div className="rounded-2xl border border-purple-100 bg-purple-50/60 p-3.5 text-xs font-semibold text-purple-900">
+                    <div className="flex items-center gap-2 font-bold text-purple-950">
+                      <Sparkles size={15} className="text-purple-600" />
+                      Khusus Karyawan Utama
+                    </div>
+                    <p className="mt-1 text-[11px] leading-relaxed text-purple-700">
+                      Jika ada keperluan di pagi hari, kamu dapat menggeser jam kerja hari itu ke <strong>Shift Siang</strong> tanpa harus bertukar jadwal dengan karyawan lain.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
+                      <Clock size={12} />
+                      Pilih Shift Tujuan
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={targetShiftName}
+                        onChange={(e) => setTargetShiftName(e.target.value)}
+                        className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-3.5 pr-10 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                      >
+                        {availableShifts.length > 0 ? (
+                          availableShifts.map((s) => (
+                            <option key={s.id} value={s.name}>
+                              {s.name} {s.startTime && s.endTime ? `(${s.startTime} - ${s.endTime})` : ""}
+                            </option>
+                          ))
+                        ) : (
+                          <>
+                            <option value="Shift Siang">Shift Siang (12:00 - 21:00)</option>
+                            <option value="Shift Pagi">Shift Pagi (08:00 - 17:00)</option>
+                          </>
+                        )}
+                      </select>
+                      <ChevronDown
+                        size={16}
+                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                      />
+                    </div>
+                  </div>
                 </div>
-                {selectedColleague && (
-                  <p className="mt-1.5 text-[11px] font-bold text-blue-600">
-                    Tukar ke {selectedColleague.shiftName}
-                  </p>
-                )}
-              </div>
+              ) : (
+                /* Mode Tukar Shift Rekan */
+                <div>
+                  <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
+                    <Users size={12} />
+                    Rekan Kerja Tujuan
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={targetUserId}
+                      onChange={(e) => setTargetUserId(e.target.value)}
+                      className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-3.5 pr-10 text-sm font-bold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                    >
+                      <option value="">Pilih rekan kerja...</option>
+                      {colleagues.map((col) => (
+                        <option key={col.id} value={col.id}>
+                          {col.name} — {col.shiftName}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={16}
+                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                  </div>
+                  {selectedColleague && (
+                    <p className="mt-1.5 text-[11px] font-bold text-blue-600">
+                      Tukar ke {selectedColleague.shiftName}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Tanggal */}
               <div>
                 <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-500">
                   <Calendar size={12} />
-                  Tanggal Tukar
+                  {formMode === "self" ? "Tanggal Geser Shift" : "Tanggal Tukar Shift"}
                 </label>
                 <input
                   type="date"
@@ -486,7 +596,11 @@ export default function TukarShiftPage() {
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Contoh: Ada acara keluarga mendadak"
+                  placeholder={
+                    formMode === "self"
+                      ? "Contoh: Ada urusan keluarga di pagi hari"
+                      : "Contoh: Ada acara keluarga mendadak"
+                  }
                   rows={2}
                   className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-3 text-sm font-bold text-slate-800 placeholder:text-slate-300 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
                 />
@@ -495,15 +609,17 @@ export default function TukarShiftPage() {
               {/* Submit */}
               <button
                 type="submit"
-                disabled={isSubmitting || !targetUserId}
+                disabled={isSubmitting || (formMode === "swap" && !targetUserId) || (formMode === "self" && !targetShiftName)}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#123c8c] to-[#1e56b8] py-3.5 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:shadow-xl active:scale-[0.98] disabled:opacity-40 disabled:shadow-none"
               >
                 {isSubmitting ? (
                   <Loader2 size={16} className="animate-spin" />
+                ) : formMode === "self" ? (
+                  <Clock size={16} />
                 ) : (
                   <Send size={16} />
                 )}
-                Kirim Pengajuan
+                {formMode === "self" ? "Simpan Geser Shift" : "Kirim Pengajuan Tukar"}
               </button>
             </div>
           </form>
@@ -511,7 +627,7 @@ export default function TukarShiftPage() {
           {/* ── RIWAYAT (KANAN) ── */}
           <section>
             <h3 className="mb-3 text-xs font-black uppercase tracking-widest text-slate-500">
-              Riwayat Tukar Shift
+              Riwayat Perubahan & Tukar Shift
             </h3>
 
             {isLoading ? (
@@ -523,7 +639,7 @@ export default function TukarShiftPage() {
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
                 <ArrowLeftRight size={28} className="mx-auto text-slate-300" />
                 <p className="mt-2 text-xs font-bold text-slate-400">
-                  Belum ada riwayat tukar shift.
+                  Belum ada riwayat pergeseran atau tukar shift.
                 </p>
               </div>
             ) : (
@@ -531,6 +647,7 @@ export default function TukarShiftPage() {
                 {allHistory.map((req) => {
                   const cfg = getStatusConfig(req.status);
                   const isOut = req.direction === "out";
+                  const isSelf = Boolean(req.isSelfShift || req.targetUser?.id === req.requester?.id);
 
                   return (
                     <div
@@ -539,24 +656,33 @@ export default function TukarShiftPage() {
                     >
                       <div
                         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
-                          isOut
-                            ? "bg-orange-50 text-orange-600"
-                            : "bg-blue-50 text-blue-600"
+                          isSelf
+                            ? "bg-purple-50 text-purple-600"
+                            : isOut
+                              ? "bg-orange-50 text-orange-600"
+                              : "bg-blue-50 text-blue-600"
                         }`}
                       >
-                        {isOut ? "↑" : "↓"}
+                        {isSelf ? <Clock size={16} /> : isOut ? "↑" : "↓"}
                       </div>
 
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-xs font-extrabold text-slate-800">
-                          {isOut
-                            ? `Ke: ${req.targetUser?.name || "-"}`
-                            : `Dari: ${req.requester?.name || "-"}`}
+                          {isSelf
+                            ? "Geser Shift Mandiri"
+                            : isOut
+                              ? `Ke: ${req.targetUser?.name || "-"}`
+                              : `Dari: ${req.requester?.name || "-"}`}
                         </p>
-                        <div className="mt-1">
+                        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                           <span className="inline-block rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-700">
                             {req.requesterShiftName} → {req.targetShiftName}
                           </span>
+                          {isSelf && (
+                            <span className="rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-700">
+                              Mandiri
+                            </span>
+                          )}
                         </div>
                       </div>
 

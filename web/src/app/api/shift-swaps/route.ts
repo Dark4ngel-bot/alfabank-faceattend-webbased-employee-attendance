@@ -48,7 +48,10 @@ export async function GET(req: NextRequest) {
     });
 
     const incomingRequests = await prisma.shiftSwapRequest.findMany({
-      where: { target_user_id: user.id },
+      where: {
+        target_user_id: user.id,
+        requester_id: { not: user.id },
+      },
       include: {
         requester: {
           select: {
@@ -73,6 +76,7 @@ export async function GET(req: NextRequest) {
       pendingIncomingCount,
       sentRequests: sentRequests.map((item) => ({
         id: item.id,
+        isSelfShift: item.target_user_id === item.requester_id,
         targetUser: {
           id: item.target_user.id,
           name: item.target_user.name,
@@ -88,6 +92,7 @@ export async function GET(req: NextRequest) {
       })),
       incomingRequests: incomingRequests.map((item) => ({
         id: item.id,
+        isSelfShift: false,
         requester: {
           id: item.requester.id,
           name: item.requester.name,
@@ -120,6 +125,7 @@ export async function POST(req: NextRequest) {
       where: { id: authUser.id },
       select: {
         id: true,
+        name: true,
         shift: {
           select: {
             name: true,
@@ -145,11 +151,90 @@ export async function POST(req: NextRequest) {
     const requesterShiftName = user.shift?.name || "Shift Utama";
 
     const body = await req.json();
+    const mode = String(body.mode || "").toLowerCase().trim(); // 'swap' or 'self'
     const targetUserId = String(body.targetUserId || "").trim();
+    const targetShiftName = String(body.targetShiftName || "").trim();
     const swapDateStr = String(body.swapDate || "").trim();
     const reason = String(body.reason || "").trim();
 
-    if (!targetUserId || !swapDateStr) {
+    const isSelfShift = mode === "self" || targetUserId === user.id || Boolean(targetShiftName && !targetUserId);
+
+    if (!swapDateStr) {
+      return NextResponse.json(
+        { error: "Tanggal pergeseran / tukar shift wajib diisi." },
+        { status: 400 },
+      );
+    }
+
+    const swapDate = toShiftSwapDate(swapDateStr);
+
+    // MODE GESER SHIFT MANDIRI (Self Shift Adjustment)
+    if (isSelfShift) {
+      if (!targetShiftName) {
+        return NextResponse.json(
+          { error: "Pilih shift tujuan (misalnya Shift Siang)." },
+          { status: 400 },
+        );
+      }
+
+      if (targetShiftName.trim().toUpperCase() === requesterShiftName.trim().toUpperCase()) {
+        return NextResponse.json(
+          { error: `Kamu sudah berada pada ${requesterShiftName}. Pilih shift yang berbeda.` },
+          { status: 400 },
+        );
+      }
+
+      // Check if already submitted for this date
+      const existingPendingOrApproved = await prisma.shiftSwapRequest.findFirst({
+        where: {
+          requester_id: user.id,
+          swap_date: swapDate,
+          status: { in: ["pending", "approved"] },
+        },
+      });
+
+      if (existingPendingOrApproved) {
+        return NextResponse.json(
+          { error: "Kamu sudah memiliki pergeseran/tukar shift untuk tanggal tersebut." },
+          { status: 400 },
+        );
+      }
+
+      const createdSwap = await prisma.shiftSwapRequest.create({
+        data: {
+          requester_id: user.id,
+          target_user_id: user.id,
+          swap_date: swapDate,
+          requester_shift_name: requesterShiftName,
+          target_shift_name: targetShiftName,
+          reason: reason || "Geser shift mandiri",
+          status: "approved",
+        },
+      });
+
+      try {
+        await prisma.adminNotification.create({
+          data: {
+            user_id: user.id,
+            type: "shift_swap",
+            title: "Geser Shift Mandiri",
+            message: `${user.name} melakukan geser shift mandiri dari ${requesterShiftName} ke ${targetShiftName} pada ${swapDateStr}.`,
+            status: "unread",
+          },
+        });
+      } catch {
+        // ignore notification failure
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Jam kerja berhasil digeser ke ${targetShiftName} untuk tanggal tersebut. Presensi akan menggunakan jadwal ${targetShiftName}.`,
+        request: createdSwap,
+      });
+    }
+
+    // MODE TUKAR SHIFT DENGAN REKAN KERJA
+    if (!targetUserId) {
       return NextResponse.json(
         { error: "Rekan kerja tujuan dan tanggal tukar shift wajib diisi." },
         { status: 400 },
@@ -158,7 +243,7 @@ export async function POST(req: NextRequest) {
 
     if (targetUserId === user.id) {
       return NextResponse.json(
-        { error: "Kamu tidak dapat melakukan tukar shift dengan diri sendiri." },
+        { error: "Gunakan menu Geser Shift Mandiri untuk menggeser shift pribadi." },
         { status: 400 },
       );
     }
@@ -193,8 +278,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const targetShiftName = targetUser.shift?.name || "Shift Utama";
-    const swapDate = toShiftSwapDate(swapDateStr);
+    const targetShiftNameForColleague = targetUser.shift?.name || "Shift Utama";
 
     if (!user.shift || !targetUser.shift) {
       return NextResponse.json(
@@ -244,7 +328,7 @@ export async function POST(req: NextRequest) {
         target_user_id: targetUserId,
         swap_date: swapDate,
         requester_shift_name: requesterShiftName,
-        target_shift_name: targetShiftName,
+        target_shift_name: targetShiftNameForColleague,
         reason: reason || null,
         status: "pending",
       },
