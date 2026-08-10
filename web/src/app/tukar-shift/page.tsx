@@ -273,13 +273,12 @@ export default function TukarShiftPage() {
       {alertState ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/20 px-5 backdrop-blur-[2px]">
           <div
-            className={`relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-2xl shadow-slate-900/25 ${
-              alertState.type === "success"
-                ? "ring-1 ring-emerald-100"
-                : alertState.type === "error"
-                  ? "ring-1 ring-red-100"
-                  : "ring-1 ring-amber-100"
-            }`}
+            className={`relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-2xl shadow-slate-900/25 ${alertState.type === "success"
+              ? "ring-1 ring-emerald-100"
+              : alertState.type === "error"
+                ? "ring-1 ring-red-100"
+                : "ring-1 ring-amber-100"
+              }`}
           >
             <button
               type="button"
@@ -294,13 +293,12 @@ export default function TukarShiftPage() {
 
             <div className="relative grid gap-5 p-8 pt-9 sm:grid-cols-[116px_1fr] sm:p-10">
               <div
-                className={`flex h-28 w-28 items-center justify-center rounded-[1.8rem] ${
-                  alertState.type === "success"
-                    ? "bg-emerald-50 text-emerald-600"
-                    : alertState.type === "error"
-                      ? "bg-orange-50 text-orange-600"
-                      : "bg-amber-50 text-amber-600"
-                }`}
+                className={`flex h-28 w-28 items-center justify-center rounded-[1.8rem] ${alertState.type === "success"
+                  ? "bg-emerald-50 text-emerald-600"
+                  : alertState.type === "error"
+                    ? "bg-orange-50 text-orange-600"
+                    : "bg-amber-50 text-amber-600"
+                  }`}
               >
                 {alertState.type === "success" ? (
                   <CheckCircle2 size={56} strokeWidth={2.8} />
@@ -313,13 +311,12 @@ export default function TukarShiftPage() {
 
               <div className="min-w-0 pr-16">
                 <span
-                  className={`inline-flex rounded-full bg-white px-7 py-3 text-sm font-black uppercase tracking-[0.32em] shadow-sm ${
-                    alertState.type === "success"
-                      ? "text-emerald-700"
-                      : alertState.type === "error"
-                        ? "text-orange-700"
-                        : "text-amber-700"
-                  }`}
+                  className={`inline-flex rounded-full bg-white px-7 py-3 text-sm font-black uppercase tracking-[0.32em] shadow-sm ${alertState.type === "success"
+                    ? "text-emerald-700"
+                    : alertState.type === "error"
+                      ? "text-orange-700"
+                      : "text-amber-700"
+                    }`}
                 >
                   {alertState.type === "success" ? "Berhasil" : "Perhatian"}
                 </span>
@@ -453,8 +450,8 @@ export default function TukarShiftPage() {
                     </h2>
                     <p className="text-[10px] sm:text-xs font-semibold text-blue-200 truncate">
                       {formMode === "self"
-                        ? "Ubah jam kerja tanpa tukar rekan"
-                        : "Tukar jam kerja dengan rekan lain"}
+                        ? ""
+                        : "Request"}
                     </p>
                   </div>
                 </div>
@@ -470,11 +467,10 @@ export default function TukarShiftPage() {
                 <button
                   type="button"
                   onClick={() => setFormMode("self")}
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-black transition ${
-                    formMode === "self"
-                      ? "bg-white text-[#123c8c] shadow-md"
-                      : "text-blue-100 hover:text-white"
-                  }`}
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-black transition ${formMode === "self"
+                    ? "bg-white text-[#123c8c] shadow-md"
+                    : "text-blue-100 hover:text-white"
+                    }`}
                 >
                   <Clock size={14} className="shrink-0" />
                   <span>Geser Mandiri</span>
@@ -482,11 +478,10 @@ export default function TukarShiftPage() {
                 <button
                   type="button"
                   onClick={() => setFormMode("swap")}
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-black transition ${
-                    formMode === "swap"
-                      ? "bg-white text-[#123c8c] shadow-md"
-                      : "text-blue-100 hover:text-white"
-                  }`}
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-black transition ${formMode === "swap"
+                    ? "bg-white text-[#123c8c] shadow-md"
+                    : "text-blue-100 hover:text-white"
+                    }`}
                 >
                   <Users size={14} className="shrink-0" />
                   <span>Tukar Rekan</span>
@@ -656,13 +651,12 @@ export default function TukarShiftPage() {
                       className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-sm transition hover:shadow-md"
                     >
                       <div
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
-                          isSelf
-                            ? "bg-purple-50 text-purple-600"
-                            : isOut
-                              ? "bg-orange-50 text-orange-600"
-                              : "bg-blue-50 text-blue-600"
-                        }`}
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black ${isSelf
+                          ? "bg-purple-50 text-purple-600"
+                          : isOut
+                            ? "bg-orange-50 text-orange-600"
+                            : "bg-blue-50 text-blue-600"
+                          }`}
                       >
                         {isSelf ? <Clock size={16} /> : isOut ? "↑" : "↓"}
                       </div>
