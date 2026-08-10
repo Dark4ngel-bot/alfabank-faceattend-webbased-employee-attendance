@@ -380,7 +380,23 @@ export default function LeaveRequestPage() {
 
   return (
     <MobileShell variant="employee">
-      <AppHeader title="Pengajuan Cuti & Lembur" rightLabel="Cuti" />
+      <div className="hidden md:block">
+        <AppHeader title="Pengajuan Cuti & Lembur" rightLabel="Cuti" />
+      </div>
+
+      <section className="mx-auto max-w-7xl px-5 pt-7 md:hidden">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">
+              Presensi
+            </p>
+
+            <h1 className="mt-1 text-3xl font-black tracking-tight text-[#073456]">
+              Pengajuan Cuti
+            </h1>
+          </div>
+        </div>
+      </section>
 
       <section className="mx-auto grid max-w-7xl items-start gap-6 px-5 py-6 pb-28 md:px-10 lg:grid-cols-[0.85fr_1.15fr] lg:px-16">
         <form

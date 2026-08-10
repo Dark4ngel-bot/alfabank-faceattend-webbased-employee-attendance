@@ -454,15 +454,26 @@ export default function AppHeader({
       >
         <div className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-2.5 sm:gap-4">
           <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-4">
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(true)}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] shadow-md shadow-slate-200/70 ring-1 ring-blue-100 transition hover:bg-blue-50 active:scale-[0.96] sm:h-12 sm:w-12"
-              aria-label="Buka menu"
-            >
-              <Menu size={22} strokeWidth={3} className="sm:hidden" />
-              <Menu size={25} strokeWidth={3} className="hidden sm:block" />
-            </button>
+            {isAdmin ? (
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(true)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] shadow-md shadow-slate-200/70 ring-1 ring-blue-100 transition hover:bg-blue-50 active:scale-[0.96] sm:h-12 sm:w-12"
+                aria-label="Buka menu"
+              >
+                <Menu size={22} strokeWidth={3} className="sm:hidden" />
+                <Menu size={25} strokeWidth={3} className="hidden sm:block" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(true)}
+                className="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] shadow-md shadow-slate-200/70 ring-1 ring-blue-100 transition hover:bg-blue-50 active:scale-[0.96]"
+                aria-label="Buka menu web"
+              >
+                <Menu size={25} strokeWidth={3} />
+              </button>
+            )}
 
             <div className="min-w-0 flex-1">
               <h1 className="mt-0.5 text-base font-black tracking-tight text-slate-950 sm:text-xl md:text-2xl lg:text-3xl leading-snug break-words">

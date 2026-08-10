@@ -88,7 +88,7 @@ export default function MobileShell({
         className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
       >
         <div
-          className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 bg-contain bg-center bg-no-repeat opacity-[0.075] blur-[2px] md:h-[760px] md:w-[760px] lg:h-[860px] lg:w-[860px]"
+          className="absolute left-1/2 top-1/2 h-[260px] w-[260px] max-h-[65vh] max-w-[65vw] -translate-x-1/2 -translate-y-1/2 bg-contain bg-center bg-no-repeat opacity-[0.055] sm:h-[320px] sm:w-[320px] md:h-[400px] md:w-[400px] lg:h-[450px] lg:w-[450px]"
           style={{
             backgroundImage: `url('${logoSrc}')`,
           }}

@@ -268,7 +268,23 @@ export default function TukarShiftPage() {
 
   return (
     <MobileShell variant="employee">
-      <AppHeader title="Kelola Shift" rightLabel="Shift Kerja" />
+      <div className="hidden md:block">
+        <AppHeader title="Kelola Shift" rightLabel="Shift Kerja" />
+      </div>
+
+      <section className="mx-auto max-w-7xl px-5 pt-7 md:hidden">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">
+              Presensi
+            </p>
+
+            <h1 className="mt-1 text-3xl font-black tracking-tight text-[#073456]">
+              Tukar Shift
+            </h1>
+          </div>
+        </div>
+      </section>
 
       {alertState ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/20 px-5 backdrop-blur-[2px]">

@@ -80,11 +80,6 @@ const defaultAttendance: AttendanceToday = {
 
 const quickMenus = [
   {
-    href: "/history",
-    label: "Riwayat Presensi",
-    icon: History,
-  },
-  {
     href: "/presensi",
     label: "Presensi",
     icon: ScanFace,
@@ -96,12 +91,22 @@ const quickMenus = [
   },
   {
     href: "/cuti",
-    label: "Ajukan Izin/Cuti",
+    label: "Ajukan Cuti",
     icon: FileText,
   },
   {
+    href: "/history",
+    label: "Riwayat Presensi",
+    icon: History,
+  },
+  {
+    href: "/pengumuman",
+    label: "Pengumuman",
+    icon: Megaphone,
+  },
+  {
     href: "/profil",
-    label: "Profil Data Diri",
+    label: "Profil",
     icon: UserRound,
   },
 ];
@@ -367,7 +372,7 @@ function RoleBadges({ items }: { items: Array<string | undefined | null> }) {
 
 function QuickMenuGrid() {
   return (
-    <div className="grid grid-cols-5 gap-x-1.5 gap-y-3 md:grid-cols-5 md:gap-4">
+    <div className="grid grid-cols-3 gap-3 md:grid-cols-3 md:gap-6">
       {quickMenus.map(({ href, label, icon: Icon }, index) => (
         <Link
           key={href}
