@@ -437,30 +437,31 @@ export default function TukarShiftPage() {
             className="overflow-hidden rounded-3xl border border-blue-100/80 bg-white shadow-md shadow-blue-100/30"
           >
             {/* Header */}
-            <div className="border-b border-blue-50 bg-gradient-to-r from-[#123c8c] to-[#1e56b8] p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+            <div className="border-b border-blue-50 bg-gradient-to-r from-[#123c8c] to-[#1e56b8] p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-2.5 sm:gap-3">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm text-white">
                     {formMode === "self" ? (
-                      <Clock size={20} className="text-white" strokeWidth={2.5} />
+                      <Clock size={20} strokeWidth={2.5} />
                     ) : (
-                      <ArrowLeftRight size={20} className="text-white" strokeWidth={2.5} />
+                      <ArrowLeftRight size={20} strokeWidth={2.5} />
                     )}
                   </div>
-                  <div>
-                    <h2 className="text-base font-black text-white">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-sm sm:text-base font-black text-white truncate">
                       {formMode === "self" ? "Geser Shift Mandiri" : "Tukar Shift Rekan"}
                     </h2>
-                    <p className="text-xs font-semibold text-blue-200">
+                    <p className="text-[10px] sm:text-xs font-semibold text-blue-200 truncate">
                       {formMode === "self"
                         ? "Ubah jam kerja tanpa tukar rekan"
                         : "Tukar jam kerja dengan rekan lain"}
                     </p>
                   </div>
                 </div>
-                <div className="rounded-xl bg-white/15 px-3 py-1.5 text-right backdrop-blur-md ring-1 ring-white/20">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-blue-200">Shift Kamu</p>
-                  <p className="text-xs font-black text-white">{currentShiftName}</p>
+
+                <div className="shrink-0 rounded-xl bg-white/15 px-2.5 py-1 sm:px-3 sm:py-1.5 text-right backdrop-blur-md ring-1 ring-white/20">
+                  <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-blue-200">Shift Kamu</p>
+                  <p className="text-xs sm:text-sm font-black text-white">{currentShiftName}</p>
                 </div>
               </div>
 
@@ -469,26 +470,26 @@ export default function TukarShiftPage() {
                 <button
                   type="button"
                   onClick={() => setFormMode("self")}
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-black transition ${
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-black transition ${
                     formMode === "self"
                       ? "bg-white text-[#123c8c] shadow-md"
                       : "text-blue-100 hover:text-white"
                   }`}
                 >
-                  <Clock size={14} />
-                  Geser Shift Mandiri
+                  <Clock size={14} className="shrink-0" />
+                  <span>Geser Mandiri</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormMode("swap")}
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-black transition ${
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-black transition ${
                     formMode === "swap"
                       ? "bg-white text-[#123c8c] shadow-md"
                       : "text-blue-100 hover:text-white"
                   }`}
                 >
-                  <Users size={14} />
-                  Tukar Shift Rekan
+                  <Users size={14} className="shrink-0" />
+                  <span>Tukar Rekan</span>
                 </button>
               </div>
             </div>
