@@ -155,10 +155,7 @@ function getNetWorkMinutes(summary?: EmployeeAttendanceSummary | null) {
   );
 }
 
-function getDisplayErrorMessage(
-  message: string | undefined,
-  fallback: string,
-) {
+function getDisplayErrorMessage(message: string | undefined, fallback: string) {
   const text = String(message || "").trim();
 
   if (!text) return fallback;
@@ -249,7 +246,10 @@ export default function AdminEmployeeAttendanceRecapPage() {
       if (!response.ok || !data.success) {
         setEmployees([]);
         setErrorMessage(
-          getDisplayErrorMessage(data.message, "Gagal mengambil data karyawan."),
+          getDisplayErrorMessage(
+            data.message,
+            "Gagal mengambil data karyawan.",
+          ),
         );
         return;
       }
@@ -296,9 +296,7 @@ export default function AdminEmployeeAttendanceRecapPage() {
 
     if (startDate > endDate) {
       setRecaps([]);
-      setRecapErrorMessage(
-        "Tanggal mulai tidak boleh melewati tanggal akhir.",
-      );
+      setRecapErrorMessage("Tanggal mulai tidak boleh melewati tanggal akhir.");
       return;
     }
 
@@ -686,77 +684,81 @@ export default function AdminEmployeeAttendanceRecapPage() {
                         animationDelay: `${Math.min(index, 12) * 35}ms`,
                       }}
                     >
-                        <div
-                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-black ${
-                            hasPendingLeave
-                              ? "bg-orange-100 text-orange-700"
-                              : "bg-[#eaf1ff] text-[#123c8c]"
-                          }`}
-                        >
-                          {index + 1}
-                        </div>
+                      <div
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-black ${
+                          hasPendingLeave
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-[#eaf1ff] text-[#123c8c]"
+                        }`}
+                      >
+                        {index + 1}
+                      </div>
 
-                        <div
-                          className={`relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-[#123c8c] ring-1 ${
-                            hasPendingLeave
-                              ? "bg-orange-50 ring-orange-100"
-                              : "bg-[#f1f5ff] ring-blue-100"
-                          }`}
-                        >
-                          {employeePhoto ? (
-                            <img
-                              src={employeePhoto}
-                              alt={employee.name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <UserRound size={23} strokeWidth={2.6} />
-                          )}
+                      <div
+                        className={`relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-[#123c8c] ring-1 ${
+                          hasPendingLeave
+                            ? "bg-orange-50 ring-orange-100"
+                            : "bg-[#f1f5ff] ring-blue-100"
+                        }`}
+                      >
+                        {employeePhoto ? (
+                          <img
+                            src={employeePhoto}
+                            alt={employee.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <UserRound size={23} strokeWidth={2.6} />
+                        )}
 
+                        {hasPendingLeave ? (
+                          <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-black text-white ring-2 ring-white">
+                            {pendingLeaveCount}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-sm font-black text-slate-950 leading-snug break-words sm:text-base">
+                          {employee.name}
+                        </h3>
+
+                        <p className="mt-0.5 text-[11px] font-semibold leading-snug text-slate-500 break-words sm:text-xs">
+                          {[
+                            employee.employee_code,
+                            employee.department?.name,
+                            employee.jabatan?.name || employee.position?.name,
+                          ]
+                            .filter(Boolean)
+                            .join(" / ")}
+                        </p>
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-2 ml-auto">
+                        <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center">
                           {hasPendingLeave ? (
-                            <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-black text-white ring-2 ring-white">
-                              {pendingLeaveCount}
+                            <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-black text-orange-700 ring-1 ring-orange-200 sm:px-2.5 sm:py-1 sm:text-[11px]">
+                              {pendingLeaveCount} cuti baru
                             </span>
                           ) : null}
+
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-black ring-1 sm:px-2.5 sm:py-1 sm:text-[11px] ${getStatusStyle(
+                              employee.status,
+                            )}`}
+                          >
+                            {getStatusLabel(employee.status)}
+                          </span>
                         </div>
 
-                        <div className="min-w-0 flex-1">
-                          <h3 className="text-sm font-black text-slate-950 leading-snug break-words sm:text-base">
-                            {employee.name}
-                          </h3>
-
-                          <p className="mt-0.5 text-[11px] font-semibold leading-snug text-slate-500 break-words sm:text-xs">
-                            {[
-                              employee.employee_code,
-                              employee.department?.name,
-                              employee.jabatan?.name || employee.position?.name,
-                            ]
-                              .filter(Boolean)
-                              .join(" / ")}
-                          </p>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100 transition group-hover:bg-[#123c8c] group-hover:text-white sm:h-10 sm:w-10">
+                          <ChevronRight
+                            size={18}
+                            strokeWidth={2.8}
+                            className="transition-transform group-hover:translate-x-0.5"
+                          />
                         </div>
-
-                        <div className="flex shrink-0 items-center gap-2 ml-auto">
-                          <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center">
-                            {hasPendingLeave ? (
-                              <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-black text-orange-700 ring-1 ring-orange-200 sm:px-2.5 sm:py-1 sm:text-[11px]">
-                                {pendingLeaveCount} cuti baru
-                              </span>
-                            ) : null}
-
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-[10px] font-black ring-1 sm:px-2.5 sm:py-1 sm:text-[11px] ${getStatusStyle(
-                                employee.status,
-                              )}`}
-                            >
-                              {getStatusLabel(employee.status)}
-                            </span>
-                          </div>
-
-                          <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100 transition group-hover:bg-[#123c8c] group-hover:text-white sm:h-10 sm:w-10">
-                            <ChevronRight size={18} strokeWidth={2.8} className="transition-transform group-hover:translate-x-0.5" />
-                          </div>
-                        </div>
+                      </div>
                     </Link>
                   );
                 })}

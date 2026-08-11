@@ -1,13 +1,13 @@
 
-import path from "path";
-import { promises as fs } from "fs";
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireOwnerUser } from "@/lib/api-auth";
-import { DEFAULT_SITE_LOGO_SRC } from "@/lib/site-logo-defaults";
+import { DEFAULT_SITE_TITLE } from "@/lib/site-logo-defaults";
 import {
   getSiteLogoSettings,
-  updateSiteLogoSrc,
+  resetSiteLogoFileToDefault,
+  updateSiteLogoFile,
+  updateSiteTitle,
 } from "@/lib/site-logo";
 
 export const runtime = "nodejs";
@@ -15,9 +15,23 @@ export const runtime = "nodejs";
 const allowedMimeTypes = new Set([
   "image/png",
   "image/jpeg",
+  "image/jpg",
+  "image/pjpeg",
+  "image/x-png",
   "image/webp",
   "image/svg+xml",
 ]);
+
+const allowedExtensions = new Set(["png", "jpg", "jpeg", "webp", "svg"]);
+
+function isAllowedFile(file: File): boolean {
+  if (file.type && allowedMimeTypes.has(file.type.toLowerCase())) {
+    return true;
+  }
+
+  const ext = file.name.split(".").pop()?.toLowerCase() || "";
+  return allowedExtensions.has(ext);
+}
 
 function jsonError(message: string, status: number) {
   return NextResponse.json(
@@ -29,18 +43,6 @@ function jsonError(message: string, status: number) {
       status,
     },
   );
-}
-
-async function processLogoUpload(buffer: Buffer, file: File): Promise<string> {
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadsDir, { recursive: true });
-
-  const ext = file.name.split(".").pop() || "png";
-  const filename = `site-logo-${Date.now()}.${ext}`;
-  const filePath = path.join(uploadsDir, filename);
-
-  await fs.writeFile(filePath, buffer);
-  return `/uploads/${filename}`;
 }
 
 export async function GET(req: NextRequest) {
@@ -64,14 +66,47 @@ export async function POST(req: NextRequest) {
   try {
     await requireOwnerUser(req);
 
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      const body = await req.json();
+
+      if (typeof body.siteTitle === "string") {
+        await updateSiteTitle(body.siteTitle);
+        const logo = await getSiteLogoSettings();
+
+        return NextResponse.json({
+          success: true,
+          message: "Nama aplikasi berhasil diperbarui.",
+          logo,
+        });
+      }
+    }
+
     const formData = await req.formData();
+    const siteTitleVal = formData.get("siteTitle");
+
+    if (typeof siteTitleVal === "string" && siteTitleVal.trim()) {
+      await updateSiteTitle(siteTitleVal);
+    }
+
     const file = formData.get("logo");
 
     if (!(file instanceof File)) {
+      if (typeof siteTitleVal === "string" && siteTitleVal.trim()) {
+        const logo = await getSiteLogoSettings();
+
+        return NextResponse.json({
+          success: true,
+          message: "Pengaturan berhasil diperbarui.",
+          logo,
+        });
+      }
+
       return jsonError("File logo wajib dipilih.", 400);
     }
 
-    if (!allowedMimeTypes.has(file.type)) {
+    if (!isAllowedFile(file)) {
       return jsonError("Format logo harus PNG, JPG, WEBP, atau SVG.", 400);
     }
 
@@ -80,17 +115,16 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const logoUrl = await processLogoUpload(buffer, file);
-
-    const logoSrc = await updateSiteLogoSrc(logoUrl);
+    await updateSiteLogoFile(
+      Uint8Array.from(buffer),
+      file.type || "image/png",
+    );
+    const logo = await getSiteLogoSettings();
 
     return NextResponse.json({
       success: true,
       message: "Logo aplikasi berhasil diperbarui.",
-      logo: {
-        logoSrc,
-        fallbackLogoSrc: DEFAULT_SITE_LOGO_SRC,
-      },
+      logo,
     });
   } catch (error) {
     console.error("POST /api/admin/site-logo error:", error);
@@ -103,15 +137,23 @@ export async function DELETE(req: NextRequest) {
   try {
     await requireOwnerUser(req);
 
-    const logoSrc = await updateSiteLogoSrc(DEFAULT_SITE_LOGO_SRC);
+    const target = req.nextUrl.searchParams.get("target");
+
+    if (target === "title") {
+      await updateSiteTitle(DEFAULT_SITE_TITLE);
+    } else if (target === "logo") {
+      await resetSiteLogoFileToDefault();
+    } else {
+      await resetSiteLogoFileToDefault();
+      await updateSiteTitle(DEFAULT_SITE_TITLE);
+    }
+
+    const logo = await getSiteLogoSettings();
 
     return NextResponse.json({
       success: true,
-      message: "Logo aplikasi berhasil dikembalikan ke default.",
-      logo: {
-        logoSrc,
-        fallbackLogoSrc: DEFAULT_SITE_LOGO_SRC,
-      },
+      message: "Pengaturan berhasil dikembalikan ke default.",
+      logo,
     });
   } catch (error) {
     console.error("DELETE /api/admin/site-logo error:", error);

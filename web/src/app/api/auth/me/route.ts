@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
+import { getEffectiveShiftNameForDate, toShiftSwapDate } from "@/lib/shift-swap-schema";
 import {
   ensureWfhQuotaColumn,
   isMissingWfhQuotaColumnError,
@@ -47,6 +48,19 @@ function getJakartaMonthRange(date = new Date()) {
     start: new Date(Date.UTC(year, month - 1, 1)),
     end: new Date(Date.UTC(year, month, 1)),
   };
+}
+
+function getJakartaDateKey(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    String(parts.find((part) => part.type === type)?.value || "").padStart(2, "0");
+
+  return `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
 }
 
 export async function GET(req: NextRequest) {
@@ -179,6 +193,34 @@ export async function GET(req: NextRequest) {
       0,
       Number(quotaRows[0]?.wfh_quota_monthly || 0),
     );
+    const todayShiftName = await getEffectiveShiftNameForDate(
+      user.id,
+      toShiftSwapDate(getJakartaDateKey()),
+      user.shift?.name,
+    );
+    const effectiveShift =
+      todayShiftName && todayShiftName !== user.shift?.name
+        ? await prisma.shift.findFirst({
+            where: { name: todayShiftName },
+            select: {
+              id: true,
+              name: true,
+              tolerance_minutes: true,
+              start_time: true,
+              end_time: true,
+              check_in_open: true,
+              check_out_open: true,
+              work_schedules: {
+                select: {
+                  day_of_week: true,
+                  is_work_day: true,
+                  check_in_time: true,
+                  check_out_time: true,
+                },
+              },
+            },
+          })
+        : user.shift;
 
     return NextResponse.json({
       success: true,
@@ -210,7 +252,7 @@ export async function GET(req: NextRequest) {
         jabatan: user.jabatan,
         department: user.department,
         position: user.position,
-        shift: user.shift,
+        shift: effectiveShift || user.shift,
 
         registered_office: serializeOffice(user.registered_office),
       },

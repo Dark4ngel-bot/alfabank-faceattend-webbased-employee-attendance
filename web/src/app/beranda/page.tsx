@@ -638,6 +638,7 @@ export default function HomePage() {
                       alt="Creativemu Logo"
                       width={64}
                       height={59}
+                      unoptimized
                       className="h-full w-full object-contain"
                       priority
                     />

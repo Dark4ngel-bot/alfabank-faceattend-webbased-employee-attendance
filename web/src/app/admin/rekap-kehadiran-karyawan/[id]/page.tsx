@@ -625,9 +625,12 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
   }, [employee]);
 
   const cameFromDashboard = searchParams.get("from") === "dashboard";
+  const cameFromRank = searchParams.get("from") === "rank";
   const backHref = cameFromDashboard
     ? "/admin/dasbor"
-    : `/admin/rekap-kehadiran-karyawan?startDate=${startDate}&endDate=${endDate}`;
+    : cameFromRank
+      ? `/admin/rank-kehadiran-karyawan?startDate=${startDate}&endDate=${endDate}`
+      : `/admin/rekap-kehadiran-karyawan?startDate=${startDate}&endDate=${endDate}`;
   const backLabel = cameFromDashboard ? "Kembali ke Dasbor" : "Kembali ke daftar";
 
   const downloadSummaryExcel = () => {

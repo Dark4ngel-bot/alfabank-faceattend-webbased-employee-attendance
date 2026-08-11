@@ -35,9 +35,11 @@ import { useSiteLogo } from "@/hooks/useSiteLogo";
 
 type AppHeaderProps = {
   title: string;
+  eyebrow?: string;
   subtitle?: string;
   rightLabel?: string;
   variant?: "employee" | "admin";
+  hideMobileMenuButton?: boolean;
 };
 
 type NotificationStats = {
@@ -229,9 +231,11 @@ function getWhatsappLink(phoneNumber?: string | null) {
 
 export default function AppHeader({
   title,
+  eyebrow,
   subtitle,
   rightLabel,
   variant = "employee",
+  hideMobileMenuButton = false,
 }: AppHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -403,13 +407,19 @@ export default function AppHeader({
             <button
               type="button"
               onClick={() => setIsSidebarOpen(true)}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] shadow-lg shadow-slate-200/70 ring-1 ring-blue-100 transition hover:bg-blue-50 active:scale-[0.96]"
+              className={`${hideMobileMenuButton ? "hidden md:flex" : "flex"} h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] shadow-lg shadow-slate-200/70 ring-1 ring-blue-100 transition hover:bg-blue-50 active:scale-[0.96]`}
               aria-label="Buka menu"
             >
               <Menu size={25} strokeWidth={3} />
             </button>
 
             <div className="min-w-0">
+              {eyebrow ? (
+                <p className="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">
+                  {eyebrow}
+                </p>
+              ) : null}
+
               <h1 className="mt-1 truncate text-2xl font-black tracking-tight text-slate-950 md:text-2xl lg:text-3xl">
                 {title}
               </h1>
@@ -477,6 +487,7 @@ export default function AppHeader({
                 alt="Logo Creativemu"
                 width={140}
                 height={35}
+                unoptimized
                 className="h-full w-auto object-contain object-center"
               />
             </div>
@@ -490,7 +501,7 @@ export default function AppHeader({
         </div>
       </header>
 
-      <div className={subtitle ? "h-[106px]" : "h-[88px]"} />
+      <div className={eyebrow || subtitle ? "h-[106px]" : "h-[88px]"} />
 
       {isSidebarOpen ? (
         <button
@@ -515,6 +526,7 @@ export default function AppHeader({
                   alt="Creativemu Logo"
                   width={64}
                   height={59}
+                  unoptimized
                   className="h-full w-full object-contain"
                   priority
                 />

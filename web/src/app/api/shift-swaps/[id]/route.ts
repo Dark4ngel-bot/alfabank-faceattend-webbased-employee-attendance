@@ -7,7 +7,13 @@ import {
   getLeaveTypeLabel,
 } from "@/lib/leave-attendance-guard";
 import { prisma } from "@/lib/prisma";
-import { ensureShiftSwapTable } from "@/lib/shift-swap-schema";
+import {
+  buildFallbackShift,
+  canSwapShiftPair,
+  ensureShiftSwapTable,
+  getShiftSwapCutoffMessage,
+  getShiftWindowForSwapDate,
+} from "@/lib/shift-swap-schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -93,6 +99,73 @@ export async function PATCH(
     }
 
     if (action === "approve") {
+      if (
+        !canSwapShiftPair(
+          swapRequest.requester_shift_name,
+          swapRequest.target_shift_name,
+        )
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Aturan tukar shift: Utama hanya bisa tukar dengan Shift Siang, Shift Pagi hanya bisa tukar dengan Shift Siang, dan Shift Utama tidak bisa tukar dengan Shift Pagi.",
+          },
+          { status: 400 },
+        );
+      }
+
+      const activeShifts = await prisma.shift.findMany({
+        where: {
+          status: { in: ["active", "ACTIVE"] },
+        },
+        select: {
+          name: true,
+          start_time: true,
+          end_time: true,
+          work_schedules: {
+            select: {
+              day_of_week: true,
+              is_work_day: true,
+              check_in_time: true,
+              check_out_time: true,
+            },
+          },
+        },
+      });
+      const findShift = (shiftName: string) => {
+        const upperName = shiftName.trim().toUpperCase();
+
+        return (
+          activeShifts.find(
+            (shift) => shift.name.trim().toUpperCase() === upperName,
+          ) || buildFallbackShift(shiftName)
+        );
+      };
+      const requesterWindow = getShiftWindowForSwapDate(
+        findShift(swapRequest.requester_shift_name),
+        swapRequest.swap_date,
+      );
+      const targetWindow = getShiftWindowForSwapDate(
+        findShift(swapRequest.target_shift_name),
+        swapRequest.swap_date,
+      );
+
+      if (!requesterWindow || !targetWindow) {
+        return NextResponse.json(
+          { error: "Jadwal shift pada tanggal tersebut belum lengkap atau bukan hari kerja." },
+          { status: 400 },
+        );
+      }
+
+      const cutoffMessage = getShiftSwapCutoffMessage({
+        swapDate: swapRequest.swap_date,
+        windows: [requesterWindow, targetWindow],
+      });
+
+      if (cutoffMessage) {
+        return NextResponse.json({ error: cutoffMessage }, { status: 400 });
+      }
+
       const leaveBlockMessage = await getApprovalLeaveBlockMessage({
         requesterId: swapRequest.requester_id,
         requesterName: swapRequest.requester.name,

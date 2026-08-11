@@ -206,7 +206,7 @@ export default function EmployeeNotificationPage() {
 
   return (
     <MobileShell variant="employee" withBottomPadding={false}>
-      <AppHeader title="Notifikasi" />
+      <AppHeader title="Notifikasi" eyebrow="Presensi" hideMobileMenuButton />
 
       <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff] pb-[calc(8rem+env(safe-area-inset-bottom))] text-slate-950 md:pb-28">
         <section className="mx-auto max-w-5xl px-5 pb-10 pt-6 md:px-8">

@@ -879,6 +879,7 @@ export function AppLoadingState({
             aria-hidden="true"
             width={56}
             height={56}
+            unoptimized
             className="app-brand-loader-pulse h-14 w-14 object-contain"
           />
         </div>

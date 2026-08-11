@@ -588,6 +588,7 @@ export default function LoginPage() {
                 alt="Creativemu Logo"
                 width={421}
                 height={390}
+                unoptimized
                 className="intro-logo-pulse h-full w-full object-contain"
                 priority
               />
@@ -626,6 +627,7 @@ export default function LoginPage() {
             alt="Watermark Logo"
             width={500}
             height={500}
+            unoptimized
             className="mx-auto w-[22rem] max-w-[85vw] opacity-[0.05] mix-blend-multiply sm:w-[24rem] md:w-[25rem] lg:w-[24rem]"
             priority
           />
@@ -639,6 +641,7 @@ export default function LoginPage() {
               alt="Creativemu Logo"
               width={512}
               height={128}
+              unoptimized
               className="h-full w-full object-contain object-center"
               priority
             />
@@ -708,18 +711,29 @@ export default function LoginPage() {
                       animationDelay: "80ms",
                     }}
                   >
-                    <AppInput
-                      suppressHydrationWarning
-                      label="Email"
-                      type="text"
-                      inputMode="email"
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                      placeholder=""
-                      autoComplete="email"
-                      disabled={formIsBusy}
-                      className="border-blue-100 bg-[#f8fbff] text-slate-700 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-blue-100/50 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
-                    />
+                    <label className="block">
+                      <span className="text-sm font-black text-slate-700">
+                        Email
+                      </span>
+
+                      <div className="relative mt-2">
+                        <input
+                          suppressHydrationWarning
+                          type="text"
+                          inputMode="email"
+                          value={email}
+                          onChange={(event) => setEmail(event.target.value)}
+                          placeholder=""
+                          autoComplete="email"
+                          disabled={formIsBusy}
+                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-32 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
+                        />
+
+                        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">
+                          @creativemu.id
+                        </span>
+                      </div>
+                    </label>
                   </div>
 
                   <div

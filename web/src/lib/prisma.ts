@@ -71,6 +71,7 @@ function getDatabaseConfig(connectionLimit: number) {
     database,
     connectionLimit,
     connectTimeout: 20_000,
+    acquireTimeout: 30_000,
     ...(useTls
       ? {
           ssl: {
@@ -83,13 +84,13 @@ function getDatabaseConfig(connectionLimit: number) {
 }
 
 const configuredConnectionLimit = Number(
-  process.env.DATABASE_CONNECTION_LIMIT || "5",
+  process.env.DATABASE_CONNECTION_LIMIT || "15",
 );
 
 const connectionLimit =
   Number.isFinite(configuredConnectionLimit) && configuredConnectionLimit > 0
     ? configuredConnectionLimit
-    : 5;
+    : 15;
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;

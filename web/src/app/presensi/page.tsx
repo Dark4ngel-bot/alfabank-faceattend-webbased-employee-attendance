@@ -2235,41 +2235,6 @@ export default function AttendancePage() {
         throw new Error("Data user tidak valid.");
       }
 
-      try {
-        const swapRes = await fetch("/api/shift-swaps", { cache: "no-store" });
-        if (swapRes.ok) {
-          const swapJson = await swapRes.json();
-          const todayDate = new Date();
-          const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, "0")}-${String(todayDate.getDate()).padStart(2, "0")}`;
-
-          const approvedSwap = [
-            ...(swapJson.sentRequests || []),
-            ...(swapJson.incomingRequests || []),
-          ].find(
-            (r: { status: string; swapDate: string }) =>
-              r.status === "approved" && r.swapDate === todayStr,
-          );
-
-          if (approvedSwap) {
-            const isTargetUser = approvedSwap.targetUser?.id === user.id;
-            const effectiveShiftName = isTargetUser
-              ? approvedSwap.requesterShiftName
-              : approvedSwap.targetShiftName;
-
-            user = {
-              ...user,
-              shift: {
-                ...user.shift,
-                id: user.shift?.id || "swapped-shift",
-                name: effectiveShiftName,
-              },
-            };
-          }
-        }
-      } catch {
-        // ignore error if swap check fails
-      }
-
       if (mountedRef.current) {
         setCurrentUser(user);
       }
