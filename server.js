@@ -1,12 +1,18 @@
 const { createServer } = require("http");
 const { parse } = require("url");
 const next = require("next");
+const path = require("path");
+const fs = require("fs");
 
 const dev = process.env.NODE_ENV !== "production";
-const hostname = "localhost";
+const hostname = "0.0.0.0";
 const port = process.env.PORT || 3000;
 
-const app = next({ dev, hostname, port });
+const dir = fs.existsSync(path.join(__dirname, "web"))
+  ? path.join(__dirname, "web")
+  : __dirname;
+
+const app = next({ dev, hostname, port, dir });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
