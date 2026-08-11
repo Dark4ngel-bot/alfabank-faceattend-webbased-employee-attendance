@@ -25,6 +25,7 @@ function normalizeLogoSrc(value: string | null | undefined) {
 
   if (!logoSrc) return DEFAULT_SITE_LOGO_SRC;
   if (logoSrc.includes("/images/creativemu-logo/")) return DEFAULT_SITE_LOGO_SRC;
+  if (logoSrc === "/images/alfabank-logo/logo.png") return DEFAULT_SITE_LOGO_SRC;
   if (logoSrc.startsWith("/api/site-logo")) return DEFAULT_SITE_LOGO_SRC;
   if (logoSrc.startsWith("/")) return logoSrc;
   if (logoSrc.startsWith("http://") || logoSrc.startsWith("https://")) return logoSrc;
@@ -34,7 +35,6 @@ function normalizeLogoSrc(value: string | null | undefined) {
 
 export function normalizeSiteTitle(value: string | null | undefined) {
   const title = String(value || "").trim();
-  if (title.toLowerCase() === "creativemu") return DEFAULT_SITE_TITLE;
   return title || DEFAULT_SITE_TITLE;
 }
 
@@ -104,8 +104,14 @@ export async function updateSiteLogoSrc(logoSrc: string) {
 export async function updateSiteLogoFile(
   buffer: Uint8Array<ArrayBuffer>,
   mime: string,
+  fileName = "",
 ) {
-  const extension = mime.includes("svg")
+  const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
+  const extension = ["svg", "webp", "jpg", "jpeg", "png"].includes(fileExtension)
+    ? fileExtension === "jpeg"
+      ? "jpg"
+      : fileExtension
+    : mime.includes("svg")
     ? "svg"
     : mime.includes("webp")
       ? "webp"

@@ -141,6 +141,19 @@ async function parsePhotoBody(req: NextRequest): Promise<ParsedPhotoBody> {
   return dataUrlToBuffer(photoDataUrl.trim());
 }
 
+function getProfilePhotoEndpoint(userId: string) {
+  return `/api/profil/photo?userId=${encodeURIComponent(userId)}&raw=1`;
+}
+
+function toPrismaBytes(buffer: Buffer): Uint8Array<ArrayBuffer> {
+  const arrayBuffer = buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength,
+  ) as ArrayBuffer;
+
+  return new Uint8Array(arrayBuffer);
+}
+
 async function getSafeUser(userId: string) {
   return prisma.user.findUnique({
     where: {
@@ -199,60 +212,47 @@ function errorResponse(error: unknown, fallbackMessage: string) {
 
 export async function GET(req: NextRequest) {
   try {
-    const authUser = await requireAuth(req);
-    const { searchParams } = new URL(req.url);
-    const requestedUserId = searchParams.get("userId") || authUser.id;
-    const wantsRawPhoto =
-      searchParams.get("raw") === "1" || searchParams.has("userId");
-
-    if (
-      requestedUserId !== authUser.id &&
-      !["admin", "owner"].includes(String(authUser.role || "").toLowerCase())
-    ) {
-      throw new ApiError(403, "Akses ditolak.");
-    }
-
-    if (wantsRawPhoto) {
-      const photoUser = await prisma.user.findUnique({
-        where: {
-          id: requestedUserId,
-        },
-        select: {
-          profile_photo_data: true,
-          profile_photo_mime: true,
-          profile_photo: true,
-        },
-      });
-
-      if (!photoUser) {
-        throw new ApiError(404, "Data user tidak ditemukan.");
-      }
-
-      if (photoUser.profile_photo_data) {
-        return new NextResponse(new Uint8Array(photoUser.profile_photo_data), {
-          headers: {
-            "Content-Type": photoUser.profile_photo_mime || "image/jpeg",
-            "Cache-Control": "private, no-store",
-          },
-        });
-      }
-
-      throw new ApiError(404, "Foto profil belum tersedia.");
-    }
-
-    const userId = authUser.id;
-    const user = await getSafeUser(userId);
+    const authUserId = await getUserIdFromRequest(req);
+    const requestedUserId = req.nextUrl.searchParams.get("userId") || authUserId;
+    const isRaw = req.nextUrl.searchParams.get("raw") === "1";
+    const user = await getSafeUser(requestedUserId);
 
     if (!user) {
       throw new ApiError(404, "Data user tidak ditemukan.");
     }
 
+    if (isRaw) {
+      const rows = await prisma.$queryRawUnsafe<
+        Array<{ profile_photo_data: Buffer | Uint8Array | null; profile_photo_mime: string | null }>
+      >(
+        "SELECT profile_photo_data, profile_photo_mime FROM users WHERE id = ? LIMIT 1",
+        requestedUserId,
+      );
+      const photo = rows[0];
+
+      if (!photo?.profile_photo_data) {
+        throw new ApiError(404, "Foto profil tidak ditemukan.");
+      }
+
+      return new NextResponse(Buffer.from(photo.profile_photo_data), {
+        headers: {
+          "Content-Type": photo.profile_photo_mime || "image/jpeg",
+          "Cache-Control": "private, no-store, max-age=0",
+        },
+      });
+    }
+
+    const photoUrl = user.profile_photo ? getProfilePhotoEndpoint(requestedUserId) : null;
+
     return NextResponse.json({
       success: true,
-      photoUrl: user.profile_photo,
-      profilePhoto: user.profile_photo,
-      photo: user.profile_photo,
-      user,
+      photoUrl,
+      profilePhoto: photoUrl,
+      photo: photoUrl,
+      user: {
+        ...user,
+        profile_photo: photoUrl,
+      },
     });
   } catch (error) {
     return errorResponse(error, "GET_PROFILE_PHOTO_ERROR:");
@@ -296,9 +296,7 @@ export async function PATCH(req: NextRequest) {
       throw new ApiError(400, "Ukuran foto maksimal 5MB.");
     }
 
-    const photoUrl = `/api/profil/photo?userId=${encodeURIComponent(
-      userId,
-    )}&raw=1`;
+    const photoUrl = getProfilePhotoEndpoint(userId);
     const photoPublicId = null;
 
     const updatedUser = await prisma.user.update({
@@ -308,7 +306,7 @@ export async function PATCH(req: NextRequest) {
       data: {
         profile_photo: photoUrl,
         profile_photo_public_id: photoPublicId,
-        profile_photo_data: Uint8Array.from(buffer),
+        profile_photo_data: toPrismaBytes(buffer),
         profile_photo_mime: mime,
       },
       select: {

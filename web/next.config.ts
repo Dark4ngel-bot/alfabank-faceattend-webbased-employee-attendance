@@ -25,6 +25,9 @@ const nextConfig: NextConfig = {
         pathname: "/images/**",
       },
       {
+        pathname: "/uploads/**",
+      },
+      {
         pathname: "/api/site-logo",
       },
       {
