@@ -34,10 +34,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/api/site-logo?raw=1", type: "image/png" },
+      { url: "/icon.png", type: "image/png" },
     ],
-    shortcut: "/api/site-logo?raw=1",
-    apple: "/api/site-logo?raw=1",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
   },
   other: {
     google: "notranslate",
@@ -59,9 +59,9 @@ export default function RootLayout({
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/api/site-logo?raw=1" type="image/png" />
-        <link rel="shortcut icon" href="/api/site-logo?raw=1" />
-        <link rel="apple-touch-icon" href="/api/site-logo?raw=1" />
+        <link rel="icon" href="/icon.png" type="image/png" />
+        <link rel="shortcut icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="mobile-web-app-capable" content="yes" />
