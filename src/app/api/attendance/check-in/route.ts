@@ -1,0 +1,512 @@
+import { NextRequest, NextResponse } from "next/server";
+import { jwtVerify } from "jose";
+import { Buffer } from "node:buffer";
+import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
+
+const MAX_GPS_ACCURACY_METERS = 100;
+
+type ParsedAttendanceBody = {
+  photoBuffer: Buffer | null;
+  photoMime: string;
+  latitude: number | null;
+  longitude: number | null;
+  accuracy: number | null;
+};
+
+type GeoPoint = {
+  lat: number;
+  lng: number;
+};
+
+type OfficeGeofence = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  radius_meters: number;
+};
+
+async function getUserIdFromRequest(req: NextRequest) {
+  const token = req.cookies.get("faceattend_token")?.value;
+
+  if (!token) {
+    throw new Error("Token login tidak ditemukan.");
+  }
+
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET belum ada di file .env");
+  }
+
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+  const { payload } = await jwtVerify(token, secret);
+
+  const userId =
+    (payload.id as string | undefined) ||
+    (payload.userId as string | undefined) ||
+    (payload.sub as string | undefined);
+
+  if (!userId) {
+    throw new Error("User ID tidak ditemukan di token.");
+  }
+
+  return userId;
+}
+
+function getTodayDateOnly() {
+  const now = new Date();
+
+  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+}
+
+function toJakartaDate(date = new Date()) {
+  return new Date(date.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+}
+
+function timeToMinutes(time: string) {
+  const [hourText, minuteText] = time.split(":");
+  const hour = Number(hourText || 0);
+  const minute = Number(minuteText || 0);
+
+  return hour * 60 + minute;
+}
+
+function dateToMinutes(date: Date) {
+  const jakartaDate = toJakartaDate(date);
+
+  return jakartaDate.getHours() * 60 + jakartaDate.getMinutes();
+}
+
+function calculateLateMinutes(
+  checkInAt: Date,
+  startTime: string,
+  toleranceMinutes: number,
+) {
+  const checkInMinutes = dateToMinutes(checkInAt);
+  const startMinutes = timeToMinutes(startTime);
+  const late = checkInMinutes - startMinutes - toleranceMinutes;
+
+  return late > 0 ? late : 0;
+}
+
+function getShiftStartTime(shiftName?: string | null) {
+  const name = String(shiftName || "").toUpperCase();
+
+  if (name.includes("SHIFT SIANG")) return "13:00";
+  if (name.includes("SIANG")) return "13:00";
+
+  if (name.includes("SHIFT PAGI")) return "08:00";
+  if (name.includes("PAGI")) return "08:00";
+
+  if (name.includes("MAGANG")) return "08:00";
+  if (name.includes("UTAMA")) return "08:00";
+
+  return "08:00";
+}
+
+function toNumber(value: unknown) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function dataUrlToBuffer(dataUrl: string) {
+  const match = dataUrl.match(/^data:(.+);base64,(.+)$/);
+
+  if (!match) {
+    return {
+      buffer: Buffer.from(dataUrl, "base64"),
+      mime: "image/jpeg",
+    };
+  }
+
+  return {
+    buffer: Buffer.from(match[2], "base64"),
+    mime: match[1],
+  };
+}
+
+async function fileToBuffer(file: File) {
+  const arrayBuffer = await file.arrayBuffer();
+
+  return {
+    buffer: Buffer.from(arrayBuffer),
+    mime: file.type || "image/jpeg",
+  };
+}
+
+function getDistanceInMeters(from: GeoPoint, to: GeoPoint) {
+  const earthRadius = 6371000;
+
+  const lat1 = (from.lat * Math.PI) / 180;
+  const lat2 = (to.lat * Math.PI) / 180;
+
+  const deltaLat = ((to.lat - from.lat) * Math.PI) / 180;
+  const deltaLng = ((to.lng - from.lng) * Math.PI) / 180;
+
+  const a =
+    Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+    Math.cos(lat1) *
+      Math.cos(lat2) *
+      Math.sin(deltaLng / 2) *
+      Math.sin(deltaLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return earthRadius * c;
+}
+
+function findNearestValidOffice(
+  userLocation: GeoPoint,
+  offices: OfficeGeofence[],
+) {
+  const validOffices = offices
+    .map((office) => {
+      const distance = getDistanceInMeters(userLocation, {
+        lat: office.latitude,
+        lng: office.longitude,
+      });
+
+      return {
+        office,
+        distance,
+        isWithinRadius: distance <= office.radius_meters,
+      };
+    })
+    .filter((item) => item.isWithinRadius)
+    .sort((a, b) => a.distance - b.distance);
+
+  return validOffices[0] ?? null;
+}
+
+async function parseAttendanceBody(
+  req: NextRequest,
+): Promise<ParsedAttendanceBody> {
+  const contentType = req.headers.get("content-type") || "";
+
+  if (contentType.includes("multipart/form-data")) {
+    const formData = await req.formData();
+
+    const photo =
+      formData.get("photo") ||
+      formData.get("photoDataUrl") ||
+      formData.get("checkInPhoto") ||
+      formData.get("image");
+
+    const latitude = toNumber(
+      formData.get("latitude") ?? formData.get("checkInLatitude"),
+    );
+
+    const longitude = toNumber(
+      formData.get("longitude") ?? formData.get("checkInLongitude"),
+    );
+
+    const accuracy = toNumber(
+      formData.get("accuracy") ?? formData.get("checkInAccuracy"),
+    );
+
+    if (photo instanceof File) {
+      const result = await fileToBuffer(photo);
+
+      return {
+        photoBuffer: result.buffer,
+        photoMime: result.mime,
+        latitude,
+        longitude,
+        accuracy,
+      };
+    }
+
+    if (typeof photo === "string") {
+      const result = dataUrlToBuffer(photo);
+
+      return {
+        photoBuffer: result.buffer,
+        photoMime: result.mime,
+        latitude,
+        longitude,
+        accuracy,
+      };
+    }
+
+    return {
+      photoBuffer: null,
+      photoMime: "image/jpeg",
+      latitude,
+      longitude,
+      accuracy,
+    };
+  }
+
+  const body = await req.json();
+
+  const photoDataUrl =
+    typeof body.photo === "string"
+      ? body.photo
+      : typeof body.photoDataUrl === "string"
+        ? body.photoDataUrl
+        : typeof body.checkInPhoto === "string"
+          ? body.checkInPhoto
+          : typeof body.image === "string"
+            ? body.image
+            : null;
+
+  const latitude = toNumber(
+    body.latitude ?? body.checkInLatitude ?? body.location?.latitude,
+  );
+
+  const longitude = toNumber(
+    body.longitude ?? body.checkInLongitude ?? body.location?.longitude,
+  );
+
+  const accuracy = toNumber(
+    body.accuracy ?? body.checkInAccuracy ?? body.location?.accuracy,
+  );
+
+  if (!photoDataUrl) {
+    return {
+      photoBuffer: null,
+      photoMime: "image/jpeg",
+      latitude,
+      longitude,
+      accuracy,
+    };
+  }
+
+  const result = dataUrlToBuffer(photoDataUrl);
+
+  return {
+    photoBuffer: result.buffer,
+    photoMime: result.mime,
+    latitude,
+    longitude,
+    accuracy,
+  };
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const userId = await getUserIdFromRequest(req);
+
+    const { photoBuffer, photoMime, latitude, longitude, accuracy } =
+      await parseAttendanceBody(req);
+
+    if (!photoBuffer) {
+      return NextResponse.json(
+        { error: "Foto check-in wajib dikirim." },
+        { status: 400 },
+      );
+    }
+
+    if (latitude === null || longitude === null) {
+      return NextResponse.json(
+        { error: "Lokasi GPS check-in wajib dikirim." },
+        { status: 400 },
+      );
+    }
+
+    if (accuracy === null) {
+      return NextResponse.json(
+        { error: "Akurasi GPS check-in wajib dikirim." },
+        { status: 400 },
+      );
+    }
+
+    if (accuracy > MAX_GPS_ACCURACY_METERS) {
+      return NextResponse.json(
+        {
+          error: `Akurasi GPS terlalu rendah. Maksimal ±${MAX_GPS_ACCURACY_METERS} meter.`,
+          accuracy,
+        },
+        { status: 400 },
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        id: true,
+        status: true,
+        registered_office_id: true,
+        shift: {
+          select: {
+            id: true,
+            name: true,
+            tolerance_minutes: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Data user tidak ditemukan." },
+        { status: 404 },
+      );
+    }
+
+    if (user.status !== "active") {
+      return NextResponse.json(
+        { error: "Akun kamu sedang tidak aktif." },
+        { status: 403 },
+      );
+    }
+
+    const offices = await prisma.officeLocation.findMany({
+      where: {
+        status: "active",
+      },
+      select: {
+        id: true,
+        name: true,
+        latitude: true,
+        longitude: true,
+        radius_meters: true,
+      },
+    });
+
+    if (offices.length === 0) {
+      return NextResponse.json(
+        { error: "Belum ada data kantor aktif untuk validasi GPS." },
+        { status: 400 },
+      );
+    }
+
+    const matchedOffice = findNearestValidOffice(
+      {
+        lat: latitude,
+        lng: longitude,
+      },
+      offices,
+    );
+
+    if (!matchedOffice) {
+      return NextResponse.json(
+        {
+          error: "Lokasi kamu berada di luar radius semua kantor aktif.",
+          latitude,
+          longitude,
+          accuracy,
+        },
+        { status: 400 },
+      );
+    }
+
+    const now = new Date();
+    const today = getTodayDateOnly();
+
+    const existingAttendance = await prisma.attendance.findFirst({
+      where: {
+        user_id: userId,
+        attendance_date: today,
+      },
+    });
+
+    if (existingAttendance?.check_in_time) {
+      return NextResponse.json(
+        { error: "Kamu sudah melakukan check-in hari ini." },
+        { status: 400 },
+      );
+    }
+
+    const startTime = getShiftStartTime(user.shift?.name);
+    const toleranceMinutes = user.shift?.tolerance_minutes || 0;
+
+    const lateMinutes = calculateLateMinutes(
+      now,
+      startTime,
+      toleranceMinutes,
+    );
+
+    const attendanceStatus = lateMinutes > 0 ? "LATE" : "PRESENT";
+
+    const attendance = existingAttendance
+      ? await prisma.attendance.update({
+          where: {
+            id: existingAttendance.id,
+          },
+          data: {
+            check_in_time: now,
+            check_in_photo: photoBuffer,
+            check_in_photo_mime: photoMime,
+
+            check_in_latitude: latitude,
+            check_in_longitude: longitude,
+            check_in_accuracy: accuracy,
+            check_in_distance: matchedOffice.distance,
+            check_in_within_radius: true,
+
+            registered_office_id: user.registered_office_id,
+            check_in_office_id: matchedOffice.office.id,
+
+            status: attendanceStatus,
+            late_minutes: lateMinutes,
+            work_minutes: existingAttendance.work_minutes ?? 0,
+          },
+        })
+      : await prisma.attendance.create({
+          data: {
+            user_id: userId,
+            attendance_date: today,
+
+            check_in_time: now,
+            check_in_photo: photoBuffer,
+            check_in_photo_mime: photoMime,
+
+            check_in_latitude: latitude,
+            check_in_longitude: longitude,
+            check_in_accuracy: accuracy,
+            check_in_distance: matchedOffice.distance,
+            check_in_within_radius: true,
+
+            registered_office_id: user.registered_office_id,
+            check_in_office_id: matchedOffice.office.id,
+
+            status: attendanceStatus,
+            late_minutes: lateMinutes,
+            work_minutes: 0,
+          },
+        });
+
+    return NextResponse.json({
+      success: true,
+      message:
+        lateMinutes > 0
+          ? `Check-in berhasil. Kamu terlambat ${lateMinutes} menit.`
+          : "Check-in berhasil.",
+      attendanceId: attendance.id,
+      status: attendanceStatus,
+      lateMinutes,
+      schedule: {
+        shift: user.shift?.name || "Tanpa Shift",
+        startTime,
+        toleranceMinutes,
+      },
+      office: {
+        id: matchedOffice.office.id,
+        name: matchedOffice.office.name,
+        distance: Math.round(matchedOffice.distance),
+        radius: matchedOffice.office.radius_meters,
+      },
+      gps: {
+        latitude,
+        longitude,
+        accuracy: Math.round(accuracy),
+      },
+    });
+  } catch (error) {
+    console.error("CHECK_IN_ERROR:", error);
+
+    return NextResponse.json(
+      { error: "Gagal melakukan check-in." },
+      { status: 500 },
+    );
+  }
+}
