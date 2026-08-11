@@ -262,7 +262,7 @@ export default function EmployeeAnnouncementDetailPage() {
                     </a>
                   ) : (
                     <p className="mt-3 text-sm font-bold text-slate-400">
-                      Tidak ada dokumen.
+                      Tidak ada dokumen!
                     </p>
                   )}
                 </div>
