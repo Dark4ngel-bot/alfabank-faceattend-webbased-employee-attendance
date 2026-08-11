@@ -225,6 +225,7 @@ export default function AdminAttendanceRankPage() {
       const queryParams = new URLSearchParams({
         startDate,
         endDate,
+        from: "rank",
       });
       const response = await fetch(
         `/api/admin/employee-attendance-recap?${queryParams.toString()}`,

@@ -13,13 +13,13 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "portrait",
     icons: [
       {
-        src: "/images/creativemu-logo/creativemu-solo.png",
+        src: "/icons/presensi-icon-192.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "maskable",
       },
       {
-        src: "/images/creativemu-logo/creativemu-solo.png",
+        src: "/icons/presensi-icon-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

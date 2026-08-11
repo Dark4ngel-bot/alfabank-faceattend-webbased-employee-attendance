@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
+import {
+  getShiftKind,
+  getShiftWindowForSwapDate,
+  toShiftSwapDate,
+} from "@/lib/shift-swap-schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,6 +14,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   try {
     const authUser = await requireAuth(req);
+    const swapDateParam = req.nextUrl.searchParams.get("swapDate") || "";
+    const selectedDate = swapDateParam ? toShiftSwapDate(swapDateParam) : new Date();
 
     const currentUser = await prisma.user.findUnique({
       where: { id: authUser.id },
@@ -21,14 +28,19 @@ export async function GET(req: NextRequest) {
     const rawShiftName = currentUser?.shift?.name || "UTAMA";
     const userShiftUpper = rawShiftName.toUpperCase().trim();
 
-    const isShiftSiang = userShiftUpper.includes("SIANG");
+    const userShiftKind = getShiftKind(userShiftUpper);
+    const isPrimaryShift = userShiftKind === "utama";
 
     // Allowed colleague shift keywords for "Tukar Rekan"
     let allowedColleagueKeywords: string[] = [];
-    if (isShiftSiang) {
-      allowedColleagueKeywords = ["UTAMA", "PAGI"];
-    } else {
+    if (userShiftKind === "utama") {
       allowedColleagueKeywords = ["SIANG"];
+    } else if (userShiftKind === "siang") {
+      allowedColleagueKeywords = ["UTAMA", "PAGI"];
+    } else if (userShiftKind === "pagi") {
+      allowedColleagueKeywords = ["SIANG"];
+    } else {
+      allowedColleagueKeywords = ["PAGI", "SIANG"];
     }
 
     // Fetch active employees (excluding self and excluding MAGANG)
@@ -77,6 +89,14 @@ export async function GET(req: NextRequest) {
         name: true,
         start_time: true,
         end_time: true,
+        work_schedules: {
+          select: {
+            day_of_week: true,
+            is_work_day: true,
+            check_in_time: true,
+            check_out_time: true,
+          },
+        },
       },
       orderBy: {
         name: "asc",
@@ -98,11 +118,21 @@ export async function GET(req: NextRequest) {
       if (upperName.includes("MAGANG")) continue;
 
       if (!shiftMap.has(upperName)) {
+        const window = getShiftWindowForSwapDate(
+          {
+            name: upperName,
+            start_time: s.start_time,
+            end_time: s.end_time,
+            work_schedules: s.work_schedules,
+          },
+          selectedDate,
+        );
+
         shiftMap.set(upperName, {
           id: s.id,
           name: upperName,
-          startTime: s.start_time,
-          endTime: s.end_time,
+          startTime: window?.startTime || s.start_time,
+          endTime: window?.endTime || s.end_time,
         });
       }
     }
@@ -114,6 +144,15 @@ export async function GET(req: NextRequest) {
         name: "SHIFT SIANG",
         startTime: "13:00",
         endTime: "21:00",
+      });
+    }
+
+    if (!shiftMap.has("SHIFT PAGI")) {
+      shiftMap.set("SHIFT PAGI", {
+        id: "shift-pagi-default",
+        name: "SHIFT PAGI",
+        startTime: "06:00",
+        endTime: "14:00",
       });
     }
 
@@ -129,14 +168,17 @@ export async function GET(req: NextRequest) {
     const allShiftOptions = Array.from(shiftMap.values());
 
     // Target shift options for "Geser Shift Mandiri":
-    // Strictly for moving to SHIFT SIANG!
-    const availableShifts: AvailableShiftItem[] = allShiftOptions.filter(
-      (s) => s.name.includes("SIANG"),
-    );
+    // Only karyawan utama can move to shift pagi / shift siang.
+    const availableShifts: AvailableShiftItem[] = isPrimaryShift
+      ? allShiftOptions.filter(
+          (s) => s.name.includes("PAGI") || s.name.includes("SIANG"),
+        )
+      : [];
 
     return NextResponse.json({
       success: true,
       currentShiftName: userShiftUpper,
+      canSelfShift: isPrimaryShift,
       colleagues: filteredColleagues.map((col) => ({
         id: col.id,
         name: col.name,

@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Presensi",
+  title: "Presensi Creativemu",
   description: "Sistem Presensi Karyawan",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -34,15 +34,15 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/images/creativemu-logo/creativemu-solo.png" },
-      { url: "/favicon.png", type: "image/png" },
+      { url: "/icon.png", type: "image/png" },
     ],
-    shortcut: "/images/creativemu-logo/creativemu-solo.png",
-    apple: "/images/creativemu-logo/creativemu-solo.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
   },
   other: {
     google: "notranslate",
     "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-title": "Presensi",
   },
 };
 
@@ -60,10 +60,11 @@ export default function RootLayout({
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" type="image/png" />
-        <link rel="shortcut icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" />
-        <link rel="apple-touch-icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" />
+        <link rel="icon" href="/icon.png" type="image/png" />
+        <link rel="shortcut icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Presensi" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>

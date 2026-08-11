@@ -879,6 +879,7 @@ export function AppLoadingState({
             aria-hidden="true"
             width={56}
             height={56}
+            unoptimized
             className="app-brand-loader-pulse h-14 w-14 object-contain"
           />
         </div>
@@ -905,7 +906,7 @@ export function AppModalMotion({
 
       <div
         className={cn(
-          "app-modal-backdrop-enter fixed inset-0 z-[80] flex bg-slate-950/25 backdrop-blur-md px-4 pb-4",
+          "app-modal-backdrop-enter fixed inset-0 z-[80] flex bg-transparent px-4 pb-4",
           align === "center" &&
             "items-end justify-center md:items-center md:pb-0",
           align === "bottom" && "items-end justify-center",

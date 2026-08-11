@@ -267,7 +267,6 @@ const initialForm: EmployeeForm = {
 };
 
 const EMPLOYEE_REQUEST_TIMEOUT_MS = 15_000;
-
 function getInitialName(name: string) {
   return name
     .split(" ")
@@ -918,19 +917,20 @@ export default function AdminEmployeesPage() {
       return;
     }
 
-    if (!isEditing && (!temporaryPassword || !confirmTemporaryPassword)) {
+    if (passwordForSave && passwordForSave.length < 8) {
       showEmployeeAlert(
-        "Data belum lengkap",
-        "Password dan konfirmasi password wajib diisi untuk employee baru.",
+        "Password terlalu pendek",
+        "Password minimal 8 karakter agar akun employee lebih aman.",
         "warning",
       );
       return;
     }
 
-    if (passwordForSave && passwordForSave.length < 8) {
+    if (!isEditing && (!temporaryPassword || !confirmTemporaryPassword)) {
+      setActiveModalTab("account");
       showEmployeeAlert(
-        "Password terlalu pendek",
-        "Password minimal 8 karakter agar akun employee lebih aman.",
+        "Password belum lengkap",
+        "Password dan konfirmasi password wajib diisi saat membuat employee baru.",
         "warning",
       );
       return;
@@ -1097,8 +1097,8 @@ export default function AdminEmployeesPage() {
       showEmployeeAlert(
         isEditing ? "Karyawan diperbarui" : "Karyawan berhasil dibuat",
         isEditing
-          ? "Data akun berhasil diperbarui dan sudah tersimpan di database."
-          : "Akun baru berhasil dibuat dan siap digunakan untuk login.",
+          ? "Data akun berhasil diperbarui dan sudah tersimpan."
+          : "Akun baru berhasil dibuat dengan password yang diisi.",
         "success",
       );
     } catch (error) {
@@ -1539,6 +1539,11 @@ export default function AdminEmployeesPage() {
                     ? "Perbarui Data Karyawan"
                     : "Tambah Karyawan Baru"}
                 </h2>
+
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  Isi & perbarui data karyawan melalui 4 tab terstruktur di
+                  bawah.
+                </p>
               </div>
 
               <button
@@ -1610,7 +1615,10 @@ export default function AdminEmployeesPage() {
             <form
               onSubmit={handleSubmit}
               onKeyDown={(event) => {
-                if (event.key === "Enter" && (event.target as HTMLElement).tagName === "INPUT") {
+                if (
+                  event.key === "Enter" &&
+                  (event.target as HTMLElement).tagName === "INPUT"
+                ) {
                   event.preventDefault();
                 }
               }}
@@ -1725,7 +1733,7 @@ export default function AdminEmployeesPage() {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
                       <label className="mb-2 block text-sm font-black text-slate-700">
-                        {editingEmployee ? "Password Baru (Opsional)" : "Password Sementara"}
+                        {editingEmployee ? "Password Baru (Opsional)" : "Password"}
                       </label>
                       <div className="app-field-smooth relative rounded-2xl">
                         <KeyRound
@@ -1744,8 +1752,9 @@ export default function AdminEmployeesPage() {
                           placeholder={
                             editingEmployee
                               ? "Biarkan kosong jika tidak diubah"
-                              : "Password sementara"
+                              : "Minimal 8 karakter"
                           }
+                          autoComplete="new-password"
                           className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                         />
                         <button
@@ -1754,6 +1763,11 @@ export default function AdminEmployeesPage() {
                             setShowTemporaryPassword((prev) => !prev)
                           }
                           className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+                          aria-label={
+                            showTemporaryPassword
+                              ? "Sembunyikan password"
+                              : "Tampilkan password"
+                          }
                         >
                           {showTemporaryPassword ? (
                             <EyeOff size={18} />
@@ -1766,7 +1780,9 @@ export default function AdminEmployeesPage() {
 
                     <div>
                       <label className="mb-2 block text-sm font-black text-slate-700">
-                        {editingEmployee ? "Konfirmasi Password Baru" : "Konfirmasi Password"}
+                        {editingEmployee
+                          ? "Konfirmasi Password Baru"
+                          : "Konfirmasi Password"}
                       </label>
                       <div className="app-field-smooth relative rounded-2xl">
                         <KeyRound
@@ -1789,6 +1805,7 @@ export default function AdminEmployeesPage() {
                               ? "Ulangi password baru"
                               : "Ulangi password"
                           }
+                          autoComplete="new-password"
                           className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3 pl-11 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                         />
                         <button
@@ -1797,6 +1814,11 @@ export default function AdminEmployeesPage() {
                             setShowConfirmTemporaryPassword((prev) => !prev)
                           }
                           className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+                          aria-label={
+                            showConfirmTemporaryPassword
+                              ? "Sembunyikan konfirmasi password"
+                              : "Tampilkan konfirmasi password"
+                          }
                         >
                           {showConfirmTemporaryPassword ? (
                             <EyeOff size={18} />
@@ -1963,7 +1985,8 @@ export default function AdminEmployeesPage() {
                           <option value="">Pilih Shift</option>
                           {activeShifts.map((shift) => (
                             <option key={shift.id} value={shift.id}>
-                              {shift.name} - Toleransi {shift.tolerance_minutes} m
+                              {shift.name} - Toleransi {shift.tolerance_minutes}{" "}
+                              m
                             </option>
                           ))}
                         </select>
@@ -1987,7 +2010,9 @@ export default function AdminEmployeesPage() {
                           onChange={(event) =>
                             setForm((prev) => ({
                               ...prev,
-                              status: event.target.value as "active" | "inactive",
+                              status: event.target.value as
+                                | "active"
+                                | "inactive",
                             }))
                           }
                           className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"

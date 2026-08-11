@@ -39,6 +39,11 @@ async function loadAppTheme() {
     };
 
     if (data.success && data.theme) {
+      if (storedTheme && isDefaultAppTheme(data.theme)) {
+        applyAppTheme(storedTheme);
+        return;
+      }
+
       applyAppTheme(data.theme);
       storeAppTheme(data.theme);
       return;

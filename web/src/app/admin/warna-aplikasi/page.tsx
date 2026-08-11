@@ -1,13 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import {
-  CheckCircle2,
-  Loader2,
-  Palette,
-  RotateCcw,
-  Save,
-} from "lucide-react";
+import { CheckCircle2, Loader2, Palette, RotateCcw, Save } from "lucide-react";
 
 import AppHeader from "@/components/AppHeader";
 import MobileShell from "@/components/MobileShell";
@@ -20,14 +14,6 @@ import {
   DEFAULT_APP_THEME,
   type AppThemeSettings,
 } from "@/lib/app-theme-defaults";
-import {
-  applyAppTheme,
-  clearStoredAppTheme,
-  isDefaultAppTheme,
-  normalizeClientAppTheme,
-  readStoredAppTheme,
-  storeAppTheme,
-} from "@/lib/app-theme-client";
 
 type AppThemeResponse = {
   success?: boolean;
@@ -39,34 +25,35 @@ type AppThemeResponse = {
 const colorFields: Array<{
   key: keyof AppThemeSettings;
   label: string;
-  description: string;
+  helper: string;
 }> = [
-    {
-      key: "primaryColor",
-      label: "Warna Utama (Tombol & Header)",
-      description: "Digunakan pada latar belakang tombol utama, kartu aktif, dan elemen dominan.",
-    },
-    {
-      key: "primaryHoverColor",
-      label: "Warna Hover Tombol",
-      description: "Warna saat tombol utama ditunjuk (hover) oleh kursor.",
-    },
-    {
-      key: "softColor",
-      label: "Warna Latar Soft / Muda",
-      description: "Digunakan pada badge, background ikon, dan tombol tipe soft.",
-    },
-    {
-      key: "subtleColor",
-      label: "Warna Latar Tipis / Halus",
-      description: "Warna latar belakang alternatif yang sangat lembut untuk area pendukung.",
-    },
-    {
-      key: "textColor",
-      label: "Warna Teks & Ikon Tema",
-      description: "Digunakan pada teks utama bertema, judul kartu, dan ikon penjelas.",
-    },
-  ];
+  {
+    key: "primaryColor",
+    label: "Warna Utama",
+    helper:
+      "Untuk tombol aktif, blok utama, sidebar aktif, dan background biru.",
+  },
+  {
+    key: "primaryHoverColor",
+    label: "Warna Hover",
+    helper: "Untuk tombol saat disentuh atau diarahkan kursor.",
+  },
+  {
+    key: "softColor",
+    label: "Warna Muda",
+    helper: "Untuk badge, ikon, dan area biru muda.",
+  },
+  {
+    key: "subtleColor",
+    label: "Warna Latar Halus",
+    helper: "Untuk panel, input, dan background lembut.",
+  },
+  {
+    key: "textColor",
+    label: "Warna Tulisan Biru",
+    helper: "Untuk teks yang sebelumnya berwarna biru.",
+  },
+];
 
 async function readJsonResponse(response: Response) {
   const text = await response.text();
@@ -107,17 +94,8 @@ export default function AdminAppThemePage() {
         return;
       }
 
-      const storedTheme = readStoredAppTheme();
-      const loadedTheme = data.theme || DEFAULT_APP_THEME;
-      const nextTheme =
-        storedTheme && isDefaultAppTheme(loadedTheme)
-          ? storedTheme
-          : loadedTheme;
-
-      setTheme(nextTheme);
+      setTheme(data.theme || DEFAULT_APP_THEME);
       setDefaultTheme(data.defaultTheme || DEFAULT_APP_THEME);
-      applyAppTheme(nextTheme);
-      storeAppTheme(nextTheme);
       notifyAppThemeChanged();
     } catch (error) {
       setErrorMessage(
@@ -137,17 +115,10 @@ export default function AdminAppThemePage() {
   function updateColor(key: keyof AppThemeSettings, value: string) {
     setFeedbackMessage("");
     setErrorMessage("");
-    setTheme((currentTheme) => {
-      const nextTheme = normalizeClientAppTheme({
-        ...currentTheme,
-        [key]: value,
-      });
-
-      applyAppTheme(nextTheme);
-      storeAppTheme(nextTheme);
-
-      return nextTheme;
-    });
+    setTheme((currentTheme) => ({
+      ...currentTheme,
+      [key]: value,
+    }));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -172,11 +143,8 @@ export default function AdminAppThemePage() {
         return;
       }
 
-      const nextTheme = data.theme || DEFAULT_APP_THEME;
-      setTheme(nextTheme);
+      setTheme(data.theme || DEFAULT_APP_THEME);
       setDefaultTheme(data.defaultTheme || DEFAULT_APP_THEME);
-      applyAppTheme(nextTheme);
-      storeAppTheme(nextTheme);
       setFeedbackMessage(data.message || "Warna aplikasi berhasil diperbarui.");
       notifyAppThemeChanged();
     } catch (error) {
@@ -208,12 +176,8 @@ export default function AdminAppThemePage() {
         return;
       }
 
-      const nextTheme = data.theme || DEFAULT_APP_THEME;
-      clearStoredAppTheme();
-      setTheme(nextTheme);
+      setTheme(data.theme || DEFAULT_APP_THEME);
       setDefaultTheme(data.defaultTheme || DEFAULT_APP_THEME);
-      applyAppTheme(nextTheme);
-      storeAppTheme(nextTheme);
       setFeedbackMessage(data.message || "Warna berhasil dikembalikan.");
       notifyAppThemeChanged();
     } catch (error) {
@@ -228,10 +192,10 @@ export default function AdminAppThemePage() {
   }
 
   return (
-    <MobileShell variant="admin" withBottomPadding={false}>
+    <MobileShell variant="admin">
       <AppHeader title="Warna Aplikasi" variant="admin" />
 
-      <main className="min-h-[calc(100dvh-88px)] bg-[#f6f8ff] px-4 pb-12 pt-6 md:px-8 md:pb-16 lg:px-16">
+      <main className="min-h-[calc(100dvh-88px)] bg-[#f6f8ff] px-4 pb-24 pt-6 md:px-8 lg:px-16">
         <AppPageTransition className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[1.05fr_0.95fr]">
           <AppFormReveal delay={60}>
             <section className="rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
@@ -278,8 +242,8 @@ export default function AdminAppThemePage() {
                         <span className="block text-sm font-black text-slate-800">
                           {field.label}
                         </span>
-                        <span className="mt-0.5 block text-xs font-semibold text-slate-500">
-                          {field.description}
+                        <span className="mt-1 block text-xs font-bold leading-5 text-slate-500">
+                          {field.helper}
                         </span>
                       </span>
 
@@ -342,61 +306,28 @@ export default function AdminAppThemePage() {
                 Contoh Tampilan
               </h2>
 
-              <div
-                className="mt-5 overflow-hidden rounded-3xl p-5 text-white shadow-2xl shadow-blue-900/20 transition-colors duration-200"
-                style={{ backgroundColor: theme.primaryColor }}
-              >
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-white/80">
+              <div className="mt-5 overflow-hidden rounded-3xl bg-[#123c8c] p-5 text-white shadow-2xl shadow-blue-900/20">
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-blue-100">
                   Check-in
                 </p>
                 <h3 className="mt-2 text-2xl font-black">Presensi Hari Ini</h3>
+                <p className="mt-2 text-sm font-bold text-blue-100">
+                  Warna utama mengikuti pilihan admin.
+                </p>
               </div>
 
               <div className="mt-4 grid grid-cols-2 overflow-hidden rounded-2xl border border-blue-100 bg-white">
-                <div
-                  className="px-4 py-4 text-center text-sm font-black uppercase tracking-[0.12em] transition-colors duration-200"
-                  style={{
-                    backgroundColor: theme.softColor,
-                    color: theme.textColor,
-                  }}
-                >
+                <div className="bg-[#eaf1ff] px-4 py-4 text-center text-sm font-black uppercase tracking-[0.12em] text-[#123c8c]">
                   Check-in
                 </div>
-                <div
-                  className="px-4 py-4 text-center text-sm font-black uppercase tracking-[0.12em] transition-colors duration-200"
-                  style={{ color: theme.textColor }}
-                >
+                <div className="px-4 py-4 text-center text-sm font-black uppercase tracking-[0.12em] text-[#123c8c]">
                   Check-out
                 </div>
               </div>
 
-              <div className="mt-4">
-                <button
-                  type="button"
-                  className="w-full rounded-2xl px-5 py-3.5 text-sm font-black text-white shadow-lg transition-all duration-200 active:scale-[0.98]"
-                  style={{
-                    backgroundColor: theme.primaryColor,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = theme.primaryHoverColor;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = theme.primaryColor;
-                  }}
-                >
-                  Hover Tombol Ini (Uji Warna Hover)
-                </button>
-              </div>
-
-              <div
-                className="mt-4 rounded-2xl border border-blue-100 p-4 transition-colors duration-200"
-                style={{ backgroundColor: theme.subtleColor }}
-              >
-                <p
-                  className="text-sm font-black transition-colors duration-200"
-                  style={{ color: theme.textColor }}
-                >
-                  Tulisan & latar halus ikut berubah.
+              <div className="mt-4 rounded-2xl border border-blue-100 bg-[#f8fbff] p-4">
+                <p className="text-sm font-black text-[#123c8c]">
+                  Tulisan biru juga ikut berubah.
                 </p>
                 <p className="mt-1 text-xs font-bold leading-5 text-slate-500">
                   Default: {defaultTheme.primaryColor}

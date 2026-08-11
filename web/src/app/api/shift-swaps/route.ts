@@ -1,17 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
+import {
+  findActiveLeaveForDate,
+  formatJakartaDate,
+  getLeaveTypeLabel,
+} from "@/lib/leave-attendance-guard";
 import { prisma } from "@/lib/prisma";
 import {
+  buildFallbackShift,
+  canSwapShiftPair,
   ensureShiftSwapTable,
   formatShiftSwapDate,
+  getShiftKind,
+  getShiftSwapCutoffMessage,
   getShiftWindowForSwapDate,
-  shiftWindowsOverlap,
   toShiftSwapDate,
 } from "@/lib/shift-swap-schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+async function getShiftSwapLeaveBlock(params: {
+  requesterId: string;
+  requesterName?: string | null;
+  targetUserId: string;
+  targetUserName?: string | null;
+  swapDate: Date;
+}) {
+  const [requesterLeave, targetLeave] = await Promise.all([
+    findActiveLeaveForDate({
+      userId: params.requesterId,
+      date: params.swapDate,
+    }),
+    findActiveLeaveForDate({
+      userId: params.targetUserId,
+      date: params.swapDate,
+    }),
+  ]);
+
+  const blockedLeave = requesterLeave || targetLeave;
+  if (!blockedLeave) return null;
+
+  const isRequesterBlocked = Boolean(requesterLeave);
+  const employeeName = isRequesterBlocked
+    ? params.requesterName || "Kamu"
+    : params.targetUserName || "Rekan kerja";
+  const leaveLabel = getLeaveTypeLabel(blockedLeave.leave_type);
+
+  return `${employeeName} sedang dalam periode ${leaveLabel} pada ${formatJakartaDate(
+    params.swapDate,
+  )}. Tukar shift tidak dapat diajukan kecuali untuk periode lembur.`;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -170,6 +210,16 @@ export async function POST(req: NextRequest) {
 
     // MODE GESER SHIFT MANDIRI (Self Shift Adjustment)
     if (isSelfShift) {
+      const requesterShiftUpper = requesterShiftName.trim().toUpperCase();
+      const targetShiftUpper = targetShiftName.trim().toUpperCase();
+
+      if (getShiftKind(requesterShiftUpper) !== "utama") {
+        return NextResponse.json(
+          { error: "Geser shift hanya berlaku untuk karyawan utama." },
+          { status: 400 },
+        );
+      }
+
       if (!targetShiftName) {
         return NextResponse.json(
           { error: "Pilih shift tujuan (misalnya Shift Siang)." },
@@ -177,11 +227,60 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      if (targetShiftName.trim().toUpperCase() === requesterShiftName.trim().toUpperCase()) {
+      const targetShiftKind = getShiftKind(targetShiftUpper);
+
+      if (targetShiftKind !== "pagi" && targetShiftKind !== "siang") {
+        return NextResponse.json(
+          { error: "Karyawan utama hanya bisa geser ke Shift Pagi atau Shift Siang." },
+          { status: 400 },
+        );
+      }
+
+      if (targetShiftUpper === requesterShiftUpper) {
         return NextResponse.json(
           { error: `Kamu sudah berada pada ${requesterShiftName}. Pilih shift yang berbeda.` },
           { status: 400 },
         );
+      }
+
+      const targetShiftList = await prisma.shift.findMany({
+        where: {
+          status: { in: ["active", "ACTIVE"] },
+        },
+        select: {
+          name: true,
+          start_time: true,
+          end_time: true,
+          work_schedules: {
+            select: {
+              day_of_week: true,
+              is_work_day: true,
+              check_in_time: true,
+              check_out_time: true,
+            },
+          },
+        },
+      });
+      const targetShift =
+        targetShiftList.find(
+          (shift) => shift.name.trim().toUpperCase() === targetShiftUpper,
+        ) || buildFallbackShift(targetShiftName);
+      const targetWindow = getShiftWindowForSwapDate(targetShift, swapDate);
+
+      if (!targetWindow) {
+        return NextResponse.json(
+          { error: "Jadwal shift tujuan pada tanggal tersebut belum lengkap atau bukan hari kerja." },
+          { status: 400 },
+        );
+      }
+
+      const cutoffMessage = getShiftSwapCutoffMessage({
+        swapDate,
+        windows: [targetWindow],
+      });
+
+      if (cutoffMessage) {
+        return NextResponse.json({ error: cutoffMessage }, { status: 400 });
       }
 
       // Check if already submitted for this date
@@ -194,6 +293,17 @@ export async function POST(req: NextRequest) {
       });
 
       if (existingPendingOrApproved) {
+        if (
+          existingPendingOrApproved.status === "approved" &&
+          existingPendingOrApproved.target_user_id === user.id
+        ) {
+          return NextResponse.json({
+            success: true,
+            message: `Jam kerja untuk tanggal tersebut sudah digeser ke ${existingPendingOrApproved.target_shift_name}. Presensi akan menggunakan jadwal ${existingPendingOrApproved.target_shift_name}.`,
+            request: existingPendingOrApproved,
+          });
+        }
+
         return NextResponse.json(
           { error: "Kamu sudah memiliki pergeseran/tukar shift untuk tanggal tersebut." },
           { status: 400 },
@@ -279,6 +389,30 @@ export async function POST(req: NextRequest) {
     }
 
     const targetShiftNameForColleague = targetUser.shift?.name || "Shift Utama";
+    const requesterShiftUpper = requesterShiftName.trim().toUpperCase();
+    const targetShiftUpper = targetShiftNameForColleague.trim().toUpperCase();
+
+    if (!canSwapShiftPair(requesterShiftUpper, targetShiftUpper)) {
+      return NextResponse.json(
+        {
+          error:
+            "Aturan tukar shift: Utama hanya bisa tukar dengan Shift Siang, Shift Pagi hanya bisa tukar dengan Shift Siang, dan Shift Utama tidak bisa tukar dengan Shift Pagi.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const leaveBlockMessage = await getShiftSwapLeaveBlock({
+      requesterId: user.id,
+      requesterName: "Kamu",
+      targetUserId,
+      targetUserName: targetUser.name,
+      swapDate,
+    });
+
+    if (leaveBlockMessage) {
+      return NextResponse.json({ error: leaveBlockMessage }, { status: 400 });
+    }
 
     if (!user.shift || !targetUser.shift) {
       return NextResponse.json(
@@ -297,13 +431,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (shiftWindowsOverlap(requesterWindow, targetWindow)) {
-      return NextResponse.json(
-        {
-          error: `${requesterWindow.shiftName} (${requesterWindow.startTime}-${requesterWindow.endTime}) tidak bisa ditukar dengan ${targetWindow.shiftName} (${targetWindow.startTime}-${targetWindow.endTime}) karena jam kerjanya masih saling bertabrakan.`,
-        },
-        { status: 400 },
-      );
+    const cutoffMessage = getShiftSwapCutoffMessage({
+      swapDate,
+      windows: [requesterWindow, targetWindow],
+    });
+
+    if (cutoffMessage) {
+      return NextResponse.json({ error: cutoffMessage }, { status: 400 });
     }
 
     const existingPending = await prisma.shiftSwapRequest.findFirst({
