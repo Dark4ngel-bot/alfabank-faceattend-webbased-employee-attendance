@@ -1,7 +1,7 @@
-export const DEFAULT_SITE_LOGO_SRC = "/images/creativemu-logo/creativemu.png";
-export const DEFAULT_SITE_MARK_LOGO_SRC =
-  "/images/creativemu-logo/creativemu-solo.png";
-export const DEFAULT_SITE_TITLE = "Creativemu";
+export const DEFAULT_SITE_LOGO_SRC = "/api/site-logo?raw=1";
+export const DEFAULT_SITE_MARK_LOGO_SRC = "/api/site-logo?raw=1";
+export const DEFAULT_SITE_LOGO_MIME = "image/png";
+export const DEFAULT_SITE_TITLE = "Alfabank";
 
 export type SiteLogoSettings = {
   logoSrc: string;

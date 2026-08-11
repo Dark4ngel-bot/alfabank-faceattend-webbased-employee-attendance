@@ -632,9 +632,10 @@ export default function HomePage() {
                   <div className="home-icon-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-blue-100">
                     <Image
                       src={logoSrc}
-                      alt="Creativemu Logo"
+                      alt="Logo aplikasi"
                       width={64}
                       height={59}
+                      unoptimized
                       className="h-full w-full object-contain"
                       priority
                     />

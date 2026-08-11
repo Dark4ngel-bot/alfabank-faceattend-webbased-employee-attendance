@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createToken, verifyPassword } from "@/lib/auth";
-import { isCreativemuEmail } from "@/lib/creativemu-email";
 import { deactivateExpiredEmployee } from "@/lib/employment-period";
 
 const LOGIN_RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 5;
 
 type LoginAttempt = {
+  rate_limit_key: string;
   attempt_count: number | bigint;
   reset_at: Date | string;
 };
@@ -68,25 +69,30 @@ async function ensureLoginRateLimitsTable() {
   return ok;
 }
 
-async function getActiveAttempt(key: string) {
+async function getActiveAttempts(keys: string[]) {
   try {
     const rows = await prisma.$queryRaw<LoginAttempt[]>`
-      SELECT attempt_count, reset_at
+      SELECT rate_limit_key, attempt_count, reset_at
       FROM login_rate_limits
-      WHERE rate_limit_key = ${key}
-      LIMIT 1
+      WHERE rate_limit_key IN (${Prisma.join(keys)})
     `;
 
-    const attempt = rows[0];
+    const activeAttempts: LoginAttempt[] = [];
+    const expiredKeys: string[] = [];
 
-    if (!attempt) return null;
-
-    if (toTime(attempt.reset_at) <= Date.now()) {
-      await clearFailedLogin(key);
-      return null;
+    for (const attempt of rows) {
+      if (toTime(attempt.reset_at) <= Date.now()) {
+        expiredKeys.push(attempt.rate_limit_key);
+      } else {
+        activeAttempts.push(attempt);
+      }
     }
 
-    return attempt;
+    if (expiredKeys.length > 0) {
+      await clearFailedLogins(expiredKeys);
+    }
+
+    return activeAttempts;
   } catch (error) {
     const isMissingTable =
       String(error).includes("1146") ||
@@ -97,35 +103,28 @@ async function getActiveAttempt(key: string) {
     } else {
       console.warn("GET_ACTIVE_LOGIN_ATTEMPT_WARN:", error);
     }
-    return null;
+    return [];
   }
-}
-
-async function isRateLimited(key: string) {
-  const attempt = await getActiveAttempt(key);
-
-  if (
-    !attempt ||
-    Number(attempt.attempt_count) < LOGIN_RATE_LIMIT_MAX_ATTEMPTS
-  ) {
-    return null;
-  }
-
-  return getRetryAfterSeconds(toTime(attempt.reset_at));
 }
 
 async function getRateLimitedRetryAfter(keys: string[]) {
-  const retryAfterValues = await Promise.all(keys.map(isRateLimited));
-  const activeRetryAfterValues = retryAfterValues.filter(
-    (value): value is number => value !== null,
-  );
+  const attempts = await getActiveAttempts(keys);
+  const activeRetryAfterValues: number[] = [];
+
+  for (const attempt of attempts) {
+    if (Number(attempt.attempt_count) >= LOGIN_RATE_LIMIT_MAX_ATTEMPTS) {
+      activeRetryAfterValues.push(
+        getRetryAfterSeconds(toTime(attempt.reset_at)),
+      );
+    }
+  }
 
   if (activeRetryAfterValues.length === 0) return null;
 
   return Math.max(...activeRetryAfterValues);
 }
 
-async function recordFailedLogin(key: string) {
+async function recordFailedLogins(keys: string[]) {
   const resetAt = new Date(Date.now() + LOGIN_RATE_LIMIT_WINDOW_MS);
 
   try {
@@ -137,7 +136,9 @@ async function recordFailedLogin(key: string) {
         created_at,
         updated_at
       )
-      VALUES (${key}, 1, ${resetAt}, NOW(3), NOW(3))
+      VALUES ${Prisma.join(
+        keys.map((key) => Prisma.sql`(${key}, 1, ${resetAt}, NOW(3), NOW(3))`),
+      )}
       ON DUPLICATE KEY UPDATE
         attempt_count = IF(reset_at <= NOW(3), 1, attempt_count + 1),
         reset_at = IF(reset_at <= NOW(3), VALUES(reset_at), reset_at),
@@ -159,7 +160,11 @@ async function recordFailedLogin(key: string) {
             created_at,
             updated_at
           )
-          VALUES (${key}, 1, ${resetAt}, NOW(3), NOW(3))
+          VALUES ${Prisma.join(
+            keys.map(
+              (key) => Prisma.sql`(${key}, 1, ${resetAt}, NOW(3), NOW(3))`,
+            ),
+          )}
           ON DUPLICATE KEY UPDATE
             attempt_count = IF(reset_at <= NOW(3), 1, attempt_count + 1),
             reset_at = IF(reset_at <= NOW(3), VALUES(reset_at), reset_at),
@@ -174,23 +179,15 @@ async function recordFailedLogin(key: string) {
   }
 }
 
-async function clearFailedLogin(key: string) {
+async function clearFailedLogins(keys: string[]) {
   try {
     await prisma.$executeRaw`
       DELETE FROM login_rate_limits
-      WHERE rate_limit_key = ${key}
+      WHERE rate_limit_key IN (${Prisma.join(keys)})
     `;
   } catch (error) {
     console.warn("CLEAR_FAILED_LOGIN_WARN:", error);
   }
-}
-
-async function recordFailedLogins(keys: string[]) {
-  await Promise.all(keys.map(recordFailedLogin));
-}
-
-async function clearFailedLogins(keys: string[]) {
-  await Promise.all(keys.map(clearFailedLogin));
 }
 
 function rateLimitResponse(retryAfterSeconds: number) {

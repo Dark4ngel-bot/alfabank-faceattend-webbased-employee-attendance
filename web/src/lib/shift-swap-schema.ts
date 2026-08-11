@@ -70,6 +70,131 @@ function timeToMinutes(value: string) {
   return hour * 60 + minute;
 }
 
+export function getShiftKind(shiftName?: string | null) {
+  const name = String(shiftName || "").toUpperCase();
+
+  if (name.includes("SIANG")) return "siang";
+  if (name.includes("PAGI")) return "pagi";
+  if (name.includes("UTAMA")) return "utama";
+
+  return "other";
+}
+
+export function canSwapShiftPair(firstShiftName?: string | null, secondShiftName?: string | null) {
+  const firstKind = getShiftKind(firstShiftName);
+  const secondKind = getShiftKind(secondShiftName);
+
+  if (firstKind === "other" || secondKind === "other") return false;
+  if (firstKind === secondKind) return false;
+  if (
+    (firstKind === "utama" && secondKind === "pagi") ||
+    (firstKind === "pagi" && secondKind === "utama")
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+export function buildFallbackShift(shiftName: string): ShiftWithSchedules {
+  const kind = getShiftKind(shiftName);
+
+  if (kind === "pagi") {
+    return {
+      name: shiftName,
+      start_time: "09:00",
+      end_time: "17:00",
+    };
+  }
+
+  if (kind === "siang") {
+    return {
+      name: shiftName,
+      start_time: "12:30",
+      end_time: "20:30",
+    };
+  }
+
+  return {
+    name: shiftName,
+    start_time: "09:00",
+    end_time: "18:00",
+  };
+}
+
+function getJakartaDateParts(date: Date) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(date);
+  const getPart = (type: string) =>
+    Number(parts.find((part) => part.type === type)?.value || "0");
+
+  return {
+    year: getPart("year"),
+    month: getPart("month"),
+    day: getPart("day"),
+    hour: getPart("hour"),
+    minute: getPart("minute"),
+  };
+}
+
+function getSwapDateKey(date: Date) {
+  return formatShiftSwapDate(date);
+}
+
+function getJakartaTodayKey(now = new Date()) {
+  const parts = getJakartaDateParts(now);
+
+  return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(
+    parts.day,
+  ).padStart(2, "0")}`;
+}
+
+function dateKeyToNumber(dateKey: string) {
+  return Number(dateKey.replaceAll("-", ""));
+}
+
+export function getShiftSwapCutoffMessage(params: {
+  swapDate: Date;
+  windows: Array<{ shiftName: string; startTime: string }>;
+  now?: Date;
+}) {
+  const swapDateKey = getSwapDateKey(params.swapDate);
+  const todayKey = getJakartaTodayKey(params.now);
+  const swapDateNumber = dateKeyToNumber(swapDateKey);
+  const todayNumber = dateKeyToNumber(todayKey);
+
+  if (swapDateNumber < todayNumber) {
+    return "Tanggal tukar/geser shift tidak boleh sebelum hari ini.";
+  }
+
+  if (swapDateNumber > todayNumber) return null;
+
+  const nowParts = getJakartaDateParts(params.now || new Date());
+  const nowMinutes = nowParts.hour * 60 + nowParts.minute;
+  const earliestBlockedWindow = params.windows
+    .map((window) => ({
+      ...window,
+      cutoffMinutes: timeToMinutes(window.startTime) - 30,
+    }))
+    .sort((a, b) => a.cutoffMinutes - b.cutoffMinutes)[0];
+
+  if (!earliestBlockedWindow) return null;
+
+  if (nowMinutes >= earliestBlockedWindow.cutoffMinutes) {
+    return `Pengajuan hanya bisa dilakukan maksimal 30 menit sebelum ${earliestBlockedWindow.shiftName} masuk (${earliestBlockedWindow.startTime}).`;
+  }
+
+  return null;
+}
+
 export function getShiftWindowForSwapDate(shift: ShiftWithSchedules, date: Date) {
   const dayKey = getDayOfWeekKey(date);
   const schedule = shift.work_schedules?.find(

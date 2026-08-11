@@ -1,5 +1,9 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
 import { prisma } from "@/lib/prisma";
 import {
+  DEFAULT_SITE_LOGO_MIME,
   DEFAULT_SITE_LOGO_SRC,
   DEFAULT_SITE_TITLE,
   type SiteLogoSettings,
@@ -19,6 +23,8 @@ function normalizeLogoSrc(value: string | null | undefined) {
   const logoSrc = String(value || "").trim();
 
   if (!logoSrc) return DEFAULT_SITE_LOGO_SRC;
+  if (logoSrc.includes("/images/creativemu-logo/")) return DEFAULT_SITE_LOGO_SRC;
+  if (logoSrc.startsWith("/api/site-logo")) return SITE_LOGO_IMAGE_SRC;
   if (logoSrc.startsWith("/")) return logoSrc;
   if (logoSrc.startsWith("http://") || logoSrc.startsWith("https://")) return logoSrc;
   if (logoSrc.startsWith("data:image/")) return logoSrc;
@@ -28,6 +34,7 @@ function normalizeLogoSrc(value: string | null | undefined) {
 
 export function normalizeSiteTitle(value: string | null | undefined) {
   const title = String(value || "").trim();
+  if (title.toLowerCase() === "creativemu") return DEFAULT_SITE_TITLE;
   return title || DEFAULT_SITE_TITLE;
 }
 
@@ -113,6 +120,46 @@ export async function updateSiteLogoFile(
       setting_mime: mime,
     },
   });
+
+  return SITE_LOGO_IMAGE_SRC;
+}
+
+async function readDefaultSiteLogoFile() {
+  const buffer = await readFile(path.join(process.cwd(), "public", "icon.png"));
+
+  return {
+    buffer: Uint8Array.from(buffer),
+    mime: DEFAULT_SITE_LOGO_MIME,
+  };
+}
+
+export async function ensureSiteLogoFile() {
+  const setting = await prisma.appSetting.findUnique({
+    where: {
+      setting_key: SITE_LOGO_SETTING_KEY,
+    },
+    select: {
+      setting_file: true,
+      setting_mime: true,
+    },
+  });
+
+  if (setting?.setting_file) {
+    return {
+      buffer: new Uint8Array(setting.setting_file),
+      mime: setting.setting_mime || DEFAULT_SITE_LOGO_MIME,
+    };
+  }
+
+  const defaultLogo = await readDefaultSiteLogoFile();
+  await updateSiteLogoFile(defaultLogo.buffer, defaultLogo.mime);
+
+  return defaultLogo;
+}
+
+export async function resetSiteLogoFileToDefault() {
+  const defaultLogo = await readDefaultSiteLogoFile();
+  await updateSiteLogoFile(defaultLogo.buffer, defaultLogo.mime);
 
   return SITE_LOGO_IMAGE_SRC;
 }

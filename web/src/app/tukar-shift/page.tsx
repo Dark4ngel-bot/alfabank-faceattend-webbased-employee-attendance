@@ -5,6 +5,7 @@ import {
   ArrowLeftRight,
   AlertTriangle,
   CheckCircle2,
+  Info,
   Loader2,
   Send,
   X,
@@ -22,8 +23,16 @@ type Colleague = {
   shiftName: string;
 };
 
+type AvailableShift = {
+  id: string;
+  name: string;
+  startTime?: string | null;
+  endTime?: string | null;
+};
+
 type SwapRequest = {
   id: string;
+  isSelfShift?: boolean;
   targetUser?: {
     id: string;
     name: string;
@@ -137,11 +146,16 @@ function getShiftSwapAlertTheme(type: "success" | "error" | "warning") {
 export default function TukarShiftPage() {
   const [currentShiftName, setCurrentShiftName] = useState("Shift Utama");
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
+  const [availableShifts, setAvailableShifts] = useState<AvailableShift[]>([]);
+  const [canSelfShift, setCanSelfShift] = useState(false);
+  const [isRulesOpen, setIsRulesOpen] = useState(false);
 
   const [sentRequests, setSentRequests] = useState<SwapRequest[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<SwapRequest[]>([]);
 
+  const [requestMode, setRequestMode] = useState<"swap" | "self">("swap");
   const [targetUserId, setTargetUserId] = useState("");
+  const [targetShiftName, setTargetShiftName] = useState("");
   const [swapDate, setSwapDate] = useState(() => getTodayString());
   const [reason, setReason] = useState("");
 
@@ -160,7 +174,9 @@ export default function TukarShiftPage() {
 
       const [dataRes, colRes] = await Promise.all([
         fetch("/api/shift-swaps", { cache: "no-store" }),
-        fetch("/api/shift-swaps/colleagues", { cache: "no-store" }),
+        fetch(`/api/shift-swaps/colleagues?swapDate=${swapDate}`, {
+          cache: "no-store",
+        }),
       ]);
 
       const dataJson = await dataRes.json();
@@ -174,6 +190,8 @@ export default function TukarShiftPage() {
 
       if (colJson.success) {
         setColleagues(colJson.colleagues || []);
+        setAvailableShifts(colJson.availableShifts || []);
+        setCanSelfShift(Boolean(colJson.canSelfShift));
       }
     } catch (err) {
       console.error("LOAD_SWAP_DATA_ERROR:", err);
@@ -188,15 +206,31 @@ export default function TukarShiftPage() {
 
   useEffect(() => {
     void loadData();
-  }, []);
+  }, [swapDate]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    if (!targetUserId || !swapDate) {
+    if (requestMode === "swap" && (!targetUserId || !swapDate)) {
       setAlertState({
         type: "warning",
         message: "Pilih rekan kerja dan tanggal tukar shift.",
+      });
+      return;
+    }
+
+    if (requestMode === "self" && (!targetShiftName || !swapDate)) {
+      setAlertState({
+        type: "warning",
+        message: "Pilih shift tujuan dan tanggal geser shift.",
+      });
+      return;
+    }
+
+    if (requestMode === "self" && !canSelfShift) {
+      setAlertState({
+        type: "warning",
+        message: "Geser shift hanya berlaku untuk karyawan utama.",
       });
       return;
     }
@@ -209,7 +243,9 @@ export default function TukarShiftPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          targetUserId,
+          mode: requestMode,
+          targetUserId: requestMode === "swap" ? targetUserId : undefined,
+          targetShiftName: requestMode === "self" ? targetShiftName : undefined,
           swapDate,
           reason,
         }),
@@ -231,6 +267,7 @@ export default function TukarShiftPage() {
       });
 
       setTargetUserId("");
+      setTargetShiftName("");
       setReason("");
       await loadData();
     } catch (err) {
@@ -293,7 +330,12 @@ export default function TukarShiftPage() {
   return (
     <MobileShell variant="employee">
       <TukarShiftMotionStyles />
-      <AppHeader title="Tukar Shift" rightLabel="Tukar Shift" />
+      <AppHeader
+        title="Tukar Shift"
+        eyebrow="Presensi"
+        rightLabel="Tukar Shift"
+        hideMobileMenuButton
+      />
 
       {alertState && alertTheme ? (
         <div className="pointer-events-none fixed right-4 top-4 z-[120] w-[calc(100vw-2rem)] max-w-md sm:right-7 sm:top-7">
@@ -344,6 +386,79 @@ export default function TukarShiftPage() {
                 Mengerti
               </button>
             </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isRulesOpen ? (
+        <div className="fixed inset-0 z-[110] flex items-end justify-center bg-slate-950/45 px-4 pb-4 md:items-center md:pb-0">
+          <button
+            type="button"
+            aria-label="Tutup aturan"
+            className="absolute inset-0 cursor-default"
+            onClick={() => setIsRulesOpen(false)}
+          />
+
+          <div className="tukar-shift-enter relative max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-[2rem] border border-white/80 bg-white p-5 shadow-2xl shadow-slate-950/25">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
+                  Aturan
+                </p>
+                <h3 className="mt-1 text-xl font-black text-slate-950">
+                  Tukar & Geser Shift
+                </h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsRulesOpen(false)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-800 active:scale-95"
+                aria-label="Tutup aturan"
+              >
+                <X size={20} strokeWidth={2.8} />
+              </button>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              <div className="rounded-3xl border border-blue-100 bg-[#f8fbff] p-4">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-[#123c8c]">
+                  Tukar shift antar rekan kerja
+                </p>
+                <ul className="mt-3 space-y-2 text-xs font-bold leading-5 text-slate-600">
+                  <li>Shift utama bisa tukar dengan shift siang.</li>
+                  <li>Shift pagi bisa tukar dengan shift siang.</li>
+                  <li>Shift utama tidak bisa tukar dengan shift pagi.</li>
+                  <li>
+                    Pengajuan dan approval harus sebelum batas 30 menit dari
+                    jam masuk shift yang terkait.
+                  </li>
+                </ul>
+              </div>
+
+              <div className="rounded-3xl border border-amber-100 bg-amber-50 p-4">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">
+                  Geser shift tanpa rekan
+                </p>
+                <ul className="mt-3 space-y-2 text-xs font-bold leading-5 text-amber-900">
+                  <li>Hanya berlaku untuk karyawan utama.</li>
+                  <li>
+                    Karyawan utama bisa geser ke shift pagi atau shift siang.
+                  </li>
+                  <li>
+                    Batas pengajuan 30 menit sebelum jam masuk shift tujuan.
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsRulesOpen(false)}
+              className="mt-5 flex min-h-[48px] w-full items-center justify-center rounded-3xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0e2f70] active:scale-[0.98]"
+            >
+              Mengerti
+            </button>
           </div>
         </div>
       ) : null}
@@ -441,27 +556,108 @@ export default function TukarShiftPage() {
             </div>
 
             <div className="mt-5 space-y-4">
-              <div>
-                <label className="text-sm font-black text-slate-700">
-                  Pilih Rekan Kerja
-                </label>
-                <select
-                  value={targetUserId}
-                  onChange={(e) => setTargetUserId(e.target.value)}
-                  className="mt-2 min-h-[52px] w-full rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+              <div className="grid gap-2 rounded-3xl bg-[#f8fbff] p-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRequestMode("swap");
+                    setTargetShiftName("");
+                  }}
+                  className={`rounded-2xl px-4 py-3 text-left transition active:scale-[0.98] ${
+                    requestMode === "swap"
+                      ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
+                      : "bg-white text-slate-600 ring-1 ring-blue-100"
+                  }`}
                 >
-                  <option value="">-- Pilih Rekan Kerja --</option>
-                  {colleagues.map((col) => (
-                    <option key={col.id} value={col.id}>
-                      {col.name} ({col.shiftName})
-                    </option>
-                  ))}
-                </select>
+                  <span className="block text-xs font-black uppercase">
+                    Tukar Shift
+                  </span>
+                  <span className="mt-1 block text-[11px] font-bold leading-4 opacity-80">
+                    Antar rekan kerja
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRequestMode("self");
+                    setTargetUserId("");
+                  }}
+                  className={`rounded-2xl px-4 py-3 text-left transition active:scale-[0.98] ${
+                    requestMode === "self"
+                      ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
+                      : "bg-white text-slate-600 ring-1 ring-blue-100"
+                  }`}
+                >
+                  <span className="block text-xs font-black uppercase">
+                    Geser Shift
+                  </span>
+                  <span className="mt-1 block text-[11px] font-bold leading-4 opacity-80">
+                    Khusus karyawan utama
+                  </span>
+                </button>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setIsRulesOpen(true)}
+                className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-black text-[#123c8c] transition hover:bg-[#edf4ff] active:scale-[0.98]"
+              >
+                <Info size={18} strokeWidth={2.8} />
+                Aturan
+              </button>
+
+              {requestMode === "swap" ? (
+                <div>
+                  <label className="text-sm font-black text-slate-700">
+                    Pilih Rekan Kerja
+                  </label>
+                  <select
+                    value={targetUserId}
+                    onChange={(e) => setTargetUserId(e.target.value)}
+                    className="mt-2 min-h-[52px] w-full rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
+                  >
+                    <option value="">-- Pilih Rekan Kerja --</option>
+                    {colleagues.map((col) => (
+                      <option key={col.id} value={col.id}>
+                        {col.name} ({col.shiftName})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-sm font-black text-slate-700">
+                    Pilih Shift Tujuan
+                  </label>
+                  <select
+                    value={targetShiftName}
+                    onChange={(e) => setTargetShiftName(e.target.value)}
+                    disabled={!canSelfShift}
+                    className="mt-2 min-h-[52px] w-full rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <option value="">
+                      {canSelfShift
+                        ? "-- Pilih Shift Tujuan --"
+                        : "Hanya untuk karyawan utama"}
+                    </option>
+                    {availableShifts.map((shift) => (
+                      <option key={shift.id} value={shift.name}>
+                        {shift.name}
+                        {shift.startTime && shift.endTime
+                          ? ` (${shift.startTime}-${shift.endTime})`
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="text-sm font-black text-slate-700">
-                  Tanggal Tukar Shift
+                  {requestMode === "swap"
+                    ? "Tanggal Tukar Shift"
+                    : "Tanggal Geser Shift"}
                 </label>
                 <input
                   type="date"
@@ -470,6 +666,10 @@ export default function TukarShiftPage() {
                   onChange={(e) => setSwapDate(e.target.value)}
                   className="mt-2 min-h-[52px] w-full rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                 />
+                <p className="mt-2 text-[11px] font-bold leading-4 text-slate-400">
+                  Pengajuan hanya bisa dibuat sebelum batas 30 menit dari jam
+                  masuk shift pada tanggal tersebut.
+                </p>
               </div>
 
               <div>
@@ -479,7 +679,11 @@ export default function TukarShiftPage() {
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Alasan singkat tukar shift..."
+                  placeholder={
+                    requestMode === "swap"
+                      ? "Alasan singkat tukar shift..."
+                      : "Alasan singkat geser shift..."
+                  }
                   className="mt-2 min-h-28 w-full resize-none rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
                 />
               </div>
@@ -494,7 +698,9 @@ export default function TukarShiftPage() {
                 ) : (
                   <Send size={18} />
                 )}
-                Kirim Pengajuan
+                {requestMode === "swap"
+                  ? "Kirim Pengajuan"
+                  : "Simpan Geser Shift"}
               </button>
             </div>
           </form>
@@ -538,10 +744,12 @@ export default function TukarShiftPage() {
                   >
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                        Tukar Keluar
+                        {req.isSelfShift ? "Geser Shift" : "Tukar Keluar"}
                       </p>
                       <p className="text-xs font-black text-slate-900">
-                        Ke: {req.targetUser?.name} ({req.targetShiftName})
+                        {req.isSelfShift
+                          ? `${req.requesterShiftName} ke ${req.targetShiftName}`
+                          : `Ke: ${req.targetUser?.name} (${req.targetShiftName})`}
                       </p>
                       <p className="text-[11px] font-bold text-slate-500">
                         Tanggal:{" "}

@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireOwnerUser } from "@/lib/api-auth";
-import {
-  DEFAULT_SITE_LOGO_SRC,
-  DEFAULT_SITE_TITLE,
-} from "@/lib/site-logo-defaults";
+import { DEFAULT_SITE_TITLE } from "@/lib/site-logo-defaults";
 import {
   getSiteLogoSettings,
+  resetSiteLogoFileToDefault,
   updateSiteLogoFile,
-  updateSiteLogoSrc,
   updateSiteTitle,
 } from "@/lib/site-logo";
 
@@ -144,9 +141,9 @@ export async function DELETE(req: NextRequest) {
     if (target === "title") {
       await updateSiteTitle(DEFAULT_SITE_TITLE);
     } else if (target === "logo") {
-      await updateSiteLogoSrc(DEFAULT_SITE_LOGO_SRC);
+      await resetSiteLogoFileToDefault();
     } else {
-      await updateSiteLogoSrc(DEFAULT_SITE_LOGO_SRC);
+      await resetSiteLogoFileToDefault();
       await updateSiteTitle(DEFAULT_SITE_TITLE);
     }
 

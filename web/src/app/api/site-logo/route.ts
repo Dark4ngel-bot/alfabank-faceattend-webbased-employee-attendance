@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { prisma } from "@/lib/prisma";
-import { DEFAULT_SITE_LOGO_SRC } from "@/lib/site-logo-defaults";
-import { getSiteLogoSettings } from "@/lib/site-logo";
+import { ensureSiteLogoFile, getSiteLogoSettings } from "@/lib/site-logo";
 
 export const runtime = "nodejs";
 
@@ -11,23 +9,11 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
 
     if (searchParams.get("raw") === "1") {
-      const setting = await prisma.appSetting.findUnique({
-        where: {
-          setting_key: "site_logo_src",
-        },
-        select: {
-          setting_file: true,
-          setting_mime: true,
-        },
-      });
+      const logo = await ensureSiteLogoFile();
 
-      if (!setting?.setting_file) {
-        return NextResponse.redirect(new URL(DEFAULT_SITE_LOGO_SRC, req.url));
-      }
-
-      return new NextResponse(new Uint8Array(setting.setting_file), {
+      return new NextResponse(logo.buffer, {
         headers: {
-          "Content-Type": setting.setting_mime || "image/png",
+          "Content-Type": logo.mime,
           "Cache-Control": "no-store",
         },
       });

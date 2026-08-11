@@ -34,11 +34,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/images/creativemu-logo/creativemu-solo.png" },
-      { url: "/favicon.png", type: "image/png" },
+      { url: "/api/site-logo?raw=1", type: "image/png" },
     ],
-    shortcut: "/images/creativemu-logo/creativemu-solo.png",
-    apple: "/images/creativemu-logo/creativemu-solo.png",
+    shortcut: "/api/site-logo?raw=1",
+    apple: "/api/site-logo?raw=1",
   },
   other: {
     google: "notranslate",
@@ -60,9 +59,9 @@ export default function RootLayout({
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" type="image/png" />
-        <link rel="shortcut icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" />
-        <link rel="apple-touch-icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" />
+        <link rel="icon" href="/api/site-logo?raw=1" type="image/png" />
+        <link rel="shortcut icon" href="/api/site-logo?raw=1" />
+        <link rel="apple-touch-icon" href="/api/site-logo?raw=1" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="mobile-web-app-capable" content="yes" />
