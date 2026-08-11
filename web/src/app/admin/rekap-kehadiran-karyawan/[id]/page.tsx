@@ -69,6 +69,9 @@ type EmployeeRecap = {
   employmentStatus?: string | null;
   status?: string | null;
   shiftName?: string | null;
+  annualLeaveQuota?: number;
+  approvedLeaveDays?: number;
+  remainingLeaveQuota?: number;
   summary: EmployeeAttendanceSummary;
   dailyRecords?: DailyAttendanceRecord[];
   logs?: DailyAttendanceRecord[];
@@ -686,9 +689,14 @@ export default function AdminEmployeeAttendanceRecapDetailPage() {
       className: "border-rose-100 bg-rose-50 text-rose-700",
     },
     {
-      label: "Cuti",
-      value: summary.cuti,
+      label: "Cuti Periode Ini",
+      value: `${summary.cuti} Hari`,
       className: "border-sky-100 bg-sky-50 text-sky-700",
+    },
+    {
+      label: "Sisa Kuota Cuti",
+      value: `${employee?.remainingLeaveQuota ?? Math.max(0, 12 - (employee?.approvedLeaveDays || summary.cuti))} Hari`,
+      className: "border-purple-100 bg-purple-50 text-purple-800",
     },
   ];
 

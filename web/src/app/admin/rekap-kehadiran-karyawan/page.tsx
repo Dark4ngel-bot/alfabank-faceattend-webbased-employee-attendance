@@ -24,6 +24,7 @@ type Employee = {
   profile_photo_url?: string | null;
   status?: string | null;
   employment_status?: string | null;
+  remainingLeaveQuota?: number;
   department?: {
     name?: string | null;
   } | null;
@@ -72,6 +73,9 @@ type EmployeeRecap = {
   id: string;
   name: string;
   employeeCode?: string | null;
+  annualLeaveQuota?: number;
+  approvedLeaveDays?: number;
+  remainingLeaveQuota?: number;
   summary: EmployeeAttendanceSummary;
 };
 
@@ -764,7 +768,11 @@ export default function AdminEmployeeAttendanceRecapPage() {
                         </div>
 
                         <div className="flex shrink-0 items-center gap-2 ml-auto">
-                          <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center">
+                          <div className="flex flex-col items-end gap-1.5 sm:flex-row sm:items-center">
+                            <span className="rounded-full bg-purple-50 px-2.5 py-1 text-[10px] font-black text-purple-700 ring-1 ring-purple-200/80 sm:text-[11px]">
+                              Sisa Cuti: {employee.remainingLeaveQuota ?? 12} Hari
+                            </span>
+
                             {hasPendingLeave ? (
                               <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-black text-orange-700 ring-1 ring-orange-200 sm:px-2.5 sm:py-1 sm:text-[11px]">
                                 {pendingLeaveCount} cuti baru

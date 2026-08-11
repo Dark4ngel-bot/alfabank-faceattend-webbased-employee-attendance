@@ -3,6 +3,10 @@ import { requireOwner } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
 import { prisma } from "@/lib/prisma";
 import { ensureWfhQuotaColumn } from "@/lib/wfh-quota-schema";
+import {
+  ensureAnnualLeaveQuotaColumn,
+  isMissingAnnualLeaveQuotaColumnError,
+} from "@/lib/annual-leave-quota-schema";
 
 export const runtime = "nodejs";
 
@@ -235,6 +239,7 @@ export async function GET(req: NextRequest) {
   try {
     await requireOwner(req);
     await ensureWfhQuotaColumn();
+    await ensureAnnualLeaveQuotaColumn();
 
     const { searchParams } = new URL(req.url);
     const employeeId = String(searchParams.get("employeeId") || "").trim();
@@ -533,6 +538,53 @@ export async function GET(req: NextRequest) {
       summary.estimasiSalary = Math.max(Math.round(baseSalary - deduction), 0);
     }
 
+    const employeeIds = employees.map((e) => e.id);
+    let userQuotaRows: Array<{ id: string; annual_leave_quota: number | null }> = [];
+
+    if (employeeIds.length > 0) {
+      const placeholders = employeeIds.map(() => "?").join(",");
+      try {
+        userQuotaRows = await prisma.$queryRawUnsafe<
+          Array<{ id: string; annual_leave_quota: number | null }>
+        >(
+          `SELECT id, COALESCE(annual_leave_quota, 12) AS annual_leave_quota FROM users WHERE id IN (${placeholders})`,
+          ...employeeIds,
+        );
+      } catch (error) {
+        if (!isMissingAnnualLeaveQuotaColumnError(error)) throw error;
+      }
+    }
+
+    const quotaByUserId = new Map(
+      userQuotaRows.map((row) => [row.id, Math.max(0, Number(row.annual_leave_quota ?? 12))]),
+    );
+
+    const currentCalendarYear = new Date().getUTCFullYear();
+    const startOfYear = new Date(Date.UTC(currentCalendarYear, 0, 1));
+    const endOfYear = new Date(Date.UTC(currentCalendarYear + 1, 0, 1));
+
+    const approvedAnnualLeaves = await prisma.leaveRequest.findMany({
+      where: {
+        user_id: { in: employeeIds },
+        status: "approved",
+        leave_type: { in: ["annual", "annual_leave", "cuti", "cuti_tahunan"] },
+        start_date: { gte: startOfYear, lt: endOfYear },
+      },
+      select: {
+        user_id: true,
+        start_date: true,
+        end_date: true,
+      },
+    });
+
+    const approvedDaysByUserId = new Map<string, number>();
+    for (const leave of approvedAnnualLeaves) {
+      const diffMs = leave.end_date.getTime() - leave.start_date.getTime();
+      const days = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)) + 1);
+      const current = approvedDaysByUserId.get(leave.user_id) || 0;
+      approvedDaysByUserId.set(leave.user_id, current + days);
+    }
+
     return NextResponse.json({
       success: true,
       startDate: toDateKey(startDate),
@@ -541,6 +593,10 @@ export async function GET(req: NextRequest) {
         const records = Array.from(
           employeeDailyRecords.get(employee.id)?.values() || [],
         ).sort((first, second) => first.date.localeCompare(second.date));
+
+        const annualQuota = quotaByUserId.get(employee.id) ?? 12;
+        const approvedDays = approvedDaysByUserId.get(employee.id) || 0;
+        const remainingQuota = Math.max(0, annualQuota - approvedDays);
 
         return {
           id: employee.id,
@@ -553,6 +609,9 @@ export async function GET(req: NextRequest) {
           employmentStatus: employee.employment_status,
           status: employee.status,
           shiftName: employee.shift?.name || null,
+          annualLeaveQuota: annualQuota,
+          approvedLeaveDays: approvedDays,
+          remainingLeaveQuota: remainingQuota,
           summary: employeeSummaries.get(employee.id) || createEmptySummary(),
           dailyRecords: records,
           logs: records,
