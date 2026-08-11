@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, Eye, EyeOff, Loader2, LogIn, X } from "lucide-react";
 import MobileShell from "@/components/MobileShell";
 import { AppButton, AppCard, AppInput } from "@/components/ui/AppUI";
-import { useSiteLogo } from "@/hooks/useSiteLogo";
+import { useSiteLogoSettings } from "@/hooks/useSiteLogo";
 import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
 import {
   CREATIVEMU_EMAIL_EXAMPLE,
@@ -346,7 +346,7 @@ function FloatingAlert({
 
 export default function LoginPage() {
   const router = useRouter();
-  const logoSrc = useSiteLogo();
+  const { logoSrc, siteTitle } = useSiteLogoSettings();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -489,15 +489,7 @@ export default function LoginPage() {
     if (!isValidEmailFormat(normalizedEmail)) {
       showAlert(
         "Format email salah",
-        `Masukkan email dengan format yang benar, contoh: ${CREATIVEMU_EMAIL_EXAMPLE}`,
-      );
-      return;
-    }
-
-    if (!isCreativemuEmail(normalizedEmail)) {
-      showAlert(
-        "Email tidak valid",
-        "Masuk hanya dapat menggunakan email resmi Creativemu.",
+        "Masukkan email dengan format yang benar, contoh: nama@email.com",
       );
       return;
     }
@@ -592,7 +584,7 @@ export default function LoginPage() {
 
             <div className="relative z-10 flex h-32 w-32 items-center justify-center p-0 md:h-40 md:w-40 md:overflow-hidden md:rounded-[2rem] md:border md:border-white/80 md:bg-white md:p-7 md:shadow-[0_24px_58px_rgba(18,60,140,0.14)]">
               <Image
-                src={DEFAULT_SITE_MARK_LOGO_SRC}
+                src={logoSrc}
                 alt="Creativemu Logo"
                 width={421}
                 height={390}
@@ -604,7 +596,7 @@ export default function LoginPage() {
 
           <div className="relative mt-9 text-center md:mt-12">
             <h2 className="intro-text-in text-3xl font-black uppercase tracking-[0.18em] text-slate-950 md:text-5xl">
-              Creativemu
+              {siteTitle}
             </h2>
             <p
               className="intro-text-in mt-3 text-xs font-black uppercase tracking-[0.28em] text-[#ff8a00] md:text-sm"
@@ -630,8 +622,8 @@ export default function LoginPage() {
         {/* 1. WATERMARK C-SOLO LOGO - DEAD CENTERED IN ENTIRE PAGE (X & Y) */}
         <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
           <Image
-            src={DEFAULT_SITE_MARK_LOGO_SRC}
-            alt="Watermark C Creativemu"
+            src={logoSrc}
+            alt="Watermark Logo"
             width={500}
             height={500}
             className="mx-auto w-[22rem] max-w-[85vw] opacity-[0.05] mix-blend-multiply sm:w-[24rem] md:w-[25rem] lg:w-[24rem]"
@@ -673,7 +665,7 @@ export default function LoginPage() {
                 }}
               >
                 <span className="typewriter-title login-presence-title">
-                  Presensi Creativemu
+                  Presensi {siteTitle}
                 </span>
               </h2>
 
@@ -693,7 +685,7 @@ export default function LoginPage() {
                 animationDelay: "280ms",
               }}
             >
-              © 2026 Presensi for Creativemu
+              © 2026 Presensi for {siteTitle}
             </div>
           </div>
 
@@ -723,7 +715,7 @@ export default function LoginPage() {
                       inputMode="email"
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
-                      placeholder={CREATIVEMU_EMAIL_EXAMPLE}
+                      placeholder=""
                       autoComplete="email"
                       disabled={formIsBusy}
                       className="border-blue-100 bg-[#f8fbff] text-slate-700 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-blue-100/50 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
@@ -811,7 +803,7 @@ export default function LoginPage() {
               animationDelay: "300ms",
             }}
           >
-            © 2026 Presensi for Creativemu
+            © 2026 Presensi for {siteTitle}
           </div>
         </div>
 

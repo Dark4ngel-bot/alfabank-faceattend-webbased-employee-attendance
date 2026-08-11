@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import {
   DEFAULT_SITE_LOGO_SRC,
+  DEFAULT_SITE_TITLE,
   type SiteLogoSettings,
 } from "@/lib/site-logo-defaults";
 
@@ -22,8 +23,9 @@ async function readJsonResponse(response: Response) {
   }
 }
 
-export function useSiteLogo() {
+export function useSiteLogoSettings() {
   const [logoSrc, setLogoSrc] = useState(DEFAULT_SITE_LOGO_SRC);
+  const [siteTitle, setSiteTitle] = useState(DEFAULT_SITE_TITLE);
 
   useEffect(() => {
     let isMounted = true;
@@ -36,11 +38,15 @@ export function useSiteLogo() {
         });
         const data = (await readJsonResponse(response)) as SiteLogoResponse;
 
-        if (isMounted && response.ok && data.success && data.logo?.logoSrc) {
-          setLogoSrc(data.logo.logoSrc);
+        if (isMounted && response.ok && data.success && data.logo) {
+          if (data.logo.logoSrc) setLogoSrc(data.logo.logoSrc);
+          if (data.logo.siteTitle) setSiteTitle(data.logo.siteTitle);
         }
       } catch {
-        if (isMounted) setLogoSrc(DEFAULT_SITE_LOGO_SRC);
+        if (isMounted) {
+          setLogoSrc(DEFAULT_SITE_LOGO_SRC);
+          setSiteTitle(DEFAULT_SITE_TITLE);
+        }
       }
     }
 
@@ -58,5 +64,15 @@ export function useSiteLogo() {
     };
   }, []);
 
+  return { logoSrc, siteTitle };
+}
+
+export function useSiteLogo() {
+  const { logoSrc } = useSiteLogoSettings();
   return logoSrc;
+}
+
+export function useSiteTitle() {
+  const { siteTitle } = useSiteLogoSettings();
+  return siteTitle;
 }

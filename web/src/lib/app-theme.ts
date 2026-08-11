@@ -82,6 +82,10 @@ export async function updateAppThemeSettings(
     update: {
       setting_value: JSON.stringify(normalizedTheme),
     },
+    select: {
+      setting_key: true,
+      setting_value: true,
+    },
   });
 
   return normalizedTheme;

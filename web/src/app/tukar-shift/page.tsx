@@ -117,14 +117,14 @@ function getStatusConfig(status: string) {
 
 export default function TukarShiftPage() {
   const [formMode, setFormMode] = useState<"swap" | "self">("self");
-  const [currentShiftName, setCurrentShiftName] = useState("Shift Utama");
+  const [currentShiftName, setCurrentShiftName] = useState("UTAMA");
   const [colleagues, setColleagues] = useState<Colleague[]>([]);
   const [availableShifts, setAvailableShifts] = useState<AvailableShift[]>([]);
   const [sentRequests, setSentRequests] = useState<SwapRequest[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<SwapRequest[]>([]);
 
   const [targetUserId, setTargetUserId] = useState("");
-  const [targetShiftName, setTargetShiftName] = useState("Shift Siang");
+  const [targetShiftName, setTargetShiftName] = useState("SHIFT SIANG");
   const [swapDate, setSwapDate] = useState(() => getTodayString());
   const [reason, setReason] = useState("");
 
@@ -150,7 +150,7 @@ export default function TukarShiftPage() {
       const colJson = await colRes.json();
 
       if (dataJson.success) {
-        setCurrentShiftName(dataJson.currentShiftName || "Shift Utama");
+        setCurrentShiftName(dataJson.currentShiftName || "UTAMA");
         setSentRequests(dataJson.sentRequests || []);
         setIncomingRequests(dataJson.incomingRequests || []);
       }
@@ -161,8 +161,7 @@ export default function TukarShiftPage() {
         setAvailableShifts(shifts);
 
         if (shifts.length > 0) {
-          const pref = shifts.find((s) => s.name.toLowerCase().includes("siang"));
-          setTargetShiftName(pref ? pref.name : shifts[0].name);
+          setTargetShiftName(shifts[0].name);
         }
       }
     } catch (err) {
@@ -538,10 +537,7 @@ export default function TukarShiftPage() {
                             </option>
                           ))
                         ) : (
-                          <>
-                            <option value="Shift Siang">Shift Siang (12:00 - 21:00)</option>
-                            <option value="Shift Pagi">Shift Pagi (08:00 - 17:00)</option>
-                          </>
+                          <option value="SHIFT SIANG">SHIFT SIANG (13:00 - 21:00)</option>
                         )}
                       </select>
                       <ChevronDown

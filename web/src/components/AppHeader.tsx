@@ -32,7 +32,7 @@ import {
   X,
 } from "lucide-react";
 
-import { useSiteLogo } from "@/hooks/useSiteLogo";
+import { useSiteLogoSettings } from "@/hooks/useSiteLogo";
 import {
   getReadAnnouncementIds,
   getReadNotificationIds,
@@ -254,7 +254,7 @@ export default function AppHeader({
   const [hasScrolled, setHasScrolled] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [whatsappLink, setWhatsappLink] = useState(WHATSAPP_LINK);
-  const logoSrc = useSiteLogo();
+  const { logoSrc, siteTitle } = useSiteLogoSettings();
 
   const resolvedVariant = useMemo(() => {
     if (pathname === "/admin" || pathname.startsWith("/admin/")) {
@@ -585,7 +585,7 @@ export default function AppHeader({
 
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c]">
-                  Creativemu
+                  {siteTitle}
                 </p>
 
                 <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">

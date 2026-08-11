@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
@@ -14,9 +14,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#123c8c",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: "Presensi",
-  description: "Sistem Presensi Karyawan Creativemu",
+  description: "Sistem Presensi Karyawan",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Presensi",
+  },
   icons: {
     icon: [
       { url: "/images/creativemu-logo/creativemu-solo.png" },
@@ -27,6 +42,7 @@ export const metadata: Metadata = {
   },
   other: {
     google: "notranslate",
+    "mobile-web-app-capable": "yes",
   },
 };
 
@@ -43,9 +59,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} notranslate h-full antialiased`}
     >
       <head>
+        <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" type="image/png" />
         <link rel="shortcut icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" />
         <link rel="apple-touch-icon" href="/images/creativemu-logo/creativemu-solo.png?v=2" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body
         suppressHydrationWarning

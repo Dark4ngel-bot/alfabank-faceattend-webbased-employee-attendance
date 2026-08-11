@@ -18,22 +18,20 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const userShiftName = String(currentUser?.shift?.name || "Shift Utama").toUpperCase();
+    const rawShiftName = currentUser?.shift?.name || "UTAMA";
+    const userShiftUpper = rawShiftName.toUpperCase().trim();
 
-    const isShiftPagi = userShiftName.includes("PAGI");
-    const isShiftSiang = userShiftName.includes("SIANG");
+    const isShiftSiang = userShiftUpper.includes("SIANG");
 
-    let allowedKeywords: string[] = [];
-
-    if (isShiftPagi) {
-      allowedKeywords = ["SIANG"];
-    } else if (isShiftSiang) {
-      allowedKeywords = ["PAGI"];
+    // Allowed colleague shift keywords for "Tukar Rekan"
+    let allowedColleagueKeywords: string[] = [];
+    if (isShiftSiang) {
+      allowedColleagueKeywords = ["UTAMA", "PAGI"];
     } else {
-      // Shift Utama can swap with Shift Pagi or Shift Siang
-      allowedKeywords = ["PAGI", "SIANG"];
+      allowedColleagueKeywords = ["SIANG"];
     }
 
+    // Fetch active employees (excluding self and excluding MAGANG)
     const colleagues = await prisma.user.findMany({
       where: {
         id: { not: authUser.id },
@@ -57,16 +55,22 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const filtered = colleagues.filter((col) => {
+    const filteredColleagues = colleagues.filter((col) => {
       const shiftName = String(col.shift?.name || "").toUpperCase();
       if (shiftName.includes("MAGANG")) return false;
 
-      return allowedKeywords.some((kw) => shiftName.includes(kw));
+      return allowedColleagueKeywords.some((kw) => shiftName.includes(kw));
     });
 
+    // Fetch active shifts from DB (excluding MAGANG)
     const activeShifts = await prisma.shift.findMany({
       where: {
         status: { in: ["active", "ACTIVE"] },
+        NOT: {
+          name: {
+            contains: "MAGANG",
+          },
+        },
       },
       select: {
         id: true,
@@ -79,41 +83,68 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Make sure Shift Siang is always available as a fallback option if not present in DB
-    let shiftOptions = activeShifts.map((s) => ({
-      id: s.id,
-      name: s.name,
-      startTime: s.start_time,
-      endTime: s.end_time,
-    }));
+    // Clean, normalize to CAPS LOCK, and deduplicate shift options
+    type AvailableShiftItem = {
+      id: string;
+      name: string;
+      startTime?: string | null;
+      endTime?: string | null;
+    };
 
-    const currentShift = currentUser?.shift?.name || "Shift Utama";
+    const shiftMap = new Map<string, AvailableShiftItem>();
 
-    if (!shiftOptions.some((s) => s.name.toLowerCase().includes("siang"))) {
-      shiftOptions.push({
+    for (const s of activeShifts) {
+      const upperName = s.name.toUpperCase().trim();
+      if (upperName.includes("MAGANG")) continue;
+
+      if (!shiftMap.has(upperName)) {
+        shiftMap.set(upperName, {
+          id: s.id,
+          name: upperName,
+          startTime: s.start_time,
+          endTime: s.end_time,
+        });
+      }
+    }
+
+    // Ensure default fallback shifts exist if not present in DB
+    if (!shiftMap.has("SHIFT SIANG")) {
+      shiftMap.set("SHIFT SIANG", {
         id: "shift-siang-default",
-        name: "Shift Siang",
-        startTime: "12:00",
+        name: "SHIFT SIANG",
+        startTime: "13:00",
         endTime: "21:00",
       });
     }
 
-    // Filter out current user shift from options
-    shiftOptions = shiftOptions.filter(
-      (s) => s.name.toUpperCase() !== userShiftName,
+    if (!shiftMap.has("UTAMA")) {
+      shiftMap.set("UTAMA", {
+        id: "shift-utama-default",
+        name: "UTAMA",
+        startTime: "08:00",
+        endTime: "17:00",
+      });
+    }
+
+    const allShiftOptions = Array.from(shiftMap.values());
+
+    // Target shift options for "Geser Shift Mandiri":
+    // Strictly for moving to SHIFT SIANG!
+    const availableShifts: AvailableShiftItem[] = allShiftOptions.filter(
+      (s) => s.name.includes("SIANG"),
     );
 
     return NextResponse.json({
       success: true,
-      currentShiftName: currentShift,
-      colleagues: filtered.map((col) => ({
+      currentShiftName: userShiftUpper,
+      colleagues: filteredColleagues.map((col) => ({
         id: col.id,
         name: col.name,
         employeeCode: col.employee_code,
         profilePhoto: col.profile_photo,
-        shiftName: col.shift?.name || "Shift Utama",
+        shiftName: String(col.shift?.name || "UTAMA").toUpperCase(),
       })),
-      availableShifts: shiftOptions,
+      availableShifts,
     });
   } catch (error) {
     console.error("GET_SHIFT_SWAP_COLLEAGUES_ERROR:", error);

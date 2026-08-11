@@ -224,16 +224,6 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!isCreativemuEmail(normalizedEmail)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Login hanya dapat menggunakan email resmi Creativemu.",
-        },
-        { status: 403 }
-      );
-    }
-
     const retryAfterSeconds = await getRateLimitedRetryAfter(rateLimitKeys);
 
     if (retryAfterSeconds) {

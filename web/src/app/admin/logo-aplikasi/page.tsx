@@ -12,6 +12,8 @@ import {
   ImageIcon,
   Loader2,
   RotateCcw,
+  Save,
+  Type,
   Upload,
 } from "lucide-react";
 
@@ -22,7 +24,10 @@ import {
   AppLoadingState,
   AppPageTransition,
 } from "@/components/ui/AppUI";
-import { DEFAULT_SITE_LOGO_SRC } from "@/lib/site-logo-defaults";
+import {
+  DEFAULT_SITE_LOGO_SRC,
+  DEFAULT_SITE_TITLE,
+} from "@/lib/site-logo-defaults";
 
 type SiteLogoResponse = {
   success?: boolean;
@@ -30,6 +35,8 @@ type SiteLogoResponse = {
   logo?: {
     logoSrc?: string;
     fallbackLogoSrc?: string;
+    siteTitle?: string;
+    fallbackSiteTitle?: string;
   };
 };
 
@@ -49,16 +56,21 @@ function notifySiteLogoChanged() {
 
 export default function AdminSiteLogoPage() {
   const [logoSrc, setLogoSrc] = useState(DEFAULT_SITE_LOGO_SRC);
+  const [siteTitle, setSiteTitle] = useState(DEFAULT_SITE_TITLE);
+  const [inputSiteTitle, setInputSiteTitle] = useState(DEFAULT_SITE_TITLE);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewSrc, setPreviewSrc] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSavingLogo, setIsSavingLogo] = useState(false);
+  const [isSavingTitle, setIsSavingTitle] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const displayLogoSrc = previewSrc || logoSrc;
+  const displaySiteTitle = inputSiteTitle || siteTitle || DEFAULT_SITE_TITLE;
 
-  const loadLogo = useCallback(async () => {
+  const loadLogoSettings = useCallback(async () => {
     try {
       setIsLoading(true);
       setErrorMessage("");
@@ -70,16 +82,21 @@ export default function AdminSiteLogoPage() {
       const data = (await readJsonResponse(response)) as SiteLogoResponse;
 
       if (!response.ok || !data.success) {
-        setErrorMessage(data.message || "Gagal mengambil logo aplikasi.");
+        setErrorMessage(data.message || "Gagal mengambil logo & nama aplikasi.");
         return;
       }
 
-      setLogoSrc(data.logo?.logoSrc || DEFAULT_SITE_LOGO_SRC);
+      const currentLogo = data.logo?.logoSrc || DEFAULT_SITE_LOGO_SRC;
+      const currentTitle = data.logo?.siteTitle || DEFAULT_SITE_TITLE;
+
+      setLogoSrc(currentLogo);
+      setSiteTitle(currentTitle);
+      setInputSiteTitle(currentTitle);
     } catch (error) {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Gagal mengambil logo aplikasi.",
+          : "Gagal mengambil pengaturan logo & nama aplikasi.",
       );
     } finally {
       setIsLoading(false);
@@ -87,8 +104,8 @@ export default function AdminSiteLogoPage() {
   }, []);
 
   useEffect(() => {
-    void loadLogo();
-  }, [loadLogo]);
+    void loadLogoSettings();
+  }, [loadLogoSettings]);
 
   useEffect(() => {
     if (!selectedFile) {
@@ -112,7 +129,7 @@ export default function AdminSiteLogoPage() {
     setSelectedFile(file);
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleLogoSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!selectedFile) {
@@ -121,7 +138,7 @@ export default function AdminSiteLogoPage() {
     }
 
     try {
-      setIsSaving(true);
+      setIsSavingLogo(true);
       setFeedbackMessage("");
       setErrorMessage("");
 
@@ -150,7 +167,7 @@ export default function AdminSiteLogoPage() {
           : "Gagal memperbarui logo aplikasi.",
       );
     } finally {
-      setIsSaving(false);
+      setIsSavingLogo(false);
     }
   }
 
@@ -158,11 +175,11 @@ export default function AdminSiteLogoPage() {
     if (!window.confirm("Kembalikan logo ke default Creativemu?")) return;
 
     try {
-      setIsSaving(true);
+      setIsSavingLogo(true);
       setFeedbackMessage("");
       setErrorMessage("");
 
-      const response = await fetch("/api/admin/site-logo", {
+      const response = await fetch("/api/admin/site-logo?target=logo", {
         method: "DELETE",
       });
       const data = (await readJsonResponse(response)) as SiteLogoResponse;
@@ -174,57 +191,133 @@ export default function AdminSiteLogoPage() {
 
       setLogoSrc(data.logo?.logoSrc || DEFAULT_SITE_LOGO_SRC);
       setSelectedFile(null);
-      setFeedbackMessage(data.message || "Logo berhasil dikembalikan.");
+      setFeedbackMessage("Logo berhasil dikembalikan ke default.");
       notifySiteLogoChanged();
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Gagal mengembalikan logo.",
       );
     } finally {
-      setIsSaving(false);
+      setIsSavingLogo(false);
+    }
+  }
+
+  async function handleTitleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const titleValue = inputSiteTitle.trim();
+    if (!titleValue) {
+      setErrorMessage("Nama aplikasi tidak boleh kosong.");
+      return;
+    }
+
+    try {
+      setIsSavingTitle(true);
+      setFeedbackMessage("");
+      setErrorMessage("");
+
+      const response = await fetch("/api/admin/site-logo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ siteTitle: titleValue }),
+      });
+      const data = (await readJsonResponse(response)) as SiteLogoResponse;
+
+      if (!response.ok || !data.success) {
+        setErrorMessage(data.message || "Gagal memperbarui nama aplikasi.");
+        return;
+      }
+
+      const updatedTitle = data.logo?.siteTitle || DEFAULT_SITE_TITLE;
+      setSiteTitle(updatedTitle);
+      setInputSiteTitle(updatedTitle);
+      setFeedbackMessage(data.message || "Nama aplikasi berhasil diperbarui.");
+      notifySiteLogoChanged();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Gagal memperbarui nama aplikasi.",
+      );
+    } finally {
+      setIsSavingTitle(false);
+    }
+  }
+
+  async function handleResetTitle() {
+    if (!window.confirm(`Kembalikan nama aplikasi ke default '${DEFAULT_SITE_TITLE}'?`)) return;
+
+    try {
+      setIsSavingTitle(true);
+      setFeedbackMessage("");
+      setErrorMessage("");
+
+      const response = await fetch("/api/admin/site-logo?target=title", {
+        method: "DELETE",
+      });
+      const data = (await readJsonResponse(response)) as SiteLogoResponse;
+
+      if (!response.ok || !data.success) {
+        setErrorMessage(data.message || "Gagal mengembalikan nama aplikasi.");
+        return;
+      }
+
+      const updatedTitle = data.logo?.siteTitle || DEFAULT_SITE_TITLE;
+      setSiteTitle(updatedTitle);
+      setInputSiteTitle(updatedTitle);
+      setFeedbackMessage(`Nama aplikasi berhasil dikembalikan ke '${DEFAULT_SITE_TITLE}'.`);
+      notifySiteLogoChanged();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Gagal mengembalikan nama aplikasi.",
+      );
+    } finally {
+      setIsSavingTitle(false);
     }
   }
 
   return (
     <MobileShell variant="admin" withBottomPadding={false}>
-      <AppHeader title="Logo Aplikasi" variant="admin" />
+      <AppHeader title="Logo & Brand Aplikasi" variant="admin" />
 
       <main className="min-h-[calc(100dvh-88px)] bg-[#f6f8ff] px-4 pb-12 pt-6 md:px-8 md:pb-16 lg:px-16">
-        <AppPageTransition className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[0.95fr_1.35fr]">
-          <AppFormReveal delay={60} className="h-full">
-            <section className="h-full rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
+        <AppPageTransition className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[1fr_1fr]">
+          <AppFormReveal delay={60} className="space-y-5">
+            {errorMessage ? (
+              <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 ring-1 ring-rose-100">
+                {errorMessage}
+              </div>
+            ) : null}
+
+            {feedbackMessage ? (
+              <div className="flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 ring-1 ring-emerald-100">
+                <CheckCircle2 size={18} strokeWidth={2.7} />
+                {feedbackMessage}
+              </div>
+            ) : null}
+
+            {/* CARD 1: UPLOAD LOGO */}
+            <section className="rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100">
                   <ImageIcon size={23} strokeWidth={2.7} />
                 </div>
 
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
-                    Logo Aktif
-                  </p>
                   <h2 className="text-xl font-black tracking-tight text-slate-950">
-                    Ganti Logo Semua Halaman
+                    Ganti Gambar Logo
                   </h2>
                 </div>
               </div>
 
-              {errorMessage ? (
-                <div className="mt-5 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 ring-1 ring-rose-100">
-                  {errorMessage}
-                </div>
-              ) : null}
-
-              {feedbackMessage ? (
-                <div className="mt-5 flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 ring-1 ring-emerald-100">
-                  <CheckCircle2 size={18} strokeWidth={2.7} />
-                  {feedbackMessage}
-                </div>
-              ) : null}
-
-              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <form onSubmit={handleLogoSubmit} className="mt-6 space-y-4">
                 <label className="block">
                   <span className="text-sm font-black text-slate-700">
-                    Upload Logo
+                    Upload File Logo
                   </span>
                   <input
                     type="file"
@@ -235,17 +328,16 @@ export default function AdminSiteLogoPage() {
                 </label>
 
                 <p className="rounded-2xl bg-[#f8fbff] px-4 py-3 text-xs font-bold leading-5 text-slate-500 ring-1 ring-blue-100">
-                  Format PNG, JPG, WEBP, atau SVG. Maksimal 2MB. Logo akan
-                  otomatis menyesuaikan area panjang, kotak, dan background.
+                  Format PNG, JPG, WEBP, atau SVG. (Max 2 MB)
                 </p>
 
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="submit"
-                    disabled={isSaving || !selectedFile}
+                    disabled={isSavingLogo || !selectedFile}
                     className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {isSaving ? (
+                    {isSavingLogo ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <Upload size={18} strokeWidth={2.7} />
@@ -255,37 +347,118 @@ export default function AdminSiteLogoPage() {
 
                   <button
                     type="button"
-                    disabled={isSaving}
+                    disabled={isSavingLogo}
                     onClick={handleResetLogo}
                     className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#123c8c] ring-1 ring-blue-100 transition hover:bg-[#eaf1ff] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <RotateCcw size={18} strokeWidth={2.7} />
-                    Reset Default
+                    Reset Logo
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            {/* CARD 2: TULISAN / NAMA BRAND APLIKASI */}
+            <section className="rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100">
+                  <Type size={23} strokeWidth={2.7} />
+                </div>
+
+                <div>
+                  <h2 className="text-xl font-black tracking-tight text-slate-950">
+                    Ganti Tulisan Brand
+                  </h2>
+                </div>
+              </div>
+
+              <form onSubmit={handleTitleSubmit} className="mt-6 space-y-4">
+                <label className="block">
+                  <span className="text-sm font-black text-slate-700">
+                    Nama / Tulisan Brand Aplikasi
+                  </span>
+                  <input
+                    type="text"
+                    value={inputSiteTitle}
+                    onChange={(e) => setInputSiteTitle(e.target.value)}
+                    placeholder="Contoh: Creativemu"
+                    className="mt-2 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
+                  />
+                </label>
+
+                <p className="rounded-2xl bg-[#f8fbff] px-4 py-3 text-xs font-bold leading-5 text-slate-500 ring-1 ring-blue-100">
+                  Mengubah teks nama brand.
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="submit"
+                    disabled={isSavingTitle || !inputSiteTitle.trim()}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isSavingTitle ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save size={18} strokeWidth={2.7} />
+                    )}
+                    Simpan Tulisan
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isSavingTitle}
+                    onClick={handleResetTitle}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#123c8c] ring-1 ring-blue-100 transition hover:bg-[#eaf1ff] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <RotateCcw size={18} strokeWidth={2.7} />
+                    Reset Tulisan
                   </button>
                 </div>
               </form>
             </section>
           </AppFormReveal>
 
+          {/* PREVIEW RIGHT COLUMN */}
           <AppFormReveal delay={140} className="h-full">
             <section className="h-full rounded-[1.5rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/50">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
-                    Preview
+                    Preview Tampilan
                   </p>
-                  <h2 className="text-xl font-black tracking-tight text-slate-950">
-                    Menyesuaikan Space
-                  </h2>
                 </div>
               </div>
 
               {isLoading ? (
                 <div className="mt-6">
-                  <AppLoadingState text="Memuat logo aplikasi..." />
+                  <AppLoadingState text="Memuat logo & nama aplikasi..." />
                 </div>
               ) : (
                 <div className="mt-6 grid gap-4">
+                  {/* PREVIEW SIDEBAR BADGE */}
+                  <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4">
+                    <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
+                      Header / Sidebar Brand
+                    </p>
+                    <div className="mt-3 flex items-center gap-3 rounded-2xl border border-blue-100 bg-white p-3 shadow-md shadow-slate-200/70">
+                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 ring-1 ring-blue-100">
+                        <img
+                          src={displayLogoSrc}
+                          alt="Preview logo"
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c]">
+                          {displaySiteTitle}
+                        </p>
+                        <p className="text-sm font-black text-slate-900">
+                          Panel Admin
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4">
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
                       Logo Panjang
@@ -321,10 +494,10 @@ export default function AdminSiteLogoPage() {
                         className="pointer-events-none absolute bottom-4 right-4 h-32 w-32 object-contain opacity-[0.08]"
                       />
                       <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-100">
-                        Background Halus
+                        {displaySiteTitle}
                       </p>
                       <h3 className="mt-2 max-w-56 text-2xl font-black leading-tight">
-                        Contoh kartu identitas
+                        Contoh Kartu Identitas
                       </h3>
                     </div>
                   </div>

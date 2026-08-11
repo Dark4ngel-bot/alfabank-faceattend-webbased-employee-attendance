@@ -25,7 +25,7 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
-import { useSiteLogo } from "@/hooks/useSiteLogo";
+import { useSiteLogoSettings } from "@/hooks/useSiteLogo";
 import { getBankOption } from "@/lib/bank-options";
 
 type UserRelation = {
@@ -159,7 +159,7 @@ function KartuIdentitasMotionStyles() {
 
 export default function KartuIdentitasPage() {
   const router = useRouter();
-  const logoSrc = useSiteLogo();
+  const { logoSrc, siteTitle } = useSiteLogoSettings();
   const cardRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<KartuIdentitasUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -704,7 +704,7 @@ export default function KartuIdentitasPage() {
                       {/* Footer Badge */}
                       <div className="flex shrink-0 items-center justify-between rounded-xl bg-gradient-to-r from-[#123c8c] to-[#0f3478] px-3 py-1.5 shadow-sm">
                         <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-blue-100 md:text-[10px]">
-                          Creativemu
+                          {siteTitle}
                         </p>
                         <BadgeCheck
                           size={14}

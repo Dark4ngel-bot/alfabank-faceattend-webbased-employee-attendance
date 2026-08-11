@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
-import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
+import { useSiteLogo } from "@/hooks/useSiteLogo";
 
 type Variant = "primary" | "secondary" | "danger" | "ghost" | "soft";
 type Size = "sm" | "md" | "lg";
@@ -865,6 +865,7 @@ type AppLoadingStateProps = {
 export function AppLoadingState({
   text = "Memuat data...",
 }: AppLoadingStateProps) {
+  const logoSrc = useSiteLogo();
   return (
     <>
       <AppInteractionStyles />
@@ -873,7 +874,7 @@ export function AppLoadingState({
         <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-[1.75rem] border border-blue-100 bg-[#f8fbff] shadow-inner">
           <span className="app-brand-loader-scan pointer-events-none absolute left-3 right-3 top-1/2 z-20 h-0.5 bg-gradient-to-r from-transparent via-[#ff8a00] to-transparent shadow-[0_0_12px_rgba(255,138,0,0.62)]" />
           <Image
-            src={DEFAULT_SITE_MARK_LOGO_SRC}
+            src={logoSrc}
             alt=""
             aria-hidden="true"
             width={56}

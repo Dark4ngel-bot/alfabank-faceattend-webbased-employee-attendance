@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Pengguna tidak ditemukan." }, { status: 404 });
     }
 
-    const currentShiftName = user.shift?.name || "Shift Utama";
+    const currentShiftName = String(user.shift?.name || "UTAMA").toUpperCase();
 
     const sentRequests = await prisma.shiftSwapRequest.findMany({
       where: { requester_id: user.id },
