@@ -28,30 +28,21 @@ export async function GET(
         ...(audience === "admin" ? {} : { status: "published" }),
       },
       select: {
-        document_file: true,
         document_mime: true,
         document_name: true,
         document_url: true,
       },
     });
 
-    if (!announcement) {
+    if (!announcement || !announcement.document_url) {
       return NextResponse.json(
         { message: "Dokumen pengumuman tidak ditemukan." },
         { status: 404 },
       );
     }
 
-    if (announcement.document_file) {
-      return new NextResponse(new Uint8Array(announcement.document_file), {
-        headers: {
-          "Content-Type": announcement.document_mime || "application/pdf",
-          "Content-Disposition": `inline; filename="${encodeURIComponent(
-            announcement.document_name || "dokumen-pengumuman.pdf",
-          )}"`,
-          "Cache-Control": "private, no-store",
-        },
-      });
+    if (announcement.document_url.startsWith("http://") || announcement.document_url.startsWith("https://")) {
+      return NextResponse.redirect(announcement.document_url);
     }
 
     return NextResponse.json(
