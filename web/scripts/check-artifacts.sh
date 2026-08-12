@@ -46,6 +46,8 @@ if [ -f "$BUILD_DIR/standalone/server.js" ]; then
     "$BUILD_DIR/standalone/public/icons/alfabank-shortcut-192.png" \
     "$BUILD_DIR/standalone/public/icons/alfabank-shortcut-512.png" \
     "$BUILD_DIR/standalone/public/manifest.json" \
+    "$BUILD_DIR/standalone/prisma/schema.prisma" \
+    "$BUILD_DIR/standalone/prisma/migrations/20260812030000_normalize_alfabank_logo_title_settings/migration.sql" \
     "$BUILD_DIR/standalone/$BUILD_DIR/static"
   do
     if [ ! -e "$path" ]; then

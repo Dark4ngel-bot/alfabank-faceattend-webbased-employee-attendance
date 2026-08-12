@@ -1,8 +1,6 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-
 import { prisma } from "@/lib/prisma";
 import {
+  DEFAULT_SITE_LOGO_MIME,
   DEFAULT_SITE_LOGO_SRC,
   DEFAULT_SITE_TITLE,
   type SiteLogoSettings,
@@ -10,8 +8,7 @@ import {
 
 export const SITE_LOGO_SETTING_KEY = "site_logo_src";
 export const SITE_TITLE_SETTING_KEY = "site_title";
-const SITE_LOGO_UPLOAD_PUBLIC_DIR = "/uploads/site-logo";
-const SITE_LOGO_UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "site-logo");
+const SITE_LOGO_IMAGE_SRC = "/api/site-logo/image";
 
 function versionedLogoImageSrc(logoSrc: string, updatedAt: Date | null | undefined) {
   if (!updatedAt || logoSrc === DEFAULT_SITE_LOGO_SRC) return logoSrc;
@@ -20,13 +17,17 @@ function versionedLogoImageSrc(logoSrc: string, updatedAt: Date | null | undefin
   return `${logoSrc}${separator}v=${updatedAt.getTime()}`;
 }
 
-function normalizeLogoSrc(value: string | null | undefined) {
+function normalizeLogoSrc(value: string | null | undefined, hasStoredFile = false) {
+  if (hasStoredFile) return SITE_LOGO_IMAGE_SRC;
+
   const logoSrc = String(value || "").trim();
 
   if (!logoSrc) return DEFAULT_SITE_LOGO_SRC;
   if (logoSrc.includes("/images/creativemu-logo/")) return DEFAULT_SITE_LOGO_SRC;
   if (logoSrc === "/images/alfabank-logo/logo.png") return DEFAULT_SITE_LOGO_SRC;
+  if (logoSrc.startsWith("/api/site-logo/image")) return SITE_LOGO_IMAGE_SRC;
   if (logoSrc.startsWith("/api/site-logo")) return DEFAULT_SITE_LOGO_SRC;
+  if (logoSrc.startsWith("/uploads/")) return DEFAULT_SITE_LOGO_SRC;
   if (logoSrc.startsWith("/")) return logoSrc;
   if (logoSrc.startsWith("http://") || logoSrc.startsWith("https://")) return logoSrc;
 
@@ -34,8 +35,16 @@ function normalizeLogoSrc(value: string | null | undefined) {
 }
 
 export function normalizeSiteTitle(value: string | null | undefined) {
-  const title = String(value || "").trim();
-  if (title.toLowerCase() === "presensi alfabank") return DEFAULT_SITE_TITLE;
+  const title = String(value || "").replace(/\s+/g, " ").trim();
+  const lowerTitle = title.toLowerCase();
+
+  if (
+    lowerTitle === "presensi alfabank" ||
+    lowerTitle === "presensi presensi alfabank"
+  ) {
+    return DEFAULT_SITE_TITLE;
+  }
+
   return title || DEFAULT_SITE_TITLE;
 }
 
@@ -70,7 +79,7 @@ export async function getSiteLogoSettings(): Promise<SiteLogoSettings> {
 
   return {
     logoSrc: versionedLogoImageSrc(
-      normalizeLogoSrc(logoSetting?.setting_value),
+      normalizeLogoSrc(logoSetting?.setting_value, Boolean(logoSetting?.setting_file)),
       logoSetting?.updated_at,
     ),
     fallbackLogoSrc: DEFAULT_SITE_LOGO_SRC,
@@ -105,44 +114,25 @@ export async function updateSiteLogoSrc(logoSrc: string) {
 export async function updateSiteLogoFile(
   buffer: Uint8Array<ArrayBuffer>,
   mime: string,
-  fileName = "",
 ) {
-  const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
-  const extension = ["svg", "webp", "jpg", "jpeg", "png"].includes(fileExtension)
-    ? fileExtension === "jpeg"
-      ? "jpg"
-      : fileExtension
-    : mime.includes("svg")
-    ? "svg"
-    : mime.includes("webp")
-      ? "webp"
-      : mime.includes("jpeg") || mime.includes("jpg")
-        ? "jpg"
-        : "png";
-  const publicPath = `${SITE_LOGO_UPLOAD_PUBLIC_DIR}/logo.${extension}`;
-  const filePath = path.join(SITE_LOGO_UPLOAD_DIR, `logo.${extension}`);
-
-  await mkdir(SITE_LOGO_UPLOAD_DIR, { recursive: true });
-  await writeFile(filePath, buffer);
-
   await prisma.appSetting.upsert({
     where: {
       setting_key: SITE_LOGO_SETTING_KEY,
     },
     create: {
       setting_key: SITE_LOGO_SETTING_KEY,
-      setting_value: publicPath,
-      setting_file: null,
-      setting_mime: null,
+      setting_value: SITE_LOGO_IMAGE_SRC,
+      setting_file: buffer,
+      setting_mime: mime || DEFAULT_SITE_LOGO_MIME,
     },
     update: {
-      setting_value: publicPath,
-      setting_file: null,
-      setting_mime: null,
+      setting_value: SITE_LOGO_IMAGE_SRC,
+      setting_file: buffer,
+      setting_mime: mime || DEFAULT_SITE_LOGO_MIME,
     },
   });
 
-  return publicPath;
+  return SITE_LOGO_IMAGE_SRC;
 }
 
 export async function resetSiteLogoFileToDefault() {
