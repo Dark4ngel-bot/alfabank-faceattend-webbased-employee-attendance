@@ -31,6 +31,9 @@ const nextConfig: NextConfig = {
         pathname: "/api/site-logo",
       },
       {
+        pathname: "/api/site-logo/**",
+      },
+      {
         pathname: "/api/profil/photo",
       },
       {

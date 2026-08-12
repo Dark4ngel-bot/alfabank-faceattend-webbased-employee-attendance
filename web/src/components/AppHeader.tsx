@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 
 import { useSiteLogo } from "@/hooks/useSiteLogo";
+import { DEFAULT_SITE_LOGO_SRC } from "@/lib/site-logo-defaults";
 
 type AppHeaderProps = {
   title: string;
@@ -227,6 +228,14 @@ function getWhatsappLink(phoneNumber?: string | null) {
   if (!digits) return WHATSAPP_LINK;
 
   return `https://wa.me/${digits}`;
+}
+
+function fallbackToDefaultLogo(event: SyntheticEvent<HTMLImageElement>) {
+  const image = event.currentTarget;
+
+  if (image.getAttribute("src") === DEFAULT_SITE_LOGO_SRC) return;
+
+  image.src = DEFAULT_SITE_LOGO_SRC;
 }
 
 export default function AppHeader({
@@ -491,6 +500,7 @@ export default function AppHeader({
                 width={140}
                 height={35}
                 unoptimized
+                onError={fallbackToDefaultLogo}
                 className="h-full w-auto object-contain object-center"
               />
             </div>
@@ -530,6 +540,7 @@ export default function AppHeader({
                   width={64}
                   height={59}
                   unoptimized
+                  onError={fallbackToDefaultLogo}
                   className="h-full w-full object-contain"
                   priority
                 />
