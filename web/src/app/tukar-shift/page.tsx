@@ -613,6 +613,7 @@ export default function TukarShiftPage() {
                     Pilih Rekan Kerja
                   </label>
                   <select
+                    suppressHydrationWarning
                     value={targetUserId}
                     onChange={(e) => setTargetUserId(e.target.value)}
                     className="mt-2 min-h-[52px] w-full rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
@@ -631,6 +632,7 @@ export default function TukarShiftPage() {
                     Pilih Shift Tujuan
                   </label>
                   <select
+                    suppressHydrationWarning
                     value={targetShiftName}
                     onChange={(e) => setTargetShiftName(e.target.value)}
                     disabled={!canSelfShift}
