@@ -1,3 +1,7 @@
+import { Buffer } from "node:buffer";
+import fs from "node:fs";
+import path from "node:path";
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
@@ -158,6 +162,39 @@ function getAttachmentUrl(item: { id: string; attachment_name?: string | null })
   return item.attachment_name
     ? `/api/pengajuan/${encodeURIComponent(item.id)}/attachment`
     : null;
+}
+
+function saveLocalLeaveAttachment(
+  fileBuffer: Uint8Array,
+  mime: string,
+  fileName: string,
+  userId: string,
+): { url: string; publicId: null } {
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "leave-attachments");
+
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const extFromName = path.extname(fileName || "").toLowerCase();
+  const ext =
+    extFromName ||
+    (mime.includes("pdf")
+      ? ".pdf"
+      : mime.includes("png")
+        ? ".png"
+        : mime.includes("webp")
+          ? ".webp"
+          : ".jpg");
+  const filename = `leave-${userId}-${Date.now()}${ext}`;
+  const filePath = path.join(uploadDir, filename);
+
+  fs.writeFileSync(filePath, Buffer.from(fileBuffer));
+
+  return {
+    url: `/uploads/leave-attachments/${filename}`,
+    publicId: null,
+  };
 }
 
 function mapLeaveRequest(item: {
@@ -472,6 +509,16 @@ export async function POST(req: NextRequest) {
 
     await ensureLeaveAttachmentColumns();
 
+    const uploadedAttachment =
+      attachmentFile && attachmentFile.length > 0 && attachmentName && attachmentMime
+        ? saveLocalLeaveAttachment(
+            attachmentFile,
+            attachmentMime,
+            attachmentName,
+            currentUser.id,
+          )
+        : null;
+
     const leaveRequest = await prisma.leaveRequest.create({
       data: {
         user_id: currentUser.id,
@@ -481,9 +528,10 @@ export async function POST(req: NextRequest) {
         total_days: totalDays,
         reason,
         status: "pending",
-        attachment_file: attachmentFile,
-        attachment_name: attachmentName,
-        attachment_mime: attachmentMime,
+        attachment_url: uploadedAttachment?.url || null,
+        attachment_public_id: uploadedAttachment?.publicId || null,
+        attachment_name: attachmentName || null,
+        attachment_mime: attachmentMime || null,
       },
       select: {
         id: true,
@@ -495,6 +543,7 @@ export async function POST(req: NextRequest) {
         reason: true,
         status: true,
         admin_note: true,
+        attachment_url: true,
         attachment_name: true,
         attachment_mime: true,
         created_at: true,
