@@ -23,6 +23,20 @@ async function readJsonResponse(response: Response) {
   }
 }
 
+function normalizeSiteTitle(value: string | null | undefined) {
+  const title = String(value || "").replace(/\s+/g, " ").trim();
+  const lowerTitle = title.toLowerCase();
+
+  if (
+    lowerTitle === "presensi alfabank" ||
+    lowerTitle === "presensi presensi alfabank"
+  ) {
+    return DEFAULT_SITE_TITLE;
+  }
+
+  return title || DEFAULT_SITE_TITLE;
+}
+
 export function useSiteLogoSettings() {
   const [logoSrc, setLogoSrc] = useState(DEFAULT_SITE_LOGO_SRC);
   const [siteTitle, setSiteTitle] = useState(DEFAULT_SITE_TITLE);
@@ -40,7 +54,7 @@ export function useSiteLogoSettings() {
 
         if (isMounted && response.ok && data.success && data.logo) {
           if (data.logo.logoSrc) setLogoSrc(data.logo.logoSrc);
-          if (data.logo.siteTitle) setSiteTitle(data.logo.siteTitle);
+          setSiteTitle(normalizeSiteTitle(data.logo.siteTitle));
         }
       } catch {
         if (isMounted) {

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   createToken,
   hashPassword,
+  normalizeAppRole,
   verifyPassword,
   verifyToken,
 } from "@/lib/auth";
@@ -37,6 +38,14 @@ describe("auth helpers", () => {
       email: "admin@creativemu.id",
       role: "admin",
     });
+  });
+
+  it("normalizes admin role variants", () => {
+    expect(normalizeAppRole("Admin")).toBe("admin");
+    expect(normalizeAppRole("administrator")).toBe("admin");
+    expect(normalizeAppRole("super admin")).toBe("admin");
+    expect(normalizeAppRole("OWNER")).toBe("owner");
+    expect(normalizeAppRole("user")).toBe("employee");
   });
 
   it("fails fast when JWT_SECRET is missing", async () => {

@@ -8,6 +8,7 @@ import MobileShell from "@/components/MobileShell";
 import { AppButton, AppCard } from "@/components/ui/AppUI";
 import { useSiteLogoSettings } from "@/hooks/useSiteLogo";
 import { isValidEmailFormat } from "@/lib/creativemu-email";
+import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
 
 type LoginResponse = {
   success?: boolean;
@@ -342,6 +343,7 @@ function FloatingAlert({
 export default function LoginPage() {
   const router = useRouter();
   const { logoSrc, siteTitle } = useSiteLogoSettings();
+  const introLogoSrc = DEFAULT_SITE_MARK_LOGO_SRC;
   const loginHeroTitle = siteTitle.toLowerCase().startsWith("presensi")
     ? siteTitle
     : `Presensi ${siteTitle}`;
@@ -583,8 +585,8 @@ export default function LoginPage() {
 
             <div className="relative z-10 flex h-32 w-32 items-center justify-center p-0 md:h-40 md:w-40 md:overflow-hidden md:rounded-[2rem] md:border md:border-white/80 md:bg-white md:p-7 md:shadow-[0_24px_58px_rgba(18,60,140,0.14)]">
               <Image
-                src={logoSrc}
-                alt={`${siteTitle} Logo`}
+                src={introLogoSrc}
+                alt="Alfabank Logo"
                 width={421}
                 height={390}
                 unoptimized
@@ -622,7 +624,7 @@ export default function LoginPage() {
         {/* 1. WATERMARK C-SOLO LOGO - DEAD CENTERED IN ENTIRE PAGE (X & Y) */}
         <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
           <Image
-            src={logoSrc}
+            src={introLogoSrc}
             alt="Watermark Logo"
             width={500}
             height={500}
@@ -637,7 +639,7 @@ export default function LoginPage() {
           <div className="pointer-events-auto flex h-20 w-72 shrink-0 items-center justify-center transition-transform duration-300 hover:scale-[1.02] sm:h-24 sm:w-80 md:h-28 md:w-[26rem] lg:h-32 lg:w-[32rem]">
             <Image
               src={logoSrc}
-              alt={`${siteTitle} Logo`}
+              alt="Alfabank Logo"
               width={512}
               height={128}
               unoptimized

@@ -610,6 +610,7 @@ export default function TukarShiftPage() {
                   </label>
                   <div className="relative mt-2">
                     <select
+                      suppressHydrationWarning
                       value={targetUserId}
                       onChange={(e) => setTargetUserId(e.target.value)}
                       className="min-h-[54px] w-full appearance-none rounded-2xl border border-blue-100 bg-[#f8fbff] pl-6 pr-12 py-3.5 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/60 shadow-sm cursor-pointer"
@@ -635,6 +636,7 @@ export default function TukarShiftPage() {
                   </label>
                   <div className="relative mt-2">
                     <select
+                      suppressHydrationWarning
                       value={targetShiftName}
                       onChange={(e) => setTargetShiftName(e.target.value)}
                       disabled={!canSelfShift}
