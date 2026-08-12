@@ -40,13 +40,13 @@ export async function GET(
       },
       select: {
         user_id: true,
-        attachment_file: true,
+        attachment_url: true,
         attachment_name: true,
         attachment_mime: true,
       },
     });
 
-    if (!leaveRequest?.attachment_file) {
+    if (!leaveRequest?.attachment_url) {
       return NextResponse.json(
         { success: false, message: "Lampiran tidak ditemukan." },
         { status: 404 },
@@ -63,16 +63,21 @@ export async function GET(
       );
     }
 
-    const mime = leaveRequest.attachment_mime || "application/octet-stream";
-    const fileName = safeFileName(leaveRequest.attachment_name);
+    if (
+      leaveRequest.attachment_url.startsWith("http://") ||
+      leaveRequest.attachment_url.startsWith("https://")
+    ) {
+      return NextResponse.redirect(leaveRequest.attachment_url);
+    }
 
-    return new NextResponse(new Uint8Array(leaveRequest.attachment_file), {
-      headers: {
-        "Content-Type": mime,
-        "Content-Disposition": `inline; filename="${fileName}"`,
-        "Cache-Control": "private, max-age=300",
-      },
-    });
+    if (leaveRequest.attachment_url.startsWith("/")) {
+      return NextResponse.redirect(new URL(leaveRequest.attachment_url, req.url));
+    }
+
+    return NextResponse.json(
+      { success: false, message: "Lokasi lampiran tidak valid." },
+      { status: 404 },
+    );
   } catch (error) {
     console.error("GET_LEAVE_ATTACHMENT_ERROR:", error);
 

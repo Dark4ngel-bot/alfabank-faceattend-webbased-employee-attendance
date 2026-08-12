@@ -342,6 +342,9 @@ function FloatingAlert({
 export default function LoginPage() {
   const router = useRouter();
   const { logoSrc, siteTitle } = useSiteLogoSettings();
+  const loginHeroTitle = siteTitle.toLowerCase().startsWith("presensi")
+    ? siteTitle
+    : `Presensi ${siteTitle}`;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -664,7 +667,7 @@ export default function LoginPage() {
                 }}
               >
                 <span className="typewriter-title login-presence-title">
-                  Presensi {siteTitle}
+                  {loginHeroTitle}
                 </span>
               </h2>
 
