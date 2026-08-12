@@ -522,7 +522,7 @@ export default function AppHeader({
               aria-label="Buka notifikasi"
               className={`relative flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm ring-1 transition active:scale-[0.96] sm:hidden ${
                 isNotificationPage
-                  ? "bg-[#123c8c] text-white ring-[#123c8c]"
+                  ? "bg-[#123c8c] text-[#123c8c] ring-[#123c8c]"
                   : "bg-white text-[#123c8c] ring-blue-100 hover:bg-[#eaf1ff]"
               }`}
             >

@@ -165,7 +165,9 @@ export default function EmployeeNotificationPage() {
     unread: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<"all" | "announcement" | "shift_swap" | "leave">("all");
+  const [selectedCategory, setSelectedCategory] = useState<
+    "all" | "announcement" | "shift_swap" | "leave"
+  >("all");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [pageError, setPageError] = useState("");
 
@@ -400,7 +402,13 @@ export default function EmployeeNotificationPage() {
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  Pengumuman ({notifications.filter((n) => n.type === "announcement" && !n.isRead).length})
+                  Pengumuman (
+                  {
+                    notifications.filter(
+                      (n) => n.type === "announcement" && !n.isRead,
+                    ).length
+                  }
+                  )
                 </button>
                 <button
                   type="button"
@@ -411,7 +419,13 @@ export default function EmployeeNotificationPage() {
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  Tukar Shift ({notifications.filter((n) => n.type === "shift_swap" && !n.isRead).length})
+                  Tukar Shift (
+                  {
+                    notifications.filter(
+                      (n) => n.type === "shift_swap" && !n.isRead,
+                    ).length
+                  }
+                  )
                 </button>
                 <button
                   type="button"
@@ -422,7 +436,16 @@ export default function EmployeeNotificationPage() {
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  Konfirmasi Cuti ({notifications.filter((n) => n.type !== "announcement" && n.type !== "shift_swap" && !n.isRead).length})
+                  Konfirmasi Cuti (
+                  {
+                    notifications.filter(
+                      (n) =>
+                        n.type !== "announcement" &&
+                        n.type !== "shift_swap" &&
+                        !n.isRead,
+                    ).length
+                  }
+                  )
                 </button>
 
                 <button
@@ -447,17 +470,23 @@ export default function EmployeeNotificationPage() {
                   {pageError}
                 </div>
               ) : notifications.filter((item) => {
-                if (selectedCategory === "announcement") return item.type === "announcement";
-                if (selectedCategory === "shift_swap") return item.type === "shift_swap";
-                if (selectedCategory === "leave") return item.type !== "announcement" && item.type !== "shift_swap";
-                return true;
-              }).length === 0 ? (
+                  if (selectedCategory === "announcement")
+                    return item.type === "announcement";
+                  if (selectedCategory === "shift_swap")
+                    return item.type === "shift_swap";
+                  if (selectedCategory === "leave")
+                    return (
+                      item.type !== "announcement" && item.type !== "shift_swap"
+                    );
+                  return true;
+                }).length === 0 ? (
                 <div className="rounded-3xl border border-dashed border-blue-100 bg-[#f8fbff] px-5 py-12 text-center">
                   <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#123c8c] ring-1 ring-blue-100">
                     <Bell size={26} strokeWidth={2.6} />
                   </div>
                   <p className="mt-4 text-base font-black text-slate-700">
-                    Tidak ada notifikasi {selectedCategory !== "all" ? "untuk kategori ini" : ""}
+                    Tidak ada notifikasi{" "}
+                    {selectedCategory !== "all" ? "untuk kategori ini" : ""}
                   </p>
                   <p className="mt-1 text-sm font-semibold text-slate-400">
                     Belum ada pemberitahuan pada kategori yang dipilih.
@@ -467,9 +496,15 @@ export default function EmployeeNotificationPage() {
                 <div className="space-y-3">
                   {notifications
                     .filter((item) => {
-                      if (selectedCategory === "announcement") return item.type === "announcement";
-                      if (selectedCategory === "shift_swap") return item.type === "shift_swap";
-                      if (selectedCategory === "leave") return item.type !== "announcement" && item.type !== "shift_swap";
+                      if (selectedCategory === "announcement")
+                        return item.type === "announcement";
+                      if (selectedCategory === "shift_swap")
+                        return item.type === "shift_swap";
+                      if (selectedCategory === "leave")
+                        return (
+                          item.type !== "announcement" &&
+                          item.type !== "shift_swap"
+                        );
                       return true;
                     })
                     .map((notification) => {
@@ -483,10 +518,11 @@ export default function EmployeeNotificationPage() {
                           type="button"
                           onClick={() => void markAsRead(notification)}
                           disabled={isActive}
-                          className={`notification-item-enter group flex w-full items-start gap-4 rounded-3xl border p-4 text-left transition duration-200 hover:-translate-y-0.5 md:p-5 ${notification.isRead
+                          className={`notification-item-enter group flex w-full items-start gap-4 rounded-3xl border p-4 text-left transition duration-200 hover:-translate-y-0.5 md:p-5 ${
+                            notification.isRead
                               ? "border-slate-100 bg-slate-50/70 opacity-80 hover:bg-slate-100/80"
                               : "border-2 border-blue-300 bg-[#f4f8ff] shadow-md shadow-blue-900/10 ring-2 ring-blue-400/30 hover:bg-white"
-                            }`}
+                          }`}
                           style={{ animationDelay: "220ms" }}
                         >
                           <div
@@ -523,7 +559,9 @@ export default function EmployeeNotificationPage() {
                               </span>
                             </div>
 
-                            <h4 className={`mt-2 text-sm font-black tracking-tight ${notification.isRead ? "text-slate-800" : "text-[#123c8c]"}`}>
+                            <h4
+                              className={`mt-2 text-sm font-black tracking-tight ${notification.isRead ? "text-slate-800" : "text-[#123c8c]"}`}
+                            >
                               {notification.title}
                             </h4>
 
@@ -531,18 +569,43 @@ export default function EmployeeNotificationPage() {
                             {(() => {
                               const msg = notification.message;
                               const shiftMatch = msg.match(/\(([^)]+)\)/);
-                              
-                              const reasonIndex = msg.indexOf("Alasan:");
-                              const reasonText = reasonIndex !== -1 ? msg.substring(reasonIndex + 7).trim().replace(/^[\s"]+|[\s"]+$/g, "") : null;
 
-                              let actionText = reasonIndex !== -1 ? msg.substring(0, reasonIndex).trim() : msg;
-                              
-                              const dateMatches = Array.from(actionText.matchAll(/([0-9]{1,2}\s+[A-Za-z]+\s+[0-9]{4})/gi)).map(m => m[1]);
-                              const targetDateText = dateMatches.length > 0 ? dateMatches.join(" s/d ") : null;
+                              const reasonIndex = msg.indexOf("Alasan:");
+                              const reasonText =
+                                reasonIndex !== -1
+                                  ? msg
+                                      .substring(reasonIndex + 7)
+                                      .trim()
+                                      .replace(/^[\s"]+|[\s"]+$/g, "")
+                                  : null;
+
+                              let actionText =
+                                reasonIndex !== -1
+                                  ? msg.substring(0, reasonIndex).trim()
+                                  : msg;
+
+                              const dateMatches = Array.from(
+                                actionText.matchAll(
+                                  /([0-9]{1,2}\s+[A-Za-z]+\s+[0-9]{4})/gi,
+                                ),
+                              ).map((m) => m[1]);
+                              const targetDateText =
+                                dateMatches.length > 0
+                                  ? dateMatches.join(" s/d ")
+                                  : null;
 
                               // Clean action text by removing parenthesized shift string and extra words
-                              if (shiftMatch) actionText = actionText.replace(shiftMatch[0], "").trim();
-                              actionText = actionText.replace(/untuk tanggal/gi, "").replace(/pada tanggal/gi, "").replace(/tanggal/gi, "").replace(/\s+/g, " ").replace(/[\s\.]+$|untuk$|pada$|periode$/i, "").trim();
+                              if (shiftMatch)
+                                actionText = actionText
+                                  .replace(shiftMatch[0], "")
+                                  .trim();
+                              actionText = actionText
+                                .replace(/untuk tanggal/gi, "")
+                                .replace(/pada tanggal/gi, "")
+                                .replace(/tanggal/gi, "")
+                                .replace(/\s+/g, " ")
+                                .replace(/[\s\.]+$|untuk$|pada$|periode$/i, "")
+                                .trim();
 
                               return (
                                 <div className="mt-2 space-y-2">
@@ -552,7 +615,7 @@ export default function EmployeeNotificationPage() {
                                   </p>
 
                                   {/* Right Aligned Badges Container (Shift & Alasan) */}
-                                  {(shiftMatch || reasonText) ? (
+                                  {shiftMatch || reasonText ? (
                                     <div className="flex flex-wrap items-center justify-end gap-1.5 pt-1 text-xs">
                                       {shiftMatch ? (
                                         <span className="inline-flex items-center gap-1 rounded-xl bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-[#123c8c] ring-1 ring-blue-200">
@@ -562,8 +625,12 @@ export default function EmployeeNotificationPage() {
 
                                       {reasonText ? (
                                         <span className="inline-flex max-w-full items-center gap-1 rounded-xl bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-900 ring-1 ring-amber-200">
-                                          <span className="font-bold text-amber-800">Alasan:</span>
-                                          <span className="italic">{reasonText}</span>
+                                          <span className="font-bold text-amber-800">
+                                            Alasan:
+                                          </span>
+                                          <span className="italic">
+                                            {reasonText}
+                                          </span>
                                         </span>
                                       ) : null}
                                     </div>

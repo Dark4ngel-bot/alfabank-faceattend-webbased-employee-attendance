@@ -250,7 +250,7 @@ function HomeMotionStyles() {
         animation: homePulseDot 1.45s ease-in-out infinite;
       }
 
-      /* removed override */ .dummy-unused,
+      .creativemu-blue-home [class*="bg-red-500"],
       .creativemu-blue-home [class*="bg-red-600"],
       .creativemu-blue-home [class*="bg-[#e50000]"] {
         background-color: #123c8c !important;
@@ -320,7 +320,7 @@ function ProfileAvatar({
       className={`home-icon-pop ${sizeClass} flex shrink-0 items-center justify-center rounded-full font-black ${
         variant === "blue"
           ? "bg-white/15 text-white ring-4 ring-white/20"
-          : "bg-red-50 text-red-700 ring-4 ring-white"
+          : "bg-[#eaf1ff] text-[#123c8c] ring-4 ring-white"
       }`}
     >
       {user.name ? getInitialName(user.name) : ""}
@@ -350,14 +350,11 @@ function NotificationHeaderButton({
       } ${
         desktop
           ? "bg-white/10 text-white/90 ring-white/20"
-          : "bg-white text-red-700 ring-red-100"
+          : "bg-white text-[#123c8c] ring-blue-100"
       }`}
       aria-label="Notifikasi"
     >
-      <Bell
-        size={desktop ? 26 : 22}
-        strokeWidth={2.4}
-      />
+      <Bell size={desktop ? 26 : 22} strokeWidth={2.4} />
 
       {unread ? (
         <span
@@ -411,13 +408,13 @@ function QuickMenuGrid() {
         <Link
           key={href}
           href={href}
-          className="home-card-enter group flex flex-col items-center rounded-3xl p-2 text-center transition hover:-translate-y-0.5 active:scale-[0.98] md:border md:border-red-100 md:bg-[#f8fbff] md:p-6 md:hover:-translate-y-1 md:hover:bg-white md:hover:shadow-xl md:hover:shadow-slate-200/60"
+          className="home-card-enter group flex flex-col items-center rounded-3xl p-2 text-center transition hover:-translate-y-0.5 active:scale-[0.98] md:border md:border-blue-100 md:bg-[#f8fbff] md:p-6 md:hover:-translate-y-1 md:hover:bg-white md:hover:shadow-xl md:hover:shadow-slate-200/60"
           style={{
             animationDelay: `${index * 55}ms`,
           }}
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 transition group-hover:scale-105 md:h-20 md:w-20">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-red-700 text-white shadow-lg shadow-red-900/20 transition group-hover:rotate-[-2deg] md:h-14 md:w-14">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#eaf1ff] transition group-hover:scale-105 md:h-20 md:w-20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 transition group-hover:rotate-[-2deg] md:h-14 md:w-14">
               <Icon size={22} strokeWidth={2.6} />
             </div>
           </div>
@@ -452,8 +449,8 @@ function AttendanceButton({
         disabled
           ? "cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300"
           : variant === "primary"
-            ? "bg-red-700 text-white shadow-md shadow-red-900/20 hover:-translate-y-0.5 hover:bg-red-800 active:scale-[0.98]"
-            : "border border-red-100 bg-white text-red-700 hover:-translate-y-0.5 hover:bg-red-50 active:scale-[0.98]"
+            ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20 hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
+            : "border border-blue-100 bg-white text-[#123c8c] hover:-translate-y-0.5 hover:bg-[#eaf1ff] active:scale-[0.98]"
       }`}
     >
       {label}
@@ -472,7 +469,7 @@ function AnnouncementList({
 }) {
   if (!hasAnnouncement) {
     return (
-      <div className="home-card-enter rounded-3xl border border-dashed border-red-100 bg-white px-5 py-6 text-center shadow-sm md:py-14">
+      <div className="home-card-enter rounded-3xl border border-dashed border-blue-100 bg-white px-5 py-6 text-center shadow-sm md:py-14">
         <p className="text-sm font-bold text-slate-400 md:text-base">
           Pengumuman Kosong
         </p>
@@ -486,7 +483,7 @@ function AnnouncementList({
     <Link
       href="/pengumuman"
       onClick={onRead}
-      className="home-card-enter block min-w-0 rounded-3xl border border-red-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f8fbff] hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99] md:p-5"
+      className="home-card-enter block min-w-0 rounded-3xl border border-blue-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f8fbff] hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99] md:p-5"
     >
       <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-100 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-900 shadow-sm">
         <Megaphone size={14} className="text-amber-700" />
@@ -504,7 +501,7 @@ function AnnouncementList({
       ) : null}
 
       {topAnnouncement.document_url || topAnnouncement.documentUrl ? (
-        <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-2xl bg-red-50 px-3 py-2 text-xs font-black text-red-700">
+        <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-2xl bg-[#eaf1ff] px-3 py-2 text-xs font-black text-[#123c8c]">
           <FileText size={14} strokeWidth={2.6} />
           <span className="truncate">
             {topAnnouncement.document_name ||
@@ -671,7 +668,7 @@ export default function HomePage() {
             <div className="mx-auto w-full max-w-7xl px-5 pt-6">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="home-icon-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-red-100">
+                  <div className="home-icon-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-blue-100">
                     <Image
                       src={logoSrc}
                       alt="Creativemu Logo"
@@ -686,12 +683,12 @@ export default function HomePage() {
                   <ProfileAvatar user={user} />
 
                   <div className="min-w-0">
-                    <p className="home-text-reveal text-[10px] font-black uppercase tracking-[0.24em] text-red-700">
+                    <p className="home-text-reveal text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c]">
                       Presensi
                     </p>
 
                     <h1
-                      className="home-text-reveal mt-1 truncate text-base font-black text-slate-950"
+                      className="home-text-reveal mt-1 truncate text-base font-black text-[#073456]"
                       style={{
                         animationDelay: "60ms",
                       }}
@@ -726,7 +723,7 @@ export default function HomePage() {
 
               <div className="py-7 text-center">
                 <p
-                  className="home-text-reveal text-xs font-black uppercase tracking-[0.24em] text-red-700"
+                  className="home-text-reveal text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]"
                   style={{
                     animationDelay: "120ms",
                   }}
@@ -735,7 +732,7 @@ export default function HomePage() {
                 </p>
 
                 <h2
-                  className="home-text-reveal mt-3 text-4xl font-black tracking-tight text-slate-950"
+                  className="home-text-reveal mt-3 text-4xl font-black tracking-tight text-[#073456]"
                   style={{
                     animationDelay: "170ms",
                   }}
@@ -756,7 +753,7 @@ export default function HomePage() {
           </section>
 
           <section className="mx-auto hidden max-w-7xl px-10 pt-8 md:block lg:px-16">
-            <div className="home-enter relative overflow-hidden rounded-[2.2rem] bg-red-700 p-8 text-white shadow-2xl shadow-red-900/25">
+            <div className="home-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-8 text-white shadow-2xl shadow-blue-900/25">
               <div className="relative z-10 flex items-center justify-between gap-8">
                 <div className="flex items-center gap-5">
                   <ProfileAvatar user={user} size="desktop" variant="blue" />
@@ -794,7 +791,7 @@ export default function HomePage() {
 
             <AppCard
               padding="md"
-              className="home-card-enter rounded-[1.8rem] border-red-100 bg-white p-5 shadow-sm transition hover:shadow-xl hover:shadow-slate-200/60 md:p-8"
+              className="home-card-enter rounded-[1.8rem] border-blue-100 bg-white p-5 shadow-sm transition hover:shadow-xl hover:shadow-slate-200/60 md:p-8"
               style={{
                 animationDelay: "140ms",
               }}
@@ -806,7 +803,7 @@ export default function HomePage() {
                       {currentTime || "--:-- WIB"}
                     </p>
 
-                    <div className="rounded-xl bg-gradient-to-r from-red-700 to-red-800 px-2 py-1 text-[10px] font-black text-white shadow-md shadow-red-900/15 sm:rounded-2xl sm:px-4 sm:py-2 md:text-sm">
+                    <div className="rounded-xl bg-gradient-to-r from-[#123c8c] to-[#1e56b8] px-2 py-1 text-[10px] font-black text-white shadow-md shadow-blue-900/15 sm:rounded-2xl sm:px-4 sm:py-2 md:text-sm">
                       {currentDate || "Memuat tanggal..."}
                     </div>
                   </div>
@@ -817,7 +814,7 @@ export default function HomePage() {
 
                   <p className="mt-0.5 text-[11px] font-semibold text-slate-500 sm:text-sm md:mt-3 md:text-lg">
                     Status hari ini:{" "}
-                    <span className="font-black text-red-700">
+                    <span className="font-black text-[#123c8c]">
                       {attendanceToday.status}
                     </span>
                   </p>
@@ -856,7 +853,7 @@ export default function HomePage() {
               <Link
                 href="/pengumuman"
                 onClick={markAnnouncementsAsRead}
-                className="text-lg font-black text-red-700 transition hover:text-[#0f3274] active:scale-[0.98] md:text-base"
+                className="text-lg font-black text-[#123c8c] transition hover:text-[#0f3274] active:scale-[0.98] md:text-base"
               >
                 Lihat Lainnya
               </Link>
