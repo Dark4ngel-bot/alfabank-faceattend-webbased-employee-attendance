@@ -5,14 +5,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Eye, EyeOff, Loader2, LogIn, X } from "lucide-react";
 import MobileShell from "@/components/MobileShell";
-import { AppButton, AppCard, AppInput } from "@/components/ui/AppUI";
+import { AppButton, AppCard } from "@/components/ui/AppUI";
 import { useSiteLogoSettings } from "@/hooks/useSiteLogo";
-import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
-import {
-  CREATIVEMU_EMAIL_EXAMPLE,
-  isCreativemuEmail,
-  isValidEmailFormat,
-} from "@/lib/creativemu-email";
+import { isValidEmailFormat } from "@/lib/creativemu-email";
 
 type LoginResponse = {
   success?: boolean;

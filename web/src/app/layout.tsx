@@ -34,15 +34,17 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icon.png", type: "image/png" },
+      { url: "/icon.png?v=alfabank-shortcut-20260812", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.png?v=alfabank-shortcut-20260812", sizes: "512x512", type: "image/png" },
     ],
-    shortcut: "/icon.png",
-    apple: "/apple-touch-icon.png?v=alfabank-red",
+    shortcut: "/icon.png?v=alfabank-shortcut-20260812",
+    apple: "/apple-touch-icon.png?v=alfabank-shortcut-20260812",
   },
   other: {
     google: "notranslate",
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-title": "Presensi Alfabank",
+    "application-name": "Presensi Alfabank",
   },
 };
 
@@ -60,9 +62,9 @@ export default function RootLayout({
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/icon.png" type="image/png" />
-        <link rel="shortcut icon" href="/icon.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=alfabank-red" />
+        <link rel="icon" sizes="512x512" href="/icon.png?v=alfabank-shortcut-20260812" type="image/png" />
+        <link rel="shortcut icon" href="/icon.png?v=alfabank-shortcut-20260812" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=alfabank-shortcut-20260812" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="Presensi Alfabank" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
