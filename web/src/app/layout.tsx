@@ -1,18 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const viewport: Viewport = {
   themeColor: "#7f1d1d",
@@ -58,7 +47,7 @@ export default function RootLayout({
       lang="id"
       translate="no"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} notranslate h-full antialiased`}
+      className="notranslate h-full antialiased"
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
