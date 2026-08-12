@@ -8,11 +8,28 @@ import {
 export const APP_THEME_STORAGE_KEY = "app_theme_colors";
 
 const HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
+const LEGACY_BLUE_THEME_COLORS = new Set([
+  "#123c8c",
+  "#0f3274",
+  "#0f3474",
+  "#0f347a",
+  "#eaf1ff",
+  "#eef5ff",
+  "#f8fbff",
+  "#f6f8ff",
+  "#f1f5ff",
+]);
 
 function normalizeHexColor(value: unknown, fallback: string) {
   const color = String(value || "").trim();
 
-  return HEX_COLOR_RE.test(color) ? color.toLowerCase() : fallback;
+  if (!HEX_COLOR_RE.test(color)) return fallback;
+
+  const normalizedColor = color.toLowerCase();
+
+  return LEGACY_BLUE_THEME_COLORS.has(normalizedColor)
+    ? fallback
+    : normalizedColor;
 }
 
 export function normalizeClientAppTheme(
