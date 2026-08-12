@@ -7,9 +7,9 @@ export type AppThemeSettings = {
 };
 
 export const DEFAULT_APP_THEME: AppThemeSettings = {
-  primaryColor: "#123c8c",
-  primaryHoverColor: "#0f3274",
-  softColor: "#eaf1ff",
-  subtleColor: "#f8fbff",
-  textColor: "#123c8c",
+  primaryColor: "#b91c1c",
+  primaryHoverColor: "#991b1b",
+  softColor: "#fee2e2",
+  subtleColor: "#fff5f5",
+  textColor: "#b91c1c",
 };
