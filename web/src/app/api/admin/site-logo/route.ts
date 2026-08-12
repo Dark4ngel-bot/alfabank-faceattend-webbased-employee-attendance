@@ -117,7 +117,6 @@ export async function POST(req: NextRequest) {
     await updateSiteLogoFile(
       Uint8Array.from(buffer),
       file.type || "image/png",
-      file.name,
     );
     const logo = await getSiteLogoSettings();
 

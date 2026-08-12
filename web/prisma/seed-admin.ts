@@ -74,24 +74,24 @@ async function main() {
 
   await prisma.user.upsert({
     where: {
-      email: "admin@creativemu.id",
+      email: "admin@alfabankjogja.com",
     },
     update: {
-      name: "Admin Creativemu",
+      name: "Admin Alfabank",
       password_hash,
       role: "admin",
       status: "active",
     },
     create: {
-      name: "Admin Creativemu",
-      email: "admin@creativemu.id",
+      name: "Admin Alfabank",
+      email: "admin@alfabankjogja.com",
       password_hash,
       role: "admin",
       status: "active",
     },
   });
 
-  console.log("Admin admin@creativemu.id berhasil dibuat");
+  console.log("Admin admin@alfabankjogja.com berhasil dibuat");
 }
 
 main()

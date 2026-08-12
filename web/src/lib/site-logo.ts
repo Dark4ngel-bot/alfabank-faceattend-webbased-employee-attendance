@@ -1,6 +1,3 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-
 import { prisma } from "@/lib/prisma";
 import {
   DEFAULT_SITE_LOGO_SRC,
@@ -10,8 +7,7 @@ import {
 
 export const SITE_LOGO_SETTING_KEY = "site_logo_src";
 export const SITE_TITLE_SETTING_KEY = "site_title";
-const SITE_LOGO_UPLOAD_PUBLIC_DIR = "/uploads/site-logo";
-const SITE_LOGO_UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "site-logo");
+export const SITE_LOGO_IMAGE_ROUTE = "/api/site-logo/image";
 
 function versionedLogoImageSrc(logoSrc: string, updatedAt: Date | null | undefined) {
   if (!updatedAt || logoSrc === DEFAULT_SITE_LOGO_SRC) return logoSrc;
@@ -26,6 +22,7 @@ function normalizeLogoSrc(value: string | null | undefined) {
   if (!logoSrc) return DEFAULT_SITE_LOGO_SRC;
   if (logoSrc.includes("/images/creativemu-logo/")) return DEFAULT_SITE_LOGO_SRC;
   if (logoSrc === "/images/alfabank-logo/logo.png") return DEFAULT_SITE_LOGO_SRC;
+  if (logoSrc.startsWith("/uploads/")) return DEFAULT_SITE_LOGO_SRC;
   if (logoSrc.startsWith("/api/site-logo")) return DEFAULT_SITE_LOGO_SRC;
   if (logoSrc.startsWith("/")) return logoSrc;
   if (logoSrc.startsWith("http://") || logoSrc.startsWith("https://")) return logoSrc;
@@ -69,7 +66,9 @@ export async function getSiteLogoSettings(): Promise<SiteLogoSettings> {
 
   return {
     logoSrc: versionedLogoImageSrc(
-      normalizeLogoSrc(logoSetting?.setting_value),
+      logoSetting?.setting_file
+        ? SITE_LOGO_IMAGE_ROUTE
+        : normalizeLogoSrc(logoSetting?.setting_value),
       logoSetting?.updated_at,
     ),
     fallbackLogoSrc: DEFAULT_SITE_LOGO_SRC,
@@ -104,44 +103,25 @@ export async function updateSiteLogoSrc(logoSrc: string) {
 export async function updateSiteLogoFile(
   buffer: Uint8Array<ArrayBuffer>,
   mime: string,
-  fileName = "",
 ) {
-  const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
-  const extension = ["svg", "webp", "jpg", "jpeg", "png"].includes(fileExtension)
-    ? fileExtension === "jpeg"
-      ? "jpg"
-      : fileExtension
-    : mime.includes("svg")
-    ? "svg"
-    : mime.includes("webp")
-      ? "webp"
-      : mime.includes("jpeg") || mime.includes("jpg")
-        ? "jpg"
-        : "png";
-  const publicPath = `${SITE_LOGO_UPLOAD_PUBLIC_DIR}/logo.${extension}`;
-  const filePath = path.join(SITE_LOGO_UPLOAD_DIR, `logo.${extension}`);
-
-  await mkdir(SITE_LOGO_UPLOAD_DIR, { recursive: true });
-  await writeFile(filePath, buffer);
-
   await prisma.appSetting.upsert({
     where: {
       setting_key: SITE_LOGO_SETTING_KEY,
     },
     create: {
       setting_key: SITE_LOGO_SETTING_KEY,
-      setting_value: publicPath,
-      setting_file: null,
-      setting_mime: null,
+      setting_value: SITE_LOGO_IMAGE_ROUTE,
+      setting_file: Buffer.from(buffer),
+      setting_mime: mime,
     },
     update: {
-      setting_value: publicPath,
-      setting_file: null,
-      setting_mime: null,
+      setting_value: SITE_LOGO_IMAGE_ROUTE,
+      setting_file: Buffer.from(buffer),
+      setting_mime: mime,
     },
   });
 
-  return publicPath;
+  return SITE_LOGO_IMAGE_ROUTE;
 }
 
 export async function resetSiteLogoFileToDefault() {
