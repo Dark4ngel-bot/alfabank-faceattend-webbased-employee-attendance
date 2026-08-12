@@ -69,7 +69,6 @@ export async function GET(
     ) {
       return NextResponse.redirect(leaveRequest.attachment_url);
     }
-
     if (leaveRequest.attachment_url.startsWith("/")) {
       return NextResponse.redirect(new URL(leaveRequest.attachment_url, req.url));
     }
