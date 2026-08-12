@@ -342,9 +342,6 @@ export default function AdminAnnouncementsPage() {
       }
 
       await loadAnnouncements();
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("notification-count-changed"));
-      }
       closeModal();
     } catch (error) {
       console.error("SAVE_ANNOUNCEMENT_ERROR:", error);
@@ -633,13 +630,21 @@ export default function AdminAnnouncementsPage() {
           <div className="admin-announcement-modal-panel flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-xl shadow-slate-950/25">
             <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 md:px-6">
               <div>
-                <h2 className="text-xl font-black text-slate-950 md:text-2xl">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-[#123c8c]">
+                  {editingAnnouncementId
+                    ? "Edit Pengumuman"
+                    : "Tambah Pengumuman"}
+                </p>
+
+                <h2 className="mt-1 text-xl font-black text-slate-950 md:text-2xl">
                   {editingAnnouncementId
                     ? "Edit Data Pengumuman"
                     : "Tambah Pengumuman Baru"}
                 </h2>
 
-
+                <p className="mt-1 text-sm text-slate-500">
+                  Pengumuman otomatis ditujukan untuk semua pengguna.
+                </p>
               </div>
 
               <button

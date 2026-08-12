@@ -9,7 +9,7 @@ const EMPLOYEE_PATHS = [
   "/history",
   "/profil",
   "/kartu-identitas",
-  "/cuti",
+  "/pengajuan",
   "/notifikasi",
   "/pengumuman",
 ];
@@ -121,7 +121,7 @@ export const config = {
     "/history/:path*",
     "/profil/:path*",
     "/kartu-identitas/:path*",
-    "/cuti/:path*",
+    "/pengajuan/:path*",
     "/notifikasi/:path*",
     "/pengumuman/:path*",
   ],

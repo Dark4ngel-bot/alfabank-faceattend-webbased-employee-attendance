@@ -2202,6 +2202,7 @@ export default function AttendancePage() {
       const response = await fetch("/api/auth/me", {
         method: "GET",
         cache: "no-store",
+        credentials: "same-origin",
       });
 
       const data = await readOptionalJson(response);
@@ -2216,6 +2217,7 @@ export default function AttendancePage() {
           await fetch("/api/auth/logout", {
             method: "POST",
             cache: "no-store",
+            credentials: "same-origin",
           }).catch(() => null);
 
           window.localStorage.removeItem("presensi_read_announcement_id");
@@ -3100,7 +3102,8 @@ export default function AttendancePage() {
                   <>
                     <span>•</span>
                     <span className="text-[#123c8c]">
-                      Jam: {currentUser.shift.start_time}-{currentUser.shift.end_time || "17:00"}
+                      Jam: {currentUser.shift.start_time}-
+                      {currentUser.shift.end_time || "17:00"}
                     </span>
                     <span>•</span>
                     <span className="text-[#123c8c]">
@@ -3133,8 +3136,6 @@ export default function AttendancePage() {
                 <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
                   Ambil Presensi
                 </h2>
-
-
               </div>
 
               <StatusPill

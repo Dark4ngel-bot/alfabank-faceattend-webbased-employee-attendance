@@ -1,7 +1,7 @@
 {
-  "name": "Presensi Creativemu",
-  "short_name": "Presensi",
-  "description": "Sistem Presensi Karyawan",
+  "name": "Presensi Alfabank",
+  "short_name": "Alfabank",
+  "description": "Sistem Presensi Karyawan Alfabank",
   "start_url": "/",
   "scope": "/",
   "display": "fullscreen",
@@ -11,13 +11,13 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/presensi-icon-192.png",
+      "src": "/icons/alfabank-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/presensi-icon-512.png",
+      "src": "/icons/alfabank-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

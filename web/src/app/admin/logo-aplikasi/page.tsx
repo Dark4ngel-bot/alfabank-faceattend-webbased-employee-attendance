@@ -172,7 +172,7 @@ export default function AdminSiteLogoPage() {
   }
 
   async function handleResetLogo() {
-    if (!window.confirm("Kembalikan logo ke default Creativemu?")) return;
+    if (!window.confirm(`Kembalikan logo ke default ${DEFAULT_SITE_TITLE}?`)) return;
 
     try {
       setIsSavingLogo(true);
@@ -381,7 +381,7 @@ export default function AdminSiteLogoPage() {
                     type="text"
                     value={inputSiteTitle}
                     onChange={(e) => setInputSiteTitle(e.target.value)}
-                    placeholder="Contoh: Creativemu"
+                    placeholder={`Contoh: ${DEFAULT_SITE_TITLE}`}
                     className="mt-2 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
                   />
                 </label>

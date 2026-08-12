@@ -18,6 +18,26 @@ const nextConfig: NextConfig = {
     "stopwatch-wriggly-pacify.ngrok-free.dev",
     "*.ngrok-free.dev",
   ],
+
+  images: {
+    localPatterns: [
+      {
+        pathname: "/images/**",
+      },
+      {
+        pathname: "/uploads/**",
+      },
+      {
+        pathname: "/api/site-logo",
+      },
+      {
+        pathname: "/api/profil/photo",
+      },
+      {
+        pathname: "/api/attendance/**/photo",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

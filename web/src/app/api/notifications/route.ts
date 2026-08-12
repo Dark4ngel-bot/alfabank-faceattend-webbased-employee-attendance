@@ -85,13 +85,13 @@ function formatDate(value: Date | string | null | undefined) {
 function getNotificationHref(type: string) {
   if (type === "announcement") return "/pengumuman";
 
-  return "/cuti";
+  return "/pengajuan";
 }
 
 function getNotificationLabel(type: string) {
   if (type === "announcement") return "Pengumuman";
 
-  return "Cuti / Izin / Sakit";
+  return "Pengajuan / Izin / Sakit";
 }
 
 export async function GET(req: NextRequest) {

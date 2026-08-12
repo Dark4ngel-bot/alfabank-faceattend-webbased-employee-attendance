@@ -12,7 +12,7 @@ const MANAGE_ROLES: AllowedRole[] = ["admin", "owner"];
 const defaultShifts = [
   {
     name: "UTAMA",
-    tolerance_minutes: 5,
+    tolerance_minutes: 3,
     check_in_open: "07:00",
     check_out_open: "16:50",
     status: "active",
@@ -84,7 +84,12 @@ export async function GET(req: NextRequest) {
       currentUser.status !== "active" ||
       !VIEW_ROLES.includes(currentUser.role as AllowedRole)
     ) {
-      return NextResponse.json({ message: "Akses ditolak." }, { status: 403 });
+      return NextResponse.json(
+        {
+          message: "Akses ditolak.",
+        },
+        { status: 403 },
+      );
     }
 
     await ensureDefaultShifts();
@@ -97,12 +102,8 @@ export async function GET(req: NextRequest) {
         check_in_open: true,
         check_out_open: true,
         status: true,
-        _count: {
-          select: {
-            users: true,
-            work_schedules: true,
-          },
-        },
+        created_at: true,
+        updated_at: true,
       },
     });
 
@@ -124,61 +125,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    const currentUser = await getCurrentUser(req);
-
-    if (
-      currentUser.status !== "active" ||
-      !MANAGE_ROLES.includes(currentUser.role as AllowedRole)
-    ) {
-      return NextResponse.json({ message: "Akses ditolak." }, { status: 403 });
-    }
-
-    const body = await req.json();
-    const name = String(body.name || "").trim();
-    const status = String(body.status || "active");
-    const toleranceMinutes = Number(body.tolerance_minutes ?? 5);
-    const checkInOpen = String(body.check_in_open || "07:00");
-    const checkOutOpen = String(body.check_out_open || "16:50");
-
-    if (!name) {
-      return NextResponse.json(
-        { message: "Nama shift wajib diisi." },
-        { status: 400 },
-      );
-    }
-
-    const shift = await prisma.shift.create({
-      data: {
-        name,
-        status,
-        tolerance_minutes:
-          Number.isFinite(toleranceMinutes) && toleranceMinutes >= 0
-            ? toleranceMinutes
-            : 5,
-        check_in_open: checkInOpen || "07:00",
-        check_out_open: checkOutOpen || "16:50",
-      },
-    });
-
-    return NextResponse.json({
-      message: "Shift berhasil ditambahkan.",
-      shift,
-    });
-  } catch (error) {
-    console.error("POST /api/admin/shifts error:", error);
-
-    return NextResponse.json(
-      {
-        message:
-          error instanceof Error ? error.message : "Gagal menambahkan shift.",
-      },
-      { status: 500 },
-    );
-  }
-}
-
 export async function PATCH(req: NextRequest) {
   try {
     const currentUser = await getCurrentUser(req);
@@ -188,7 +134,10 @@ export async function PATCH(req: NextRequest) {
       !MANAGE_ROLES.includes(currentUser.role as AllowedRole)
     ) {
       return NextResponse.json(
-        { message: "Akses ditolak. Hanya admin yang dapat mengubah shift." },
+        {
+          message:
+            "Akses ditolak. Hanya admin yang dapat mengubah shift.",
+        },
         { status: 403 },
       );
     }
@@ -196,67 +145,66 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
 
     const id = String(body.id || "");
-    const name =
-      body.name !== undefined ? String(body.name || "").trim() : undefined;
-    const toleranceMinutes =
-      body.tolerance_minutes !== undefined
-        ? Number(body.tolerance_minutes)
-        : undefined;
-    const checkInOpen =
-      body.check_in_open !== undefined ? String(body.check_in_open) : undefined;
-    const checkOutOpen =
-      body.check_out_open !== undefined
-        ? String(body.check_out_open)
-        : undefined;
-    const status = body.status !== undefined ? String(body.status) : undefined;
+    const toleranceMinutes = Number(body.tolerance_minutes ?? 0);
+    const checkInOpen = String(body.check_in_open || "07:00");
+    const checkOutOpen = String(body.check_out_open || "16:50");
+    const status = String(body.status || "active");
 
     if (!id) {
       return NextResponse.json(
-        { message: "ID shift wajib dikirim." },
+        {
+          message: "ID shift wajib dikirim.",
+        },
         { status: 400 },
       );
     }
 
-    if (
-      toleranceMinutes !== undefined &&
-      (Number.isNaN(toleranceMinutes) || toleranceMinutes < 0)
-    ) {
+    if (Number.isNaN(toleranceMinutes) || toleranceMinutes < 0) {
       return NextResponse.json(
-        { message: "Toleransi telat tidak valid." },
+        {
+          message: "Toleransi telat tidak valid.",
+        },
         { status: 400 },
       );
     }
 
-    if (status !== undefined && !["active", "inactive"].includes(status)) {
+    if (!["active", "inactive"].includes(status)) {
       return NextResponse.json(
-        { message: "Status shift hanya boleh active atau inactive." },
+        {
+          message: "Status shift hanya boleh active atau inactive.",
+        },
         { status: 400 },
       );
     }
 
     const existingShift = await prisma.shift.findUnique({
-      where: { id },
-      select: { id: true },
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+      },
     });
 
     if (!existingShift) {
       return NextResponse.json(
-        { message: "Shift tidak ditemukan." },
+        {
+          message: "Shift tidak ditemukan.",
+        },
         { status: 404 },
       );
     }
 
-    const updateData: Record<string, unknown> = {};
-    if (name !== undefined) updateData.name = name;
-    if (toleranceMinutes !== undefined)
-      updateData.tolerance_minutes = toleranceMinutes;
-    if (checkInOpen !== undefined) updateData.check_in_open = checkInOpen;
-    if (checkOutOpen !== undefined) updateData.check_out_open = checkOutOpen;
-    if (status !== undefined) updateData.status = status;
-
     const shift = await prisma.shift.update({
-      where: { id },
-      data: updateData,
+      where: {
+        id,
+      },
+      data: {
+        tolerance_minutes: toleranceMinutes,
+        check_in_open: checkInOpen,
+        check_out_open: checkOutOpen,
+        status,
+      },
       select: {
         id: true,
         name: true,
@@ -282,47 +230,6 @@ export async function PATCH(req: NextRequest) {
           error instanceof Error
             ? error.message
             : "Gagal memperbarui data shift.",
-      },
-      { status: 500 },
-    );
-  }
-}
-
-export async function DELETE(req: NextRequest) {
-  try {
-    const currentUser = await getCurrentUser(req);
-
-    if (
-      currentUser.status !== "active" ||
-      !MANAGE_ROLES.includes(currentUser.role as AllowedRole)
-    ) {
-      return NextResponse.json({ message: "Akses ditolak." }, { status: 403 });
-    }
-
-    const url = new URL(req.url);
-    const id = url.searchParams.get("id") || "";
-
-    if (!id) {
-      return NextResponse.json(
-        { message: "ID shift wajib dikirim." },
-        { status: 400 },
-      );
-    }
-
-    await prisma.shift.delete({
-      where: { id },
-    });
-
-    return NextResponse.json({
-      message: "Shift berhasil dihapus.",
-    });
-  } catch (error) {
-    console.error("DELETE /api/admin/shifts error:", error);
-
-    return NextResponse.json(
-      {
-        message:
-          error instanceof Error ? error.message : "Gagal menghapus shift.",
       },
       { status: 500 },
     );
