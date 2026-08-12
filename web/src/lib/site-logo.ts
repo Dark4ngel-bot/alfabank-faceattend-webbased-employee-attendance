@@ -35,6 +35,7 @@ function normalizeLogoSrc(value: string | null | undefined) {
 
 export function normalizeSiteTitle(value: string | null | undefined) {
   const title = String(value || "").trim();
+  if (title.toLowerCase() === "presensi alfabank") return DEFAULT_SITE_TITLE;
   return title || DEFAULT_SITE_TITLE;
 }
 
