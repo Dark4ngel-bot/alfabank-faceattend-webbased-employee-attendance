@@ -672,6 +672,7 @@ export default function TukarShiftPage() {
                     : "Tanggal Geser Shift"}
                 </label>
                 <input
+                  suppressHydrationWarning
                   type="date"
                   value={swapDate}
                   min={getTodayString()}
@@ -688,6 +689,7 @@ export default function TukarShiftPage() {
                   Alasan (Opsional)
                 </label>
                 <textarea
+                  suppressHydrationWarning
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder={
