@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { verifyToken } from "@/lib/auth";
+import { normalizeAppRole, verifyToken } from "@/lib/auth";
 import { deactivateExpiredEmployee } from "@/lib/employment-period";
 import { prisma } from "@/lib/prisma";
 
@@ -40,7 +40,7 @@ async function getTokenUser(req: NextRequest) {
   return {
     id,
     email: String(payload.email || ""),
-    role: String(payload.role || "").toLowerCase(),
+    role: normalizeAppRole(payload.role),
   };
 }
 
@@ -77,7 +77,7 @@ export async function requireAuth(req: NextRequest): Promise<AuthUser> {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: String(user.role || "").toLowerCase(),
+    role: normalizeAppRole(user.role),
     status: user.status,
   };
 }
@@ -98,16 +98,16 @@ export async function requireDbUser(req: NextRequest, roles?: AppRole[]) {
   const authUser = await requireAuth(req);
 
   if (roles?.length) {
-    const allowedRoles = new Set(roles.map((role) => role.toLowerCase()));
+    const allowedRoles = new Set(roles.map((role) => normalizeAppRole(role)));
 
-    if (!allowedRoles.has(String(authUser.role || "").toLowerCase())) {
+    if (!allowedRoles.has(normalizeAppRole(authUser.role))) {
       throw new Error("Akses ditolak.");
     }
   }
 
   return {
     id: authUser.id,
-    role: String(authUser.role || "").toLowerCase(),
+    role: normalizeAppRole(authUser.role),
     status: authUser.status,
   };
 }

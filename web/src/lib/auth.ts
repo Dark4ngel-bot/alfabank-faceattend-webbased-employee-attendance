@@ -19,6 +19,27 @@ export async function verifyPassword(password: string, hash: string) {
   return bcrypt.compare(password, hash);
 }
 
+export function normalizeAppRole(role: string | null | undefined) {
+  const normalized = String(role || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+
+  if (["admin", "administrator", "superadmin", "super_admin"].includes(normalized)) {
+    return "admin";
+  }
+
+  if (["owner", "pemilik"].includes(normalized)) {
+    return "owner";
+  }
+
+  if (["employee", "user", "staff", "karyawan"].includes(normalized)) {
+    return "employee";
+  }
+
+  return normalized || "employee";
+}
+
 export async function createToken(payload: {
   id: string;
   email: string;

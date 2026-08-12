@@ -53,6 +53,7 @@ if [ -f "$BUILD_DIR/standalone/server.js" ]; then
     "$BUILD_DIR/standalone/prisma/schema.prisma" \
     "$BUILD_DIR/standalone/prisma/migrations/20260812030000_normalize_alfabank_logo_title_settings/migration.sql" \
     "$BUILD_DIR/standalone/prisma/migrations/20260812031500_force_alfabank_default_logo/migration.sql" \
+    "$BUILD_DIR/standalone/prisma/migrations/20260812033000_normalize_alfabank_admin_roles/migration.sql" \
     "$BUILD_DIR/standalone/$BUILD_DIR/static"
   do
     if [ ! -e "$path" ]; then
