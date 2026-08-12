@@ -502,6 +502,7 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "same-origin",
         body: JSON.stringify({
           email: normalizedEmail,
           password: loginPassword,
@@ -585,7 +586,7 @@ export default function LoginPage() {
             <div className="relative z-10 flex h-32 w-32 items-center justify-center p-0 md:h-40 md:w-40 md:overflow-hidden md:rounded-[2rem] md:border md:border-white/80 md:bg-white md:p-7 md:shadow-[0_24px_58px_rgba(18,60,140,0.14)]">
               <Image
                 src={logoSrc}
-                alt="Creativemu Logo"
+                alt={`${siteTitle} Logo`}
                 width={421}
                 height={390}
                 unoptimized
@@ -633,12 +634,12 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* 2. MAIN LOGO CREATIVEMU - DEAD CENTERED AT TOP OF ENTIRE PAGE (X) */}
+        {/* 2. MAIN LOGO - DEAD CENTERED AT TOP OF ENTIRE PAGE (X) */}
         <div className="login-logo-pop pointer-events-none absolute left-1/2 top-5 z-30 flex -translate-x-1/2 justify-center text-center sm:top-7 lg:top-8">
           <div className="pointer-events-auto flex h-20 w-72 shrink-0 items-center justify-center transition-transform duration-300 hover:scale-[1.02] sm:h-24 sm:w-80 md:h-28 md:w-[26rem] lg:h-32 lg:w-[32rem]">
             <Image
               src={logoSrc}
-              alt="Creativemu Logo"
+              alt={`${siteTitle} Logo`}
               width={512}
               height={128}
               unoptimized
@@ -726,11 +727,11 @@ export default function LoginPage() {
                           placeholder=""
                           autoComplete="email"
                           disabled={formIsBusy}
-                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-32 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
+                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-40 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
                         />
 
                         <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">
-                          @creativemu.id
+                          @alfabankjogja.com
                         </span>
                       </div>
                     </label>

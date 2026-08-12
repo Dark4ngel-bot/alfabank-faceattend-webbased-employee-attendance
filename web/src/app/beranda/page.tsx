@@ -261,12 +261,9 @@ function ProfileAvatar({
     size === "desktop" ? "h-24 w-24 text-2xl" : "h-12 w-12 text-sm";
 
   if (user.profile_photo) {
-    const photoSrc = `${user.profile_photo}${user.profile_photo.includes("?") ? "&" : "?"}v=${Date.now()}`;
-
     return (
       <img
-        key={user.profile_photo}
-        src={photoSrc}
+        src={user.profile_photo}
         alt={user.name || "Profil"}
         className={`home-icon-pop ${sizeClass} shrink-0 rounded-full object-cover ${
           size === "desktop" ? "ring-4 ring-white/70" : "ring-4 ring-white"
@@ -413,7 +410,7 @@ function AttendanceButton({
         disabled
           ? "cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300"
           : variant === "primary"
-            ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20 hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
+            ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
             : "border border-blue-100 bg-white text-[#123c8c] hover:-translate-y-0.5 hover:bg-[#eaf1ff] active:scale-[0.98]"
       }`}
     >
@@ -449,8 +446,8 @@ function AnnouncementList({
       onClick={onRead}
       className="home-card-enter block min-w-0 rounded-3xl border border-blue-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f8fbff] hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99] md:p-5"
     >
-      <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-100 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-900 shadow-sm">
-        <Megaphone size={14} className="text-amber-700" />
+      <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#eaf1ff] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#123c8c]">
+        <Megaphone size={14} />
         Pengumuman Terbaru
       </div>
 
@@ -635,7 +632,7 @@ export default function HomePage() {
                   <div className="home-icon-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-blue-100">
                     <Image
                       src={logoSrc}
-                      alt="Creativemu Logo"
+                      alt="Logo aplikasi"
                       width={64}
                       height={59}
                       unoptimized
@@ -758,23 +755,27 @@ export default function HomePage() {
                 animationDelay: "140ms",
               }}
             >
-              <div className="flex flex-row items-center justify-between gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                    <p className="text-2xl font-black tracking-tight text-slate-950 sm:text-4xl md:text-6xl">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-4xl font-black tracking-tight text-slate-950 md:text-6xl">
                       {currentTime || "--:-- WIB"}
                     </p>
 
-                    <div className="rounded-xl bg-gradient-to-r from-[#123c8c] to-[#1e56b8] px-2 py-1 text-[10px] font-black text-white shadow-md shadow-blue-900/15 sm:rounded-2xl sm:px-4 sm:py-2 md:text-sm">
-                      {currentDate || "Memuat tanggal..."}
+                    <div className="rounded-full bg-[#eaf1ff] px-3 py-1 text-xs font-black text-[#123c8c] md:px-3 md:py-1.5">
+                      WIB
                     </div>
                   </div>
 
-                  <p className="mt-1.5 text-[11px] font-semibold text-slate-500 sm:text-sm md:mt-5 md:text-lg">
+                  <p className="mt-3 text-sm font-bold text-slate-500 md:text-base">
+                    {currentDate || "Memuat tanggal..."}
+                  </p>
+
+                  <p className="mt-3 text-sm font-semibold text-slate-500 md:mt-5 md:text-lg">
                     {workScheduleText}
                   </p>
 
-                  <p className="mt-0.5 text-[11px] font-semibold text-slate-500 sm:text-sm md:mt-3 md:text-lg">
+                  <p className="mt-1 text-sm font-semibold text-slate-500 md:mt-3 md:text-lg">
                     Status hari ini:{" "}
                     <span className="font-black text-[#123c8c]">
                       {attendanceToday.status}
@@ -782,7 +783,7 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <div className="flex w-[140px] shrink-0 flex-col gap-2.5 sm:w-[160px] md:w-[380px] md:flex-row md:gap-4 lg:w-[440px]">
+                <div className="grid grid-cols-2 gap-3 lg:w-[460px]">
                   <AttendanceButton
                     label="Masuk"
                     href="/presensi"

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#123c8c",
+  themeColor: "#7f1d1d",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -24,25 +24,25 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Presensi Creativemu",
-  description: "Sistem Presensi Karyawan",
+  title: "Presensi Alfabank",
+  description: "Sistem Presensi Karyawan Alfabank",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Presensi",
+    statusBarStyle: "default",
+    title: "Presensi Alfabank",
   },
   icons: {
     icon: [
       { url: "/icon.png", type: "image/png" },
     ],
     shortcut: "/icon.png",
-    apple: "/icon.png",
+    apple: "/apple-touch-icon.png?v=alfabank-red",
   },
   other: {
     google: "notranslate",
     "mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-title": "Presensi",
+    "apple-mobile-web-app-title": "Presensi Alfabank",
   },
 };
 
@@ -62,10 +62,10 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icon.png" type="image/png" />
         <link rel="shortcut icon" href="/icon.png" />
-        <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=alfabank-red" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-title" content="Presensi" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Presensi Alfabank" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body

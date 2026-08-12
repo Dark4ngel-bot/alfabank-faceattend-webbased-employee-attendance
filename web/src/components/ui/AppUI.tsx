@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
-import { useSiteLogo } from "@/hooks/useSiteLogo";
+import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
 
 type Variant = "primary" | "secondary" | "danger" | "ghost" | "soft";
 type Size = "sm" | "md" | "lg";
@@ -14,12 +14,12 @@ function cn(...classes: Array<string | false | null | undefined>) {
 
 const buttonVariantClass: Record<Variant, string> = {
   primary:
-    "bg-[var(--app-primary,#123c8c)] text-white shadow-lg shadow-blue-900/20 hover:bg-[var(--app-primary-hover,#0f347a)]",
+    "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 hover:bg-[#0f347a]",
   secondary:
-    "border border-blue-100 bg-white text-[var(--app-primary-text,#123c8c)] shadow-sm hover:bg-[var(--app-primary-soft,#eaf1ff)]",
+    "border border-blue-100 bg-white text-[#123c8c] shadow-sm hover:bg-blue-50",
   danger: "bg-rose-50 text-rose-600 ring-1 ring-rose-100 hover:bg-rose-100",
-  ghost: "bg-transparent text-[var(--app-primary-text,#123c8c)] hover:bg-[var(--app-primary-soft,#eaf1ff)]",
-  soft: "bg-[var(--app-primary-soft,#eaf1ff)] text-[var(--app-primary-text,#123c8c)] ring-1 ring-blue-100 hover:bg-[var(--app-primary-subtle,#f8fbff)]",
+  ghost: "bg-transparent text-[#123c8c] hover:bg-blue-50",
+  soft: "bg-[#eaf1ff] text-[#123c8c] ring-1 ring-blue-100 hover:bg-blue-100",
 };
 
 const buttonSizeClass: Record<Size, string> = {
@@ -865,7 +865,6 @@ type AppLoadingStateProps = {
 export function AppLoadingState({
   text = "Memuat data...",
 }: AppLoadingStateProps) {
-  const logoSrc = useSiteLogo();
   return (
     <>
       <AppInteractionStyles />
@@ -874,7 +873,7 @@ export function AppLoadingState({
         <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-[1.75rem] border border-blue-100 bg-[#f8fbff] shadow-inner">
           <span className="app-brand-loader-scan pointer-events-none absolute left-3 right-3 top-1/2 z-20 h-0.5 bg-gradient-to-r from-transparent via-[#ff8a00] to-transparent shadow-[0_0_12px_rgba(255,138,0,0.62)]" />
           <Image
-            src={logoSrc}
+            src={DEFAULT_SITE_MARK_LOGO_SRC}
             alt=""
             aria-hidden="true"
             width={56}

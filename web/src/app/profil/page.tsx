@@ -81,6 +81,9 @@ type ProfileUser = {
   wfh_quota_monthly?: number | null;
   wfh_quota_used_monthly?: number | null;
   wfh_quota_remaining_monthly?: number | null;
+  leave_quota_yearly?: number | null;
+  leave_quota_used_yearly?: number | null;
+  leave_quota_remaining_yearly?: number | null;
   jabatan?: {
     id: string;
     name: string;
@@ -212,13 +215,26 @@ function formatWfhQuota(value?: number | string | null) {
   return String(Number.isFinite(quota) ? Math.max(0, quota) : 0);
 }
 
-function formatWfhQuotaText(quotaMonthly?: number | string | null, quotaRemaining?: number | string | null) {
+function formatWfhQuotaText(
+  quotaMonthly?: number | string | null,
+  quotaRemaining?: number | string | null,
+) {
   const monthly = Number(quotaMonthly || 0);
   if (!monthly || monthly <= 0) {
     return "Tanpa Batas (Bebas WFH)";
   }
   const remaining = Math.max(0, Number(quotaRemaining ?? monthly));
   return `${remaining} hari tersisa dari ${monthly} hari/bulan`;
+}
+
+function formatLeaveQuotaText(
+  quotaYearly?: number | string | null,
+  quotaRemaining?: number | string | null,
+) {
+  const yearly = Math.max(0, Number(quotaYearly ?? 12));
+  const remaining = Math.max(0, Number(quotaRemaining ?? yearly));
+
+  return `${remaining} hari tersisa dari ${yearly} hari/tahun`;
 }
 
 function formatDay(day: string) {
@@ -737,6 +753,7 @@ export function ProfilPageContent({
       const response = await fetch("/api/auth/me", {
         method: "GET",
         cache: "no-store",
+        credentials: "same-origin",
       });
 
       const data = await readJsonResponse(response);
@@ -911,6 +928,7 @@ export function ProfilPageContent({
       await fetch("/api/auth/logout", {
         method: "POST",
         cache: "no-store",
+        credentials: "same-origin",
       });
 
       window.localStorage.removeItem("presensi_read_announcement_id");
@@ -925,7 +943,6 @@ export function ProfilPageContent({
       });
 
       router.replace("/login");
-      router.refresh();
     } catch (error) {
       console.error("LOGOUT_ERROR:", error);
 
@@ -978,7 +995,10 @@ export function ProfilPageContent({
       }
 
       const uploadedPhoto =
-        data.user?.profile_photo || data.photoUrl || data.profilePhoto || data.photo;
+        data.user?.profile_photo ||
+        data.photoUrl ||
+        data.profilePhoto ||
+        data.photo;
 
       if (uploadedPhoto) {
         setUser((currentUser) =>
@@ -1209,6 +1229,14 @@ export function ProfilPageContent({
             ),
             icon: BriefcaseBusiness,
           },
+          {
+            label: "Kuota Cuti Tahunan",
+            value: formatLeaveQuotaText(
+              user.leave_quota_yearly,
+              user.leave_quota_remaining_yearly,
+            ),
+            icon: CalendarDays,
+          },
         ],
       },
       {
@@ -1331,6 +1359,38 @@ export function ProfilPageContent({
                 <h1 className="mt-1 text-3xl font-black text-[#123456]">
                   Info Pribadi
                 </h1>
+              </div>
+            </div>
+
+            <div
+              className="profile-row-enter mt-3 grid grid-cols-3 overflow-hidden rounded-[1.8rem] border border-blue-100 bg-white shadow-xl shadow-slate-200/50"
+              style={{ animationDelay: "95ms" }}
+            >
+              <div className="border-r border-blue-50 px-4 py-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                  Kuota Cuti
+                </p>
+                <p className="mt-1 text-base font-black text-[#123456]">
+                  {formatWfhQuota(user.leave_quota_yearly ?? 12)} Hari
+                </p>
+              </div>
+
+              <div className="border-r border-blue-50 px-4 py-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                  Terpakai
+                </p>
+                <p className="mt-1 text-lg font-black text-[#123456]">
+                  {formatWfhQuota(user.leave_quota_used_yearly)}
+                </p>
+              </div>
+
+              <div className="px-4 py-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                  Sisa
+                </p>
+                <p className="mt-1 text-lg font-black text-[#123c8c]">
+                  {formatWfhQuota(user.leave_quota_remaining_yearly)}
+                </p>
               </div>
             </div>
 
@@ -1606,7 +1666,11 @@ export function ProfilPageContent({
                     </label>
                     <div className="flex items-center gap-4 rounded-2xl border border-blue-100 bg-white p-3">
                       {user ? (
-                        <ProfileAvatar user={user} initials={initials} size="sm" />
+                        <ProfileAvatar
+                          user={user}
+                          initials={initials}
+                          size="sm"
+                        />
                       ) : null}
                       <div className="min-w-0 flex-1">
                         <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#123c8c] px-4 py-2.5 text-xs font-black text-white transition hover:bg-[#0f3274] active:scale-[0.97]">

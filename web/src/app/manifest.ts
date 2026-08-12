@@ -2,24 +2,24 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Presensi App",
-    short_name: "Presensi",
-    description: "Sistem Presensi Karyawan",
+    name: "Presensi Alfabank",
+    short_name: "Alfabank",
+    description: "Sistem Presensi Karyawan Alfabank",
     start_url: "/",
-    display: "standalone",
-    display_override: ["standalone", "minimal-ui"],
+    display: "fullscreen",
+    display_override: ["fullscreen", "standalone"],
     background_color: "#ffffff",
     theme_color: "#123c8c",
     orientation: "portrait",
     icons: [
       {
-        src: "/icons/presensi-icon-192.png",
+        src: "/icons/alfabank-icon-192.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "maskable",
       },
       {
-        src: "/icons/presensi-icon-512.png",
+        src: "/icons/alfabank-icon-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

@@ -26,6 +26,7 @@ function AuthStatusGuard({ enabled }: { enabled: boolean }) {
         const response = await fetch("/api/auth/me", {
           method: "GET",
           cache: "no-store",
+          credentials: "same-origin",
         });
 
         if (!isMounted || response.ok) return;
@@ -34,6 +35,7 @@ function AuthStatusGuard({ enabled }: { enabled: boolean }) {
           await fetch("/api/auth/logout", {
             method: "POST",
             cache: "no-store",
+            credentials: "same-origin",
           }).catch(() => null);
 
           window.localStorage.removeItem("presensi_read_announcement_id");
@@ -41,7 +43,6 @@ function AuthStatusGuard({ enabled }: { enabled: boolean }) {
 
           const reason = response.status === 403 ? "inactive" : "expired";
           router.replace(`/login?reason=${reason}&redirect=${pathname}`);
-          router.refresh();
         }
       } catch {
         // Keep the current page if the network is temporarily unavailable.
@@ -79,7 +80,7 @@ export default function MobileShell({
 
   return (
     <div
-      className={`relative min-h-dvh overflow-hidden bg-gradient-to-br ${backgroundGlow} ${bottomPaddingClass} ${className}`}
+      className={`relative min-h-dvh overflow-hidden bg-gradient-to-br pt-[env(safe-area-inset-top)] ${backgroundGlow} ${bottomPaddingClass} ${className}`}
     >
       <AuthStatusGuard enabled={variant !== "auth"} />
 
@@ -95,7 +96,7 @@ export default function MobileShell({
         />
       </div>
 
-      <div className="relative z-10 min-h-dvh">{children}</div>
+      <div className="relative z-10 min-h-[calc(100dvh-env(safe-area-inset-top))]">{children}</div>
     </div>
   );
 }
