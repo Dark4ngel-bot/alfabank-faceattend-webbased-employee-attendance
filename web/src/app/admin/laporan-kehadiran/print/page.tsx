@@ -311,7 +311,7 @@ function AttendanceReportPrintContent() {
       <section className="print-page">
         <section className="header">
           <div>
-            <p className="eyebrow">Presensi Creativemu</p>
+            <p className="eyebrow">Presensi Alfabank</p>
             <h1>Laporan Kehadiran Karyawan</h1>
           </div>
 

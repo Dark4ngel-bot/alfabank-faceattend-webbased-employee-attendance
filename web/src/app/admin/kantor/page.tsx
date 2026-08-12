@@ -369,7 +369,7 @@ function OfficeFormPanel({
             label="Nama Kantor"
             value={form.name}
             onChange={(event) => onChange("name", event.target.value)}
-            placeholder="Contoh: Creativemu Academy"
+            placeholder="Contoh: Alfabank Sedayu"
             className="office-field focus:ring-4 focus:ring-blue-100"
           />
         </div>

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { createToken, verifyPassword } from "@/lib/auth";
+import { createToken, normalizeAppRole, verifyPassword } from "@/lib/auth";
 import { deactivateExpiredEmployee } from "@/lib/employment-period";
 
 const LOGIN_RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -290,7 +290,7 @@ export async function POST(req: Request) {
       role: user.role,
     });
 
-    const role = String(user.role || "").toLowerCase();
+    const role = normalizeAppRole(user.role);
     const redirectTo =
       role === "admin" || role === "owner" ? "/admin/dasbor" : "/beranda";
 
