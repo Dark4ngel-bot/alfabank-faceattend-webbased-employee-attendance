@@ -597,7 +597,7 @@ export default function LoginPage() {
           </div>
 
           <div className="relative mt-9 text-center md:mt-12">
-            <h2 className="intro-text-in text-3xl font-black uppercase tracking-[0.18em] text-slate-950 md:text-5xl">
+            <h2 className="intro-text-in text-3xl font-black uppercase tracking-[0.18em] text-[var(--app-primary-text,#b91c1c)] md:text-5xl">
               {siteTitle}
             </h2>
             <p
@@ -654,7 +654,7 @@ export default function LoginPage() {
           <div className="login-enter relative flex flex-col justify-between px-6 pb-8 pt-28 md:px-12 lg:px-20 lg:pb-14 lg:pt-36">
             <div className="relative z-10 my-auto max-w-2xl text-center lg:text-left">
               <p
-                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#123c8c] md:text-sm"
+                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[var(--app-primary-text,#b91c1c)] md:text-sm"
                 style={{
                   animationDelay: "120ms",
                 }}
@@ -663,7 +663,7 @@ export default function LoginPage() {
               </p>
 
               <h2
-                className="login-text-reveal mt-4 text-[2rem] font-black leading-[1.05] tracking-tight text-slate-950 sm:text-4xl md:mt-5 md:text-6xl"
+                className="login-text-reveal mt-4 text-[2rem] font-black leading-[1.05] tracking-tight text-[var(--app-primary-text,#b91c1c)] sm:text-4xl md:mt-5 md:text-6xl"
                 style={{
                   animationDelay: "180ms",
                 }}
@@ -674,7 +674,7 @@ export default function LoginPage() {
               </h2>
 
               <p
-                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#123c8c] md:text-2xl"
+                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[var(--app-primary-text,#b91c1c)] md:text-2xl"
                 style={{
                   animationDelay: "240ms",
                 }}
