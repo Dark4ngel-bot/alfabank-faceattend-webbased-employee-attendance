@@ -43,6 +43,7 @@ export const metadata: Metadata = {
   other: {
     google: "notranslate",
     "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-title": "Presensi Alfabank",
     "application-name": "Presensi Alfabank",
   },
 };
