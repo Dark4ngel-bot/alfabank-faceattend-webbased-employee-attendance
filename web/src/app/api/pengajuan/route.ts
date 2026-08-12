@@ -481,7 +481,7 @@ export async function POST(req: NextRequest) {
         total_days: totalDays,
         reason,
         status: "pending",
-        attachment_file: attachmentFile,
+        attachment_url: attachmentName ? "uploaded" : null,
         attachment_name: attachmentName,
         attachment_mime: attachmentMime,
       },
