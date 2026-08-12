@@ -38,6 +38,10 @@ if [ -d "$BUILD_DIR/standalone/public/uploads" ]; then
   fail "$BUILD_DIR/standalone/public/uploads exists in deploy output"
 fi
 
+if [ -d "$BUILD_DIR/standalone/public/images/creativemu-logo" ]; then
+  fail "$BUILD_DIR/standalone/public/images/creativemu-logo exists in Alfabank deploy output"
+fi
+
 if [ -f "$BUILD_DIR/standalone/server.js" ]; then
   for path in \
     "$BUILD_DIR/standalone/public/images/alfabank-logo/alfabank_logo.png" \
@@ -48,6 +52,7 @@ if [ -f "$BUILD_DIR/standalone/server.js" ]; then
     "$BUILD_DIR/standalone/public/manifest.json" \
     "$BUILD_DIR/standalone/prisma/schema.prisma" \
     "$BUILD_DIR/standalone/prisma/migrations/20260812030000_normalize_alfabank_logo_title_settings/migration.sql" \
+    "$BUILD_DIR/standalone/prisma/migrations/20260812031500_force_alfabank_default_logo/migration.sql" \
     "$BUILD_DIR/standalone/$BUILD_DIR/static"
   do
     if [ ! -e "$path" ]; then
