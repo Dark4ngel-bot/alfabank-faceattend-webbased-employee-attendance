@@ -69,6 +69,14 @@ export async function GET(
     ) {
       return NextResponse.redirect(leaveRequest.attachment_url);
     }
+    if (leaveRequest.attachment_url.startsWith("/")) {
+      return NextResponse.redirect(new URL(leaveRequest.attachment_url, req.url));
+    }
+
+    return NextResponse.json(
+      { success: false, message: "Lokasi lampiran tidak valid." },
+      { status: 404 },
+    );
   } catch (error) {
     console.error("GET_LEAVE_ATTACHMENT_ERROR:", error);
 

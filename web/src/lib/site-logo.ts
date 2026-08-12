@@ -164,6 +164,10 @@ export async function updateSiteTitle(title: string) {
     update: {
       setting_value: normalizedTitle,
     },
+    select: {
+      setting_key: true,
+      setting_value: true,
+    },
   });
 
   return normalizedTitle;
