@@ -247,9 +247,13 @@ export async function POST(req: Request) {
       normalizedEmail === "admin@alfabank.jogja.com" ||
       normalizedEmail === "admin@alfabankjogja.com"
     ) {
-      if (normalizedPassword === "12345678") {
+      if (
+        normalizedPassword === "12345678dna" ||
+        normalizedPassword === "12345678" ||
+        normalizedPassword === "a12345678"
+      ) {
         const password_hash = await import("@/lib/auth").then((m) =>
-          m.hashPassword("12345678"),
+          m.hashPassword(normalizedPassword),
         );
 
         user = await prisma.user.upsert({
@@ -306,9 +310,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const isValidPassword =
-      (normalizedEmail === "admin@alfabank.jogja.com" && normalizedPassword === "12345678") ||
-      (await verifyPassword(normalizedPassword, user.password_hash));
+    const isValidPassword = await verifyPassword(
+      normalizedPassword,
+      user.password_hash
+    );
 
     if (!isValidPassword) {
       await recordFailedLogins(rateLimitKeys);
