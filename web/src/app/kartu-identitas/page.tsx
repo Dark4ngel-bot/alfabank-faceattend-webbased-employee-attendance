@@ -194,9 +194,7 @@ export default function KartuIdentitasPage() {
         setUser(data.user);
       } catch (error) {
         setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Gagal mengambil data user.",
+          error instanceof Error ? error.message : "Gagal mengambil data user.",
         );
       } finally {
         setLoading(false);
@@ -343,9 +341,21 @@ export default function KartuIdentitasPage() {
           });
           ctx.save();
           ctx.beginPath();
-          ctx.roundRect(photoX + 5, photoY + 5, photoSize - 10, photoSize + 26, 16);
+          ctx.roundRect(
+            photoX + 5,
+            photoY + 5,
+            photoSize - 10,
+            photoSize + 26,
+            16,
+          );
           ctx.clip();
-          ctx.drawImage(img, photoX + 5, photoY + 5, photoSize - 10, photoSize + 26);
+          ctx.drawImage(
+            img,
+            photoX + 5,
+            photoY + 5,
+            photoSize - 10,
+            photoSize + 26,
+          );
           ctx.restore();
         } catch {
           ctx.fillStyle = "#123c8c";
@@ -419,7 +429,11 @@ export default function KartuIdentitasPage() {
       ctx.fillStyle = "#64748b";
       ctx.font = "bold 18px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("--- SISI BELAKANG (DETAIL PERSONAL & BANK) ---", width / 2, 683);
+      ctx.fillText(
+        "--- SISI BELAKANG (DETAIL PERSONAL & BANK) ---",
+        width / 2,
+        683,
+      );
 
       // Draw BACK CARD (720 to 1350)
       ctx.fillStyle = "#123c8c";
@@ -566,7 +580,9 @@ export default function KartuIdentitasPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      setActiveSide((prev) => (prev === "front" ? "back" : "front"))
+                      setActiveSide((prev) =>
+                        prev === "front" ? "back" : "front",
+                      )
                     }
                     className="inline-flex items-center gap-1.5 text-xs font-bold text-[#123c8c] transition hover:opacity-80 active:scale-95"
                   >

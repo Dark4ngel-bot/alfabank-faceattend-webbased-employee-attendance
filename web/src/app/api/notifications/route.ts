@@ -7,7 +7,11 @@ import { formatShiftSwapDate } from "@/lib/shift-swap-schema";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const EMPLOYEE_NOTIFICATION_TYPES = ["leave_status", "announcement", "shift_swap"];
+const EMPLOYEE_NOTIFICATION_TYPES = [
+  "leave_status",
+  "announcement",
+  "shift_swap",
+];
 
 async function getCurrentUser(req: NextRequest) {
   const authUser = await requireAuth(req);
@@ -43,7 +47,7 @@ function jsonError(message: string, status = 400) {
       },
       notifications: [],
     },
-    { status }
+    { status },
   );
 }
 
@@ -177,7 +181,7 @@ export async function GET(req: NextRequest) {
         type: "shift_swap",
         typeLabel: "Tukar Shift",
         title: "Permintaan Tukar Shift Masuk",
-        message: `${item.requester?.name || "Rekan kerja"} mengajukan tukar shift (${item.requester_shift_name} ↔ ${item.target_shift_name}) untuk tanggal ${formatShiftSwapDate(item.swap_date)}.`,
+        message: `${item.requester?.name || "Rekan kerja"} mengajukan tukar shift (${item.requester_shift_name} ↔ ${item.target_shift_name}) ${formatShiftSwapDate(item.swap_date)}.`,
         status: "unread",
         statusText: "Belum Dibaca",
         isRead: false,
@@ -218,7 +222,11 @@ export async function GET(req: NextRequest) {
       // ignore if table doesn't exist yet
     }
 
-    const allNotifications = [...swapNotifications, ...announcementNotifications, ...mappedNotifications];
+    const allNotifications = [
+      ...swapNotifications,
+      ...announcementNotifications,
+      ...mappedNotifications,
+    ];
 
     return NextResponse.json({
       success: true,
@@ -233,7 +241,7 @@ export async function GET(req: NextRequest) {
 
     return jsonError(
       getApiErrorMessage(error, "Gagal mengambil notifikasi."),
-      getApiErrorStatus(error)
+      getApiErrorStatus(error),
     );
   }
 }
@@ -289,7 +297,7 @@ export async function PATCH(req: NextRequest) {
 
     return jsonError(
       getApiErrorMessage(error, "Gagal memperbarui notifikasi."),
-      getApiErrorStatus(error)
+      getApiErrorStatus(error),
     );
   }
 }

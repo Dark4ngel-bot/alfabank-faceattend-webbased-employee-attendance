@@ -21,12 +21,7 @@ import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
 
-type NotificationType =
-  | "sick"
-  | "leave"
-  | "permission"
-  | "wfh"
-  | "visit";
+type NotificationType = "sick" | "leave" | "permission" | "wfh" | "visit";
 
 type NotificationItem = {
   id: string;
@@ -398,7 +393,6 @@ export default function AdminNotificationsPage() {
                 Pusat Notifikasi
               </h1>
             </div>
-
           </div>
         </section>
 
