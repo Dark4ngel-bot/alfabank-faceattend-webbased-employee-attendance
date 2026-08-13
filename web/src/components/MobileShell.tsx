@@ -80,7 +80,7 @@ export default function MobileShell({
 
   return (
     <div
-      className={`relative min-h-dvh overflow-hidden bg-gradient-to-br pt-[env(safe-area-inset-top)] ${backgroundGlow} ${bottomPaddingClass} ${className}`}
+      className={`relative min-h-dvh overflow-hidden bg-gradient-to-br pt-[env(safe-area-inset-top)] animate-page-fade-in ${backgroundGlow} ${bottomPaddingClass} ${className}`}
     >
       <AuthStatusGuard enabled={variant !== "auth"} />
 

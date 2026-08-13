@@ -204,7 +204,7 @@ function LoginMotionStyles() {
 
       .login-presence-title {
         background: none;
-        color: #123c8c;
+        color: #b91c1c;
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -635,8 +635,8 @@ export default function LoginPage() {
         </div>
 
         {/* 2. MAIN LOGO - DEAD CENTERED AT TOP OF ENTIRE PAGE (X) */}
-        <div className="login-logo-pop pointer-events-none absolute left-1/2 top-5 z-30 flex -translate-x-1/2 justify-center text-center sm:top-7 lg:top-8">
-          <div className="pointer-events-auto flex h-20 w-72 shrink-0 items-center justify-center transition-transform duration-300 hover:scale-[1.02] sm:h-24 sm:w-80 md:h-28 md:w-[26rem] lg:h-32 lg:w-[32rem]">
+        <div className="pointer-events-none absolute left-1/2 top-5 z-30 flex -translate-x-1/2 justify-center text-center sm:top-7 lg:top-8">
+          <div className="login-logo-pop pointer-events-auto flex h-20 w-72 shrink-0 items-center justify-center transition-transform duration-300 hover:scale-[1.02] sm:h-24 sm:w-80 md:h-28 md:w-[26rem] lg:h-32 lg:w-[32rem]">
             <Image
               src={logoSrc}
               alt="Alfabank Logo"
