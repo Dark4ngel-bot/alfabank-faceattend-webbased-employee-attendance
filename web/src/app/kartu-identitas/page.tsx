@@ -9,7 +9,6 @@ import {
   Building2,
   CalendarDays,
   CreditCard,
-  Download,
   IdCard,
   Loader2,
   Lock,
@@ -166,7 +165,6 @@ export default function KartuIdentitasPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [activeSide, setActiveSide] = useState<"front" | "back">("front");
   const [isDownloading, setIsDownloading] = useState(false);
-
   useEffect(() => {
     async function loadProfile() {
       try {
@@ -207,6 +205,7 @@ export default function KartuIdentitasPage() {
   }, []);
 
   const initials = user?.name ? getInitials(user.name) : "";
+<<<<<<< HEAD
 
   // 1. FRONT SIDE (Public Office Data)
   const frontOfficeDetails = useMemo(() => {
@@ -490,6 +489,8 @@ export default function KartuIdentitasPage() {
       setIsDownloading(false);
     }
   }
+  // NOTE: `isDownloading` state is declared above with other states to avoid
+  // duplication from previous merge conflicts.
 
   return (
     <MobileShell variant="employee" withBottomPadding={false}>
@@ -544,6 +545,11 @@ export default function KartuIdentitasPage() {
                 Sisi Belakang
               </button>
             </div>
+<<<<<<< HEAD
+=======
+
+            {/* Download button removed per request */}
+>>>>>>> 90c21e7 (fix(kartu-identitas): remove corrupted canvas/download block and restore loadProfile)
           </div>
 
           {/* Main Card Area */}
