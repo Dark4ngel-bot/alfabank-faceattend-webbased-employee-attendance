@@ -2,19 +2,19 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #fff5f5;
+  --background: #f6f8ff;
   --foreground: #0f172a;
-  --primary: #b91c1c;
-  --primary-dark: #991b1b;
+  --primary: #123c8c;
+  --primary-dark: #0b2358;
   --accent: #ff8a00;
   --muted: #64748b;
-  --app-primary: #b91c1c;
-  --app-primary-hover: #991b1b;
-  --app-primary-soft: #fee2e2;
-  --app-primary-subtle: #fff5f5;
-  --app-primary-text: #b91c1c;
-  --app-primary-rgb: 185 28 28;
-  --app-primary-text-rgb: 185 28 28;
+  --app-primary: #123c8c;
+  --app-primary-hover: #0f3274;
+  --app-primary-soft: #eaf1ff;
+  --app-primary-subtle: #f8fbff;
+  --app-primary-text: #123c8c;
+  --app-primary-rgb: 18 60 140;
+  --app-primary-text-rgb: 18 60 140;
 }
 
 * {
@@ -260,4 +260,37 @@ input {
   .typewriter-title {
     font-size: 1.65rem;
   }
+}
+
+/* Global Mobile Form Controls Normalize */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  min-height: 48px;
+  line-height: normal;
+  display: inline-flex;
+  align-items: center;
+}
+
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+  text-align: left !important;
+  min-height: 1.5em;
+  margin: auto 0;
+  display: block;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 4px;
+}
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }

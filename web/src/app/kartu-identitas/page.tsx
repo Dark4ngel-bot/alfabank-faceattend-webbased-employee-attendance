@@ -176,7 +176,6 @@ export default function KartuIdentitasPage() {
         const response = await fetch("/api/auth/me", {
           method: "GET",
           cache: "no-store",
-          credentials: "same-origin",
         });
 
         const data = await readJsonResponse(response);
@@ -195,7 +194,9 @@ export default function KartuIdentitasPage() {
         setUser(data.user);
       } catch (error) {
         setErrorMessage(
-          error instanceof Error ? error.message : "Gagal mengambil data user.",
+          error instanceof Error
+            ? error.message
+            : "Gagal mengambil data user.",
         );
       } finally {
         setLoading(false);
@@ -342,21 +343,9 @@ export default function KartuIdentitasPage() {
           });
           ctx.save();
           ctx.beginPath();
-          ctx.roundRect(
-            photoX + 5,
-            photoY + 5,
-            photoSize - 10,
-            photoSize + 26,
-            16,
-          );
+          ctx.roundRect(photoX + 5, photoY + 5, photoSize - 10, photoSize + 26, 16);
           ctx.clip();
-          ctx.drawImage(
-            img,
-            photoX + 5,
-            photoY + 5,
-            photoSize - 10,
-            photoSize + 26,
-          );
+          ctx.drawImage(img, photoX + 5, photoY + 5, photoSize - 10, photoSize + 26);
           ctx.restore();
         } catch {
           ctx.fillStyle = "#123c8c";
@@ -430,11 +419,7 @@ export default function KartuIdentitasPage() {
       ctx.fillStyle = "#64748b";
       ctx.font = "bold 18px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(
-        "--- SISI BELAKANG (DETAIL PERSONAL & BANK) ---",
-        width / 2,
-        683,
-      );
+      ctx.fillText("--- SISI BELAKANG (DETAIL PERSONAL & BANK) ---", width / 2, 683);
 
       // Draw BACK CARD (720 to 1350)
       ctx.fillStyle = "#123c8c";
@@ -535,7 +520,7 @@ export default function KartuIdentitasPage() {
             </div>
 
             {/* Side Switcher Toggle */}
-            <div className="order-3 flex w-full items-center justify-center gap-1 rounded-2xl border border-slate-200/60 bg-slate-100/80 p-1 sm:order-2 sm:w-auto">
+            <div className="order-2 flex w-full items-center justify-center gap-1 rounded-2xl border border-slate-200/60 bg-slate-100/80 p-1 sm:w-auto">
               <button
                 type="button"
                 onClick={() => setActiveSide("front")}
@@ -559,20 +544,6 @@ export default function KartuIdentitasPage() {
                 Sisi Belakang
               </button>
             </div>
-
-            {user && (
-              <button
-                type="button"
-                disabled={isDownloading}
-                onClick={handleDownloadPNG}
-                className="order-2 inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-2xl bg-[#123c8c] px-3 py-2 text-[11px] font-bold text-white shadow-md shadow-blue-900/20 transition duration-200 hover:bg-[#0f3274] active:scale-95 disabled:opacity-50 sm:order-3 sm:gap-2 sm:px-4 sm:text-xs"
-              >
-                <Download size={15} strokeWidth={2.5} />
-                <span>
-                  Download <span className="hidden sm:inline">Kartu (PNG)</span>
-                </span>
-              </button>
-            )}
           </div>
 
           {/* Main Card Area */}
@@ -595,17 +566,13 @@ export default function KartuIdentitasPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      setActiveSide((prev) =>
-                        prev === "front" ? "back" : "front",
-                      )
+                      setActiveSide((prev) => (prev === "front" ? "back" : "front"))
                     }
                     className="inline-flex items-center gap-1.5 text-xs font-bold text-[#123c8c] transition hover:opacity-80 active:scale-95"
                   >
                     <RotateCw size={13} strokeWidth={2.5} /> Flip Sisi Kartu
                   </button>
                 </div>
-
-                {/* Fixed Container Height so front and back sides match perfectly */}
                 <div
                   ref={cardRef}
                   className="kartu-identitas-enter w-full h-[270px] sm:h-[320px] md:h-[340px] overflow-hidden rounded-[1.75rem] border border-blue-900/20 bg-gradient-to-br from-[#123c8c] via-[#0f3478] to-[#0a2558] shadow-2xl shadow-blue-950/20"

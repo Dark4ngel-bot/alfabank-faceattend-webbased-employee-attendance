@@ -250,6 +250,30 @@ function HomeMotionStyles() {
         animation: homePulseDot 1.45s ease-in-out infinite;
       }
 
+      .creativemu-blue-home [class*="bg-red-500"],
+      .creativemu-blue-home [class*="bg-red-600"],
+      .creativemu-blue-home [class*="bg-[#e50000]"] {
+        background-color: #123c8c !important;
+      }
+
+      .creativemu-blue-home [class*="hover:bg-red-600"]:hover,
+      .creativemu-blue-home [class*="hover:bg-red-700"]:hover,
+      .creativemu-blue-home [class*="hover:bg-[#c90000]"]:hover {
+        background-color: #0f3274 !important;
+      }
+
+      .creativemu-blue-home [class*="text-red-600"],
+      .creativemu-blue-home [class*="text-red-700"] {
+        color: #123c8c !important;
+      }
+
+      .creativemu-blue-home [class*="border-red-100"],
+      .creativemu-blue-home [class*="ring-red-100"],
+      .creativemu-blue-home [class*="ring-red-200"] {
+        border-color: #dbeafe !important;
+        --tw-ring-color: #dbeafe !important;
+      }
+
       @media (prefers-reduced-motion: reduce) {
         .home-enter,
         .home-card-enter,
@@ -281,6 +305,7 @@ function ProfileAvatar({
   if (user.profile_photo) {
     return (
       <img
+        key={user.profile_photo}
         src={user.profile_photo}
         alt={user.name || "Profil"}
         className={`home-icon-pop ${sizeClass} shrink-0 rounded-full object-cover ${
@@ -303,14 +328,16 @@ function ProfileAvatar({
   );
 }
 
-function AnnouncementButton({
-  href = "/pengumuman",
+function NotificationHeaderButton({
+  href = "/notifikasi",
   unread,
+  unreadCount = 0,
   desktop = false,
   onClick,
 }: {
   href?: string;
   unread: boolean;
+  unreadCount?: number;
   desktop?: boolean;
   onClick: () => void;
 }) {
@@ -321,27 +348,25 @@ function AnnouncementButton({
       className={`home-icon-pop relative flex shrink-0 items-center justify-center rounded-2xl ring-1 transition hover:-translate-y-0.5 active:scale-[0.96] ${
         desktop ? "h-16 w-16" : "h-12 w-12"
       } ${
-        unread
-          ? desktop
-            ? "bg-white text-[#123c8c] ring-white"
-            : "bg-[#123c8c] text-white ring-[#123c8c]"
-          : desktop
-            ? "bg-white/10 text-white/70 ring-white/20"
-            : "bg-white text-slate-400 ring-blue-100"
+        desktop
+          ? "bg-white/10 text-white/90 ring-white/20"
+          : "bg-white text-[#123c8c] ring-blue-100"
       }`}
-      aria-label="Pengumuman"
+      aria-label="Notifikasi"
     >
-      <Megaphone
-        size={desktop ? 28 : 24}
-        strokeWidth={2.2}
+      <Bell
+        size={desktop ? 26 : 22}
+        strokeWidth={2.4}
       />
 
       {unread ? (
         <span
-          className={`home-pulse-dot absolute rounded-full bg-red-500 ring-2 ring-white ${
-            desktop ? "right-3 top-3 h-4 w-4" : "right-2 top-2 h-3 w-3"
+          className={`absolute flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white shadow-md ${
+            desktop ? "-right-1 -top-1" : "-right-1 -top-1"
           }`}
-        />
+        >
+          {unreadCount > 0 ? (unreadCount > 99 ? "99+" : unreadCount) : "!"}
+        </span>
       ) : null}
     </Link>
   );
@@ -427,7 +452,7 @@ function AttendanceButton({
         disabled
           ? "cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300"
           : variant === "primary"
-            ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20 hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
+            ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20 hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
             : "border border-blue-100 bg-white text-[#123c8c] hover:-translate-y-0.5 hover:bg-[#eaf1ff] active:scale-[0.98]"
       }`}
     >
@@ -463,8 +488,8 @@ function AnnouncementList({
       onClick={onRead}
       className="home-card-enter block min-w-0 rounded-3xl border border-blue-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f8fbff] hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99] md:p-5"
     >
-      <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#eaf1ff] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#123c8c]">
-        <Megaphone size={14} />
+      <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-100 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-900 shadow-sm">
+        <Megaphone size={14} className="text-amber-700" />
         Pengumuman Terbaru
       </div>
 
@@ -636,7 +661,7 @@ export default function HomePage() {
           />
         </div>
 
-        <main className="min-h-dvh overflow-x-hidden bg-white text-slate-950 md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff] md:pb-28">
+        <main className="creativemu-blue-home min-h-dvh overflow-x-hidden bg-white text-slate-950 md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff] md:pb-28">
           <section
             className="home-enter bg-white md:hidden"
             style={{
@@ -649,7 +674,7 @@ export default function HomePage() {
                   <div className="home-icon-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-blue-100">
                     <Image
                       src={logoSrc}
-                      alt="Logo aplikasi"
+                      alt="Creativemu Logo"
                       width={64}
                       height={59}
                       unoptimized
@@ -690,9 +715,10 @@ export default function HomePage() {
                 <div className="flex shrink-0 items-center gap-3">
                   <WhatsAppButton />
 
-                  <AnnouncementButton
+                  <NotificationHeaderButton
                     href="/notifikasi"
                     unread={hasUnreadAnnouncement}
+                    unreadCount={announcements.length}
                     onClick={markAnnouncementsAsRead}
                   />
                 </div>
@@ -751,8 +777,9 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <AnnouncementButton
+                <NotificationHeaderButton
                   unread={hasUnreadAnnouncement}
+                  unreadCount={announcements.length}
                   desktop
                   onClick={markAnnouncementsAsRead}
                 />
@@ -772,27 +799,23 @@ export default function HomePage() {
                 animationDelay: "140ms",
               }}
             >
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-4xl font-black tracking-tight text-slate-950 md:text-6xl">
+              <div className="flex flex-row items-center justify-between gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                    <p className="text-2xl font-black tracking-tight text-slate-950 sm:text-4xl md:text-6xl">
                       {currentTime || "--:-- WIB"}
                     </p>
 
-                    <div className="rounded-full bg-[#eaf1ff] px-3 py-1 text-xs font-black text-[#123c8c] md:px-3 md:py-1.5">
-                      WIB
+                    <div className="rounded-xl bg-gradient-to-r from-[#123c8c] to-[#1e56b8] px-2 py-1 text-[10px] font-black text-white shadow-md shadow-blue-900/15 sm:rounded-2xl sm:px-4 sm:py-2 md:text-sm">
+                      {currentDate || "Memuat tanggal..."}
                     </div>
                   </div>
 
-                  <p className="mt-3 text-sm font-bold text-slate-500 md:text-base">
-                    {currentDate || "Memuat tanggal..."}
-                  </p>
-
-                  <p className="mt-3 text-sm font-semibold text-slate-500 md:mt-5 md:text-lg">
+                  <p className="mt-1.5 text-[11px] font-semibold text-slate-500 sm:text-sm md:mt-5 md:text-lg">
                     {workScheduleText}
                   </p>
 
-                  <p className="mt-1 text-sm font-semibold text-slate-500 md:mt-3 md:text-lg">
+                  <p className="mt-0.5 text-[11px] font-semibold text-slate-500 sm:text-sm md:mt-3 md:text-lg">
                     Status hari ini:{" "}
                     <span className="font-black text-[#123c8c]">
                       {attendanceToday.status}
@@ -800,7 +823,7 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 lg:w-[460px]">
+                <div className="flex w-[140px] shrink-0 flex-col gap-2.5 sm:w-[160px] md:w-[380px] md:flex-row md:gap-4 lg:w-[440px]">
                   <AttendanceButton
                     label="Masuk"
                     href="/presensi"

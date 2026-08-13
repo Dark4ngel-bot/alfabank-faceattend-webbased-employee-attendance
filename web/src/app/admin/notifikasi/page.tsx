@@ -6,6 +6,7 @@ import {
   Bell,
   CalendarClock,
   CheckCircle2,
+  ChevronDown,
   Clock3,
   FileClock,
   HeartPulse,
@@ -130,6 +131,18 @@ function getTypeClass(type: NotificationType) {
   return "bg-slate-50 text-slate-600 border-slate-100";
 }
 
+function getStatusClass(status: string) {
+  const value = status.toLowerCase();
+
+  if (value === "unread") return "bg-orange-50 text-orange-700";
+  if (value === "read") return "bg-slate-100 text-slate-600";
+  if (value === "pending") return "bg-amber-50 text-amber-700";
+  if (value === "approved") return "bg-emerald-50 text-emerald-700";
+  if (value === "rejected") return "bg-red-50 text-red-600";
+
+  return "bg-slate-100 text-slate-600";
+}
+
 function formatCreatedAt(value: string | null) {
   if (!value) return "-";
 
@@ -240,9 +253,11 @@ export default function AdminNotificationsPage() {
   const [isMarking, setIsMarking] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  async function loadNotifications() {
+  async function loadNotifications(showLoadingState = false) {
     try {
-      setIsLoading(true);
+      if (showLoadingState) {
+        setIsLoading(true);
+      }
       setErrorMessage("");
 
       const response = await fetch("/api/admin/notifications", {
@@ -266,7 +281,9 @@ export default function AdminNotificationsPage() {
           : "Terjadi kesalahan saat mengambil notifikasi.",
       );
     } finally {
-      setIsLoading(false);
+      if (showLoadingState) {
+        setIsLoading(false);
+      }
     }
   }
 
@@ -292,7 +309,7 @@ export default function AdminNotificationsPage() {
         throw new Error(data.message || "Gagal menandai notifikasi.");
       }
 
-      await loadNotifications();
+      await loadNotifications(false);
     } catch (error) {
       console.error("MARK_NOTIFICATION_ERROR:", error);
 
@@ -307,10 +324,10 @@ export default function AdminNotificationsPage() {
   }
 
   useEffect(() => {
-    void loadNotifications();
+    void loadNotifications(true);
     const timer = setInterval(() => {
-      void loadNotifications();
-    }, 1000);
+      void loadNotifications(false);
+    }, 3000);
 
     return () => clearInterval(timer);
   }, []);
@@ -370,8 +387,8 @@ export default function AdminNotificationsPage() {
 
       <main className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
         <section className="notification-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-6 text-white shadow-2xl shadow-blue-900/25 md:p-8">
-          <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div>
+          <div className="relative z-10 flex flex-col items-center text-center gap-6 md:flex-row md:items-end md:justify-between md:text-left">
+            <div className="flex flex-col items-center text-center md:items-start md:text-left">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-blue-100">
                 <ShieldAlert size={15} />
                 Notification Center
@@ -421,15 +438,15 @@ export default function AdminNotificationsPage() {
           className="notification-enter rounded-[2rem] border border-white/70 bg-white/90 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl md:p-6"
           style={{ animationDelay: "100ms" }}
         >
-          <div className="grid gap-4 lg:grid-cols-[1fr_220px_220px_auto]">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_auto] lg:items-end">
             <div>
-              <label className="text-sm font-black text-slate-500">
+              <label className="text-xs font-black uppercase tracking-wider text-slate-500">
                 Cari Notifikasi
               </label>
 
-              <div className="relative mt-3">
+              <div className="relative mt-2">
                 <Search
-                  size={20}
+                  size={18}
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                 />
 
@@ -437,45 +454,57 @@ export default function AdminNotificationsPage() {
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Cari nama, laporan, status, atau keterangan..."
-                  className="notification-field h-[58px] w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="notification-field h-12 w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-black text-slate-500">
+              <label className="text-xs font-black uppercase tracking-wider text-slate-500">
                 Jenis Laporan
               </label>
 
-              <select
-                value={typeFilter}
-                onChange={(event) => setTypeFilter(event.target.value)}
-                className="notification-field mt-3 h-[58px] w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-              >
-                {typeOptions.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative mt-2">
+                <select
+                  value={typeFilter}
+                  onChange={(event) => setTypeFilter(event.target.value)}
+                  className="notification-field h-12 w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] pl-4 pr-10 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 cursor-pointer"
+                >
+                  {typeOptions.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={18}
+                  className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="text-sm font-black text-slate-500">
-                Status
+              <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                Status Notifikasi
               </label>
 
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                className="notification-field mt-3 h-[58px] w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-4 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
-              >
-                {statusOptions.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative mt-2">
+                <select
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value)}
+                  className="notification-field h-12 w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] pl-4 pr-10 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 cursor-pointer"
+                >
+                  {statusOptions.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={18}
+                  className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+              </div>
             </div>
 
             <div className="flex items-end">
@@ -486,7 +515,7 @@ export default function AdminNotificationsPage() {
                   setTypeFilter("all");
                   setStatusFilter("all");
                 }}
-                className="flex h-[58px] w-full items-center justify-center rounded-2xl border border-blue-100 bg-white px-5 text-sm font-black text-[#123c8c] shadow-sm transition hover:bg-blue-50 active:scale-[0.96] lg:w-auto"
+                className="flex h-12 w-full items-center justify-center rounded-2xl border border-blue-100 bg-white px-5 text-sm font-black text-[#123c8c] shadow-sm transition hover:bg-blue-50 active:scale-[0.96] lg:w-auto"
               >
                 Atur Ulang
               </button>
