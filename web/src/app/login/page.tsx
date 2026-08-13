@@ -5,10 +5,14 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Eye, EyeOff, Loader2, LogIn, X } from "lucide-react";
 import MobileShell from "@/components/MobileShell";
-import { AppButton, AppCard } from "@/components/ui/AppUI";
+import { AppButton, AppCard, AppInput } from "@/components/ui/AppUI";
 import { useSiteLogoSettings } from "@/hooks/useSiteLogo";
-import { isValidEmailFormat } from "@/lib/creativemu-email";
 import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
+import {
+  CREATIVEMU_EMAIL_EXAMPLE,
+  isCreativemuEmail,
+  isValidEmailFormat,
+} from "@/lib/creativemu-email";
 
 type LoginResponse = {
   success?: boolean;
@@ -344,9 +348,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { logoSrc, siteTitle } = useSiteLogoSettings();
   const introLogoSrc = DEFAULT_SITE_MARK_LOGO_SRC;
-  const loginHeroTitle = siteTitle.toLowerCase().startsWith("presensi")
-    ? siteTitle
-    : `Presensi ${siteTitle}`;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -489,7 +490,7 @@ export default function LoginPage() {
     if (!isValidEmailFormat(normalizedEmail)) {
       showAlert(
         "Format email salah",
-        "Masukkan email dengan format yang benar, contoh: nama@alfabankjogja.com",
+        "Masukkan email dengan format yang benar, contoh: nama@email.com",
       );
       return;
     }
@@ -502,7 +503,6 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "same-origin",
         body: JSON.stringify({
           email: normalizedEmail,
           password: loginPassword,
@@ -586,7 +586,7 @@ export default function LoginPage() {
             <div className="relative z-10 flex h-32 w-32 items-center justify-center p-0 md:h-40 md:w-40 md:overflow-hidden md:rounded-[2rem] md:border md:border-white/80 md:bg-white md:p-7 md:shadow-[0_24px_58px_rgba(18,60,140,0.14)]">
               <Image
                 src={introLogoSrc}
-                alt="Alfabank Logo"
+                alt="Creativemu Logo"
                 width={421}
                 height={390}
                 unoptimized
@@ -597,7 +597,7 @@ export default function LoginPage() {
           </div>
 
           <div className="relative mt-9 text-center md:mt-12">
-            <h2 className="intro-text-in text-3xl font-black uppercase tracking-[0.18em] text-[#b91c1c] md:text-5xl">
+            <h2 className="intro-text-in text-3xl font-black uppercase tracking-[0.18em] text-slate-950 md:text-5xl">
               {siteTitle}
             </h2>
             <p
@@ -634,12 +634,12 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* 2. MAIN LOGO - DEAD CENTERED AT TOP OF ENTIRE PAGE (X) */}
+        {/* 2. MAIN LOGO CREATIVEMU - CENTERED ON ALL SCREENS (MOBILE & WEB) */}
         <div className="login-logo-pop pointer-events-none absolute left-1/2 top-5 z-30 flex -translate-x-1/2 justify-center text-center sm:top-7 lg:top-8">
-          <div className="pointer-events-auto flex h-20 w-72 shrink-0 items-center justify-center transition-transform duration-300 hover:scale-[1.02] sm:h-24 sm:w-80 md:h-28 md:w-[26rem] lg:h-32 lg:w-[32rem]">
+          <div className="pointer-events-auto flex h-20 w-72 shrink-0 items-center justify-center transition-transform duration-300 hover:scale-[1.02] sm:h-24 sm:w-80 md:h-28 md:w-[26rem] lg:h-32 lg:w-[28rem]">
             <Image
               src={logoSrc}
-              alt="Alfabank Logo"
+              alt="Creativemu Logo"
               width={512}
               height={128}
               unoptimized
@@ -654,7 +654,7 @@ export default function LoginPage() {
           <div className="login-enter relative flex flex-col justify-between px-6 pb-8 pt-28 md:px-12 lg:px-20 lg:pb-14 lg:pt-36">
             <div className="relative z-10 my-auto max-w-2xl text-center lg:text-left">
               <p
-                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#b91c1c] md:text-sm"
+                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#123c8c] md:text-sm"
                 style={{
                   animationDelay: "120ms",
                 }}
@@ -663,18 +663,18 @@ export default function LoginPage() {
               </p>
 
               <h2
-                className="login-text-reveal mt-4 text-[2rem] font-black leading-[1.05] tracking-tight text-[#b91c1c] sm:text-4xl md:mt-5 md:text-6xl"
+                className="login-text-reveal mt-4 text-[2rem] font-black leading-[1.05] tracking-tight text-slate-950 sm:text-4xl md:mt-5 md:text-6xl"
                 style={{
                   animationDelay: "180ms",
                 }}
               >
                 <span className="typewriter-title login-presence-title">
-                  {loginHeroTitle}
+                  Presensi {siteTitle}
                 </span>
               </h2>
 
               <p
-                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#b91c1c] md:text-2xl"
+                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#123c8c] md:text-2xl"
                 style={{
                   animationDelay: "240ms",
                 }}
@@ -727,11 +727,11 @@ export default function LoginPage() {
                           placeholder=""
                           autoComplete="email"
                           disabled={formIsBusy}
-                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-40 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
+                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-32 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
                         />
 
                         <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">
-                          @alfabankjogja.com
+                          @creativemu.id
                         </span>
                       </div>
                     </label>
