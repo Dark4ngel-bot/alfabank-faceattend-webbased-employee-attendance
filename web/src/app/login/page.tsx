@@ -654,7 +654,7 @@ export default function LoginPage() {
           <div className="login-enter relative flex flex-col justify-between px-6 pb-8 pt-28 md:px-12 lg:px-20 lg:pb-14 lg:pt-36">
             <div className="relative z-10 my-auto max-w-2xl text-center lg:text-left">
               <p
-                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#b91c1c] md:text-sm"
+                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#123c8c] md:text-sm"
                 style={{
                   animationDelay: "120ms",
                 }}
@@ -674,7 +674,7 @@ export default function LoginPage() {
               </h2>
 
               <p
-                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#b91c1c] md:text-2xl"
+                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#123c8c] md:text-2xl"
                 style={{
                   animationDelay: "240ms",
                 }}
@@ -727,11 +727,15 @@ export default function LoginPage() {
                           placeholder=""
                           autoComplete="email"
                           disabled={formIsBusy}
+<<<<<<< HEAD
                           className="min-h-12 w-full rounded-2xl border border-red-100 bg-[#fff8f8] px-4 py-3 pr-32 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-100 dark:bg-[#fff8f8] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#b91c1c] dark:focus:bg-white dark:focus:ring-red-100/50"
+=======
+                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-32 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
+>>>>>>> ed8b4f4 (feat: implement admin dashboard pages for master data management and user authentication flow)
                         />
 
                         <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">
-                          @alfabankjogja.com
+                          @creativemu.id
                         </span>
                       </div>
                     </label>

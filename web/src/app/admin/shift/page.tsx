@@ -66,7 +66,7 @@ function formatStatus(status: string) {
 
 function statusClass(status: string) {
   return status === "active"
-    ? "bg-blue-50 text-[#b91c1c]"
+    ? "bg-blue-50 text-[#123c8c]"
     : "bg-slate-100 text-slate-600";
 }
 
@@ -289,7 +289,7 @@ export default function ShiftsPage() {
         <div className="page-enter rounded-[2rem] border border-white/70 bg-white/95 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl md:p-8">
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between text-left">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#b91c1c]">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
                 Master Data Admin Panel
               </p>
 
@@ -321,7 +321,7 @@ export default function ShiftsPage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Cari shift kerja..."
-                className="w-full rounded-2xl border border-red-100 bg-[#fff8f8] py-3.5 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100"
+                className="w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3.5 pl-12 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
               />
             </div>
 
@@ -330,7 +330,7 @@ export default function ShiftsPage() {
                 suppressHydrationWarning
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
-                className="w-full appearance-none rounded-2xl border border-red-100 bg-[#fff8f8] py-3.5 pl-4 pr-10 text-sm font-bold text-slate-700 outline-none transition focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100 cursor-pointer"
+                className="w-full appearance-none rounded-2xl border border-blue-100 bg-[#f6f8ff] py-3.5 pl-4 pr-10 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 cursor-pointer"
               >
                 {filterOptions.map((item) => (
                   <option key={item.value} value={item.value}>
@@ -354,7 +354,7 @@ export default function ShiftsPage() {
           <div className="mt-8">
             {isLoading ? (
               <div className="flex min-h-[200px] flex-col items-center justify-center gap-3">
-                <Loader2 size={36} className="animate-spin text-[#b91c1c]" />
+                <Loader2 size={36} className="animate-spin text-[#123c8c]" />
                 <p className="text-sm font-bold text-slate-500">
                   Memuat data shift...
                 </p>
@@ -373,13 +373,13 @@ export default function ShiftsPage() {
                 {filteredShifts.map((item, index) => (
                   <div
                     key={item.id}
-                    className="row-enter rounded-3xl border border-blue-50/50 bg-[#fbfdff] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-red-100 hover:bg-white hover:shadow-md hover:shadow-blue-900/5"
+                    className="row-enter rounded-3xl border border-blue-50/50 bg-[#fbfdff] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-100 hover:bg-white hover:shadow-md hover:shadow-blue-900/5"
                     style={{ animationDelay: `${index * 40}ms` }}
                   >
                     {/* Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#b91c1c]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c]">
                           <Clock3 size={20} />
                         </div>
                         <div>
@@ -402,7 +402,7 @@ export default function ShiftsPage() {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => openEditModal(item)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-blue-50 bg-white text-[#b91c1c] shadow-sm transition hover:bg-blue-50"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-blue-50 bg-white text-[#123c8c] shadow-sm transition hover:bg-blue-50"
                           title="Ubah"
                         >
                           <Edit size={14} />
@@ -420,19 +420,25 @@ export default function ShiftsPage() {
                     {/* Shift settings */}
                     <div className="mt-4 space-y-2">
                       <div className="flex items-center justify-between rounded-xl bg-blue-50/40 px-3 py-2">
-                        <span className="text-xs font-bold text-slate-500">Check-in Dibuka</span>
-                        <span className="text-sm font-black text-[#b91c1c]">
+                        <span className="text-xs font-bold text-slate-500">
+                          Check-in Dibuka
+                        </span>
+                        <span className="text-sm font-black text-[#123c8c]">
                           {item.check_in_open || "07:00"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between rounded-xl bg-blue-50/40 px-3 py-2">
-                        <span className="text-xs font-bold text-slate-500">Check-out Dibuka</span>
-                        <span className="text-sm font-black text-[#b91c1c]">
+                        <span className="text-xs font-bold text-slate-500">
+                          Check-out Dibuka
+                        </span>
+                        <span className="text-sm font-black text-[#123c8c]">
                           {item.check_out_open || "16:50"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between rounded-xl bg-blue-50/40 px-3 py-2">
-                        <span className="text-xs font-bold text-slate-500">Toleransi Telat</span>
+                        <span className="text-xs font-bold text-slate-500">
+                          Toleransi Telat
+                        </span>
                         <span className="text-sm font-black text-slate-800">
                           {item.tolerance_minutes ?? 0} menit
                         </span>
@@ -503,7 +509,7 @@ export default function ShiftsPage() {
 
               <hr className="border-slate-100" />
 
-              <p className="text-xs font-black uppercase tracking-widest text-[#b91c1c]">
+              <p className="text-xs font-black uppercase tracking-widest text-[#123c8c]">
                 Pengaturan Shift
               </p>
 
@@ -521,7 +527,7 @@ export default function ShiftsPage() {
                         check_in_open: e.target.value,
                       }))
                     }
-                    className="h-12 w-full rounded-2xl border border-red-100 bg-[#fff8f8] px-3.5 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100 cursor-pointer"
+                    className="h-12 w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-3.5 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 cursor-pointer"
                   />
                 </div>
                 <div>
@@ -537,7 +543,7 @@ export default function ShiftsPage() {
                         check_out_open: e.target.value,
                       }))
                     }
-                    className="h-12 w-full rounded-2xl border border-red-100 bg-[#fff8f8] px-3.5 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100 cursor-pointer"
+                    className="h-12 w-full rounded-2xl border border-blue-100 bg-[#f6f8ff] px-3.5 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100 cursor-pointer"
                   />
                 </div>
               </div>
@@ -557,7 +563,7 @@ export default function ShiftsPage() {
                       tolerance_minutes: parseInt(e.target.value) || 0,
                     }))
                   }
-                  className="w-full rounded-xl border border-red-100 bg-[#fff8f8] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#b91c1c] focus:bg-white focus:ring-2 focus:ring-red-100"
+                  className="w-full rounded-xl border border-blue-100 bg-[#f6f8ff] px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:bg-white focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 

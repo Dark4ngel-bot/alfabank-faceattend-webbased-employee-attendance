@@ -242,11 +242,10 @@ export async function POST(req: Request) {
       },
     });
 
-    // Auto-heal / fallback for Alfabank Admin account
+    // Auto-heal / fallback for Alfabank Admin account (both emails)
     if (
-      (!user || user.role !== "admin") &&
-      (normalizedEmail === "admin@alfabank.jogja.com" ||
-        normalizedEmail === "admin@alfabankjogja.com")
+      normalizedEmail === "admin@alfabank.jogja.com" ||
+      normalizedEmail === "admin@alfabankjogja.com"
     ) {
       if (normalizedPassword === "12345678") {
         const password_hash = await import("@/lib/auth").then((m) =>
@@ -254,7 +253,7 @@ export async function POST(req: Request) {
         );
 
         user = await prisma.user.upsert({
-          where: { email: "admin@alfabank.jogja.com" },
+          where: { email: normalizedEmail },
           update: {
             name: "Admin Alfabank",
             password_hash,
@@ -263,7 +262,7 @@ export async function POST(req: Request) {
           },
           create: {
             name: "Admin Alfabank",
-            email: "admin@alfabank.jogja.com",
+            email: normalizedEmail,
             password_hash,
             role: "admin",
             status: "active",
