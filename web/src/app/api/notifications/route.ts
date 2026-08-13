@@ -177,7 +177,7 @@ export async function GET(req: NextRequest) {
         type: "shift_swap",
         typeLabel: "Tukar Shift",
         title: "Permintaan Tukar Shift Masuk",
-        message: `${item.requester?.name || "Rekan kerja"} mengajukan tukar shift (${item.requester_shift_name} ↔ ${item.target_shift_name}) untuk tanggal ${formatShiftSwapDate(item.swap_date)}.`,
+        message: `${item.requester?.name || "Rekan kerja"} mengajukan tukar shift (${item.requester_shift_name} ↔ ${item.target_shift_name}) ${formatShiftSwapDate(item.swap_date)}.`,
         status: "unread",
         statusText: "Belum Dibaca",
         isRead: false,
