@@ -666,11 +666,10 @@ export default function TukarShiftPage() {
                     setRequestMode("swap");
                     setTargetShiftName("");
                   }}
-                  className={`rounded-2xl px-4 py-3 text-left transition active:scale-[0.98] ${
-                    requestMode === "swap"
+                  className={`rounded-2xl px-4 py-3 text-left transition active:scale-[0.98] ${requestMode === "swap"
                       ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
                       : "bg-white text-slate-600 ring-1 ring-blue-100"
-                  }`}
+                    }`}
                 >
                   <span className="block text-xs font-black uppercase">
                     Tukar Shift
@@ -686,11 +685,10 @@ export default function TukarShiftPage() {
                     setRequestMode("self");
                     setTargetUserId("");
                   }}
-                  className={`rounded-2xl px-4 py-3 text-left transition active:scale-[0.98] ${
-                    requestMode === "self"
+                  className={`rounded-2xl px-4 py-3 text-left transition active:scale-[0.98] ${requestMode === "self"
                       ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
                       : "bg-white text-slate-600 ring-1 ring-blue-100"
-                  }`}
+                    }`}
                 >
                   <span className="block text-xs font-black uppercase">
                     Geser Shift
@@ -717,7 +715,6 @@ export default function TukarShiftPage() {
                   </label>
                   <div className="relative mt-2">
                     <select
-                      suppressHydrationWarning
                       value={targetUserId}
                       onChange={(e) => setTargetUserId(e.target.value)}
                       className="min-h-[54px] w-full appearance-none rounded-2xl border border-blue-100 bg-[#f8fbff] pl-6 pr-12 py-3.5 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/60 shadow-sm cursor-pointer"
@@ -743,7 +740,6 @@ export default function TukarShiftPage() {
                   </label>
                   <div className="relative mt-2">
                     <select
-                      suppressHydrationWarning
                       value={targetShiftName}
                       onChange={(e) => setTargetShiftName(e.target.value)}
                       disabled={!canSelfShift}
@@ -779,7 +775,6 @@ export default function TukarShiftPage() {
                     : "Tanggal Geser Shift"}
                 </label>
                 <input
-                  suppressHydrationWarning
                   type="date"
                   value={swapDate}
                   min={getTodayString()}
@@ -796,7 +791,6 @@ export default function TukarShiftPage() {
                   Alasan (Opsional)
                 </label>
                 <textarea
-                  suppressHydrationWarning
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder={
@@ -855,38 +849,47 @@ export default function TukarShiftPage() {
                 Belum ada riwayat tukar shift.
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {sentRequests.map((req, index) => (
                   <div
                     key={req.id}
-                    className="tukar-shift-enter flex items-center justify-between rounded-3xl border border-blue-100 bg-white p-3.5 shadow-sm"
+                    className="tukar-shift-enter flex flex-col gap-3 rounded-3xl border border-blue-100 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
                     style={{ animationDelay: `${index * 45}ms` }}
                   >
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                         {req.isSelfShift ? "Geser Shift" : "Tukar Keluar"}
                       </p>
-                      <p className="text-xs font-black text-slate-900">
+                      <p className="mt-0.5 text-sm font-black text-slate-900 leading-snug break-words">
                         {req.isSelfShift
                           ? `${req.requesterShiftName} ke ${req.targetShiftName}`
                           : `Ke: ${req.targetUser?.name} (${req.targetShiftName})`}
                       </p>
-                      <p className="text-[11px] font-bold text-slate-500">
+                      <p className="mt-1 text-xs font-bold text-slate-500">
                         Tanggal:{" "}
-                        <span className="text-[#123c8c]">{req.swapDate}</span>
+                        <span className="font-black text-[#123c8c]">{req.swapDate}</span>
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex w-full items-center justify-between gap-2.5 pt-2 border-t border-slate-100 sm:w-auto sm:justify-start sm:border-t-0 sm:pt-0">
                       <span
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: 900,
+                          lineHeight: "1.2",
+                          padding: "6px 12px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                        className={`rounded-full ring-1 ${
                           req.status === "approved"
-                            ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                            ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
                             : req.status === "rejected"
-                              ? "bg-red-50 text-red-700 ring-1 ring-red-200"
+                              ? "bg-red-50 text-red-700 ring-red-200"
                               : req.status === "cancelled"
-                                ? "bg-slate-100 text-slate-500 ring-1 ring-slate-200"
-                                : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                                ? "bg-slate-100 text-slate-500 ring-slate-200"
+                                : "bg-amber-50 text-amber-700 ring-amber-200"
                         }`}
                       >
                         {req.status === "approved"
@@ -898,17 +901,31 @@ export default function TukarShiftPage() {
                               : "Menunggu"}
                       </span>
 
-                      {(req.status === "pending" || req.status === "approved") ? (
+                      {req.status === "pending" || req.status === "approved" ? (
                         <button
                           type="button"
                           disabled={processingId === req.id}
                           onClick={() => handleCancel(req.id)}
-                          className="rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-black text-red-600 ring-1 ring-red-200 transition hover:bg-red-100 active:scale-95 disabled:opacity-50"
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: 900,
+                            lineHeight: "1.2",
+                            padding: "6px 12px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "4px",
+                            fontFamily: "inherit",
+                          }}
+                          className="ml-auto rounded-full bg-rose-50 text-rose-600 ring-1 ring-rose-200 transition hover:bg-rose-100 active:scale-95 disabled:opacity-50"
                         >
                           {processingId === req.id ? (
-                            <Loader2 size={12} className="animate-spin inline" />
+                            <Loader2 size={13} className="animate-spin" />
                           ) : (
-                            "Batalkan"
+                            <>
+                              <X size={13} strokeWidth={3} />
+                              Batalkan
+                            </>
                           )}
                         </button>
                       ) : null}
@@ -919,39 +936,50 @@ export default function TukarShiftPage() {
                 {incomingRequests.map((req, index) => (
                   <div
                     key={req.id}
-                    className="tukar-shift-enter flex items-center justify-between rounded-3xl border border-blue-100 bg-white p-3.5 shadow-sm"
+                    className="tukar-shift-enter flex flex-col gap-3 rounded-3xl border border-blue-100 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
                     style={{
                       animationDelay: `${(sentRequests.length + index) * 45}ms`,
                     }}
                   >
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                         Tukar Masuk
                       </p>
-                      <p className="text-xs font-black text-slate-900">
+                      <p className="mt-0.5 text-sm font-black text-slate-900 leading-snug break-words">
                         Dari: {req.requester?.name} ({req.requesterShiftName})
                       </p>
-                      <p className="text-[11px] font-bold text-slate-500">
+                      <p className="mt-1 text-xs font-bold text-slate-500">
                         Tanggal:{" "}
-                        <span className="text-[#123c8c]">{req.swapDate}</span>
+                        <span className="font-black text-[#123c8c]">{req.swapDate}</span>
                       </p>
                     </div>
 
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
-                        req.status === "approved"
-                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                    <div className="flex items-center pt-1 sm:pt-0">
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: 900,
+                          lineHeight: "1.2",
+                          padding: "6px 12px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                        className={`rounded-full ring-1 ${
+                          req.status === "approved"
+                            ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                            : req.status === "rejected"
+                              ? "bg-red-50 text-red-700 ring-red-200"
+                              : "bg-amber-50 text-amber-700 ring-amber-200"
+                        }`}
+                      >
+                        {req.status === "approved"
+                          ? "Disetujui"
                           : req.status === "rejected"
-                            ? "bg-red-50 text-red-700 ring-1 ring-red-200"
-                            : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
-                      }`}
-                    >
-                      {req.status === "approved"
-                        ? "Disetujui"
-                        : req.status === "rejected"
-                          ? "Ditolak"
-                          : "Menunggu"}
-                    </span>
+                            ? "Ditolak"
+                            : "Menunggu"}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>

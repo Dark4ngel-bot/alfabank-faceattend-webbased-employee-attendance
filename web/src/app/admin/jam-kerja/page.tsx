@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   CheckCircle2,
+  ChevronDown,
   Clock3,
   Loader2,
   Power,
@@ -497,41 +498,50 @@ export default function WorkSchedulesPage() {
 
       <section className="mx-auto max-w-6xl space-y-5 px-5 py-6 pb-28 md:px-10 lg:px-16">
         <div className="work-schedule-enter overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-xl shadow-slate-300/30">
-          <div className="bg-[#123c8c] p-6 text-white md:p-8">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="bg-[#123c8c] p-6 text-white text-center md:p-8">
+            <div className="flex flex-col items-center gap-5">
               <div>
-                <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-blue-200">
+                  Master Data Admin Panel
+                </p>
+                <h1 className="mt-2 text-3xl font-black tracking-tight md:text-4xl">
                   Daftar Jam Kerja
                 </h1>
               </div>
 
               <div
-                className="work-schedule-row-enter grid w-full gap-3 rounded-3xl bg-white/10 p-3 backdrop-blur md:grid-cols-[1fr_auto_auto] lg:max-w-2xl"
+                className="work-schedule-row-enter flex w-full max-w-2xl flex-col items-center gap-3 rounded-3xl bg-white/10 p-4 backdrop-blur sm:flex-row"
                 style={{ animationDelay: "80ms" }}
               >
-                <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-[0.15em] text-blue-100">
+                <div className="w-full text-left">
+                  <label className="mb-1.5 block text-xs font-black uppercase tracking-[0.15em] text-blue-100">
                     Pilih Shift
                   </label>
 
-                  <select
-                    value={selectedShiftId}
-                    onChange={(event) => {
-                      setSelectedShiftId(event.target.value);
-                      setSuccessMessage("");
-                    }}
-                    className="work-schedule-field h-[52px] w-full rounded-2xl border border-white/20 bg-white px-4 text-sm font-black text-slate-700 outline-none focus:ring-4 focus:ring-white/20"
-                  >
-                    {shifts.length === 0 ? (
-                      <option value="">Belum ada shift</option>
-                    ) : (
-                      rows.map((row) => (
-                        <option key={row.shift_id} value={row.shift_id}>
-                          {row.shift_name} - {formatStatus(row.shift_status)}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={selectedShiftId}
+                      onChange={(event) => {
+                        setSelectedShiftId(event.target.value);
+                        setSuccessMessage("");
+                      }}
+                      className="work-schedule-field h-[50px] w-full appearance-none rounded-2xl border border-white/20 bg-white pl-4 pr-10 text-sm font-black text-slate-700 outline-none focus:ring-4 focus:ring-white/20 cursor-pointer"
+                    >
+                      {shifts.length === 0 ? (
+                        <option value="">Belum ada shift</option>
+                      ) : (
+                        rows.map((row) => (
+                          <option key={row.shift_id} value={row.shift_id}>
+                            {row.shift_name} - {formatStatus(row.shift_status)}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                    <ChevronDown
+                      size={18}
+                      className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex items-end">
@@ -726,7 +736,7 @@ export default function WorkSchedulesPage() {
                           </label>
                         </div>
 
-                        <div className="mt-4 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
+                        <div className="mt-4 grid grid-cols-2 gap-3">
                           <label className="min-w-0">
                             <span className="mb-1 block text-xs font-black text-slate-400">
                               Masuk
@@ -744,7 +754,7 @@ export default function WorkSchedulesPage() {
                                   event.target.value,
                                 )
                               }
-                              className="work-schedule-field h-12 w-full max-w-[150px] min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-3 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-100 disabled:text-slate-400"
+                              className="work-schedule-field h-12 w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-3 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
                             />
                           </label>
 
@@ -765,7 +775,7 @@ export default function WorkSchedulesPage() {
                                   event.target.value,
                                 )
                               }
-                              className="work-schedule-field h-12 w-full max-w-[150px] min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-3 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-100 disabled:text-slate-400"
+                              className="work-schedule-field h-12 w-full min-w-0 rounded-2xl border border-blue-100 bg-[#f8fbff] px-3 text-sm font-black text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
                             />
                           </label>
                         </div>
