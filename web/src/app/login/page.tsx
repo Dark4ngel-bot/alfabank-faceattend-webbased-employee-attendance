@@ -333,7 +333,7 @@ function FloatingAlert({
             <button
               type="button"
               onClick={onClose}
-              className="mt-5 flex min-h-12 w-full items-center justify-center rounded-2xl border border-white/35 bg-[#123c8c]/75 px-5 text-sm font-black text-white shadow-xl shadow-blue-900/15 backdrop-blur-xl transition hover:bg-[#123c8c]/90 active:scale-[0.98]"
+              className="mt-5 flex min-h-12 w-full items-center justify-center rounded-2xl border border-white/35 bg-[#b91c1c]/75 px-5 text-sm font-black text-white shadow-xl shadow-blue-900/15 backdrop-blur-xl transition hover:bg-[#b91c1c]/90 active:scale-[0.98]"
             >
               Mengerti
             </button>
@@ -573,16 +573,16 @@ export default function LoginPage() {
             }
           }}
           className={`fixed inset-0 z-[999] flex cursor-pointer select-none flex-col items-center justify-center overflow-hidden px-6 transition-all duration-500 ${introLeaving ? "scale-105 opacity-0 blur-md" : "opacity-100"
-            } bg-[#f6f8ff]`}
+            } bg-[#fff5f5]`}
           aria-label="Lanjut ke halaman login"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(18,60,140,0.18),transparent_38%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(185,28,28,0.15),transparent_38%)]" />
 
           <div className="relative flex h-56 w-56 items-center justify-center md:h-72 md:w-72">
-            <div className="absolute inset-3 hidden rounded-[2rem] border border-[#123c8c]/10 bg-white/25 shadow-2xl shadow-slate-300/30 backdrop-blur-xl md:block" />
+            <div className="absolute inset-3 hidden rounded-[2rem] border border-[#b91c1c]/10 bg-white/25 shadow-2xl shadow-slate-300/30 backdrop-blur-xl md:block" />
             <div className="intro-scan-line absolute left-8 right-8 top-1/2 z-20 h-0.5 bg-gradient-to-r from-transparent via-[#ff8a00] to-transparent shadow-[0_0_14px_rgba(255,138,0,0.72)]" />
 
-            <div className="relative z-10 flex h-32 w-32 items-center justify-center p-0 md:h-40 md:w-40 md:overflow-hidden md:rounded-[2rem] md:border md:border-white/80 md:bg-white md:p-7 md:shadow-[0_24px_58px_rgba(18,60,140,0.14)]">
+            <div className="relative z-10 flex h-32 w-32 items-center justify-center p-0 md:h-40 md:w-40 md:overflow-hidden md:rounded-[2rem] md:border md:border-white/80 md:bg-white md:p-7 md:shadow-[0_24px_58px_rgba(185,28,28,0.12)]">
               <Image
                 src={introLogoSrc}
                 alt="Creativemu Logo"
@@ -616,8 +616,8 @@ export default function LoginPage() {
         </div>
       ) : null}
 
-      <section className="relative min-h-dvh w-full overflow-hidden bg-[#f6f8ff]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(18,60,140,0.18),transparent_36%)]" />
+      <section className="relative min-h-dvh w-full overflow-hidden bg-[#fff5f5]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.16),transparent_32%),radial-gradient(circle_at_top_right,rgba(185,28,28,0.15),transparent_36%)]" />
 
         {/* 1. WATERMARK C-SOLO LOGO - DEAD CENTERED IN ENTIRE PAGE (X & Y) */}
         <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
@@ -652,7 +652,7 @@ export default function LoginPage() {
           <div className="login-enter relative flex flex-col justify-between px-6 pb-8 pt-28 md:px-12 lg:px-20 lg:pb-14 lg:pt-36">
             <div className="relative z-10 my-auto max-w-2xl text-center lg:text-left">
               <p
-                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#123c8c] md:text-sm"
+                className="login-text-reveal text-xs font-black uppercase tracking-[0.35em] text-[#b91c1c] md:text-sm"
                 style={{
                   animationDelay: "120ms",
                 }}
@@ -672,7 +672,7 @@ export default function LoginPage() {
               </h2>
 
               <p
-                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#123c8c] md:text-2xl"
+                className="login-text-reveal mt-5 text-lg font-black tabular-nums tracking-[0.16em] text-[#b91c1c] md:text-2xl"
                 style={{
                   animationDelay: "240ms",
                 }}
@@ -725,7 +725,7 @@ export default function LoginPage() {
                           placeholder=""
                           autoComplete="email"
                           disabled={formIsBusy}
-                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-32 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
+                          className="min-h-12 w-full rounded-2xl border border-red-100 bg-[#fff8f8] px-4 py-3 pr-32 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-100 dark:bg-[#fff8f8] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#b91c1c] dark:focus:bg-white dark:focus:ring-red-100/50"
                         />
 
                         <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">
@@ -755,14 +755,14 @@ export default function LoginPage() {
                           placeholder="••••••••"
                           autoComplete="current-password"
                           disabled={formIsBusy}
-                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
+                          className="min-h-12 w-full rounded-2xl border border-red-100 bg-[#fff8f8] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-100 dark:bg-[#fff8f8] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#b91c1c] dark:focus:bg-white dark:focus:ring-red-100/50"
                         />
 
                         <button
                           type="button"
                           onClick={() => setShowPassword((prev) => !prev)}
                           disabled={formIsBusy}
-                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#b91c1c] disabled:cursor-not-allowed disabled:opacity-50"
                           aria-label={
                             showPassword
                               ? "Sembunyikan password"

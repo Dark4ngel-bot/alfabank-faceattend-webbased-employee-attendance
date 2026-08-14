@@ -591,7 +591,7 @@ export default function KartuIdentitasPage() {
                 </div>
                 <div
                   ref={cardRef}
-                  className="kartu-identitas-enter w-full h-[270px] sm:h-[320px] md:h-[340px] overflow-hidden rounded-[1.75rem] border border-blue-900/20 bg-gradient-to-br from-[#b91c1c] via-[#0f3478] to-[#0a2558] shadow-2xl shadow-red-950/20"
+                  className="kartu-identitas-enter w-full h-[270px] sm:h-[320px] md:h-[340px] overflow-hidden rounded-[1.75rem] border border-red-900/20 bg-gradient-to-br from-red-600 via-red-700 to-red-800 shadow-2xl shadow-red-950/20"
                 >
                   <div className="grid h-full grid-cols-[110px_1fr] sm:grid-cols-[180px_1fr] md:grid-cols-[210px_1fr]">
                     {/* LEFT BLUE SIDEBAR */}
@@ -630,9 +630,9 @@ export default function KartuIdentitasPage() {
                     </div>
 
                     {/* RIGHT PANEL */}
-                    <div className="relative flex h-full flex-col justify-between min-w-0 bg-gradient-to-br from-white via-[#f8fbff] to-[#f0f5ff] p-3.5 md:p-5">
+                    <div className="relative flex h-full flex-col justify-between min-w-0 bg-gradient-to-br from-white via-[#fffafa] to-[#fff5f5] p-3.5 md:p-5">
                       {/* Panel Header */}
-                      <div className="flex shrink-0 items-center justify-between border-b border-blue-900/10 pb-2">
+                      <div className="flex shrink-0 items-center justify-between border-b border-red-900/10 pb-2">
                         <div className="min-w-0">
                           <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-[#b91c1c] md:text-[9px]">
                             {activeSide === "front"
@@ -702,7 +702,7 @@ export default function KartuIdentitasPage() {
                       )}
 
                       {/* Footer Badge */}
-                      <div className="flex shrink-0 items-center justify-between rounded-xl bg-gradient-to-r from-[#b91c1c] to-[#0f3478] px-3 py-1.5 shadow-sm">
+                      <div className="flex shrink-0 items-center justify-between rounded-xl bg-gradient-to-r from-red-700 to-red-800 px-3 py-1.5 shadow-sm">
                         <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-red-100 md:text-[10px]">
                           {siteTitle}
                         </p>
