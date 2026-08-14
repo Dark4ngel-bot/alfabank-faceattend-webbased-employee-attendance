@@ -119,7 +119,7 @@ function getStatusStyle(status: string) {
   }
 
   if (normalized === "cuti") {
-    return "bg-blue-50 text-[#123c8c] ring-blue-100";
+    return "bg-blue-50 text-red-700 ring-red-100";
   }
 
   return "bg-slate-100 text-slate-600 ring-slate-200";
@@ -430,13 +430,13 @@ function PhotoCard({
 }) {
   return (
     <div
-      className="attendance-detail-row-enter overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/40"
+      className="attendance-detail-row-enter overflow-hidden rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/40"
       style={{
         animationDelay: `${delay}ms`,
       }}
     >
       <div className="border-b border-blue-50 px-5 py-4">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#123c8c]">
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-red-700">
           {title}
         </p>
 
@@ -444,7 +444,7 @@ function PhotoCard({
       </div>
 
       {imageUrl ? (
-        <div className="bg-[#f8fbff] p-4">
+        <div className="bg-[#fff8f8] p-4">
           <div className="mx-auto overflow-hidden rounded-[1.3rem] bg-slate-950 shadow-lg shadow-slate-300/40">
             <img
               src={imageUrl}
@@ -454,8 +454,8 @@ function PhotoCard({
           </div>
         </div>
       ) : (
-        <div className="flex min-h-[230px] flex-col items-center justify-center bg-[#f8fbff] p-6 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+        <div className="flex min-h-[230px] flex-col items-center justify-center bg-[#fff8f8] p-6 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eaf1ff] text-red-700">
             <ImageIcon size={32} strokeWidth={2.6} />
           </div>
 
@@ -494,18 +494,18 @@ function EmployeeNotesSection({
 
   return (
     <section
-      className="attendance-detail-row-enter rounded-[1.7rem] border border-blue-100 bg-white p-4 shadow-xl shadow-slate-200/60 md:p-5"
+      className="attendance-detail-row-enter rounded-[1.7rem] border border-red-100 bg-white p-4 shadow-xl shadow-slate-200/60 md:p-5"
       style={{
         animationDelay: `${delay}ms`,
       }}
     >
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-red-700">
           <BriefcaseBusiness size={21} strokeWidth={2.7} />
         </div>
 
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#123c8c]">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-red-700">
             Keterangan Karyawan
           </p>
           <p className="mt-1 text-sm font-semibold text-slate-500">
@@ -582,14 +582,14 @@ function EmployeeNotesSection({
         ) : null}
 
         {shouldShowWfhCheckout ? (
-          <div className="attendance-detail-row-enter rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+          <div className="attendance-detail-row-enter rounded-2xl border border-red-100 bg-blue-50/70 p-4">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#123c8c] ring-1 ring-blue-100">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-red-700 ring-1 ring-red-100">
                 <BriefcaseBusiness size={21} strokeWidth={2.7} />
               </div>
 
               <div className="min-w-0">
-                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#123c8c]">
+                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-red-700">
                   Keterangan Check-out
                 </p>
 
@@ -653,25 +653,25 @@ function GpsLocationCard({
 
   return (
     <div
-      className="attendance-detail-row-enter rounded-[1.5rem] border border-blue-100 bg-white p-4 shadow-lg shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40"
+      className="attendance-detail-row-enter rounded-[1.5rem] border border-red-100 bg-white p-4 shadow-lg shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40"
       style={{
         animationDelay: `${delay}ms`,
       }}
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="flex min-w-0 items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-red-700">
             <Navigation size={21} strokeWidth={2.6} />
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#123c8c]">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-red-700">
                 {title}
               </p>
 
               {isLoadingAddress && hasGps ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[9px] font-black text-[#123c8c] ring-1 ring-blue-100">
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[9px] font-black text-red-700 ring-1 ring-red-100">
                   <Loader2 size={11} className="animate-spin" />
                   Membaca
                 </span>
@@ -686,7 +686,7 @@ function GpsLocationCard({
               )}
             </div>
 
-            <div className="mt-3 rounded-2xl bg-[#f8fbff] p-3 ring-1 ring-blue-50">
+            <div className="mt-3 rounded-2xl bg-[#fff8f8] p-3 ring-1 ring-blue-50">
               <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
                 Lokasi Terdekat
               </p>
@@ -718,7 +718,7 @@ function GpsLocationCard({
             href={`https://www.google.com/maps?q=${latitude},${longitude}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-[#123c8c] px-4 py-2.5 text-xs font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98]"
+            className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-red-700 px-4 py-2.5 text-xs font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98]"
           >
             Buka Maps
           </a>
@@ -737,19 +737,19 @@ function OfficeLocationCard({
 }) {
   return (
     <div
-      className="attendance-detail-row-enter rounded-[2rem] border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/40"
+      className="attendance-detail-row-enter rounded-[2rem] border border-red-100 bg-white p-5 shadow-xl shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/40"
       style={{
         animationDelay: `${delay}ms`,
       }}
     >
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-red-700">
             <MapPin size={24} strokeWidth={2.6} />
           </div>
 
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#123c8c]">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-red-700">
               Lokasi Kantor
             </p>
 
@@ -768,7 +768,7 @@ function OfficeLocationCard({
             href={`https://www.google.com/maps?q=${report.officeLatitude},${report.officeLongitude}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98]"
+            className="inline-flex items-center justify-center rounded-2xl bg-red-700 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0f3274] active:scale-[0.98]"
           >
             Buka Maps
           </a>
@@ -903,16 +903,16 @@ export default function AdminAttendanceReportDetailPage() {
           <button
             type="button"
             onClick={() => router.push(backHref)}
-            className="attendance-detail-enter inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#123c8c] shadow-sm ring-1 ring-blue-100 transition hover:bg-[#f8fbff] active:scale-[0.98]"
+            className="attendance-detail-enter inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-red-700 shadow-sm ring-1 ring-red-100 transition hover:bg-[#fff8f8] active:scale-[0.98]"
           >
             <ArrowLeft size={18} strokeWidth={2.6} />
             {backLabel}
           </button>
 
           {isLoading ? (
-            <div className="attendance-detail-enter flex min-h-[360px] items-center justify-center rounded-3xl border border-blue-100 bg-white">
+            <div className="attendance-detail-enter flex min-h-[360px] items-center justify-center rounded-3xl border border-red-100 bg-white">
               <div className="text-center">
-                <Loader2 className="mx-auto animate-spin text-[#123c8c]" />
+                <Loader2 className="mx-auto animate-spin text-red-700" />
                 <p className="mt-3 text-sm font-black text-slate-600">
                   Mengambil detail kehadiran...
                 </p>
@@ -924,9 +924,9 @@ export default function AdminAttendanceReportDetailPage() {
             </div>
           ) : (
             <>
-              <div className="attendance-detail-enter overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-xl shadow-slate-300/30">
+              <div className="attendance-detail-enter overflow-hidden rounded-[2rem] border border-red-100 bg-white shadow-xl shadow-slate-300/30">
                 <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-                  <div className="bg-[#123c8c] p-6 text-white md:p-8">
+                  <div className="bg-red-700 p-6 text-white md:p-8">
                     <div className="flex items-center gap-3">
                       <div className="attendance-detail-avatar-enter flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/15 ring-1 ring-white/20">
                         {getEmployeeProfilePhoto(report) ? (
@@ -943,14 +943,14 @@ export default function AdminAttendanceReportDetailPage() {
                       </div>
 
                       <div className="min-w-0">
-                        <h2 className="mt-1 truncate text-3xl font-black tracking-tight md:text-4xl">
+                        <h2 className="mt-1 text-xl font-black tracking-tight leading-tight break-words sm:text-2xl md:text-3xl">
                           {report.employeeName}
                         </h2>
                       </div>
                     </div>
 
                     <p
-                      className="attendance-detail-row-enter mt-4 text-sm font-semibold text-blue-100"
+                      className="attendance-detail-row-enter mt-4 text-sm font-semibold text-red-100"
                       style={{
                         animationDelay: "80ms",
                       }}
@@ -999,12 +999,12 @@ export default function AdminAttendanceReportDetailPage() {
 
                   <div className="grid grid-cols-2 gap-3 p-5 md:grid-cols-4 md:p-6">
                     <div
-                      className="attendance-detail-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4"
+                      className="attendance-detail-row-enter rounded-2xl border border-red-100 bg-[#fff8f8] p-4"
                       style={{
                         animationDelay: "70ms",
                       }}
                     >
-                      <CalendarDays size={20} className="text-[#123c8c]" />
+                      <CalendarDays size={20} className="text-red-700" />
                       <p className="mt-3 text-xs font-bold text-slate-500">
                         Tanggal
                       </p>
@@ -1014,12 +1014,12 @@ export default function AdminAttendanceReportDetailPage() {
                     </div>
 
                     <div
-                      className="attendance-detail-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4"
+                      className="attendance-detail-row-enter rounded-2xl border border-red-100 bg-[#fff8f8] p-4"
                       style={{
                         animationDelay: "110ms",
                       }}
                     >
-                      <Clock3 size={20} className="text-[#123c8c]" />
+                      <Clock3 size={20} className="text-red-700" />
                       <p className="mt-3 text-xs font-bold text-slate-500">
                         Masuk
                       </p>
@@ -1029,12 +1029,12 @@ export default function AdminAttendanceReportDetailPage() {
                     </div>
 
                     <div
-                      className="attendance-detail-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4"
+                      className="attendance-detail-row-enter rounded-2xl border border-red-100 bg-[#fff8f8] p-4"
                       style={{
                         animationDelay: "150ms",
                       }}
                     >
-                      <Clock3 size={20} className="text-[#123c8c]" />
+                      <Clock3 size={20} className="text-red-700" />
                       <p className="mt-3 text-xs font-bold text-slate-500">
                         Keluar
                       </p>
@@ -1044,12 +1044,12 @@ export default function AdminAttendanceReportDetailPage() {
                     </div>
 
                     <div
-                      className="attendance-detail-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4"
+                      className="attendance-detail-row-enter rounded-2xl border border-red-100 bg-[#fff8f8] p-4"
                       style={{
                         animationDelay: "190ms",
                       }}
                     >
-                      <Clock3 size={20} className="text-[#123c8c]" />
+                      <Clock3 size={20} className="text-red-700" />
                       <p className="mt-3 text-xs font-bold text-slate-500">
                         Durasi
                       </p>
