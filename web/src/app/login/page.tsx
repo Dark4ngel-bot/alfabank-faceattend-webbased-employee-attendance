@@ -731,7 +731,7 @@ export default function LoginPage() {
                         />
 
                         <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">
-                          @creativemu.id
+                          @alfabankjogja.com
                         </span>
                       </div>
                     </label>
