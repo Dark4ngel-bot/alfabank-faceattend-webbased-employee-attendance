@@ -478,7 +478,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const jabatans = await prisma.jabatan.findMany({
+    const jabatan = await prisma.jabatan.findMany({
       select: jabatanSelect,
       orderBy: {
         name: "asc",
@@ -537,7 +537,7 @@ export async function GET(req: NextRequest) {
       offices,
       officeLocations: offices,
       departments,
-      jabatans,
+      jabatan,
       positions,
       shifts,
       employmentStatuses,
@@ -582,9 +582,12 @@ export async function POST(req: NextRequest) {
       body.password || body.temporaryPassword || body.temp_password || ""
     ).trim();
 
-    const employeeType = String(body.employee_type || "utama").trim();
+    const rawEmployeeType = String(body.employee_type || "").trim();
     const status = String(body.status || "active").trim();
     const employmentStatus = normalizeOptionalText(body.employment_status);
+    const employeeType =
+      rawEmployeeType ||
+      (employmentStatus?.trim().toLowerCase() === "magang" ? "magang" : "utama");
     const employmentStartDate = normalizeOptionalDate(
       body.employment_start_date,
       "Tanggal mulai masa kerja"
@@ -674,6 +677,11 @@ export async function POST(req: NextRequest) {
     });
 
     const isPrimaryShift = shift.name.trim().toLowerCase() === "utama";
+    const normalizedEmployeeType =
+      shift.name.trim().toLowerCase() === "magang" ||
+      employmentStatus?.trim().toLowerCase() === "magang"
+        ? "magang"
+        : employeeType;
     const normalizedEmploymentEndDate = isPrimaryShift
       ? null
       : employmentEndDate;
@@ -709,7 +717,7 @@ export async function POST(req: NextRequest) {
         email,
         password_hash: passwordHash,
         role,
-        employee_type: employeeType,
+        employee_type: normalizedEmployeeType,
         phone: phone || null,
         status,
         employment_status: normalizedEmploymentStatus,
@@ -780,9 +788,12 @@ export async function PATCH(req: NextRequest) {
       body.password || body.temporaryPassword || body.temp_password || ""
     ).trim();
 
-    const employeeType = String(body.employee_type || "utama").trim();
+    const rawEmployeeType = String(body.employee_type || "").trim();
     const status = String(body.status || "active").trim();
     const employmentStatus = normalizeOptionalText(body.employment_status);
+    const employeeType =
+      rawEmployeeType ||
+      (employmentStatus?.trim().toLowerCase() === "magang" ? "magang" : "utama");
     const employmentStartDate = normalizeOptionalDate(
       body.employment_start_date,
       "Tanggal mulai masa kerja"
@@ -895,6 +906,11 @@ export async function PATCH(req: NextRequest) {
     });
 
     const isPrimaryShift = shift.name.trim().toLowerCase() === "utama";
+    const normalizedEmployeeType =
+      shift.name.trim().toLowerCase() === "magang" ||
+      employmentStatus?.trim().toLowerCase() === "magang"
+        ? "magang"
+        : employeeType;
     const normalizedEmploymentEndDate = isPrimaryShift
       ? null
       : employmentEndDate;
@@ -940,10 +956,10 @@ export async function PATCH(req: NextRequest) {
       bank_code: string | null;
       bank_account_number: string | null;
       nik: string | null;
-      registered_office_id: string;
-      department_id: string;
-      jabatan_id: string;
-      position_id: string;
+      registered_office_id: string | null;
+      department_id: string | null;
+      jabatan_id: string | null;
+      position_id: string | null;
       shift_id: string;
       npwp_number: string | null;
       ptkp_status: string | null;
@@ -955,7 +971,7 @@ export async function PATCH(req: NextRequest) {
       email,
       role,
       phone: phone || null,
-      employee_type: employeeType,
+      employee_type: normalizedEmployeeType,
       status,
       employment_status: normalizedEmploymentStatus,
       employment_start_date: employmentStartDate,

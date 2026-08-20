@@ -21,12 +21,7 @@ import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
 
-type NotificationType =
-  | "sick"
-  | "leave"
-  | "permission"
-  | "wfh"
-  | "visit";
+type NotificationType = "sick" | "leave" | "permission" | "wfh" | "visit";
 
 type NotificationItem = {
   id: string;
@@ -131,6 +126,7 @@ function getTypeClass(type: NotificationType) {
   return "bg-slate-50 text-slate-600 border-slate-100";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getStatusClass(status: string) {
   const value = status.toLowerCase();
 
@@ -325,7 +321,6 @@ export default function AdminNotificationsPage() {
 
   useEffect(() => {
     void loadNotifications(true);
-    
   }, []);
 
   const filteredNotifications = useMemo(() => {
@@ -394,7 +389,6 @@ export default function AdminNotificationsPage() {
                 Pusat Notifikasi
               </h1>
             </div>
-
           </div>
         </section>
 

@@ -15,7 +15,9 @@ export async function GET(req: NextRequest) {
   try {
     const authUser = await requireAuth(req);
     const swapDateParam = req.nextUrl.searchParams.get("swapDate") || "";
-    const selectedDate = swapDateParam ? toShiftSwapDate(swapDateParam) : new Date();
+    const selectedDate = swapDateParam
+      ? toShiftSwapDate(swapDateParam)
+      : new Date();
 
     const currentUser = await prisma.user.findUnique({
       where: { id: authUser.id },
@@ -198,7 +200,9 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error("GET_SHIFT_SWAP_COLLEAGUES_ERROR:", error);
     return NextResponse.json(
-      { error: getApiErrorMessage(error, "Gagal mengambil daftar rekan kerja.") },
+      {
+        error: getApiErrorMessage(error, "Gagal mengambil daftar rekan kerja."),
+      },
       { status: getApiErrorStatus(error) },
     );
   }

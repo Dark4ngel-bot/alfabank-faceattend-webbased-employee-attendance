@@ -13,7 +13,7 @@ import {
   ensureShiftSwapTable,
   formatShiftSwapDate,
   getShiftKind,
-  getShiftSwapCutoffMessage,
+  getShiftSwapCutoffMessageWithAttendance,
   getShiftWindowForSwapDate,
   toShiftSwapDate,
 } from "@/lib/shift-swap-schema";
@@ -234,6 +234,13 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      if (targetShiftUpper === requesterShiftUpper) {
+        return NextResponse.json(
+          { error: `Kamu sudah berada pada ${requesterShiftName}. Pilih shift yang berbeda.` },
+          { status: 400 },
+        );
+      }
+
       const targetShiftList = await prisma.shift.findMany({
         where: {
           status: { in: ["active", "ACTIVE"] },
@@ -265,16 +272,17 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const cutoffMessage = getShiftSwapCutoffMessage({
+      const cutoffMessage = await getShiftSwapCutoffMessageWithAttendance({
+        userId: user.id,
         swapDate,
-        windows: [targetWindow],
+        shiftStartTime: targetWindow.startTime,
       });
 
       if (cutoffMessage) {
         return NextResponse.json({ error: cutoffMessage }, { status: 400 });
       }
 
-      // Block only if there's an ACTIVE (pending/approved) self-shift for this date.
+      // Block only if there's an ACTIVE (pending/approved) shift swap for this date.
       // After cancellation, a new one can be submitted.
       const existingActive = await prisma.shiftSwapRequest.findFirst({
         where: {
@@ -415,16 +423,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const cutoffMessage = getShiftSwapCutoffMessage({
+    const cutoffMessage = await getShiftSwapCutoffMessageWithAttendance({
+      userId: user.id,
       swapDate,
-      windows: [requesterWindow, targetWindow],
+      shiftStartTime: requesterWindow.startTime,
     });
 
     if (cutoffMessage) {
       return NextResponse.json({ error: cutoffMessage }, { status: 400 });
     }
 
-    // Block duplicate only for same requester -> same colleague -> same date -> still pending
+    // Block duplicate only for same requester → same colleague → same date → still pending
     const existingPending = await prisma.shiftSwapRequest.findFirst({
       where: {
         requester_id: user.id,

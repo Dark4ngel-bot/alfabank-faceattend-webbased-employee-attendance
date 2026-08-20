@@ -222,6 +222,7 @@ function getAdminNotificationCount(stats?: NotificationStats) {
   return Math.max(0, Number(stats.unread || 0) + Number(stats.pending || 0));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getEmployeeNotificationCount(stats?: NotificationStats) {
   if (!stats) return 0;
 

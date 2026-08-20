@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOwner } from "@/lib/api-auth";
-import type { Prisma } from "@/generated/prisma/client";
 
 export const runtime = "nodejs";
 
@@ -128,7 +127,7 @@ async function ensureDefaultWorkSchedules() {
     },
   });
 
-  const operations: Prisma.PrismaPromise<unknown>[] = [];
+  const operations: Array<ReturnType<typeof prisma.workSchedule.upsert>> = [];
 
   for (const shift of shifts) {
     const defaultTime = getDefaultTimeByShift(shift.name);
@@ -245,7 +244,7 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const operations: Prisma.PrismaPromise<unknown>[] = [];
+    const operations: Array<ReturnType<typeof prisma.workSchedule.upsert>> = [];
 
     for (const scheduleGroup of schedules) {
       const shiftId = String(scheduleGroup.shift_id || "");

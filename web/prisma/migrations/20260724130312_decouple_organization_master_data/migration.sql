@@ -5,7 +5,7 @@ ALTER TABLE `Department` DROP FOREIGN KEY `Department_office_id_fkey`;
 ALTER TABLE `Position` DROP FOREIGN KEY `Position_jabatan_id_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `jabatans` DROP FOREIGN KEY `jabatans_department_id_fkey`;
+ALTER TABLE `jabatan` DROP FOREIGN KEY `jabatan_department_id_fkey`;
 
 -- DropIndex
 DROP INDEX `Department_office_id_idx` ON `Department`;
@@ -20,10 +20,10 @@ DROP INDEX `Position_jabatan_id_idx` ON `Position`;
 DROP INDEX `Position_jabatan_id_name_key` ON `Position`;
 
 -- DropIndex
-DROP INDEX `jabatans_department_id_idx` ON `jabatans`;
+DROP INDEX `jabatan_department_id_idx` ON `jabatan`;
 
 -- DropIndex
-DROP INDEX `jabatans_department_id_name_key` ON `jabatans`;
+DROP INDEX `jabatan_department_id_name_key` ON `jabatan`;
 
 -- AlterTable
 ALTER TABLE `Department` DROP COLUMN `office_id`;
@@ -32,7 +32,7 @@ ALTER TABLE `Department` DROP COLUMN `office_id`;
 ALTER TABLE `Position` DROP COLUMN `jabatan_id`;
 
 -- AlterTable
-ALTER TABLE `jabatans` DROP COLUMN `department_id`;
+ALTER TABLE `jabatan` DROP COLUMN `department_id`;
 
 -- CreateIndex
 CREATE INDEX `Department_name_idx` ON `Department`(`name`);
@@ -41,4 +41,4 @@ CREATE INDEX `Department_name_idx` ON `Department`(`name`);
 CREATE INDEX `Position_name_idx` ON `Position`(`name`);
 
 -- CreateIndex
-CREATE INDEX `jabatans_name_idx` ON `jabatans`(`name`);
+CREATE INDEX `jabatan_name_idx` ON `jabatan`(`name`);

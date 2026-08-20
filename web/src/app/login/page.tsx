@@ -5,14 +5,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AlertCircle, Eye, EyeOff, Loader2, LogIn, X } from "lucide-react";
 import MobileShell from "@/components/MobileShell";
-import { AppButton, AppCard, AppInput } from "@/components/ui/AppUI";
+import { AppButton, AppCard } from "@/components/ui/AppUI";
 import { useSiteLogoSettings } from "@/hooks/useSiteLogo";
 import { DEFAULT_SITE_MARK_LOGO_SRC } from "@/lib/site-logo-defaults";
-import {
-  CREATIVEMU_EMAIL_EXAMPLE,
-  isCreativemuEmail,
-  isValidEmailFormat,
-} from "@/lib/creativemu-email";
+import { isValidEmailFormat } from "@/lib/creativemu-email";
 
 type LoginResponse = {
   success?: boolean;
@@ -490,7 +486,7 @@ export default function LoginPage() {
     if (!isValidEmailFormat(normalizedEmail)) {
       showAlert(
         "Format email salah",
-        "Masukkan email dengan format yang benar, contoh: nama@email.com",
+        "Masukkan email dengan format yang benar, contoh: nama@alfabankjogja.com",
       );
       return;
     }
@@ -727,15 +723,11 @@ export default function LoginPage() {
                           placeholder=""
                           autoComplete="email"
                           disabled={formIsBusy}
-<<<<<<< HEAD
                           className="min-h-12 w-full rounded-2xl border border-red-100 bg-[#fff8f8] px-4 py-3 pr-32 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#b91c1c] focus:bg-white focus:ring-4 focus:ring-red-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-100 dark:bg-[#fff8f8] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#b91c1c] dark:focus:bg-white dark:focus:ring-red-100/50"
-=======
-                          className="min-h-12 w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-32 text-sm font-bold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100/50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-100 dark:bg-[#f8fbff] dark:text-slate-700 dark:placeholder:text-slate-400 dark:focus:border-[#123c8c] dark:focus:bg-white dark:focus:ring-blue-100/50"
->>>>>>> ed8b4f4 (feat: implement admin dashboard pages for master data management and user authentication flow)
                         />
 
                         <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">
-                          @creativemu.id
+                          @alfabankjogja.com
                         </span>
                       </div>
                     </label>

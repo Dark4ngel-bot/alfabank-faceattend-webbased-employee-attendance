@@ -37,6 +37,8 @@ model User {
 
   profile_photo           String? @db.Text
   profile_photo_public_id String? @db.VarChar(255)
+  profile_photo_data      Bytes?
+  profile_photo_mime      String? @db.VarChar(50)
 
   jabatan_id    String? @db.Char(36)
   department_id String? @db.Char(36)
@@ -118,7 +120,7 @@ model Department {
   status String @default("active") @db.VarChar(20)
 
   users    User[]
-  jabatans Jabatan[]
+  jabatan Jabatan[]
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
@@ -147,7 +149,7 @@ model Jabatan {
 
   @@unique([department_id, name])
   @@index([department_id])
-  @@map("jabatans")
+  @@map("jabatan")
 }
 
 model Position {

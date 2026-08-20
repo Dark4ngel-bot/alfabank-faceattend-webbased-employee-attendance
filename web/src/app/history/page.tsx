@@ -494,8 +494,6 @@ function AttendanceRecordCard({
 function HistoryContent({
   isLoading,
   records,
-  monthLabel,
-  year,
 }: {
   isLoading: boolean;
   records: AttendanceRecord[];

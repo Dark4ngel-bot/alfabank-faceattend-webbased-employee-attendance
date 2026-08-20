@@ -584,16 +584,6 @@ export default function EmployeeNotificationPage() {
                                   ? msg.substring(0, reasonIndex).trim()
                                   : msg;
 
-                              const dateMatches = Array.from(
-                                actionText.matchAll(
-                                  /([0-9]{1,2}\s+[A-Za-z]+\s+[0-9]{4})/gi,
-                                ),
-                              ).map((m) => m[1]);
-                              const targetDateText =
-                                dateMatches.length > 0
-                                  ? dateMatches.join(" s/d ")
-                                  : null;
-
                               // Clean action text by removing parenthesized shift string and extra words
                               if (shiftMatch)
                                 actionText = actionText

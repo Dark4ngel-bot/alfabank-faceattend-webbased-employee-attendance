@@ -41,6 +41,14 @@ export async function GET(
       );
     }
 
+    const photoUrl = isCheckOut
+      ? attendance.check_out_photo_url
+      : attendance.check_in_photo_url;
+
+    if (photoUrl) {
+      return NextResponse.redirect(photoUrl, 307);
+    }
+
     const photo = isCheckOut
       ? attendance.check_out_photo
       : attendance.check_in_photo;

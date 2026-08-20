@@ -13,11 +13,12 @@ async function main() {
         `ALTER TABLE users ADD COLUMN ${col.name} ${col.type};`
       );
       console.log(`SUCCESS: Column ${col.name} added!`);
-    } catch (err: any) {
-      if (err?.message?.includes("Duplicate column name")) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      if (message.includes("Duplicate column name")) {
         console.log(`INFO: Column ${col.name} already exists.`);
       } else {
-        console.error(`ERROR adding ${col.name}:`, err.message);
+        console.error(`ERROR adding ${col.name}:`, message);
       }
     }
   }

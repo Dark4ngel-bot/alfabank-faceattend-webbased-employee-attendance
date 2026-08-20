@@ -10,9 +10,9 @@ SET @rename_jabatan_table_sql = (
       SELECT 1
       FROM INFORMATION_SCHEMA.TABLES
       WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = 'jabatans'
+        AND TABLE_NAME = 'jabatan'
     ),
-    'RENAME TABLE `jabatan` TO `jabatans`',
+    'RENAME TABLE `jabatan` TO `jabatan`',
     'SELECT 1'
   )
 );

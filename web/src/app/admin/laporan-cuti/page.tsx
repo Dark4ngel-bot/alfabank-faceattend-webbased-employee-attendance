@@ -8,7 +8,6 @@ import {
   ChevronDown,
   Clock3,
   FileText,
-  Eye,
   Search,
   UserRound,
   XCircle,

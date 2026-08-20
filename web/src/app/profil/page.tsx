@@ -488,9 +488,7 @@ function ProfileAvatar({ user, initials, size = "md" }: ProfileAvatarProps) {
     lg: "h-32 w-32 text-4xl",
   }[size];
 
-  const photoSrc = user.profile_photo
-    ? `${user.profile_photo}${user.profile_photo.includes("?") ? "&" : "?"}v=${Date.now()}`
-    : null;
+  const photoSrc = user.profile_photo || null;
 
   return (
     <div
@@ -1115,6 +1113,7 @@ export function ProfilPageContent({
 
   useEffect(() => {
     void loadProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

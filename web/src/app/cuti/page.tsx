@@ -264,7 +264,8 @@ export default function LeaveRequestPage() {
         setPageAlert({
           type: "warning",
           title: "Data belum lengkap",
-          message: "Tanggal lembur, jam start-selesai, dan deskripsi pekerjaan lembur wajib diisi.",
+          message:
+            "Tanggal lembur, jam start-selesai, dan deskripsi pekerjaan lembur wajib diisi.",
         });
         return;
       }
@@ -273,7 +274,8 @@ export default function LeaveRequestPage() {
         setPageAlert({
           type: "warning",
           title: "Durasi lembur tidak memenuhi syarat",
-          message: "Pengajuan lembur terhitung dan hanya diizinkan jika durasi 2 jam atau lebih (≥ 120 menit).",
+          message:
+            "Pengajuan lembur terhitung dan hanya diizinkan jika durasi 2 jam atau lebih (≥ 120 menit).",
         });
         return;
       }
@@ -337,8 +339,7 @@ export default function LeaveRequestPage() {
         setPageAlert({
           type: "error",
           title: "Gagal mengirim pengajuan",
-          message:
-            data.message || data.error || "Gagal mengirim pengajuan.",
+          message: data.message || data.error || "Gagal mengirim pengajuan.",
         });
         return;
       }
@@ -535,9 +536,15 @@ export default function LeaveRequestPage() {
                   </div>
                 </div>
 
-                <div className={`rounded-2xl border p-4 ${overtimeDurationMinutes >= 120 ? "border-emerald-100 bg-emerald-50 text-emerald-800" : "border-amber-100 bg-amber-50 text-amber-800"}`}>
-                  <p className="text-xs font-black uppercase tracking-wider">Total Durasi Lembur</p>
-                  <p className="mt-1 text-2xl font-black">{overtimeDurationText}</p>
+                <div
+                  className={`rounded-2xl border p-4 ${overtimeDurationMinutes >= 120 ? "border-emerald-100 bg-emerald-50 text-emerald-800" : "border-amber-100 bg-amber-50 text-amber-800"}`}
+                >
+                  <p className="text-xs font-black uppercase tracking-wider">
+                    Total Durasi Lembur
+                  </p>
+                  <p className="mt-1 text-2xl font-black">
+                    {overtimeDurationText}
+                  </p>
                   {overtimeDurationMinutes < 120 ? (
                     <p className="mt-1 text-xs font-bold text-amber-700">
                       ⚠️ Lembur minimal 2 jam (120 menit) untuk dapat diajukan.
@@ -602,7 +609,9 @@ export default function LeaveRequestPage() {
                 </div>
 
                 <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4">
-                  <p className="text-sm font-black text-[#123c8c]">Total Hari</p>
+                  <p className="text-sm font-black text-[#123c8c]">
+                    Total Hari
+                  </p>
                   <p className="mt-1 text-2xl font-black text-slate-950">
                     {totalDays} hari
                   </p>
@@ -627,7 +636,9 @@ export default function LeaveRequestPage() {
             <div>
               <div className="flex items-center justify-between">
                 <label className="text-sm font-black text-slate-700">
-                  {leaveType === "sick" ? "Surat Dokter / Lampiran" : "Lampiran Dokumen"}
+                  {leaveType === "sick"
+                    ? "Surat Dokter / Lampiran"
+                    : "Lampiran Dokumen"}
                 </label>
                 <span className="text-[11px] font-bold text-slate-400">
                   (Opsional)

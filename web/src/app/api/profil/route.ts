@@ -331,9 +331,14 @@ async function handleChangePassword(userId: string, body: JsonBody) {
 
 async function handleUpdateProfile(userId: string, body: JsonBody) {
   const columns = await getUserTableColumns();
-  const updates: Array<[string, string]> = [];
+  const updates: Array<[string, string | null]> = [];
 
-  function addUpdate(column: string, value: string | undefined) {
+  function nullableText(value: string | undefined) {
+    if (value === undefined) return undefined;
+    return value.trim() ? value.trim() : null;
+  }
+
+  function addUpdate(column: string, value: string | null | undefined) {
     if (value === undefined) return;
     if (!columns.has(column)) return;
 
@@ -448,27 +453,27 @@ async function handleUpdateProfile(userId: string, body: JsonBody) {
 
   addUpdate("name", name);
 
-  addUpdate("phone", phone);
-  addUpdate("phone_number", phone);
+  addUpdate("phone", nullableText(phone));
+  addUpdate("phone_number", nullableText(phone));
 
-  addUpdate("address", address);
-  addUpdate("alamat", address);
+  addUpdate("address", nullableText(address));
+  addUpdate("alamat", nullableText(address));
 
-  addUpdate("gender", gender);
-  addUpdate("jenis_kelamin", gender);
+  addUpdate("gender", nullableText(gender));
+  addUpdate("jenis_kelamin", nullableText(gender));
 
-  addUpdate("birth_date", birthDate);
-  addUpdate("date_of_birth", birthDate);
-  addUpdate("tanggal_lahir", birthDate);
+  addUpdate("birth_date", nullableText(birthDate));
+  addUpdate("date_of_birth", nullableText(birthDate));
+  addUpdate("tanggal_lahir", nullableText(birthDate));
 
-  addUpdate("birth_place", birthPlace);
-  addUpdate("tempat_lahir", birthPlace);
+  addUpdate("birth_place", nullableText(birthPlace));
+  addUpdate("tempat_lahir", nullableText(birthPlace));
 
-  addUpdate("bank_account_number", bankAccountNumber);
-  addUpdate("no_rekening", bankAccountNumber);
-  addUpdate("bank_code", bankCode ?? undefined);
+  addUpdate("bank_account_number", nullableText(bankAccountNumber));
+  addUpdate("no_rekening", nullableText(bankAccountNumber));
+  addUpdate("bank_code", nullableText(bankCode ?? undefined));
 
-  addUpdate("nik", nik);
+  addUpdate("nik", nullableText(nik));
 
   if (columns.has("updated_at")) {
     updates.push(["updated_at", "NOW()"]);
@@ -490,6 +495,11 @@ async function handleUpdateProfile(userId: string, body: JsonBody) {
   for (const [column, value] of updates) {
     if (column === "updated_at" && value === "NOW()") {
       setClauses.push("`updated_at` = NOW()");
+      continue;
+    }
+
+    if (value === null) {
+      setClauses.push(`\`${column}\` = NULL`);
       continue;
     }
 

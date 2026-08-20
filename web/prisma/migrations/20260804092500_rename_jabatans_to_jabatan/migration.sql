@@ -1,1 +1,1 @@
-RENAME TABLE `jabatans` TO `jabatan`;
+RENAME TABLE `jabatan` TO `jabatan`;

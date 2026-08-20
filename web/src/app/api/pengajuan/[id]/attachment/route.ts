@@ -11,12 +11,6 @@ function canManageLeave(role: string) {
   return ["admin", "owner"].includes(role.toLowerCase());
 }
 
-function safeFileName(value: string | null | undefined) {
-  const fileName = String(value || "lampiran-cuti").replace(/["\r\n]/g, "");
-
-  return fileName || "lampiran-cuti";
-}
-
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> },

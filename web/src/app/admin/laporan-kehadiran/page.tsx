@@ -7,7 +7,6 @@ import {
   CalendarDays,
   Camera,
   ChevronDown,
-  Eye,
   FileDown,
   ImageIcon,
   Search,

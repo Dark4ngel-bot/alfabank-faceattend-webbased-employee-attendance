@@ -10,9 +10,9 @@ SET @rename_jabatan_table_sql = (
       SELECT 1
       FROM INFORMATION_SCHEMA.TABLES
       WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = 'jabatans'
+        AND TABLE_NAME = 'jabatan'
     ),
-    'RENAME TABLE `jabatan` TO `jabatans`',
+    'RENAME TABLE `jabatan` TO `jabatan`',
     'SELECT 1'
   )
 );
@@ -21,15 +21,15 @@ PREPARE rename_jabatan_table_stmt FROM @rename_jabatan_table_sql;
 EXECUTE rename_jabatan_table_stmt;
 DEALLOCATE PREPARE rename_jabatan_table_stmt;
 
-SET @create_jabatans_table_sql = (
+SET @create_jabatan_table_sql = (
   SELECT IF(
     NOT EXISTS (
       SELECT 1
       FROM INFORMATION_SCHEMA.TABLES
       WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = 'jabatans'
+        AND TABLE_NAME = 'jabatan'
     ),
-    'CREATE TABLE `jabatans` (
+    'CREATE TABLE `jabatan` (
       `id` CHAR(36) NOT NULL,
       `name` VARCHAR(100) NOT NULL,
       `department_id` CHAR(36) NULL,
@@ -42,9 +42,9 @@ SET @create_jabatans_table_sql = (
   )
 );
 
-PREPARE create_jabatans_table_stmt FROM @create_jabatans_table_sql;
-EXECUTE create_jabatans_table_stmt;
-DEALLOCATE PREPARE create_jabatans_table_stmt;
+PREPARE create_jabatan_table_stmt FROM @create_jabatan_table_sql;
+EXECUTE create_jabatan_table_stmt;
+DEALLOCATE PREPARE create_jabatan_table_stmt;
 
 SET @add_users_jabatan_id_sql = (
   SELECT IF(
@@ -82,41 +82,41 @@ PREPARE add_position_jabatan_id_stmt FROM @add_position_jabatan_id_sql;
 EXECUTE add_position_jabatan_id_stmt;
 DEALLOCATE PREPARE add_position_jabatan_id_stmt;
 
-SET @add_jabatans_unique_sql = (
+SET @add_jabatan_unique_sql = (
   SELECT IF(
     NOT EXISTS (
       SELECT 1
       FROM INFORMATION_SCHEMA.STATISTICS
       WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = 'jabatans'
-        AND INDEX_NAME = 'jabatans_department_id_name_key'
+        AND TABLE_NAME = 'jabatan'
+        AND INDEX_NAME = 'jabatan_department_id_name_key'
     ),
-    'CREATE UNIQUE INDEX `jabatans_department_id_name_key` ON `jabatans`(`department_id`, `name`)',
+    'CREATE UNIQUE INDEX `jabatan_department_id_name_key` ON `jabatan`(`department_id`, `name`)',
     'SELECT 1'
   )
 );
 
-PREPARE add_jabatans_unique_stmt FROM @add_jabatans_unique_sql;
-EXECUTE add_jabatans_unique_stmt;
-DEALLOCATE PREPARE add_jabatans_unique_stmt;
+PREPARE add_jabatan_unique_stmt FROM @add_jabatan_unique_sql;
+EXECUTE add_jabatan_unique_stmt;
+DEALLOCATE PREPARE add_jabatan_unique_stmt;
 
-SET @add_jabatans_department_idx_sql = (
+SET @add_jabatan_department_idx_sql = (
   SELECT IF(
     NOT EXISTS (
       SELECT 1
       FROM INFORMATION_SCHEMA.STATISTICS
       WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = 'jabatans'
-        AND INDEX_NAME = 'jabatans_department_id_idx'
+        AND TABLE_NAME = 'jabatan'
+        AND INDEX_NAME = 'jabatan_department_id_idx'
     ),
-    'CREATE INDEX `jabatans_department_id_idx` ON `jabatans`(`department_id`)',
+    'CREATE INDEX `jabatan_department_id_idx` ON `jabatan`(`department_id`)',
     'SELECT 1'
   )
 );
 
-PREPARE add_jabatans_department_idx_stmt FROM @add_jabatans_department_idx_sql;
-EXECUTE add_jabatans_department_idx_stmt;
-DEALLOCATE PREPARE add_jabatans_department_idx_stmt;
+PREPARE add_jabatan_department_idx_stmt FROM @add_jabatan_department_idx_sql;
+EXECUTE add_jabatan_department_idx_stmt;
+DEALLOCATE PREPARE add_jabatan_department_idx_stmt;
 
 SET @add_position_jabatan_unique_sql = (
   SELECT IF(

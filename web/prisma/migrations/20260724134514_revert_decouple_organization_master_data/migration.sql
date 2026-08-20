@@ -3,7 +3,7 @@ ALTER TABLE `Department`
   ADD COLUMN `office_id` CHAR(36) NULL;
 
 -- Mengembalikan relasi Jabatan ke Department
-ALTER TABLE `jabatans`
+ALTER TABLE `jabatan`
   ADD COLUMN `department_id` CHAR(36) NULL;
 
 -- Mengembalikan relasi Position ke Jabatan
@@ -27,7 +27,7 @@ JOIN (
 SET department_data.`office_id` = employee_mapping.`office_id`;
 
 -- Memulihkan Jabatan.department_id berdasarkan relasi karyawan
-UPDATE `jabatans` AS jabatan_data
+UPDATE `jabatan` AS jabatan_data
 JOIN (
   SELECT
     `jabatan_id`,
@@ -64,11 +64,11 @@ CREATE UNIQUE INDEX `Department_office_id_name_key`
 CREATE INDEX `Department_office_id_idx`
   ON `Department`(`office_id`);
 
-CREATE UNIQUE INDEX `jabatans_department_id_name_key`
-  ON `jabatans`(`department_id`, `name`);
+CREATE UNIQUE INDEX `jabatan_department_id_name_key`
+  ON `jabatan`(`department_id`, `name`);
 
-CREATE INDEX `jabatans_department_id_idx`
-  ON `jabatans`(`department_id`);
+CREATE INDEX `jabatan_department_id_idx`
+  ON `jabatan`(`department_id`);
 
 CREATE UNIQUE INDEX `Position_jabatan_id_name_key`
   ON `Position`(`jabatan_id`, `name`);
@@ -83,8 +83,8 @@ ALTER TABLE `Department`
   ON DELETE SET NULL
   ON UPDATE CASCADE;
 
-ALTER TABLE `jabatans`
-  ADD CONSTRAINT `jabatans_department_id_fkey`
+ALTER TABLE `jabatan`
+  ADD CONSTRAINT `jabatan_department_id_fkey`
   FOREIGN KEY (`department_id`)
   REFERENCES `Department`(`id`)
   ON DELETE SET NULL
@@ -93,6 +93,6 @@ ALTER TABLE `jabatans`
 ALTER TABLE `Position`
   ADD CONSTRAINT `Position_jabatan_id_fkey`
   FOREIGN KEY (`jabatan_id`)
-  REFERENCES `jabatans`(`id`)
+  REFERENCES `jabatan`(`id`)
   ON DELETE SET NULL
   ON UPDATE CASCADE;

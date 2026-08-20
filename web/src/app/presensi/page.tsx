@@ -2231,7 +2231,7 @@ export default function AttendancePage() {
         throw new Error(message);
       }
 
-      let user = normalizeCurrentUser(data as AuthMeResponse | CurrentUser);
+      const user = normalizeCurrentUser(data as AuthMeResponse | CurrentUser);
 
       if (!user) {
         throw new Error("Data user tidak valid.");

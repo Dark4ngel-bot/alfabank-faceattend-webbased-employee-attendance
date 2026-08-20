@@ -110,6 +110,7 @@ export async function PATCH(
 
       const cancellerName = user.id === swapRequest.requester_id ? swapRequest.requester.name : swapRequest.target_user.name;
 
+      // Send notifications to BOTH users
       const notificationTargets = Array.from(new Set([swapRequest.requester_id, swapRequest.target_user_id]));
       for (const targetId of notificationTargets) {
         try {
@@ -118,12 +119,12 @@ export async function PATCH(
               user_id: targetId,
               type: "shift_swap",
               title: "Tukar Shift Dibatalkan",
-              message: `${cancellerName} membatalkan tukar shift (${swapRequest.requester_shift_name} ↔ ${swapRequest.target_shift_name}) untuk tanggal ${formatJakartaDate(swapRequest.swap_date)}. Alasan: "${cancelReason}"`,
+              message: `${cancellerName} membatalkan tukar shift (${swapRequest.requester_shift_name} ↔ ${swapRequest.target_shift_name}) tanggal ${formatJakartaDate(swapRequest.swap_date)}. Alasan: ${cancelReason}`,
               status: "unread",
             },
           });
         } catch {
-          // ignore
+          // ignore notification insert error
         }
       }
 

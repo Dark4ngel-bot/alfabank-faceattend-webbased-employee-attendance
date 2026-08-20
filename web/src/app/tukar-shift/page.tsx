@@ -212,6 +212,7 @@ export default function TukarShiftPage() {
 
   useEffect(() => {
     void loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [swapDate]);
 
   async function handleSubmit(e: FormEvent) {

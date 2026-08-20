@@ -165,6 +165,48 @@ function getAlertIcon(type: "success" | "error" | "warning") {
   return AlertTriangle;
 }
 
+function CutiMotionStyles() {
+  return (
+    <style>{`
+      @keyframes cutiEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes cutiRowEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .cuti-enter {
+        animation: cutiEnter 340ms ease-out both;
+      }
+      .cuti-row-enter {
+        opacity: 0;
+        animation: cutiRowEnter 300ms ease-out both;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cuti-enter,
+        .cuti-row-enter {
+          animation: none !important;
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      }
+    `}</style>
+  );
+}
+
 export default function LeaveRequestPage() {
   const [leaveType, setLeaveType] = useState("annual");
   const [startDate, setStartDate] = useState("");
@@ -208,9 +250,7 @@ export default function LeaveRequestPage() {
           type: "error",
           title: "Gagal mengambil pengajuan",
           message:
-            data.message ||
-            data.error ||
-            "Gagal mengambil data pengajuan.",
+            data.message || data.error || "Gagal mengambil data pengajuan.",
         });
         return;
       }
@@ -291,8 +331,7 @@ export default function LeaveRequestPage() {
         setPageAlert({
           type: "error",
           title: "Gagal mengirim pengajuan",
-          message:
-            data.message || data.error || "Gagal mengirim pengajuan.",
+          message: data.message || data.error || "Gagal mengirim pengajuan.",
         });
         return;
       }
@@ -331,9 +370,28 @@ export default function LeaveRequestPage() {
 
   return (
     <MobileShell variant="employee">
-      <AppHeader title="Pengajuan" rightLabel="Pengajuan" />
+      <CutiMotionStyles />
+      <AppHeader
+        title="Pengajuan"
+        rightLabel="Pengajuan"
+        hideMobileMenuButton
+      />
 
-      <section className="mx-auto grid max-w-7xl items-start gap-6 px-5 py-6 pb-28 md:px-10 lg:grid-cols-[0.85fr_1.15fr] lg:px-16">
+      <section className="cuti-enter mx-auto max-w-7xl px-5 pt-7 md:hidden">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">
+              Presensi
+            </p>
+
+            <h1 className="mt-1 text-3xl font-black tracking-tight text-[#073456]">
+              Pengajuan
+            </h1>
+          </div>
+        </div>
+      </section>
+
+      <section className="cuti-row-enter mx-auto grid max-w-7xl items-start gap-6 px-5 py-6 pb-28 md:px-10 lg:grid-cols-[0.85fr_1.15fr] lg:px-16">
         <form
           suppressHydrationWarning
           onSubmit={handleSubmit}
@@ -421,10 +479,14 @@ export default function LeaveRequestPage() {
               </select>
             </div>
 
-            <div className={`grid gap-4 ${leaveType === "overtime" ? "" : "md:grid-cols-2"}`}>
+            <div
+              className={`grid gap-4 ${leaveType === "overtime" ? "" : "md:grid-cols-2"}`}
+            >
               <div>
                 <label className="text-sm font-black text-slate-700">
-                  {leaveType === "overtime" ? "Tanggal Lembur" : "Tanggal Mulai"}
+                  {leaveType === "overtime"
+                    ? "Tanggal Lembur"
+                    : "Tanggal Mulai"}
                 </label>
 
                 <input
@@ -534,7 +596,11 @@ export default function LeaveRequestPage() {
                 </div>
               ) : (
                 <label className="mt-2 flex min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-200 bg-[#f8fbff] p-4 text-center transition hover:border-[#123c8c] hover:bg-blue-50/50">
-                  <Upload size={24} className="text-[#123c8c]" strokeWidth={2.6} />
+                  <Upload
+                    size={24}
+                    className="text-[#123c8c]"
+                    strokeWidth={2.6}
+                  />
                   <p className="mt-2 text-xs font-black text-slate-700">
                     Upload Surat Dokter / Lampiran
                   </p>

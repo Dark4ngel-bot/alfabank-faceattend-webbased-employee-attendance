@@ -16,11 +16,12 @@ async function main() {
         `ALTER TABLE \`${tableName}\` ADD COLUMN check_out_work_mode VARCHAR(20) NULL AFTER work_mode;`
       );
       console.log(`SUCCESS: Column check_out_work_mode added to ${tableName}!`);
-    } catch (err: any) {
-      if (err?.message?.includes("Duplicate column name")) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "";
+      if (message.includes("Duplicate column name")) {
         console.log(`INFO: Column check_out_work_mode already exists in ${tableName}.`);
       } else {
-        console.error(`ERROR adding check_out_work_mode:`, err.message);
+        console.error(`ERROR adding check_out_work_mode:`, message);
       }
     }
   }

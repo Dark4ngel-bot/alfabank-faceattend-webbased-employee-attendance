@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
           attendance_date: "desc",
         },
         {
-          check_in_time: "asc",
+          check_in_time: "desc",
         },
       ],
     });
@@ -142,9 +142,6 @@ export async function GET(req: NextRequest) {
 
     const recentAttendance = employees.map((employee) => {
       const attendance = attendanceByUserId.get(employee.id);
-      const profilePhoto = employee.profile_photo
-        ? `/api/profil/photo?userId=${encodeURIComponent(employee.id)}&raw=1`
-        : null;
 
       const workMinutes = calculateWorkMinutes(
         Number(attendance?.work_minutes || 0),
@@ -157,11 +154,11 @@ export async function GET(req: NextRequest) {
         attendanceId: attendance?.id || "",
         name: employee.name,
         employeeCode: employee.employee_code,
-        profilePhoto,
-        profile_photo: profilePhoto,
-        profile_photo_url: profilePhoto,
-        photo_url: profilePhoto,
-        avatar_url: profilePhoto,
+        profilePhoto: employee.profile_photo,
+        profile_photo: employee.profile_photo,
+        profile_photo_url: employee.profile_photo,
+        photo_url: employee.profile_photo,
+        avatar_url: employee.profile_photo,
         position: employee.position?.name || null,
         department: employee.department?.name || null,
         checkInTime: toIsoDate(attendance?.check_in_time),
@@ -173,18 +170,6 @@ export async function GET(req: NextRequest) {
         hasPhoto: Boolean(attendance?.check_in_photo || attendance?.check_out_photo),
         hasLocation: Boolean(attendance?.check_in_time),
       };
-    }).sort((first, second) => {
-      if (!first.checkInTime && !second.checkInTime) {
-        return first.name.localeCompare(second.name);
-      }
-
-      if (!first.checkInTime) return 1;
-      if (!second.checkInTime) return -1;
-
-      return (
-        new Date(first.checkInTime).getTime() -
-        new Date(second.checkInTime).getTime()
-      );
     });
 
     const sortedRecentAttendance = recentAttendance.sort((a, b) => {
